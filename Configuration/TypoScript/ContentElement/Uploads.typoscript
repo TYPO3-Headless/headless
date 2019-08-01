@@ -1,0 +1,25 @@
+tt_content.uploads =< lib.contentElement
+tt_content.uploads {
+    fields {
+        content {
+            fields {
+                media = TEXT
+                media {
+                    dataProcessing {
+                        10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                        10 {
+                            references.fieldName = media
+                            collections.field = file_collections
+                            sorting.field = filelink_sorting
+                            sorting.direction.field = filelink_sorting_direction
+                        }
+                        20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                        20 {
+                            as = images
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

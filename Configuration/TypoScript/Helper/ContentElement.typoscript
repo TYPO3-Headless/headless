@@ -1,0 +1,26 @@
+lib.contentElement >
+lib.contentElement = JSON
+lib.contentElement {
+    fields {
+        id = TEXT
+        id {
+            field = uid
+            intval = 1
+        }
+        pid = TEXT
+        pid {
+            field = pid
+            intval = 1
+        }
+        type = TEXT
+        type {
+            field = CType
+        }
+        colPos = TEXT
+        colPos {
+            field = colPos
+            intval = 1
+        }
+        appearance =< lib.appearance
+    }
+}

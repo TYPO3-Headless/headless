@@ -1,0 +1,34 @@
+tt_content.menu_recently_updated =< lib.contentElementWithHeader
+tt_content.menu_recently_updated {
+    fields {
+        content {
+            fields {
+                menu = TEXT
+                menu {
+                    dataProcessing {
+                        10 = TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
+                        10 {
+                            special = updated
+                            special {
+                                value.field = pages
+                                maxAge = 3600*24*7
+                                excludeNoSearchPages = 1
+                            }
+                            as = menu
+                            dataProcessing {
+                                10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                                10 {
+                                    references.fieldName = media
+                                }
+                                20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                                20 {
+                                    as = images
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
