@@ -1,0 +1,13 @@
+tt_content.div =< lib.contentElement
+tt_content.div {
+    fields {
+        content {
+            fields {
+                header = TEXT
+                header {
+                    field = header
+                }
+            }
+        }
+    }
+}

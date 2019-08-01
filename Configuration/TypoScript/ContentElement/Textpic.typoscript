@@ -1,0 +1,37 @@
+tt_content.textpic =< lib.contentElementWithHeader
+tt_content.textpic {
+    fields {
+        content {
+            fields {
+                bodytext = TEXT
+                bodytext {
+                    field = bodytext
+                    parseFunc =< lib.parseFunc_links
+                }
+                image = TEXT
+                image {
+                    field = image
+                    dataProcessing {
+                        10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                        10 {
+                            references.fieldName = image
+                        }
+                        20 = TYPO3\CMS\Frontend\DataProcessing\GalleryProcessor
+                        20 {
+                            maxGalleryWidth = {$styles.content.textmedia.maxW}
+                            maxGalleryWidthInText = {$styles.content.textmedia.maxWInText}
+                            columnSpacing = {$styles.content.textmedia.columnSpacing}
+                            borderWidth = {$styles.content.textmedia.borderWidth}
+                            borderPadding = {$styles.content.textmedia.borderPadding}
+                            as = gallery
+                        }
+                        30 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                        30 {
+                            as = images
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

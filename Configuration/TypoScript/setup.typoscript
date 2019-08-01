@@ -1,0 +1,6 @@
+## Include helpers
+<INCLUDE_TYPOSCRIPT: source="DIR:EXT:headless/Configuration/TypoScript/Helper/" extensions="typoscript">
+## Include content elements
+<INCLUDE_TYPOSCRIPT: source="DIR:EXT:headless/Configuration/TypoScript/ContentElement/" extensions="typoscript">
+## Include configuration
+<INCLUDE_TYPOSCRIPT: source="DIR:EXT:headless/Configuration/TypoScript/Configuration/" extensions="typoscript">

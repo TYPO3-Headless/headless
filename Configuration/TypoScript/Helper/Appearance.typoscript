@@ -1,0 +1,44 @@
+lib.appearance = JSON
+lib.appearance {
+    fields {
+        layout = CASE
+        layout {
+            key.field = layout
+
+            default = TEXT
+            default {
+                value = default
+            }
+
+            1 = TEXT
+            1 {
+                value = layout-1
+            }
+
+            2 = TEXT
+            2 {
+                value = layout-2
+            }
+
+            3 = TEXT
+            3 {
+                value = layout-3
+            }
+        }
+
+        frameClass = TEXT
+        frameClass {
+            field = frame_class
+        }
+
+        spaceBefore = TEXT
+        spaceBefore {
+            field = space_before_class
+        }
+
+        spaceAfter = TEXT
+        spaceAfter {
+            field = space_after_class
+        }
+    }
+}

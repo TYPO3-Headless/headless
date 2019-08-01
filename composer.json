@@ -1,0 +1,37 @@
+{
+  "name": "friendsoftypo3/headless",
+  "type": "typo3-cms-extension",
+  "version": "1.0.0-beta",
+  "description": "This extension provides way to output content from TYPO3 in JSON format.",
+  "keywords": [
+    "TYPO3",
+    "headless",
+    "pwa",
+    "json"
+  ],
+  "license": [
+    "GPL-2.0-or-later"
+  ],
+  "authors": [
+    {
+      "name": "Tymoteusz Motylewski",
+      "role": "Head"
+    },
+    {
+      "name": "Łukasz Uznański",
+      "role": "Developer"
+    },
+    {
+      "name": "headless Development Team",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "typo3/cms-core": "~9.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "FriendsOfTYPO3\\Headless\\": "Classes"
+    }
+  }
+}

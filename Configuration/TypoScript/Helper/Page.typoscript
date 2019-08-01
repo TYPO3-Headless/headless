@@ -1,0 +1,167 @@
+lib.page = JSON
+lib.page {
+    fields {
+        id = TEXT
+        id {
+            field = uid
+            required = 1
+            intval = 1
+        }
+        pid = TEXT
+        pid {
+            field = pid
+            required = 1
+            intval = 1
+        }
+        title = TEXT
+        title {
+            field = title
+            required = 1
+        }
+        type =< lib.doktypeName
+        meta {
+            fields {
+                title = TEXT
+                title {
+                    field = seo_title
+                    required = 1
+                }
+                subtitle = TEXT
+                subtitle {
+                    field = subtitle
+                    required = 1
+                }
+                abstract = TEXT
+                abstract {
+                    field = abstract
+                    required = 1
+                }
+                description = TEXT
+                description {
+                    field = description
+                }
+                keywords = TEXT
+                keywords {
+                    field = keywords
+                }
+                canonical = TEXT
+                canonical {
+                    field = canonical_link
+                    htmlSpecialChars = 1
+                    typolink {
+                        parameter {
+                            field = canonical_link
+                        }
+                        returnLast = url
+                    }
+                }
+
+            }
+        }
+        editorial {
+            fields {
+                author = TEXT
+                author {
+                    field = author
+                }
+                authorEmail = TEXT
+                authorEmail {
+                    field = author_email
+                }
+            }
+        }
+        navigation {
+            fields {
+                slug = TEXT
+                slug {
+                    field = slug
+                }
+                navTitle = TEXT
+                navTitle {
+                    field = nav_title
+                }
+                target = TEXT
+                target {
+                    field = target
+                }
+            }
+        }
+        breadcrumbs =< lib.breadcrumbs
+        cache {
+            fields {
+                timeout = TEXT
+                timeout {
+                    field = timeout
+                }
+                tags = TEXT
+                tags {
+                    field = cache_tags
+                }
+            }
+        }
+        appearance {
+            fields {
+                layout = TEXT
+                layout {
+                    field = layout
+                }
+                backendLayout = TEXT
+                backendLayout {
+                    field = backend_layout
+                    ifEmpty.data = levelfield:-2,backend_layout_next_level,slide
+                    ifEmpty.ifEmpty = default
+                }
+                backendLayoutNextLevel = TEXT
+                backendLayoutNextLevel {
+                    field = backend_layout_next_level
+                }
+                newUntil = TEXT
+                newUntil {
+                    field = newUntil
+                }
+            }
+        }
+        l10n {
+            fields {
+                languageId = TEXT
+                languageId {
+                    field = sys_language_uid
+                    intval = 1
+                }
+            }
+        }
+        system {
+            fields {
+                tstamp = TEXT
+                tstamp {
+                    field = tstamp
+                    intval = 1
+                }
+                crdate = TEXT
+                crdate {
+                    field = crdate
+                    intval = 1
+                }
+                starttime = TEXT
+                starttime {
+                    field = starttime
+                    intval = 1
+                }
+                endtime = TEXT
+                endtime {
+                    field = endtime
+                    intval = 1
+                }
+                feGroup = TEXT
+                feGroup {
+                    field = fe_group
+                }
+                sorting = TEXT
+                sorting {
+                    field = sorting
+                    intval = 1
+                }
+            }
+        }
+    }
+}

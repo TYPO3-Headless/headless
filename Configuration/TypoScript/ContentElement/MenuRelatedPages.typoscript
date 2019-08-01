@@ -1,0 +1,34 @@
+tt_content.menu_related_pages =< lib.contentElementWithHeader
+tt_content.menu_related_pages {
+    fields {
+        content {
+            fields {
+                menu = TEXT
+                menu {
+                    dataProcessing {
+                        10 = TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
+                        10 {
+                            special = keywords
+                            special {
+                                value.field = pages
+                                excludeNoSearchPages = 1
+                            }
+                            as = menu
+                            alternativeSortingField = title
+                            dataProcessing {
+                                10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                                10 {
+                                    references.fieldName = media
+                                }
+                                20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                                20 {
+                                    as = images
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
