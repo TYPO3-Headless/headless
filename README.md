@@ -28,12 +28,6 @@ Output
     "header" : "headerFieldValue"
 }
 ```
-As you can see, we use reserved keyword `fields` to render output. Keys, which are inside `fields` are used as keys in json, so if you specify key `abc = COA`, then in json output you will have
-```
-{
-    "abc": "foo"
-}
-```
 in addition, keyword `fields` allow you to nest multiple times fields in json, e.g.
 
 ```
