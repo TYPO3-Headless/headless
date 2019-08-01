@@ -1,7 +1,6 @@
 {
   "name": "friendsoftypo3/headless",
   "type": "typo3-cms-extension",
-  "version": "1.0.0-beta",
   "description": "This extension provides way to output content from TYPO3 in JSON format.",
   "keywords": [
     "TYPO3",
@@ -22,12 +21,13 @@
       "role": "Developer"
     },
     {
-      "name": "headless Development Team",
-      "role": "Developer"
+      "name": "TYPO3 PWA Initiative",
+      "role": "Developer",
+      "email": "extensions@macopedia.pl"
     }
   ],
   "require": {
-    "typo3/cms-core": "~9.5"
+    "typo3/cms-core": "^9.5 || ^10.0"
   },
   "autoload": {
     "psr-4": {
