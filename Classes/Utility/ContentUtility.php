@@ -16,10 +16,14 @@ namespace FriendsOfTYPO3\Headless\Utility;
 
 /**
  * ContentUtility
+ *
+ * This class group elements by column position, for easier frontend rendering.
  */
 class ContentUtility
 {
     /**
+     * This method takes whole content as JSON string, breaks it per element, and pass to groupContentElementByColPos method to group content by colPos.
+     *
      * @param $content
      * @param array $configuration
      * @return string|null
@@ -32,6 +36,8 @@ class ContentUtility
     }
 
     /**
+     * Groups content by colPos.
+     *
      * @param array $contentElements
      * @return array
      */
