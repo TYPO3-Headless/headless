@@ -168,17 +168,17 @@ class JsonContentObject extends AbstractContentObject
         $json = [];
 
         foreach ($data as $key => $singleData) {
-            if (!is_array($singleData) && !is_object($singleData) && !is_int($singleData) && $singleData !== null) {
+            if (is_string($singleData)) {
                 if (json_decode($singleData) === null) {
                     $json[$key] = $singleData;
                 } else {
                     $json[$key] = json_decode($singleData);
                 }
-            } else if (is_object($singleData) || is_int($singleData) || $singleData === null) {
-                $json[$key] = $singleData;
+            } else if (is_array($singleData)) {
+                $json[$key] = $this->decodeFieldsIfRequired($singleData);
             }
             else {
-                $json[$key] = $this->decodeFieldsIfRequired($singleData);
+                $json[$key] = $singleData;
             }
         }
         return $json;
