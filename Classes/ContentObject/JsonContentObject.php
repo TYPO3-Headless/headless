@@ -174,7 +174,7 @@ class JsonContentObject extends AbstractContentObject
                 } else {
                     $json[$key] = json_decode($singleData);
                 }
-            } else if (is_array($singleData) || is_object(($singleData))) {
+            } else if (is_array($singleData)) {
                 $json[$key] = $this->decodeFieldsIfRequired($singleData);
             }
             else {
