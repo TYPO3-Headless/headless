@@ -137,7 +137,12 @@ class JsonContentObject extends AbstractContentObject
         return $filteredKeys;
     }
 
-    function recursiveFind(array $haystack, $needle)
+    /**
+     * @param array $haystack
+     * @param $needle
+     * @return string
+     */
+    protected function recursiveFind(array $haystack, $needle)
     {
         $iterator  = new RecursiveArrayIterator($haystack);
         $recursive = new RecursiveIteratorIterator(
