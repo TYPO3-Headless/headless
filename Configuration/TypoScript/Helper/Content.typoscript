@@ -1,3 +1,4 @@
+lib.content >
 lib.content = USER
 lib.content {
     userFunc = FriendsOfTYPO3\Headless\Utility\ContentUtility->groupContent

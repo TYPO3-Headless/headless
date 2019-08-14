@@ -1,3 +1,4 @@
+lib.page >
 lib.page = JSON
 lib.page {
     fields {

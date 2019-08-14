@@ -1,4 +1,5 @@
 # Creates persistent ParseFunc setup for non-HTML content.
+lib.parseFunc >
 lib.parseFunc {
     makelinks = 1
     makelinks {
@@ -48,6 +49,7 @@ lib.parseFunc {
 
 
 # Creates persistent ParseFunc setup for RTE content (which is mainly HTML) based on the "default" transformation.
+lib.parseFunc_RTE >
 lib.parseFunc_RTE < lib.parseFunc
 lib.parseFunc_RTE {
     # Processing <ol>, <ul> and <table> blocks separately
@@ -118,6 +120,7 @@ lib.parseFunc_RTE {
     }
 }
 
+lib.parseFunc_links >
 lib.parseFunc_links {
     tags {
         link = TEXT

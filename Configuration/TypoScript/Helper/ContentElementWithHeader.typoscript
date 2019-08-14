@@ -1,3 +1,4 @@
+lib.contentElementWithHeader >
 lib.contentElementWithHeader =< lib.contentElement
 lib.contentElementWithHeader {
     fields {
