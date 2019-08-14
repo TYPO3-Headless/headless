@@ -1,6 +1,6 @@
 lib.doktypeName = CASE
 lib.doktypeName {
-  key =
+  key.field = doktype
 
   3 = TEXT
   3.value = Link
