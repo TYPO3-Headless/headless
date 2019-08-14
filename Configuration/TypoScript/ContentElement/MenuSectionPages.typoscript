@@ -1,3 +1,4 @@
+tt_content.menu_section_pages >
 tt_content.menu_section_pages =< lib.contentElementWithHeader
 tt_content.menu_section_pages {
     fields {

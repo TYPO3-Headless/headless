@@ -1,4 +1,5 @@
-tt_content.menu_pages =< =< lib.contentElementWithHeader
+tt_content.menu_pages >
+tt_content.menu_pages =< lib.contentElementWithHeader
 tt_content.menu_pages {
     fields {
         content {

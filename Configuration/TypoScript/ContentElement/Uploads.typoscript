@@ -1,3 +1,4 @@
+tt_content.uploads >
 tt_content.uploads =< lib.contentElement
 tt_content.uploads {
     fields {

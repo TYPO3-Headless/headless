@@ -1,3 +1,4 @@
+tt_content.menu_sitemap >
 tt_content.menu_sitemap =< lib.contentElementWithHeader
 tt_content.menu_sitemap {
     fields {

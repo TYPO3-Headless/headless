@@ -1,3 +1,4 @@
+tt_content.list >
 tt_content.list =< lib.contentElementWithHeader
 tt_content.list {
     fields {

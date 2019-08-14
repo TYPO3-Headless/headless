@@ -1,3 +1,4 @@
+tt_content.image >
 tt_content.image =< lib.contentElementWithHeader
 tt_content.image {
     fields {

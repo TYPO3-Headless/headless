@@ -1,3 +1,4 @@
+tt_content.menu_subpages >
 tt_content.menu_subpages =< lib.contentElementWithHeader
 tt_content.menu_subpages {
     fields {

@@ -1,3 +1,4 @@
+tt_content.menu_categorized_content >
 tt_content.menu_categorized_content =< lib.contentElementWithHeader
 tt_content.menu_categorized_content {
     fields {

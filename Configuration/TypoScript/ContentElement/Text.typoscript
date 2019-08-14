@@ -1,3 +1,4 @@
+tt_content.text >
 tt_content.text =< lib.contentElementWithHeader
 tt_content.text {
     fields {

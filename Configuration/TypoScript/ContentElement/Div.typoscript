@@ -1,3 +1,4 @@
+tt_content.div >
 tt_content.div =< lib.contentElement
 tt_content.div {
     fields {

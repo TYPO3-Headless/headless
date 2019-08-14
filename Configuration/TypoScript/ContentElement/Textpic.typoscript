@@ -1,3 +1,4 @@
+tt_content.textpic >
 tt_content.textpic =< lib.contentElementWithHeader
 tt_content.textpic {
     fields {

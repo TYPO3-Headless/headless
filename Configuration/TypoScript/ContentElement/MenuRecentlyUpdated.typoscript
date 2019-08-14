@@ -1,3 +1,4 @@
+tt_content.menu_recently_updated >
 tt_content.menu_recently_updated =< lib.contentElementWithHeader
 tt_content.menu_recently_updated {
     fields {
