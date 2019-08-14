@@ -1,0 +1,10 @@
+tt_content.default >
+tt_content.default =< lib.contentElement
+tt_content.default.fields {
+    content = TEXT
+    content {
+        field = CType
+        wrap = ERROR: Content Element with uid "{field:uid}" and type "|" has no rendering definition!
+        wrap.insertData = 1
+    }
+}
