@@ -121,7 +121,7 @@ class JsonContentObject extends AbstractContentObject
      *
      * @param array $setupArr TypoScript array with string array in
      * @param bool $acceptAnyKeys If set, then a value is not required - the properties alone will be enough.
-     * @return array An array with all string properties listed in alphabetical order.
+     * @return array An array with all string properties.
      */
     protected function filterByStringKeys(array $setupArr, bool $acceptAnyKeys = false): array
     {
