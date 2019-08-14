@@ -85,7 +85,7 @@ class JsonContentObject extends AbstractContentObject
         }
         $content = [];
 
-        $sKeyArray = $this->filterAndSortByStringKeys($setup);
+        $sKeyArray = $this->filterByStringKeys($setup);
         foreach ($sKeyArray as $theKey) {
             $theValue = $setup[$theKey];
             if ((string)$theKey && strpos($theKey, '.') === false) {
@@ -117,13 +117,13 @@ class JsonContentObject extends AbstractContentObject
     }
 
     /**
-     * Takes a TypoScript array as input and returns an array which contains all string properties found which had a value (not only properties). The output array will be sorted numerically.
+     * Takes a TypoScript array as input and returns an array which contains all string properties found which had a value (not only properties).
      *
      * @param array $setupArr TypoScript array with string array in
      * @param bool $acceptAnyKeys If set, then a value is not required - the properties alone will be enough.
      * @return array An array with all string properties listed in alphabetical order.
      */
-    protected function filterAndSortByStringKeys(array $setupArr, bool $acceptAnyKeys = false): array
+    protected function filterByStringKeys(array $setupArr, bool $acceptAnyKeys = false): array
     {
         $filteredKeys = [];
         $keys = array_keys($setupArr);
@@ -133,7 +133,6 @@ class JsonContentObject extends AbstractContentObject
             }
         }
         $filteredKeys = array_unique($filteredKeys);
-        sort($filteredKeys);
         return $filteredKeys;
     }
 
