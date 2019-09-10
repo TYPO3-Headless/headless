@@ -20,7 +20,7 @@ tt_content.image {
                             borderPadding = {$styles.content.textmedia.borderPadding}
                             as = image
                         }
-                        30 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                        30 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                         30 {
                             as = images
                         }

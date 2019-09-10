@@ -24,7 +24,7 @@ tt_content.menu_categorized_content {
                                 10 {
                                     references.fieldName = image
                                 }
-                                20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                                20 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                                 20 {
                                     as = images
                                 }

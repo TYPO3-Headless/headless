@@ -26,9 +26,9 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 use TYPO3\CMS\Frontend\ContentObject\Exception\ContentRenderingException;
 
 /**
- * Class ImagesProcessor
+ * Class FilesProcessor
  */
-class ImageProcessor implements DataProcessorInterface
+class FilesProcessor implements DataProcessorInterface
 {
     /**
      * @var array
@@ -88,18 +88,18 @@ class ImageProcessor implements DataProcessorInterface
         $this->contentObjectRenderer = $cObj;
         $this->processorConfiguration = $processorConfiguration;
 
-        $filesProcessedDataKey = (string)$cObj->stdWrapValue(
+        $filesProcessedDataKey = (string) $cObj->stdWrapValue(
             'filesProcessedDataKey',
             $processorConfiguration,
             $this->defaults['filesAs']
         );
-        $galleryProcessedDataKey = (string)$cObj->stdWrapValue(
+        $galleryProcessedDataKey = (string) $cObj->stdWrapValue(
             'galleryProcessedDataKey',
             $processorConfiguration,
             $this->defaults['galleryAs']
         );
 
-        $targetFieldName = (string)$cObj->stdWrapValue(
+        $targetFieldName = (string) $cObj->stdWrapValue(
             'as',
             $processorConfiguration,
             $this->defaults['as']
@@ -127,7 +127,7 @@ class ImageProcessor implements DataProcessorInterface
 
         foreach ($this->fileObjects as $fileObject) {
             $metaData = $fileObject->toArray();
-            $data['images'][] = [
+            $data[] = [
                 'publicUrl' => $this->getImageService()->getImageUri($fileObject, true),
                 'dimensions' => [
                     'width' => $fileObject->getProperty('width'),
@@ -164,7 +164,7 @@ class ImageProcessor implements DataProcessorInterface
                     'height' => $image['dimensions']['height']
                 ]);
                 $metaData = $image['media']->toArray();
-                $data['images'][] = [
+                $data[] = [
                     'publicUrl' => $this->getImageService()->getImageUri($processedFile, true),
                     'dimensions' => [
                         'width' => $processedFile->getProperty('width'),
