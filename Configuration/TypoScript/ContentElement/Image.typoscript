@@ -18,7 +18,7 @@ tt_content.image {
                             columnSpacing = {$styles.content.textmedia.columnSpacing}
                             borderWidth = {$styles.content.textmedia.borderWidth}
                             borderPadding = {$styles.content.textmedia.borderPadding}
-                            as = image
+                            as = gallery
                         }
                         30 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
                         30 {
