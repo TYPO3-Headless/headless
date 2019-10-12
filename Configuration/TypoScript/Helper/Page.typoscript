@@ -58,6 +58,56 @@ lib.page {
 
             }
         }
+        socialMedia {
+            fields {
+                ogTitle = TEXT
+                ogTitle {
+                    field = og_title
+                }
+                ogDescription = TEXT
+                ogDescription {
+                    field = og_description
+                }
+                ogImage = TEXT
+                ogImage {
+                    dataProcessing {
+                        10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                        10 {
+                            references.fieldName = og_image
+                        }
+                        20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                        20 {
+                            as = images
+                        }
+                    }
+                }
+                twitterTitle = TEXT
+                twitterTitle {
+                    field = twitter_title
+                }
+                twitterDescription = TEXT
+                twitterDescription {
+                    field = twitter_description
+                }
+                twitterCard = TEXT
+                twitterCard {
+                    field = twitter_card
+                }
+                twitterImage = TEXT
+                twitterImage {
+                    dataProcessing {
+                        10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                        10 {
+                            references.fieldName = twitter_image
+                        }
+                        20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                        20 {
+                            as = images
+                        }
+                    }
+                }
+            }
+        }
         editorial {
             fields {
                 author = TEXT
