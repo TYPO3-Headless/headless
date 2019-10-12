@@ -161,6 +161,10 @@ lib.page {
                     field = sorting
                     intval = 1
                 }
+                noSearch = TEXT
+                noSearch {
+                    field = no_search
+                }
             }
         }
     }
