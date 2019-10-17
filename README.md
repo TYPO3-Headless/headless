@@ -1,7 +1,9 @@
 # TYPO3 Extension "headless" - JSON content API for TYPO3 PWA solution
 Headless allows you to render JSON from TYPO3 content. You can customize output by changing types, names and nesting of fields.
 
-This extension provides backend part (JSON API) for TYPO3 PWA solution. The other part is an extension providing JavaScript rendering for content based on Vue.js and Nuxt, which will be published soon on github. If you have any questions just drop a line in #initiative-pwa Slack channel.
+This extension provides backend part (JSON API) for TYPO3 PWA solution. Second part is a JavaScript application [nuxt-typo3](https://github.com/TYPO3-Initiatives/nuxt-typo3) which consumes JSON API and renders the content using Vue.js and Nuxt.
+
+If you have any questions just drop a line in #initiative-pwa Slack channel.
 
 ## Features
 
