@@ -11,7 +11,7 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
  * of the License, or any later version.
  *
  * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
+ * LICENSE.md file that was distributed with this source code.
  *
  * The TYPO3 project - inspiring people to share!
  */
