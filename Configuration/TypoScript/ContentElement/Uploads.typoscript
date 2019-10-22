@@ -33,8 +33,8 @@ tt_content.uploads {
                 displayDescription {
                     field = uploads_description
                 }
-                displayInformations = TEXT
-                displayInformations {
+                displayInformation = TEXT
+                displayInformation {
                     field = uploads_type
                 }
             }
