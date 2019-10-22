@@ -16,7 +16,7 @@ tt_content.menu_section_pages {
                                 10 {
                                     references.fieldName = media
                                 }
-                                20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                                20 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                                 20 {
                                     as = images
                                 }
@@ -31,7 +31,7 @@ tt_content.menu_section_pages {
                                         10 {
                                             references.fieldName = image
                                         }
-                                        20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                                        20 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                                         20 {
                                             as = images
                                         }

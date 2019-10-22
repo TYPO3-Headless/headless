@@ -25,7 +25,7 @@ tt_content.textmedia {
                             borderPadding = {$styles.content.textmedia.borderPadding}
                             as = gallery
                         }
-                        30 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                        30 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                         30 {
                             as = images
                         }
