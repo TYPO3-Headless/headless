@@ -23,7 +23,7 @@ tt_content.table {
                         }
                     }
                 }
-                table_caption = TEXT
+                tableCaption = TEXT
                 table_caption {
                     field = table_caption
                 }
@@ -32,17 +32,17 @@ tt_content.table {
                     field = cols
                     intval = 1
                 }
-                table_header_position = TEXT
-                table_header_position {
+                tableHeaderPosition = TEXT
+                tableHeaderPosition {
                     field = table_header_position
                     intval = 1
                 }
-                table_class = TEXT
-                table_class {
+                tableClass = TEXT
+                tableClass {
                     field = table_class
                 }
-                table_tfoot = TEXT
-                table_tfoot {
+                tableTfoot = TEXT
+                tableTfoot {
                     field = table_tfoot
                 }
             }
