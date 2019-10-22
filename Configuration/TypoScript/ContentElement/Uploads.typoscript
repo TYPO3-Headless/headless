@@ -10,8 +10,10 @@ tt_content.uploads {
                         10 {
                             references.fieldName = media
                             collections.field = file_collections
-                            sorting.field = filelink_sorting
-                            sorting.direction.field = filelink_sorting_direction
+                            sorting {
+                                field = filelink_sorting
+                                sorting.direction.field = filelink_sorting_direction
+                            }
                         }
                         20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
                         20 {
