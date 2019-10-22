@@ -6,8 +6,9 @@ tt_content.menu_section {
                 menu = TEXT
                 menu {
                     dataProcessing {
-                        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+                        10 = TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
                         10 {
+                            as = menu
                             special = list
                             special {
                                 value {
@@ -20,7 +21,28 @@ tt_content.menu_section {
                                     }
                                 }
                             }
-                            as = menu
+                            dataProcessing {
+                                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                                10 {
+                                    references.fieldName = media
+                                    as = media
+                                }
+                                20 = TYPO3\CMS\Frontend\DataProcessing\DatabaseQueryProcessor
+                                20 {
+                                    table = tt_content
+                                    pidInList.field = uid
+                                    as = content
+                                    where = sectionIndex = 1
+                                    orderBy = sorting
+                                    dataProcessing {
+                                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                                        10 {
+                                            references.fieldName = image
+                                            as = media
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
