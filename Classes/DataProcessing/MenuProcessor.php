@@ -3,26 +3,16 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
-/*
- * This file is part of the TYPO3 CMS project.
+/***
  *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
+ * This file is part of the "headless" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
+ * LICENSE.md file that was distributed with this source code.
  *
- * The TYPO3 project - inspiring people to share!
- */
-
-use TYPO3\CMS\Core\Routing\SiteMatcher;
-use TYPO3\CMS\Core\Site\Entity\SiteInterface;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
-use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
-use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+ *  (c) 2019
+ *
+ ***/
 
 /**
  * This menu processor utilizes HMENU to generate a json encoded menu
