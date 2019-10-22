@@ -24,7 +24,7 @@ tt_content.table {
                     }
                 }
                 tableCaption = TEXT
-                table_caption {
+                tableCaption {
                     field = table_caption
                 }
                 cols = TEXT
