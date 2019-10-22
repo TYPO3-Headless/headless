@@ -24,6 +24,7 @@ use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 use TYPO3\CMS\Frontend\ContentObject\Exception\ContentRenderingException;
+use TYPO3\CMS\Frontend\Resource\FileCollector;
 
 /**
  * Class FilesProcessor
@@ -34,9 +35,8 @@ class FilesProcessor implements DataProcessorInterface
      * @var array
      */
     public $defaults = [
-        'as' => 'images',
+        'as' => 'media',
         'filesAs' => 'files',
-        'galleryAs' => 'gallery'
     ];
 
     /**
@@ -61,11 +61,6 @@ class FilesProcessor implements DataProcessorInterface
     protected $fileObjects = [];
 
     /**
-     * @var array
-     */
-    protected $galleryObjects = [];
-
-    /**
      * Process data for a gallery, for instance the CType "textmedia"
      *
      * @param ContentObjectRenderer $cObj The content object renderer, which contains data of the content element
@@ -73,14 +68,14 @@ class FilesProcessor implements DataProcessorInterface
      * @param array $processorConfiguration The configuration of this processor
      * @param array $processedData Key/value store of processed data (e.g. to be passed to a Fluid View)
      * @return array the processed data as key/value store
-     * @throws ContentRenderingException
      */
     public function process(
         ContentObjectRenderer $cObj,
         array $contentObjectConfiguration,
         array $processorConfiguration,
         array $processedData
-    ) {
+    )
+    {
         if (isset($processorConfiguration['if.']) && !$cObj->checkIf($processorConfiguration['if.'])) {
             return $processedData;
         }
@@ -88,34 +83,70 @@ class FilesProcessor implements DataProcessorInterface
         $this->contentObjectRenderer = $cObj;
         $this->processorConfiguration = $processorConfiguration;
 
-        $filesProcessedDataKey = (string) $cObj->stdWrapValue(
-            'filesProcessedDataKey',
-            $processorConfiguration,
-            $this->defaults['filesAs']
-        );
-        $galleryProcessedDataKey = (string) $cObj->stdWrapValue(
-            'galleryProcessedDataKey',
-            $processorConfiguration,
-            $this->defaults['galleryAs']
-        );
-
-        $targetFieldName = (string) $cObj->stdWrapValue(
+        $targetFieldName = (string)$cObj->stdWrapValue(
             'as',
-            $processorConfiguration,
+            $this->processorConfiguration,
             $this->defaults['as']
         );
 
-        if (isset($processedData[$galleryProcessedDataKey]) && is_array($processedData[$galleryProcessedDataKey])) {
-            $this->galleryObjects = $processedData[$galleryProcessedDataKey];
-            $processedData[$targetFieldName] = $this->processGalleryFiles();
-        }
-
-        if (isset($processedData[$filesProcessedDataKey]) && is_array($processedData[$filesProcessedDataKey]) && (!isset($processedData[$galleryProcessedDataKey]) && !is_array($processedData[$galleryProcessedDataKey]))) {
-            $this->fileObjects = $processedData[$filesProcessedDataKey];
-            $processedData[$targetFieldName] = $this->processFiles();
-        }
+        $this->fileObjects = $this->fetchData();
+        $processedData[$targetFieldName] = $this->processFiles();
 
         return $processedData;
+    }
+
+    /**
+     * @return array
+     */
+    protected function fetchData(): array
+    {
+        /** @var FileCollector $fileCollector */
+        $fileCollector = GeneralUtility::makeInstance(FileCollector::class);
+
+        if (!empty($this->processorConfiguration['references.'])) {
+            $referenceConfiguration = $this->processorConfiguration['references.'];
+            $relationField = $this->contentObjectRenderer->stdWrapValue('fieldName', $referenceConfiguration);
+
+            // If no reference fieldName is set, there's nothing to do
+            if (!empty($relationField)) {
+                // Fetch the references of the default element
+                $relationTable = $this->contentObjectRenderer->stdWrapValue('table', $referenceConfiguration, $this->contentObjectRenderer->getCurrentTable());
+                if (!empty($relationTable)) {
+                    $fileCollector->addFilesFromRelation($relationTable, $relationField, $this->contentObjectRenderer->data);
+                }
+            }
+        }
+
+        $files = $this->contentObjectRenderer->stdWrapValue('files', $this->processorConfiguration);
+        if ($files) {
+            $files = GeneralUtility::intExplode(',', $files, true);
+            $fileCollector->addFiles($files);
+        }
+
+        $collections = $this->contentObjectRenderer->stdWrapValue('collections', $this->processorConfiguration);
+        if (!empty($collections)) {
+            $collections = GeneralUtility::trimExplode(',', $collections, true);
+            $fileCollector->addFilesFromFileCollections($collections);
+        }
+
+        $folders = $this->contentObjectRenderer->stdWrapValue('folders', $this->processorConfiguration);
+        if (!empty($folders)) {
+            $folders = GeneralUtility::trimExplode(',', $folders, true);
+            $fileCollector->addFilesFromFolders($folders, !empty($this->processorConfiguration['folders.']['recursive']));
+        }
+
+        $sortingProperty = $this->contentObjectRenderer->stdWrapValue('sorting', $this->processorConfiguration);
+        if ($sortingProperty) {
+            $sortingDirection = $this->contentObjectRenderer->stdWrapValue(
+                'direction',
+                $this->processorConfiguration['sorting.'] ?? [],
+                'ascending'
+            );
+
+            $fileCollector->sort($sortingProperty, $sortingDirection);
+        }
+
+        return $fileCollector->getFiles();
     }
 
     /**
@@ -127,19 +158,31 @@ class FilesProcessor implements DataProcessorInterface
 
         foreach ($this->fileObjects as $fileObject) {
             $metaData = $fileObject->toArray();
-            $data[] = [
-                'publicUrl' => $this->getImageService()->getImageUri($fileObject, true),
-                'dimensions' => [
+
+            if ($metaData['type'] === "2") {
+                /**
+                 * @var $processedFile ProcessedFile
+                 */
+                $fileObject = $this->processImageFile($fileObject, [
                     'width' => $fileObject->getProperty('width'),
                     'height' => $fileObject->getProperty('height')
-                ],
-                'metaData' => [
+                ]);
+            }
+
+            $data[] = [
+                'publicUrl' => $this->getImageService()->getImageUri($fileObject, true),
+                'properties' => [
                     'title' => $metaData['title'],
                     'alternative' => $metaData['alternative'],
                     'description' => $metaData['description'],
                     'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL([
                         'parameter' => $metaData['link']
-                    ]) : null
+                    ]) : null,
+                    'dimensions' => [
+                        'width' => $fileObject->getProperty('width'),
+                        'height' => $fileObject->getProperty('height')
+                    ],
+                    'extension' => $metaData['extension']
                 ]
             ];
         }
@@ -148,50 +191,10 @@ class FilesProcessor implements DataProcessorInterface
     }
 
     /**
-     * @return array
-     */
-    protected function processGalleryFiles(): array
-    {
-        $data = [];
-
-        foreach ($this->galleryObjects['rows'] as $rowKey => $row) {
-            foreach ($row['columns'] as $columnKey => $image) {
-                /**
-                 * @var $processedFile ProcessedFile
-                 */
-                $processedFile = $this->processImageFile($image['media'], [
-                    'width' => $image['dimensions']['width'],
-                    'height' => $image['dimensions']['height']
-                ]);
-                $metaData = $image['media']->toArray();
-                $data[] = [
-                    'publicUrl' => $this->getImageService()->getImageUri($processedFile, true),
-                    'dimensions' => [
-                        'width' => $processedFile->getProperty('width'),
-                        'height' => $processedFile->getProperty('height')
-                    ],
-                    'metaData' => [
-                        'title' => $metaData['title'],
-                        'alternative' => $metaData['alternative'],
-                        'description' => $metaData['description'],
-                        'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL([
-                            'parameter' => $metaData['link']
-                            ]) : null
-                    ]
-                ];
-            }
-        }
-        $data['gallery'] = $this->galleryObjects;
-
-        return $data;
-    }
-
-    /**
      * @param FileReference $image
-     * @param array $dimensions
      * @return ProcessedFile
      */
-    protected function processImageFile(FileReference $image, array $dimensions): ProcessedFile
+    protected function processImageFile(FileReference $image): ProcessedFile
     {
         try {
             $properties = $image->getProperties();
@@ -205,8 +208,8 @@ class FilesProcessor implements DataProcessorInterface
             $cropVariant = $properties['cropVariant'] ?: 'default';
             $cropArea = $cropVariantCollection->getCropArea($cropVariant);
             $processingInstructions = [
-                'width' => $dimensions['width'] ?? $properties['width'],
-                'height' => $dimensions['height'] ?? $properties['height'],
+                'width' => $properties['width'],
+                'height' => $properties['height'],
                 'minWidth' => $properties['minWidth'],
                 'minHeight' => $properties['minHeight'],
                 'maxWidth' => $properties['maxWidth'],

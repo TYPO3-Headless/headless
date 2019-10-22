@@ -6,7 +6,7 @@ tt_content.uploads {
                 media = TEXT
                 media {
                     dataProcessing {
-                        10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                         10 {
                             references.fieldName = media
                             collections.field = file_collections
@@ -14,10 +14,7 @@ tt_content.uploads {
                                 field = filelink_sorting
                                 sorting.direction.field = filelink_sorting_direction
                             }
-                        }
-                        20 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
-                        20 {
-                            as = images
+                            as = files
                         }
                     }
                 }

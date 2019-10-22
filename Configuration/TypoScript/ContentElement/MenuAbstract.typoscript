@@ -12,14 +12,10 @@ tt_content.menu_abstract {
                             special.value.field = pages
                             as = menu
                             dataProcessing {
-                                10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                                 10 {
                                     references.fieldName = media
-                                    as = files
-                                }
-                                20 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
-                                20 {
-                                    as = images
+                                    as = media
                                 }
                             }
                         }

@@ -71,13 +71,10 @@ lib.page {
                 ogImage = TEXT
                 ogImage {
                     dataProcessing {
-                        10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                         10 {
+                            as = media
                             references.fieldName = og_image
-                        }
-                        20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
-                        20 {
-                            as = images
                         }
                     }
                 }
@@ -96,13 +93,10 @@ lib.page {
                 twitterImage = TEXT
                 twitterImage {
                     dataProcessing {
-                        10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                         10 {
+                            as = media
                             references.fieldName = twitter_image
-                        }
-                        20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
-                        20 {
-                            as = images
                         }
                     }
                 }
@@ -113,13 +107,10 @@ lib.page {
                 media = TEXT
                 media {
                     dataProcessing {
-                        10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                         10 {
-                            references.fieldName = media
-                        }
-                        20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
-                        20 {
                             as = media
+                            references.fieldName = media
                         }
                     }
                 }
