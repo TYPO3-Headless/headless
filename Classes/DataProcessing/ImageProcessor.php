@@ -73,7 +73,6 @@ class ImageProcessor implements DataProcessorInterface
      * @param array $processorConfiguration The configuration of this processor
      * @param array $processedData Key/value store of processed data (e.g. to be passed to a Fluid View)
      * @return array the processed data as key/value store
-     * @throws ContentRenderingException
      */
     public function process(
         ContentObjectRenderer $cObj,
@@ -156,29 +155,31 @@ class ImageProcessor implements DataProcessorInterface
 
         foreach ($this->galleryObjects['rows'] as $rowKey => $row) {
             foreach ($row['columns'] as $columnKey => $image) {
-                /**
-                 * @var $processedFile ProcessedFile
-                 */
-                $processedFile = $this->processImageFile($image['media'], [
-                    'width' => $image['dimensions']['width'],
-                    'height' => $image['dimensions']['height']
-                ]);
-                $metaData = $image['media']->toArray();
-                $data['images'][] = [
-                    'publicUrl' => $this->getImageService()->getImageUri($processedFile, true),
-                    'dimensions' => [
-                        'width' => $processedFile->getProperty('width'),
-                        'height' => $processedFile->getProperty('height')
-                    ],
-                    'metaData' => [
-                        'title' => $metaData['title'],
-                        'alternative' => $metaData['alternative'],
-                        'description' => $metaData['description'],
-                        'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL([
-                            'parameter' => $metaData['link']
+                if (!empty($image['media'])) {
+                    /**
+                     * @var $processedFile ProcessedFile
+                     */
+                    $processedFile = $this->processImageFile($image['media'], [
+                        'width' => $image['dimensions']['width'],
+                        'height' => $image['dimensions']['height']
+                    ]);
+                    $metaData = $image['media']->toArray();
+                    $data['images'][] = [
+                        'publicUrl' => $this->getImageService()->getImageUri($processedFile, true),
+                        'dimensions' => [
+                            'width' => $processedFile->getProperty('width'),
+                            'height' => $processedFile->getProperty('height')
+                        ],
+                        'metaData' => [
+                            'title' => $metaData['title'],
+                            'alternative' => $metaData['alternative'],
+                            'description' => $metaData['description'],
+                            'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL([
+                                'parameter' => $metaData['link']
                             ]) : null
-                    ]
-                ];
+                        ]
+                    ];
+                }
             }
         }
         $data['gallery'] = $this->galleryObjects;
