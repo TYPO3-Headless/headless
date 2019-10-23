@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
@@ -167,7 +168,7 @@ class JsonContentObject extends AbstractContentObject
      * @param array $data
      * @return array
      */
-    protected function decodeFieldsIfRequired(array $data) : array
+    protected function decodeFieldsIfRequired(array $data): array
     {
         $json = [];
 
@@ -180,8 +181,7 @@ class JsonContentObject extends AbstractContentObject
                 }
             } else if (is_array($singleData)) {
                 $json[$key] = $this->decodeFieldsIfRequired($singleData);
-            }
-            else {
+            } else {
                 $json[$key] = $singleData;
             }
         }
@@ -208,7 +208,6 @@ class JsonContentObject extends AbstractContentObject
             if (isset($data[$value])) {
                 $dataProcessingData = $data[$value];
             }
-
         }
         return $dataProcessingData;
     }

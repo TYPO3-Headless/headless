@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Service;
@@ -104,7 +105,7 @@ class PaginationService
     public function paginate(int $currentPage = 1): array
     {
         // set current page
-        $this->currentPage = (integer)$currentPage;
+        $this->currentPage = (int)$currentPage;
         if ($this->currentPage < 1) {
             $this->currentPage = 1;
         }
@@ -114,11 +115,11 @@ class PaginationService
             $modifiedObjects = null;
         } else {
             // modify query
-            $itemsPerPage = (integer)$this->configuration['itemsPerPage'];
+            $itemsPerPage = (int)$this->configuration['itemsPerPage'];
             $query = $this->objects->getQuery();
 
             if ($this->currentPage === $this->numberOfPages && $this->initialLimit > 0) {
-                $difference = $this->initialLimit - ((integer)($itemsPerPage * ($this->currentPage - 1)));
+                $difference = $this->initialLimit - ((int)($itemsPerPage * ($this->currentPage - 1)));
                 if ($difference > 0) {
                     $query->setLimit($difference);
                 } else {
@@ -129,7 +130,7 @@ class PaginationService
             }
 
             if ($this->currentPage > 1) {
-                $offset = (integer)($itemsPerPage * ($this->currentPage - 1));
+                $offset = (int)($itemsPerPage * ($this->currentPage - 1));
                 $offset += $this->initialOffset;
                 $query->setOffset($offset);
             } elseif ($this->initialOffset > 0) {
@@ -198,8 +199,8 @@ class PaginationService
         if ($this->displayRangeEnd > $this->numberOfPages) {
             $this->displayRangeStart -= $this->displayRangeEnd - $this->numberOfPages;
         }
-        $this->displayRangeStart = (integer)max($this->displayRangeStart, 1);
-        $this->displayRangeEnd = (integer)min($this->displayRangeEnd, $this->numberOfPages);
+        $this->displayRangeStart = (int)max($this->displayRangeStart, 1);
+        $this->displayRangeEnd = (int)min($this->displayRangeEnd, $this->numberOfPages);
     }
 
     /**

@@ -1,4 +1,5 @@
 <?php
+
 namespace FriendsOfTYPO3\Headless\ViewHelpers\Format\Json;
 
 /***

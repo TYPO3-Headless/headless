@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Hooks;
 
@@ -45,6 +46,5 @@ class TypolinkHook
         if ($params['linktxt'] !== '|') {
             $ref->lastTypoLinkUrl = json_encode($link);
         }
-
     }
 }
