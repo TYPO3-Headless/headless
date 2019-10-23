@@ -36,11 +36,11 @@ class FileUtility
     protected $cropVariant = 'default';
 
     /**
-     * @param FileReference $fileReference
+     * @param FileReference|File $fileReference
      * @param $dimensions
      * @return array
      */
-    public function processFile(FileReference $fileReference, array $dimensions = []): array
+    public function processFile($fileReference, array $dimensions = []): array
     {
         /** @var ContentObjectRenderer $cObj */
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
