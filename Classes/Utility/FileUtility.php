@@ -45,13 +45,12 @@ class FileUtility
         /** @var ContentObjectRenderer $cObj */
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $fileReferenceUid = $fileReference->getUid();
+        $metaData = $fileReference->toArray();
         $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
 
         if ($fileRenderer === null) {
             $fileReference = $this->processImageFile($fileReference, $dimensions);
         }
-        $metaData = $fileReference->toArray();
-
         return [
             'publicUrl' => $this->getImageService()->getImageUri($fileReference, true),
             'properties' => [
