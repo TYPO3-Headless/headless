@@ -45,6 +45,5 @@ class TypolinkHook
         if ($params['linktxt'] !== '|') {
             $ref->lastTypoLinkUrl = json_encode($link);
         }
-
     }
 }
