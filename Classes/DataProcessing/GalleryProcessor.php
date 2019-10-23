@@ -79,7 +79,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
             // Recalculate gallery width
             $this->galleryData['width'] = floor($maximumRowWidth / $mediaScalingCorrection);
 
-            // User entered a predefined width
+        // User entered a predefined width
         } elseif ($this->equalMediaWidth) {
             $mediaScalingCorrection = 1;
 
