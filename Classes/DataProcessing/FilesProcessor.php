@@ -16,6 +16,7 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
 
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
+use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
@@ -191,10 +192,10 @@ class FilesProcessor implements DataProcessorInterface
     }
 
     /**
-     * @param FileReference $image
+     * @param FileReference|File $image
      * @return ProcessedFile
      */
-    protected function processImageFile(FileReference $image): ProcessedFile
+    protected function processImageFile($image): ProcessedFile
     {
         try {
             $properties = $image->getProperties();
