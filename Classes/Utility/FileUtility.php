@@ -14,7 +14,9 @@ namespace FriendsOfTYPO3\Headless\Utility;
  *
  ***/
 
+use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
+use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
@@ -48,11 +50,16 @@ class FileUtility
         $metaData = $fileReference->toArray();
         $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
 
-        if ($fileRenderer === null) {
+        if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
             $fileReference = $this->processImageFile($fileReference, $dimensions);
+            $publicUrl = $this->getImageService()->getImageUri($fileReference, true);
+        } else if (isset($fileRenderer)) {
+            $publicUrl = $fileRenderer->render($fileReference, '', '', ['returnUrl' => true]);
+        } else {
+            $publicUrl = $this->getAbsoluteUrl($fileReference->getPublicUrl());
         }
         return [
-            'publicUrl' => $this->getImageService()->getImageUri($fileReference, true),
+            'publicUrl' => $publicUrl,
             'properties' => [
                 'title' => $metaData['title'],
                 'alternative' => $metaData['alternative'],
@@ -155,6 +162,31 @@ class FileUtility
         $bytes /= pow(2, 10 * $pow);
 
         return number_format(round($bytes, 4 * 2)) . ' ' . $units[$pow];
+    }
+
+    /**
+     * @param string $fileUrl
+     * @return string
+     */
+    protected function getAbsoluteUrl(string $fileUrl): string
+    {
+        $siteUrl = $this->getNormalizedParams()->getSiteUrl();
+        $sitePath = str_replace($this->getNormalizedParams()->getRequestHost(), '', $siteUrl);
+        $absoluteUrl = trim($fileUrl);
+        if (strtolower(substr($absoluteUrl, 0, 4)) !== 'http') {
+            $fileUrl = preg_replace('#^' . preg_quote($sitePath, '#') . '#', '', $fileUrl);
+            $fileUrl = $siteUrl . $fileUrl;
+        }
+
+        return $fileUrl;
+    }
+
+    /**
+     * @return NormalizedParams
+     */
+    protected function getNormalizedParams(): NormalizedParams
+    {
+        return $GLOBALS['TYPO3_REQUEST']->getAttribute('normalizedParams');
     }
 
     /**
