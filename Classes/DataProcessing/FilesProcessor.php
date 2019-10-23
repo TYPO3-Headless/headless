@@ -14,16 +14,11 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
  *
  ***/
 
-use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
-use TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException;
+use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use TYPO3\CMS\Core\Resource\FileInterface;
-use TYPO3\CMS\Core\Resource\FileReference;
-use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
-use TYPO3\CMS\Frontend\ContentObject\Exception\ContentRenderingException;
 use TYPO3\CMS\Frontend\Resource\FileCollector;
 
 /**
@@ -74,8 +69,7 @@ class FilesProcessor implements DataProcessorInterface
         array $contentObjectConfiguration,
         array $processorConfiguration,
         array $processedData
-    )
-    {
+    ) {
         if (isset($processorConfiguration['if.']) && !$cObj->checkIf($processorConfiguration['if.'])) {
             return $processedData;
         }
@@ -157,78 +151,16 @@ class FilesProcessor implements DataProcessorInterface
         $data = [];
 
         foreach ($this->fileObjects as $fileObject) {
-            $metaData = $fileObject->toArray();
-
-            if ($metaData['type'] === "2") {
-                /**
-                 * @var $processedFile ProcessedFile
-                 */
-                $fileObject = $this->processImageFile($fileObject, [
-                    'width' => $fileObject->getProperty('width'),
-                    'height' => $fileObject->getProperty('height')
-                ]);
-            }
-
-            $data[] = [
-                'publicUrl' => $this->getImageService()->getImageUri($fileObject, true),
-                'properties' => [
-                    'title' => $metaData['title'],
-                    'alternative' => $metaData['alternative'],
-                    'description' => $metaData['description'],
-                    'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL([
-                        'parameter' => $metaData['link']
-                    ]) : null,
-                    'dimensions' => [
-                        'width' => $fileObject->getProperty('width'),
-                        'height' => $fileObject->getProperty('height')
-                    ],
-                    'extension' => $metaData['extension']
-                ]
-            ];
+            $data[] = $this->getFileUtility()->processFile($fileObject);
         }
-
         return $data;
     }
 
     /**
-     * @param FileReference $image
-     * @return ProcessedFile
+     * @return FileUtility
      */
-    protected function processImageFile(FileReference $image): ProcessedFile
+    protected function getFileUtility(): FileUtility
     {
-        try {
-            $properties = $image->getProperties();
-
-            $imageService = GeneralUtility::makeInstance(ImageService::class);
-            $cropString = $properties['crop'];
-            if ($cropString === null && $image->hasProperty('crop') && $image->getProperty('crop')) {
-                $cropString = $image->getProperty('crop');
-            }
-            $cropVariantCollection = CropVariantCollection::create((string)$cropString);
-            $cropVariant = $properties['cropVariant'] ?: 'default';
-            $cropArea = $cropVariantCollection->getCropArea($cropVariant);
-            $processingInstructions = [
-                'width' => $properties['width'],
-                'height' => $properties['height'],
-                'minWidth' => $properties['minWidth'],
-                'minHeight' => $properties['minHeight'],
-                'maxWidth' => $properties['maxWidth'],
-                'maxHeight' => $properties['maxHeight'],
-                'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
-            ];
-            return $imageService->applyProcessingInstructions($image, $processingInstructions);
-        } catch (ResourceDoesNotExistException $e) {
-        } catch (\UnexpectedValueException $e) {
-        } catch (\RuntimeException $e) {
-        } catch (\InvalidArgumentException $e) {
-        }
-    }
-
-    /**
-     * @return ImageService
-     */
-    protected function getImageService(): ImageService
-    {
-        return GeneralUtility::makeInstance(ImageService::class);
+        return GeneralUtility::makeInstance(FileUtility::class);
     }
 }
