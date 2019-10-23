@@ -162,7 +162,6 @@ class JsonContentObject extends AbstractContentObject
         }
     }
 
-
     /**
      * @param array $data
      * @return array
@@ -178,10 +177,9 @@ class JsonContentObject extends AbstractContentObject
                 } else {
                     $json[$key] = json_decode($singleData);
                 }
-            } else if (is_array($singleData)) {
+            } elseif (is_array($singleData)) {
                 $json[$key] = $this->decodeFieldsIfRequired($singleData);
-            }
-            else {
+            } else {
                 $json[$key] = $singleData;
             }
         }
@@ -208,7 +206,6 @@ class JsonContentObject extends AbstractContentObject
             if (isset($data[$value])) {
                 $dataProcessingData = $data[$value];
             }
-
         }
         return $dataProcessingData;
     }
