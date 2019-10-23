@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
+use FriendsOfTYPO3\Headless\Utility\FileUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Service\ImageService;
+
 /***
  *
  * This file is part of the "headless" Extension for TYPO3 CMS.
@@ -52,8 +56,8 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                     if ($fileKey > $this->galleryData['count']['files'] - 1) {
                         break 2;
                     }
-                    $currentMediaScaling = $this->equalMediaHeight / max($this->getCroppedDimensionalProperty($this->fileObjects[$fileKey], 'height'), 1);
-                    $totalRowWidth += $this->getCroppedDimensionalProperty($this->fileObjects[$fileKey], 'width') * $currentMediaScaling;
+                    $currentMediaScaling = $this->equalMediaHeight / max($this->fileObjects[$fileKey]['properties']['cropDimensions']['height'], 1);
+                    $totalRowWidth += ['properties']['cropDimensions']['width'] * $currentMediaScaling;
                 }
                 $maximumRowWidth = max($totalRowWidth, $maximumRowWidth);
                 $mediaInRowScaling = $totalRowWidth / $galleryWidthMinusBorderAndSpacing;
@@ -64,7 +68,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
             foreach ($this->fileObjects as $key => $fileObject) {
                 $mediaHeight = floor($this->equalMediaHeight / $mediaScalingCorrection);
                 $mediaWidth = floor(
-                    $this->getCroppedDimensionalProperty($fileObject, 'width') * ($mediaHeight / max($this->getCroppedDimensionalProperty($fileObject, 'height'), 1))
+                    $fileObject['properties']['cropDimensions']['width'] * ($mediaHeight / max($fileObject['properties']['cropDimensions']['height'], 1))
                 );
                 $this->mediaDimensions[$key] = [
                     'width' => $mediaWidth,
@@ -88,7 +92,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
             foreach ($this->fileObjects as $key => $fileObject) {
                 $mediaWidth = floor($this->equalMediaWidth / $mediaScalingCorrection);
                 $mediaHeight = floor(
-                    $this->getCroppedDimensionalProperty($fileObject, 'height') * ($mediaWidth / max($this->getCroppedDimensionalProperty($fileObject, 'width'), 1))
+                    $fileObject['properties']['cropDimensions']['height'] * ($mediaWidth / max($fileObject['properties']['cropDimensions']['width'], 1))
                 );
                 $this->mediaDimensions[$key] = [
                     'width' => $mediaWidth,
@@ -113,10 +117,12 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
         for ($row = 1; $row <= $this->galleryData['count']['rows']; $row++) {
             for ($column = 1; $column <= $this->galleryData['count']['columns']; $column++) {
                 $fileKey = (($row - 1) * $this->galleryData['count']['columns']) + $column - 1;
-
-                $this->galleryData['rows'][$row]['columns'][$column] = [
-                    'media' => $this->fileObjects[$fileKey] ?? null,
-                ];
+                if ($this->fileObjects[$fileKey]['properties']['type'] === 'image') {
+                    $this->fileObjects[$fileKey] = $this->getFileUtility()->processFile($this->getImageService()->getImage($this->fileObjects[$fileKey]['properties']['fileReferenceUid'], null, true), $this->mediaDimensions[$fileKey] ?? []);
+                }
+                if ($this->fileObjects[$fileKey]) {
+                    $this->galleryData['rows'][$row]['columns'][$column] = $this->fileObjects[$fileKey];
+                }
             }
         }
 
@@ -124,5 +130,21 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
         $this->galleryData['border']['enabled'] = $this->borderEnabled;
         $this->galleryData['border']['width'] = $this->borderWidth;
         $this->galleryData['border']['padding'] = $this->borderPadding;
+    }
+
+    /**
+     * @return FileUtility
+     */
+    protected function getFileUtility(): FileUtility
+    {
+        return GeneralUtility::makeInstance(FileUtility::class);
+    }
+
+    /**
+     * @return ImageService
+     */
+    protected function getImageService(): ImageService
+    {
+        return GeneralUtility::makeInstance(ImageService::class);
     }
 }
