@@ -12,28 +12,22 @@ tt_content.menu_section_pages {
                             special.value.field = pages
                             as = menu
                             dataProcessing {
-                                10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                                 10 {
                                     references.fieldName = media
+                                    as = media
                                 }
-                                20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
+                                20 = TYPO3\CMS\Frontend\DataProcessing\DatabaseQueryProcessor
                                 20 {
-                                    as = images
-                                }
-                                30 = TYPO3\CMS\Frontend\DataProcessing\DatabaseQueryProcessor
-                                30 {
                                     table = tt_content
                                     pidInList.field = uid
                                     orderBy = sorting
                                     as = content
                                     dataProcessing {
-                                        10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                                         10 {
                                             references.fieldName = image
-                                        }
-                                        20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
-                                        20 {
-                                            as = images
+                                            as = media
                                         }
                                     }
                                 }

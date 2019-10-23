@@ -3,15 +3,15 @@ tt_content.image {
     fields {
         content {
             fields {
-                image = TEXT
-                image {
-                    field = image
+                gallery = TEXT
+                gallery {
                     dataProcessing {
-                        10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                         10 {
                             references.fieldName = image
+                            as = files
                         }
-                        20 = TYPO3\CMS\Frontend\DataProcessing\GalleryProcessor
+                        20 = FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor
                         20 {
                             maxGalleryWidth = {$styles.content.textmedia.maxW}
                             maxGalleryWidthInText = {$styles.content.textmedia.maxWInText}
@@ -19,10 +19,6 @@ tt_content.image {
                             borderWidth = {$styles.content.textmedia.borderWidth}
                             borderPadding = {$styles.content.textmedia.borderPadding}
                             as = gallery
-                        }
-                        30 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
-                        30 {
-                            as = images
                         }
                     }
                 }

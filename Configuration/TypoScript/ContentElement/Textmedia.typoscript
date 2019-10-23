@@ -8,15 +8,15 @@ tt_content.textmedia {
                     field = bodytext
                     parseFunc =< lib.parseFunc_links
                 }
-                assets = TEXT
-                assets {
-                    field = assets
+                gallery = TEXT
+                gallery {
                     dataProcessing {
-                        10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                         10 {
                             references.fieldName = assets
+                            as = files
                         }
-                        20 = TYPO3\CMS\Frontend\DataProcessing\GalleryProcessor
+                        20 = FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor
                         20 {
                             maxGalleryWidth = {$styles.content.textmedia.maxW}
                             maxGalleryWidthInText = {$styles.content.textmedia.maxWInText}
@@ -24,10 +24,6 @@ tt_content.textmedia {
                             borderWidth = {$styles.content.textmedia.borderWidth}
                             borderPadding = {$styles.content.textmedia.borderPadding}
                             as = gallery
-                        }
-                        30 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
-                        30 {
-                            as = images
                         }
                     }
                 }

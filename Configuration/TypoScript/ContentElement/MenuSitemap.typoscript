@@ -11,12 +11,9 @@ tt_content.menu_sitemap {
                             as = sitemap
                             levels = 7
                             dataProcessing {
-                                10 = TYPO3\CMS\Frontend\DataProcessing\FilesProcessor
+                                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
                                 10 {
                                     references.fieldName = media
-                                }
-                                20 = FriendsOfTYPO3\Headless\DataProcessing\ImageProcessor
-                                20 {
                                     as = images
                                 }
                             }
