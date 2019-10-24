@@ -32,12 +32,31 @@ class SettingsService
     {
         $settings = [];
         try {
-            $settings['manifest'] = $this->getExtensionConfiguration()->get('headless', 'manifest');
+            $data = $this->getExtensionConfiguration()->get('headless', 'manifest');
+            foreach ($data as $key => $singleData) {
+                if ($key === 'iconSmall' || $key === 'iconBig') {
+                    $singleData = [
+                        'src' => $singleData,
+                        'type' => pathinfo($singleData, PATHINFO_EXTENSION),
+                        'sizes' => $key === 'iconSmall' ? '192x192' : '512x512'
+                    ];
+                }
+                $settings[$this->camelCaseToUnderScore($key)] = $singleData;
+            }
         } catch (ExtensionConfigurationExtensionNotConfiguredException $e) {
         } catch (ExtensionConfigurationPathDoesNotExistException $e) {
         }
 
         return json_encode($settings);
+    }
+
+    /**
+     * @param string $input
+     * @return string
+     */
+    protected function camelCaseToUnderScore(string $input): string
+    {
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $input));
     }
 
     /**

@@ -13,11 +13,5 @@ settings {
         }
     }
 
-    10 = JSON
-    10 {
-        fields {
-            settings =< lib.settings
-            languages =< lib.languages
-        }
-    }
+    10 =< lib.settings
 }
