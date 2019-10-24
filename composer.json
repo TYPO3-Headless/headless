@@ -29,9 +29,20 @@
   "require": {
     "typo3/cms-core": "^9.5 || ^10.0"
   },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^2.15"
+  },
   "autoload": {
     "psr-4": {
       "FriendsOfTYPO3\\Headless\\": "Classes"
     }
+  },
+  "scripts": {
+    "cgl": [
+      "php-cs-fixer fix -v --dry-run --using-cache false --diff --diff-format=udiff"
+    ],
+    "cgl-fix": [
+      "php-cs-fixer fix -v --using-cache false"
+    ]
   }
 }

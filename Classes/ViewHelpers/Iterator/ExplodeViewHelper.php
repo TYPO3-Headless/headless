@@ -2,7 +2,7 @@
 
 namespace FriendsOfTYPO3\Headless\ViewHelpers\Iterator;
 
-use \TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /***
  *
