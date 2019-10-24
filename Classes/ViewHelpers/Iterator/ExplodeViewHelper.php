@@ -1,9 +1,5 @@
 <?php
 
-namespace FriendsOfTYPO3\Headless\ViewHelpers\Iterator;
-
-use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
-
 /***
  *
  * This file is part of the "headless" Extension for TYPO3 CMS.
@@ -14,6 +10,10 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  *  (c) 2019
  *
  ***/
+
+namespace FriendsOfTYPO3\Headless\ViewHelpers\Iterator;
+
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
  * Explode ViewHelper

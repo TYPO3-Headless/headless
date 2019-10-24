@@ -1,9 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
-namespace FriendsOfTYPO3\Headless\Utility;
-
 /***
  *
  * This file is part of the "headless" Extension for TYPO3 CMS.
@@ -14,6 +10,10 @@ namespace FriendsOfTYPO3\Headless\Utility;
  *  (c) 2019
  *
  ***/
+
+declare(strict_types=1);
+
+namespace FriendsOfTYPO3\Headless\Utility;
 
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\Resource\File;
