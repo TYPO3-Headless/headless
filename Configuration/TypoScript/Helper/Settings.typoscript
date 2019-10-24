@@ -1,0 +1,4 @@
+lib.settings = USER
+lib.settings {
+    userFunc = FriendsOfTYPO3\Headless\Service\SettingsService->provideSettings
+}

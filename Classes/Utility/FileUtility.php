@@ -53,7 +53,7 @@ class FileUtility
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
             $fileReference = $this->processImageFile($fileReference, $dimensions);
             $publicUrl = $this->getImageService()->getImageUri($fileReference, true);
-        } else if (isset($fileRenderer)) {
+        } elseif (isset($fileRenderer)) {
             $publicUrl = $fileRenderer->render($fileReference, '', '', ['returnUrl' => true]);
         } else {
             $publicUrl = $this->getAbsoluteUrl($fileReference->getPublicUrl());
