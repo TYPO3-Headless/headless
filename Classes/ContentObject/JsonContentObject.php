@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
@@ -166,7 +166,7 @@ class JsonContentObject extends AbstractContentObject
      * @param array $data
      * @return array
      */
-    protected function decodeFieldsIfRequired(array $data) : array
+    protected function decodeFieldsIfRequired(array $data): array
     {
         $json = [];
 
