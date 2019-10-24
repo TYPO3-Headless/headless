@@ -56,7 +56,7 @@ class FileUtility
         } elseif (isset($fileRenderer)) {
             $publicUrl = $fileRenderer->render($fileReference, '', '', ['returnUrl' => true]);
         } else {
-            $publicUrl = self::getAbsoluteUrl($fileReference->getPublicUrl());
+            $publicUrl = $this->getAbsoluteUrl($fileReference->getPublicUrl());
         }
         return [
             'publicUrl' => $publicUrl,
