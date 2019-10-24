@@ -50,9 +50,6 @@ class FileUtility
         $metaData = $fileReference->toArray();
         $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
 
-        if ($fileReference->getType() === AbstractFile::FILETYPE_VIDEO) {
-            $test =' ';
-        }
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
             $fileReference = $this->processImageFile($fileReference, $dimensions);
             $publicUrl = $this->getImageService()->getImageUri($fileReference, true);
