@@ -27,7 +27,8 @@
     }
   ],
   "require": {
-    "typo3/cms-core": "^9.5 || ^10.0"
+    "typo3/cms-core": "^9.5 || ^10.0",
+    "friendsoftypo3/pwa_manifest": "dev-master"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^2.15"
