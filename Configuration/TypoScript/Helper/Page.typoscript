@@ -197,6 +197,7 @@ lib.page {
                 layout = TEXT
                 layout {
                     field = layout
+                    wrap = layout-|
                 }
                 backendLayout = TEXT
                 backendLayout {
