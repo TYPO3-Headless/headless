@@ -1,7 +1,4 @@
 <?php
-declare(strict_types=1);
-
-namespace FriendsOfTYPO3\Headless\Resource\Rendering;
 
 /***
  *
@@ -13,6 +10,10 @@ namespace FriendsOfTYPO3\Headless\Resource\Rendering;
  *  (c) 2019
  *
  ***/
+
+declare(strict_types=1);
+
+namespace FriendsOfTYPO3\Headless\Resource\Rendering;
 
 use TYPO3\CMS\Core\Resource\FileInterface;
 
@@ -39,13 +40,12 @@ class VimeoRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VimeoRenderer
      * @param bool $usedPathsRelativeToCurrentScript See $file->getPublicUrl()
      * @return string
      */
-    public function render(FileInterface $file, $width, $height, array $options = [], $usedPathsRelativeToCurrentScript = false)
+    public function render(FileInterface $file, $width, $height, array $options = [], $usedPathsRelativeToCurrentScript = false): string
     {
         if ($options['returnUrl'] === true) {
             $src = $this->createVimeoUrl($options, $file);
             return htmlspecialchars($src, ENT_QUOTES | ENT_HTML5);
-        } else {
-            return parent::render(...func_get_args());
         }
+        return parent::render(...func_get_args());
     }
 }
