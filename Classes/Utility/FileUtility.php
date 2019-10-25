@@ -123,6 +123,23 @@ class FileUtility
     }
 
     /**
+     * @param string $fileUrl
+     * @return string
+     */
+    public function getAbsoluteUrl(string $fileUrl): string
+    {
+        $siteUrl = $this->getNormalizedParams()->getSiteUrl();
+        $sitePath = str_replace($this->getNormalizedParams()->getRequestHost(), '', $siteUrl);
+        $absoluteUrl = trim($fileUrl);
+        if (strtolower(substr($absoluteUrl, 0, 4)) !== 'http') {
+            $fileUrl = preg_replace('#^' . preg_quote($sitePath, '#') . '#', '', $fileUrl);
+            $fileUrl = $siteUrl . $fileUrl;
+        }
+
+        return $fileUrl;
+    }
+
+    /**
      * When retrieving the height or width for a media file
      * a possible cropping needs to be taken into account.
      *
@@ -163,23 +180,6 @@ class FileUtility
         $bytes /= pow(2, 10 * $pow);
 
         return number_format(round($bytes, 4 * 2)) . ' ' . $units[$pow];
-    }
-
-    /**
-     * @param string $fileUrl
-     * @return string
-     */
-    protected function getAbsoluteUrl(string $fileUrl): string
-    {
-        $siteUrl = $this->getNormalizedParams()->getSiteUrl();
-        $sitePath = str_replace($this->getNormalizedParams()->getRequestHost(), '', $siteUrl);
-        $absoluteUrl = trim($fileUrl);
-        if (strtolower(substr($absoluteUrl, 0, 4)) !== 'http') {
-            $fileUrl = preg_replace('#^' . preg_quote($sitePath, '#') . '#', '', $fileUrl);
-            $fileUrl = $siteUrl . $fileUrl;
-        }
-
-        return $fileUrl;
     }
 
     /**
