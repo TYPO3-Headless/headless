@@ -7,7 +7,7 @@ lib.primaryNavigation {
             special.value = -8
             levels = 7
             expandAll = 1
-            includeSpacer = 1
+            includeSpacer = 0
             titleField = nav_title // title
             as = primaryNavigation
         }
