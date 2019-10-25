@@ -173,7 +173,7 @@ class JsonContentObject extends AbstractContentObject
 
         foreach ($data as $key => $singleData) {
             if (is_string($singleData)) {
-                if (json_decode($singleData) === null) {
+                if (strpos($singleData, '{') === false && strpos($singleData, '[') === false) {
                     $json[$key] = $singleData;
                 } else {
                     $json[$key] = json_decode($singleData);
