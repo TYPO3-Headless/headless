@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Resource\Rendering;
 
+use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
