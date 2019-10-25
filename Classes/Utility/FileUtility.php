@@ -1,7 +1,4 @@
 <?php
-declare(strict_types = 1);
-
-namespace FriendsOfTYPO3\Headless\Utility;
 
 /***
  *
@@ -13,6 +10,10 @@ namespace FriendsOfTYPO3\Headless\Utility;
  *  (c) 2019
  *
  ***/
+
+declare(strict_types=1);
+
+namespace FriendsOfTYPO3\Headless\Utility;
 
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;

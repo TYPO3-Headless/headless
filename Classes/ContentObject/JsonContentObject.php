@@ -1,7 +1,4 @@
 <?php
-declare(strict_types=1);
-
-namespace FriendsOfTYPO3\Headless\ContentObject;
 
 /***
  *
@@ -13,6 +10,10 @@ namespace FriendsOfTYPO3\Headless\ContentObject;
  *  (c) 2019
  *
  ***/
+
+declare(strict_types=1);
+
+namespace FriendsOfTYPO3\Headless\ContentObject;
 
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
@@ -166,7 +167,7 @@ class JsonContentObject extends AbstractContentObject
      * @param array $data
      * @return array
      */
-    protected function decodeFieldsIfRequired(array $data) : array
+    protected function decodeFieldsIfRequired(array $data): array
     {
         $json = [];
 

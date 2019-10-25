@@ -1,5 +1,4 @@
 <?php
-namespace FriendsOfTYPO3\Headless\ViewHelpers\Format\Json;
 
 /***
  *
@@ -11,6 +10,8 @@ namespace FriendsOfTYPO3\Headless\ViewHelpers\Format\Json;
  *  (c) 2019
  *
  ***/
+
+namespace FriendsOfTYPO3\Headless\ViewHelpers\Format\Json;
 
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
