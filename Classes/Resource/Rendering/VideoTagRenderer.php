@@ -1,9 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
-namespace FriendsOfTYPO3\Headless\Resource\Rendering;
-
 /***
  *
  * This file is part of the "headless" Extension for TYPO3 CMS.
@@ -14,6 +10,10 @@ namespace FriendsOfTYPO3\Headless\Resource\Rendering;
  *  (c) 2019
  *
  ***/
+
+declare(strict_types=1);
+
+namespace FriendsOfTYPO3\Headless\Resource\Rendering;
 
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use TYPO3\CMS\Core\Resource\FileInterface;
