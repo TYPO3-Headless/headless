@@ -1,7 +1,7 @@
 <?php
 
 $EM_CONF[$_EXTKEY] = [
-    'title' => 'headless',
+    'title' => 'Headless',
     'description' => 'This extension provides way to output content from TYPO3 in JSON format.',
     'state' => 'stable',
     'author' => 'Łukasz Uznański',
