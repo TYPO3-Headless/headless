@@ -48,7 +48,6 @@ class FileUtility
         /** @var ContentObjectRenderer $cObj */
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $fileReferenceUid = $fileReference->getUid();
-        $metaData = $fileReference->toArray();
         $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
@@ -62,16 +61,16 @@ class FileUtility
         return [
             'publicUrl' => $publicUrl,
             'properties' => [
-                'title' => $metaData['title'],
-                'alternative' => $metaData['alternative'],
-                'description' => $metaData['description'],
+                'title' => $fileReference->getProperty('title'),
+                'alternative' => $fileReference->getProperty('alternative'),
+                'description' => $fileReference->getProperty('description'),
                 'mimeType' => $fileReference->getMimeType(),
                 'type' => explode('/', $fileReference->getMimeType())[0],
                 'originalUrl' => $fileReference->getOriginalFile()->getPublicUrl(),
                 'fileReferenceUid' => $fileReferenceUid,
                 'size' => $this->calculateKilobytesToFileSize($fileReference->getSize()),
-                'link' => !empty($metaData['link']) ? $cObj->typoLink_URL([
-                    'parameter' => $metaData['link']
+                'link' => !empty($fileReference->getProperty('link')) ? $cObj->typoLink_URL([
+                    'parameter' => $fileReference->getProperty('link')
                 ]) : null,
                 'dimensions' => [
                     'width' => $fileReference->getProperty('width'),
@@ -83,7 +82,7 @@ class FileUtility
                 ],
                 'autoplay' => $fileReference->getProperty('autoplay'),
 
-                'extension' => $metaData['extension']
+                'extension' => $fileReference->getProperty('extension')
             ]
         ];
     }
