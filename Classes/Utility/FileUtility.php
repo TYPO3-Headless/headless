@@ -48,6 +48,7 @@ class FileUtility
         /** @var ContentObjectRenderer $cObj */
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $fileReferenceUid = $fileReference->getUid();
+        $metaData = $fileReference->toArray();
         $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
@@ -61,16 +62,16 @@ class FileUtility
         return [
             'publicUrl' => $publicUrl,
             'properties' => [
-                'title' => $fileReference->getProperty('title'),
-                'alternative' => $fileReference->getProperty('alternative'),
-                'description' => $fileReference->getProperty('description'),
+                'title' => $metaData['title'] ? $metaData['title'] : $fileReference->getProperty('title'),
+                'alternative' => $metaData['alternative'] ? $metaData['alternative'] : $fileReference->getProperty('alternative'),
+                'description' => $metaData['description'] ? $metaData['description'] : $fileReference->getProperty('description'),
                 'mimeType' => $fileReference->getMimeType(),
                 'type' => explode('/', $fileReference->getMimeType())[0],
                 'originalUrl' => $fileReference->getOriginalFile()->getPublicUrl(),
                 'fileReferenceUid' => $fileReferenceUid,
                 'size' => $this->calculateKilobytesToFileSize($fileReference->getSize()),
-                'link' => !empty($fileReference->getProperty('link')) ? $cObj->typoLink_URL([
-                    'parameter' => $fileReference->getProperty('link')
+                'link' => !empty($metaData['link']) ? $cObj->typoLink_URL([
+                    'parameter' => $metaData['link']
                 ]) : null,
                 'dimensions' => [
                     'width' => $fileReference->getProperty('width'),
@@ -82,7 +83,7 @@ class FileUtility
                 ],
                 'autoplay' => $fileReference->getProperty('autoplay'),
 
-                'extension' => $fileReference->getProperty('extension')
+                'extension' => $metaData['extension']
             ]
         ];
     }
