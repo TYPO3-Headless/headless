@@ -39,11 +39,11 @@ class FileUtility
     protected $cropVariant = 'default';
 
     /**
-     * @param FileReference $fileReference
+     * @param FileReference|File $fileReference
      * @param $dimensions
      * @return array
      */
-    public function processFile(FileReference $fileReference, array $dimensions = []): array
+    public function processFile($fileReference, array $dimensions = []): array
     {
         /** @var ContentObjectRenderer $cObj */
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
@@ -62,12 +62,12 @@ class FileUtility
         return [
             'publicUrl' => $publicUrl,
             'properties' => [
-                'title' => $metaData['title'],
-                'alternative' => $metaData['alternative'],
-                'description' => $metaData['description'],
+                'title' => $metaData['title'] ? $metaData['title'] : $fileReference->getProperty('title'),
+                'alternative' => $metaData['alternative'] ? $metaData['alternative'] : $fileReference->getProperty('alternative'),
+                'description' => $metaData['description'] ? $metaData['description'] : $fileReference->getProperty('description'),
                 'mimeType' => $fileReference->getMimeType(),
                 'type' => explode('/', $fileReference->getMimeType())[0],
-                'originalUrl' => $fileReference->getOriginalFile()->getPublicUrl(),
+                'originalUrl' => $fileReference->getPublicUrl(),
                 'fileReferenceUid' => $fileReferenceUid,
                 'size' => $this->calculateKilobytesToFileSize($fileReference->getSize()),
                 'link' => !empty($metaData['link']) ? $cObj->typoLink_URL([
