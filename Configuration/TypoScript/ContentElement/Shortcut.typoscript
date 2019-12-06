@@ -10,7 +10,9 @@ tt_content.shortcut {
                     10 {
                         source.field = records
                         tables = {$styles.content.shortcut.tables}
-                        conf.{$styles.content.shortcut.tables}.stdWrap.wrap = |###BREAK###
+                        conf {
+                            {$styles.content.shortcut.tables}.stdWrap.wrap = |###BREAK###
+                        }
                     }
                     stdWrap.split {
                         token = ###BREAK###
