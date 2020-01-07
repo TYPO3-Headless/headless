@@ -17,7 +17,6 @@ class IntScriptEncoderHook
     public function performExtraJsonEncoding($_params, TypoScriptFrontendController $tsfe)
     {
         if ($tsfe->tmpl->setup_constants['config.']['headless.']['type.']['headless'] == $tsfe->type) {
-
             $tsfe->content = preg_replace_callback(
                 '/("|)HEADLESS_JSON_START<<(.*?)>>HEADLESS_JSON_END("|)/s',
                 function ($encodeThis) {
@@ -26,12 +25,10 @@ class IntScriptEncoderHook
                         $decoded = json_decode($encodeThis[2]);
                         if ($decoded !== null) {
                             return $encodeThis[2];
-                        } else {
-                            return json_encode($encodeThis[2]);
                         }
-                    } else {
-                        return rtrim(ltrim(json_encode($encodeThis[2]), '"'), '"');
+                        return json_encode($encodeThis[2]);
                     }
+                    return rtrim(ltrim(json_encode($encodeThis[2]), '"'), '"');
                 },
                 $tsfe->content
             );

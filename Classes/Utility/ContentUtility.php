@@ -49,9 +49,10 @@ class ContentUtility
         foreach ($contentElements as $key => $element) {
             // wrap all INT_SCRIPT occurences for later json enocding
             $element = preg_replace(
-                '/('. preg_quote('<!--INT_SCRIPT.', '/') . '[0-9a-z]{32}' . preg_quote('-->', '/') . ')/',
+                '/(' . preg_quote('<!--INT_SCRIPT.', '/') . '[0-9a-z]{32}' . preg_quote('-->', '/') . ')/',
                 'HEADLESS_JSON_START<<\1>>HEADLESS_JSON_END',
-                $element);
+                $element
+            );
 
             $element = json_decode($element);
             $data['colPos' . $element->colPos][] = $element;
