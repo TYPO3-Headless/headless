@@ -28,7 +28,13 @@ class IntScriptEncoderHook
                         }
                         return json_encode($encodeThis[2]);
                     }
-                    return rtrim(ltrim(json_encode($encodeThis[2]), '"'), '"');
+
+                    // trim one occurence of double quotes at both ends
+                    $jsonEncoded = json_encode($encodeThis[2]);
+                    if ($jsonEncoded[0] === '"' && $jsonEncoded[-1] === '"') {
+                        $jsonEncoded = substr($jsonEncoded, 1, strlen($jsonEncoded) - 2);
+                    }
+                    return $jsonEncoded;
                 },
                 $tsfe->content
             );

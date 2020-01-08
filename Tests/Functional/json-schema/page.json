@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "required": true,
+  "additionalProperties": false,
+  "properties": {
+    "page": {
+      "type": "object"
+    },
+    "content": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}

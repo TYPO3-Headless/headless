@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "required": true,
+  "additionalProperties": false,
+  "properties": {
+    "navigation": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}

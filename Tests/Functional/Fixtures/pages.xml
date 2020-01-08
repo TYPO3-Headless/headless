@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dataset>
+    <pages>
+        <uid>1</uid>
+        <pid>0</pid>
+        <title>Root</title>
+        <slug>/</slug>
+        <deleted>0</deleted>
+        <perms_everybody>15</perms_everybody>
+    </pages>
+    <pages>
+        <uid>2</uid>
+        <pid>1</pid>
+        <title>Page 1</title>
+        <slug>/page1</slug>
+        <deleted>0</deleted>
+        <perms_everybody>15</perms_everybody>
+    </pages>
+    <pages>
+        <uid>3</uid>
+        <pid>2</pid>
+        <title>Page 1.1</title>
+        <slug>/page1/page1_1</slug>
+        <deleted>0</deleted>
+        <perms_everybody>15</perms_everybody>
+    </pages>
+    <pages>
+        <uid>4</uid>
+        <pid>1</pid>
+        <title>Page 2</title>
+        <slug>/page2</slug>
+        <deleted>0</deleted>
+        <perms_everybody>15</perms_everybody>
+    </pages>
+</dataset>
