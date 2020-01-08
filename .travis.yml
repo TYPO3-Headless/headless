@@ -7,8 +7,8 @@ php:
   - 7.3
 
 env:
-  - TYPO3_VERSION=^9
-  - TYPO3_VERSION=^10
+  - TYPO3_VERSION=^9 TESTING_VERSION=^4
+  - TYPO3_VERSION=^10 TESTING_VERSION=^5
 
 addons:
   apt:
@@ -16,7 +16,7 @@ addons:
       - parallel
 
 install:
-  - composer require typo3/minimal:${TYPO3_VERSION}
+  - composer require typo3/minimal:${TYPO3_VERSION} typo3/testing-framework=${TESTING_VERSION}
   - git checkout composer.json
   - export TYPO3_PATH_WEB="$PWD/.build/web"
 
