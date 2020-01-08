@@ -9,10 +9,9 @@ use JsonSchema\Uri\UriRetriever;
 use JsonSchema\Validator;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
-class BaseTest extends FunctionalTestCase
+abstract class BaseTest extends FunctionalTestCase
 {
     protected $testExtensionsToLoad = [
         'typo3conf/ext/headless'
@@ -73,37 +72,5 @@ class BaseTest extends FunctionalTestCase
     {
         $extensionPath = ExtensionManagementUtility::extPath('headless');
         return $extensionPath . '/Tests/Functional/json-schema/';
-    }
-
-    /**
-     * @test
-     */
-    public function getMenu()
-    {
-        $response = $this->executeFrontendRequest(
-            new InternalRequest('https://website.local/?id=1&type=834')
-        );
-
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertJsonSchema(
-            (string)$response->getBody(),
-            $this->getJsonSchemaPath() . 'menu.json'
-        );
-    }
-
-    /**
-     * @test
-     */
-    public function getPage()
-    {
-        $response = $this->executeFrontendRequest(
-            new InternalRequest('https://website.local/?id=1')
-        );
-
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertJsonSchema(
-            (string)$response->getBody(),
-            $this->getJsonSchemaPath() . 'page.json'
-        );
     }
 }
