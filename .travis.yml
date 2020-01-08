@@ -4,9 +4,11 @@ language: php
 
 php:
   - 7.2
+  - 7.3
 
 env:
   - TYPO3_VERSION=^9
+  - TYPO3_VERSION=^10
 
 addons:
   apt:
@@ -23,6 +25,9 @@ script:
     echo;
     echo "PHP lint";
     find . -name \*.php ! -path "./.build/*" | parallel --gnu php -d display_errors=stderr -l {} > /dev/null \;
+    echo;
+    echo "Functional Testing";
+    .Build/bin/phpunit --configuration Tests/Functional/phpunit.xml;
 jobs:
   include:
     - stage: quality
