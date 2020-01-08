@@ -30,19 +30,39 @@
     "typo3/cms-core": "^9.5 || ^10.0"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^2.15"
+    "friendsofphp/php-cs-fixer": "^2.15",
+    "justinrainbow/json-schema": "1.5.*",
+    "typo3/testing-framework": "^5"
   },
   "autoload": {
     "psr-4": {
       "FriendsOfTYPO3\\Headless\\": "Classes"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "TYPO3\\JsonResponse\\": ".Build/vendor/typo3/testing-framework/Resources/Core/Functional/Extensions/json_response/Classes"
+    }
+  },
+  "config": {
+    "vendor-dir": ".Build/vendor",
+    "bin-dir": ".Build/bin"
+  },
   "scripts": {
+    "post-autoload-dump": [
+      "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
+    ],
     "cgl": [
       "php-cs-fixer fix -v --dry-run --using-cache false --diff --diff-format=udiff"
     ],
     "cgl-fix": [
       "php-cs-fixer fix -v --using-cache false"
     ]
+  },
+  "extra": {
+    "typo3/cms": {
+      "web-dir": ".Build",
+      "extension-key": "headless"
+    }
   }
 }
