@@ -3,6 +3,7 @@
     <tt_content>
         <uid>1</uid>
         <pid>1</pid>
+        <sorting>1</sorting>
         <colPos>0</colPos>
         <CType>text</CType>
         <space_before_class>SpaceBefore</space_before_class>
@@ -15,10 +16,49 @@
         <header_layout>1</header_layout>
         <header_position>2</header_position>
         <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
+        <bodytext><![CDATA[
+<p><a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a></p>
+        ]]></bodytext>
+    </tt_content>
+    <tt_content>
+        <uid>3</uid>
+        <pid>1</pid>
+        <sorting>2</sorting>
+        <colPos>0</colPos>
+        <CType>header</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <frame_class>Frame</frame_class>
+        <layout>1</layout>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>1</header_layout>
+        <header_position>2</header_position>
+        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
+    </tt_content>
+    <tt_content>
+        <uid>4</uid>
+        <pid>1</pid>
+        <sorting>3</sorting>
+        <colPos>0</colPos>
+        <CType>html</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <frame_class>Frame</frame_class>
+        <layout>1</layout>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>1</header_layout>
+        <header_position>2</header_position>
+        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
+        <bodytext><![CDATA[<a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a>]]></bodytext>
     </tt_content>
     <tt_content>
         <uid>2</uid>
         <pid>1</pid>
+        <sorting>1</sorting>
         <colPos>1</colPos>
         <CType>textmedia</CType>
     </tt_content>
