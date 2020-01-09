@@ -93,6 +93,34 @@
         <bodytext><![CDATA[<a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a>]]></bodytext>
     </tt_content>
     <tt_content>
+        <uid>7</uid>
+        <pid>1</pid>
+        <sorting>6</sorting>
+        <colPos>0</colPos>
+        <CType>table</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <frame_class>Frame</frame_class>
+        <layout>1</layout>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>1</header_layout>
+        <header_position>2</header_position>
+        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
+        <table_caption>TableCaption</table_caption>
+        <table_delimiter>59</table_delimiter>
+        <table_enclosure>34</table_enclosure>
+        <table_class>striped</table_class>
+        <table_tfoot>1</table_tfoot>
+        <table_header_position>1</table_header_position>
+        <cols>6</cols>
+        <bodytext><![CDATA["Cell1.1";"Cell1.2";"Cell1.3";"Cell1.4"
+"Cell2.1";"";"";""
+"Cell3.1";"";"";""
+"""";"";"";""]]></bodytext>
+    </tt_content>
+    <tt_content>
         <uid>2</uid>
         <pid>1</pid>
         <sorting>1</sorting>
