@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class DefaultContentsTest extends \FriendsOfTYPO3\Headless\Test\Functional\ContentTypes\BaseTest
+class DefaultContentsTest extends \FriendsOfTYPO3\Headless\Test\Functional\ContentTypes\BaseContentTypeTest
 {
     public function testContentStructure()
     {

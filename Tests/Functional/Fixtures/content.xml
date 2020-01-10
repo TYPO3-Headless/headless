@@ -142,6 +142,24 @@ Top2
 Top3]]></bodytext>
     </tt_content>
     <tt_content>
+        <uid>9</uid>
+        <pid>1</pid>
+        <sorting>8</sorting>
+        <colPos>0</colPos>
+        <CType>shortcut</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <frame_class>Frame</frame_class>
+        <layout>1</layout>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>1</header_layout>
+        <header_position>2</header_position>
+        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
+        <records>pages_1,tt_content_2,tt_content_1</records>
+    </tt_content>
+    <tt_content>
         <uid>2</uid>
         <pid>1</pid>
         <sorting>1</sorting>

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use FriendsOfTYPO3\Headless\Test\Functional\ContentTypes\BaseTest;
+use FriendsOfTYPO3\Headless\Test\Functional\ContentTypes\BaseContentTypeTest;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class TableElementTest extends BaseTest
+class TableElementTest extends BaseContentTypeTest
 {
     public function testTextContentElement()
     {

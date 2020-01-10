@@ -6,7 +6,7 @@ namespace FriendsOfTYPO3\Headless\Test\Functional\PageTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class StructureTest extends BaseTest
+class StructurePageTypesTest extends BasePageTypesTest
 {
     /**
      * @test
