@@ -150,13 +150,24 @@ Top3]]></bodytext>
     </tt_content>
     <sys_category>
         <uid>1</uid>
-        <pid>1</pid>
+        <pid>0</pid>
         <title>SysCategory1Title</title>
+    </sys_category>
+    <sys_category>
+        <uid>2</uid>
+        <pid>0</pid>
+        <title>SysCategory2Title</title>
     </sys_category>
     <sys_category_record_mm>
         <tablenames>tt_content</tablenames>
         <uid_foreign>1</uid_foreign>
         <uid_local>1</uid_local>
+        <fieldname>categories</fieldname>
+    </sys_category_record_mm>
+    <sys_category_record_mm>
+        <tablenames>tt_content</tablenames>
+        <uid_foreign>1</uid_foreign>
+        <uid_local>2</uid_local>
         <fieldname>categories</fieldname>
     </sys_category_record_mm>
 </dataset>

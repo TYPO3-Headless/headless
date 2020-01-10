@@ -19,7 +19,7 @@ class TextElementTest extends BaseTest
 
         $contentElement = $fullTree['content']['colPos0'][0];
 
-        $this->checkDefaultContentFields($contentElement, 1, 1, 'text', 0);
+        $this->checkDefaultContentFields($contentElement, 1, 1, 'text', 0, 'SysCategory1Title,SysCategory2Title');
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 1, 2);
         $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 _blank LinkClass LinkTitle parameter=999', 'page', '/page1?parameter=999&cHash=', ' target="_blank"');

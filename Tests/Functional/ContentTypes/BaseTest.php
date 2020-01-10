@@ -75,12 +75,13 @@ abstract class BaseTest extends FunctionalTestCase
         return $extensionPath . '/Tests/Functional/json-schema/';
     }
 
-    protected function checkDefaultContentFields($contentElement, $id, $pid, $type, $colPos)
+    protected function checkDefaultContentFields($contentElement, $id, $pid, $type, $colPos, $categories = '')
     {
         $this->assertEquals($id, $contentElement['id']);
         $this->assertEquals($pid, $contentElement['pid']);
         $this->assertEquals($type, $contentElement['type']);
         $this->assertEquals($colPos, $contentElement['colPos']);
+        $this->assertEquals($categories, $contentElement['categories']);
     }
 
     protected function checkAppearanceFields($contentElement, $layout, $frameClass, $spaceBefore, $spaceAfter)
