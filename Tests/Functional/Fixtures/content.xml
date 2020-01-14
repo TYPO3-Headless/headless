@@ -219,10 +219,18 @@ Top3]]></bodytext>
         <mime_type>image/gif</mime_type>
         <name>ext_icon.gif</name>
         <sha1>4a53ba5b5a156b82e3efd443f9a402f8c6e6dd08</sha1>
-        <size>92</size>
+        <size>177</size>
         <creation_date>1400176659</creation_date>
         <modification_date>1400176659</modification_date>
     </sys_file>
+    <sys_file_metadata>
+        <uid>1</uid>
+        <pid>0</pid>
+        <file>1</file>
+        <title>MetadataTitle</title>
+        <width>18</width>
+        <height>16</height>
+    </sys_file_metadata>
     <sys_file_reference>
         <uid>1</uid>
         <pid>1</pid>
@@ -230,6 +238,7 @@ Top3]]></bodytext>
         <uid_foreign>2</uid_foreign>
         <tablenames>tt_content</tablenames>
         <fieldname>assets</fieldname>
+        <autoplay>1</autoplay>
     </sys_file_reference>
     <sys_file_reference>
         <uid>2</uid>
@@ -238,6 +247,7 @@ Top3]]></bodytext>
         <uid_foreign>10</uid_foreign>
         <tablenames>tt_content</tablenames>
         <fieldname>image</fieldname>
+        <autoplay>1</autoplay>
     </sys_file_reference>
     <sys_file_reference>
         <uid>3</uid>
@@ -246,6 +256,7 @@ Top3]]></bodytext>
         <uid_foreign>11</uid_foreign>
         <tablenames>tt_content</tablenames>
         <fieldname>image</fieldname>
+        <autoplay>1</autoplay>
     </sys_file_reference>
 
 </dataset>

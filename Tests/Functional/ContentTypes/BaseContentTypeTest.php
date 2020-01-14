@@ -85,14 +85,25 @@ abstract class BaseContentTypeTest extends BaseTest
         $this->assertTrue(is_array($contentElement['content']['gallery']['rows'][1]['columns']), 'rows.columns not set');
         $this->assertEquals(1, count($contentElement['content']['gallery']['rows'][1]['columns']), 'rows.columns count mismatch');
 
-        $this->checkGalleryFile($contentElement['content']['gallery']['rows'][1]['columns'][1], 'typo3conf/ext/headless/ext_icon.gif', 'image/gif');
+        $this->checkGalleryFile($contentElement['content']['gallery']['rows'][1]['columns'][1], 'typo3conf/ext/headless/ext_icon.gif', 'image/gif', 'MetadataTitle', 18, 16, 1);
     }
 
-    protected function checkGalleryFile($fileElement, $originalUrl, $mimeType)
+    protected function checkGalleryFile($fileElement, $originalUrl, $mimeType, $title, $width, $height, $autoplay)
     {
         $this->assertTrue(isset($fileElement['publicUrl']), 'publicUrl not set');
+
         $this->assertTrue(is_array($fileElement['properties']), 'properties not set');
         $this->assertEquals($originalUrl, $fileElement['properties']['originalUrl'], 'properties originalUrl mismatch');
+        $this->assertEquals($title, $fileElement['properties']['title'], 'properties title mismatch');
         $this->assertEquals($mimeType, $fileElement['properties']['mimeType'], 'properties mimeType mismatch');
+        $this->assertEquals($autoplay, $fileElement['properties']['autoplay'], 'properties autoplay mismatch');
+
+        $this->assertTrue(is_array($fileElement['properties']['dimensions']), 'properties dimensions not set');
+        $this->assertEquals($width, $fileElement['properties']['dimensions']['width'], 'properties dimensions width mismatch');
+        $this->assertEquals($height, $fileElement['properties']['dimensions']['height'], 'properties dimensions height mismatch');
+
+        $this->assertTrue(is_array($fileElement['properties']['cropDimensions']), 'properties cropDimensions not set');
+        $this->assertEquals($width, $fileElement['properties']['cropDimensions']['width'], 'properties cropDimensions width mismatch');
+        $this->assertEquals($height, $fileElement['properties']['cropDimensions']['height'], 'properties cropDimensions height mismatch');
     }
 }
