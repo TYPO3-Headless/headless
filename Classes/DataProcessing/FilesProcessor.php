@@ -108,10 +108,6 @@ class FilesProcessor implements DataProcessorInterface
                 $relationTable = $this->contentObjectRenderer->stdWrapValue('table', $referenceConfiguration, $this->contentObjectRenderer->getCurrentTable());
                 if (!empty($relationTable)) {
                     $fileCollector->addFilesFromRelation($relationTable, $relationField, $this->contentObjectRenderer->data);
-                    if ($relationTable == 'tt_content') {
-                        //var_dump($fileCollector);
-                        //die;
-                    }
                 }
             }
         }
