@@ -165,6 +165,25 @@ Top3]]></bodytext>
         <sorting>1</sorting>
         <colPos>1</colPos>
         <CType>textmedia</CType>
+        <image>1</image>
+        <bodytext><![CDATA[<a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a>]]></bodytext>
+    </tt_content>
+    <tt_content>
+        <uid>10</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>image</CType>
+        <assets>1</assets>
+    </tt_content>
+    <tt_content>
+        <uid>11</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>textpic</CType>
+        <image>1</image>
+        <bodytext><![CDATA[<a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a>]]></bodytext>
     </tt_content>
     <sys_category>
         <uid>1</uid>
@@ -188,4 +207,45 @@ Top3]]></bodytext>
         <uid_local>2</uid_local>
         <fieldname>categories</fieldname>
     </sys_category_record_mm>
+    <sys_file>
+        <uid>1</uid>
+        <pid>0</pid>
+        <storage>0</storage>
+        <type>1</type>
+        <identifier>/typo3conf/ext/headless/ext_icon.gif</identifier>
+        <identifier_hash>ae03df120da87352822f4aae6d476086cb8c0cf8</identifier_hash>
+        <folder_hash>85051482e1ba204348a9b9f6c1a37069e77de027</folder_hash>
+        <extension>gif</extension>
+        <mime_type>image/gif</mime_type>
+        <name>ext_icon.gif</name>
+        <sha1>4a53ba5b5a156b82e3efd443f9a402f8c6e6dd08</sha1>
+        <size>92</size>
+        <creation_date>1400176659</creation_date>
+        <modification_date>1400176659</modification_date>
+    </sys_file>
+    <sys_file_reference>
+        <uid>1</uid>
+        <pid>1</pid>
+        <uid_local>1</uid_local>
+        <uid_foreign>2</uid_foreign>
+        <tablenames>tt_content</tablenames>
+        <fieldname>assets</fieldname>
+    </sys_file_reference>
+    <sys_file_reference>
+        <uid>2</uid>
+        <pid>1</pid>
+        <uid_local>1</uid_local>
+        <uid_foreign>10</uid_foreign>
+        <tablenames>tt_content</tablenames>
+        <fieldname>image</fieldname>
+    </sys_file_reference>
+    <sys_file_reference>
+        <uid>3</uid>
+        <pid>1</pid>
+        <uid_local>1</uid_local>
+        <uid_foreign>11</uid_foreign>
+        <tablenames>tt_content</tablenames>
+        <fieldname>image</fieldname>
+    </sys_file_reference>
+
 </dataset>

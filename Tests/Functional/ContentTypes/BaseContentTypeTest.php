@@ -58,4 +58,41 @@ abstract class BaseContentTypeTest extends BaseTest
         $this->assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['url'], 'url mismatch');
         $this->assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
     }
+
+    protected function checkGalleryContentFields($contentElement)
+    {
+        $this->assertEquals(600, $contentElement['content']['gallery']['width'], 'width mismatch');
+        $this->assertEquals(10, $contentElement['content']['gallery']['columnSpacing'], 'columnSpacing mismatch');
+
+        $this->assertTrue(is_array($contentElement['content']['gallery']['position']), 'position not set');
+        $this->assertEquals('center', $contentElement['content']['gallery']['position']['horizontal'], 'position horizontal mismatch');
+        $this->assertEquals('above', $contentElement['content']['gallery']['position']['vertical'], 'position vertical mismatch');
+        $this->assertFalse($contentElement['content']['gallery']['position']['noWrap'], 'position noWrap mismatch');
+
+        $this->assertTrue(is_array($contentElement['content']['gallery']['count']), 'count not set');
+        $this->assertEquals(1, $contentElement['content']['gallery']['count']['files'], 'count files mismatch');
+        $this->assertEquals(1, $contentElement['content']['gallery']['count']['columns'], 'count columns mismatch');
+        $this->assertEquals(1, $contentElement['content']['gallery']['count']['rows'], 'count rows mismatch');
+
+        $this->assertTrue(is_array($contentElement['content']['gallery']['border']), 'border not set');
+        $this->assertFalse($contentElement['content']['gallery']['border']['enabled'], 'border enabled mismatch');
+        $this->assertEquals(2, $contentElement['content']['gallery']['border']['width'], 'border width mismatch');
+        $this->assertEquals(0, $contentElement['content']['gallery']['border']['padding'], 'border padding mismatch');
+
+        $this->assertTrue(is_array($contentElement['content']['gallery']['rows']), 'rows not set');
+        $this->assertEquals(1, count($contentElement['content']['gallery']['rows']), 'rows count mismatch');
+        $this->assertTrue(is_array($contentElement['content']['gallery']['rows'][1]), 'rows[1] not set');
+        $this->assertTrue(is_array($contentElement['content']['gallery']['rows'][1]['columns']), 'rows.columns not set');
+        $this->assertEquals(1, count($contentElement['content']['gallery']['rows'][1]['columns']), 'rows.columns count mismatch');
+
+        $this->checkGalleryFile($contentElement['content']['gallery']['rows'][1]['columns'][1], 'typo3conf/ext/headless/ext_icon.gif', 'image/gif');
+    }
+
+    protected function checkGalleryFile($fileElement, $originalUrl, $mimeType)
+    {
+        $this->assertTrue(isset($fileElement['publicUrl']), 'publicUrl not set');
+        $this->assertTrue(is_array($fileElement['properties']), 'properties not set');
+        $this->assertEquals($originalUrl, $fileElement['properties']['originalUrl'], 'properties originalUrl mismatch');
+        $this->assertEquals($mimeType, $fileElement['properties']['mimeType'], 'properties mimeType mismatch');
+    }
 }
