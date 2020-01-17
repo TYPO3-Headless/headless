@@ -4,37 +4,14 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Test\Functional\PageTypes;
 
+use FriendsOfTYPO3\Headless\Test\Functional\BaseTest;
 use JsonSchema\RefResolver;
 use JsonSchema\Uri\UriRetriever;
 use JsonSchema\Validator;
-use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
-abstract class BaseTest extends FunctionalTestCase
+abstract class BasePageTypesTest extends BaseTest
 {
-    protected $testExtensionsToLoad = [
-        'typo3conf/ext/headless'
-    ];
-
-    /**
-     * set up objects
-     */
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->importDataSet(__DIR__ . '/../Fixtures/pages.xml');
-
-        $this->setUpFrontendRootPage(1, ['EXT:headless/Configuration/TypoScript/setup.typoscript']);
-
-        $siteConfigDir = Environment::getConfigPath() . '/sites/headless';
-
-        mkdir($siteConfigDir, 0777, true);
-
-        file_put_contents($siteConfigDir . '/config.yaml', "rootPageId: 1\nbase: /\nbaseVariants: { }\nlanguages: { }\nroutes: { }\n");
-    }
-
     /**
      * @param string $jsonString
      * @param string $jsonSchemaFile
