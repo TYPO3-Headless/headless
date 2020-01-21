@@ -55,7 +55,7 @@ class ContentUtility
             );
 
             $element = json_decode($element);
-            if($element->colPos >= 0) {
+            if ($element->colPos >= 0) {
                 $data['colPos' . $element->colPos][] = $element;
             }
         }
