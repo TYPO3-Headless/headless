@@ -75,6 +75,19 @@ class FilesProcessor implements DataProcessorInterface
             return $processedData;
         }
 
+        $dimensions = [];
+
+        if (isset($processorConfiguration['processingConfiguration.'])) {
+            $dimensions = [
+                'width' => $processorConfiguration['processingConfiguration.']['width'],
+                'height' => $processorConfiguration['processingConfiguration.']['height'],
+                'minWidth' => $processorConfiguration['processingConfiguration.']['minWidth'],
+                'minHeight' => $processorConfiguration['processingConfiguration.']['minHeight'],
+                'maxWidth' => $processorConfiguration['processingConfiguration.']['maxWidth'],
+                'maxHeight' => $processorConfiguration['processingConfiguration.']['maxHeight'],
+            ];
+        }
+
         $this->contentObjectRenderer = $cObj;
         $this->processorConfiguration = $processorConfiguration;
 
@@ -85,7 +98,7 @@ class FilesProcessor implements DataProcessorInterface
         );
 
         $this->fileObjects = $this->fetchData();
-        $processedData[$targetFieldName] = $this->processFiles();
+        $processedData[$targetFieldName] = $this->processFiles($dimensions);
 
         return $processedData;
     }
@@ -145,14 +158,15 @@ class FilesProcessor implements DataProcessorInterface
     }
 
     /**
+     * @param array $dimensions
      * @return array
      */
-    protected function processFiles(): array
+    protected function processFiles(array $dimensions): array
     {
         $data = [];
 
         foreach ($this->fileObjects as $fileObject) {
-            $data[] = $this->getFileUtility()->processFile($fileObject);
+            $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions);
         }
         return $data;
     }
