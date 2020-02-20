@@ -75,6 +75,19 @@ class FilesProcessor implements DataProcessorInterface
             return $processedData;
         }
 
+        $dimensions = [];
+
+        if (isset($processorConfiguration['processingConfiguration.'])) {
+            $dimensions = [
+                'width' => isset($processorConfiguration['processingConfiguration.']['width']) ? $processorConfiguration['processingConfiguration.']['width'] : null,
+                'height' => isset($processorConfiguration['processingConfiguration.']['height']) ? $processorConfiguration['processingConfiguration.']['height'] : null,
+                'minWidth' => isset($processorConfiguration['processingConfiguration.']['minWidth']) ? $processorConfiguration['processingConfiguration.']['minWidth'] : null,
+                'minHeight' => isset($processorConfiguration['processingConfiguration.']['minHeight']) ? $processorConfiguration['processingConfiguration.']['minHeight'] : null,
+                'maxWidth' => isset($processorConfiguration['processingConfiguration.']['maxWidth']) ? $processorConfiguration['processingConfiguration.']['maxWidth'] : null,
+                'maxHeight' => isset($processorConfiguration['processingConfiguration.']['maxHeight']) ? $processorConfiguration['processingConfiguration.']['maxHeight'] : null,
+            ];
+        }
+
         $this->contentObjectRenderer = $cObj;
         $this->processorConfiguration = $processorConfiguration;
 
@@ -85,7 +98,7 @@ class FilesProcessor implements DataProcessorInterface
         );
 
         $this->fileObjects = $this->fetchData();
-        $processedData[$targetFieldName] = $this->processFiles();
+        $processedData[$targetFieldName] = $this->processFiles($dimensions);
 
         return $processedData;
     }
@@ -145,14 +158,15 @@ class FilesProcessor implements DataProcessorInterface
     }
 
     /**
+     * @param array $dimensions
      * @return array
      */
-    protected function processFiles(): array
+    protected function processFiles(array $dimensions): array
     {
         $data = [];
 
         foreach ($this->fileObjects as $fileObject) {
-            $data[] = $this->getFileUtility()->processFile($fileObject);
+            $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions);
         }
         return $data;
     }
