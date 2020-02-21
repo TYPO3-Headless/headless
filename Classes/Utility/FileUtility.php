@@ -100,15 +100,15 @@ class FileUtility
 
             $imageService = GeneralUtility::makeInstance(ImageService::class);
             $cropString = $properties['crop'];
-            if ($cropString === null && $image->hasProperty('crop') && $image->getProperty('crop')) {
+            if ($image->hasProperty('crop') && $image->getProperty('crop')) {
                 $cropString = $image->getProperty('crop');
             }
             $cropVariantCollection = CropVariantCollection::create((string)$cropString);
             $cropVariant = $properties['cropVariant'] ?: 'default';
             $cropArea = $cropVariantCollection->getCropArea($cropVariant);
             $processingInstructions = [
-                'width' => $dimensions['width'] ?? $properties['width'],
-                'height' => $dimensions['height'] ?? $properties['height'],
+                'width' => isset($dimensions['width']) ? $dimensions['width'] : null,
+                'height' => isset($dimensions['height']) ? $dimensions['height'] : null,
                 'minWidth' => $dimensions['minWidth'] ?? $properties['minWidth'],
                 'minHeight' => $dimensions['minHeight'] ?? $properties['minHeight'],
                 'maxWidth' => $dimensions['maxWidth'] ?? $properties['maxWidth'],
