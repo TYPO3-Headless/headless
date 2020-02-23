@@ -15,6 +15,10 @@ call_user_func(
         ];
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['typoLink_PostProc'][] = \FriendsOfTYPO3\Headless\Hooks\TypolinkHook::class . '->handleLink';
 
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][TYPO3\CMS\Viewpage\Controller\ViewModuleController::class] = [
+            'className' => FriendsOfTYPO3\Headless\XClass\Controller\ViewModuleController::class
+        ];
+
         /** @var \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry $rendererRegistry */
         $rendererRegistry = \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry::getInstance();
         $rendererRegistry->registerRendererClass(\FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer::class);
