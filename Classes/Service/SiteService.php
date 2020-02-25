@@ -1,5 +1,16 @@
 <?php
 
+/***
+ *
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ *
+ *  (c) 2020
+ *
+ ***/
+
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Service;
@@ -14,14 +25,15 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class SiteService
 {
     /**
-     * @param $url
-     * @param $pageUid
+     * @param string $url
+     * @param int $pageUid
      * @return string
      */
-    public function getFrontendUrl($url, $pageUid): string
+    public function getFrontendUrl(string $url, int $pageUid): string
     {
         try {
             $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
+
             $site = $siteFinder->getSiteByPageId($pageUid);
             $base = $site->getBase()->getHost();
             $configuration = $site->getConfiguration();
@@ -33,7 +45,7 @@ class SiteService
                 );
 
                 if ($frontendBaseUrl !== '') {
-                    $frontendBase = new Uri($this->sanitizeBaseUrl($frontendBaseUrl));
+                    $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
                     $frontBase = $frontendBase->getHost();
 
                     if (is_int(strpos($url, $base))) {

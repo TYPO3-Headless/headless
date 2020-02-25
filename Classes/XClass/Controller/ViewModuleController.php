@@ -1,7 +1,4 @@
 <?php
-declare(strict_types=1);
-
-namespace FriendsOfTYPO3\Headless\XClass\Controller;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -15,6 +12,10 @@ namespace FriendsOfTYPO3\Headless\XClass\Controller;
  *
  * The TYPO3 project - inspiring people to share!
  */
+
+declare(strict_types=1);
+
+namespace FriendsOfTYPO3\Headless\XClass\Controller;
 
 use FriendsOfTYPO3\Headless\Service\SiteService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;

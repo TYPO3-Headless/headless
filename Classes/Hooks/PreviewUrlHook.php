@@ -1,10 +1,4 @@
 <?php
-declare(strict_types=1);
-
-namespace FriendsOfTYPO3\Headless\Hooks;
-
-use FriendsOfTYPO3\Headless\Service\SiteService;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /***
  *
@@ -16,6 +10,13 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *  (c) 2020
  *
  ***/
+
+declare(strict_types=1);
+
+namespace FriendsOfTYPO3\Headless\Hooks;
+
+use FriendsOfTYPO3\Headless\Service\SiteService;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * PreviewUrlHook
@@ -32,7 +33,7 @@ class PreviewUrlHook
      * @param bool $switchFocus
      * @return string The processed preview URL
      */
-    public function postProcess($previewUrl, $pageUid, $rootLine, $anchorSection, $viewScript, $additionalGetVars, $switchFocus): string
+    public function postProcess(string $previewUrl, int $pageUid, array $rootLine, string $anchorSection, string $viewScript, string $additionalGetVars, bool $switchFocus): string
     {
         $siteService = GeneralUtility::makeInstance(SiteService::class);
         $previewUrl = $siteService->getFrontendUrl($previewUrl, $pageUid);
