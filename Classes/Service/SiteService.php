@@ -25,17 +25,20 @@ class SiteService
             $site = $siteFinder->getSiteByPageId($pageUid);
             $base = $site->getBase()->getHost();
             $configuration = $site->getConfiguration();
-            $frontendBaseUrl = $this->resolveFrontendBaseWithVariants(
-                $configuration['frontendBase'] ?? '',
-                $configuration['baseVariants'] ?? null
-            );
 
-            if ($frontendBaseUrl !== '') {
-                $frontendBase = new Uri($this->sanitizeBaseUrl($frontendBaseUrl));
-                $frontBase = $frontendBase->getHost();
+            if (array_key_exists('frontendBase', $configuration)) {
+                $frontendBaseUrl = $this->resolveFrontendBaseWithVariants(
+                    $configuration['frontendBase'] ?? '',
+                    $configuration['baseVariants'] ?? null
+                );
 
-                if (is_int(strpos($url, $base))) {
-                    $url = str_replace($base, $frontBase, $url);
+                if ($frontendBaseUrl !== '') {
+                    $frontendBase = new Uri($this->sanitizeBaseUrl($frontendBaseUrl));
+                    $frontBase = $frontendBase->getHost();
+
+                    if (is_int(strpos($url, $base))) {
+                        $url = str_replace($base, $frontBase, $url);
+                    }
                 }
             }
         } catch (SiteNotFoundException $exception) {
