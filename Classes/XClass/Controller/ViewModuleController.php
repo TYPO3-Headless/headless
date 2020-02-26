@@ -36,9 +36,12 @@ class ViewModuleController extends \TYPO3\CMS\Viewpage\Controller\ViewModuleCont
     protected function getTargetUrl(int $pageId, int $languageId): string
     {
         $targetUrl = parent::getTargetUrl($pageId, $languageId);
-        $siteService = GeneralUtility::makeInstance(SiteService::class);
 
-        $targetUrl = $siteService->getFrontendUrl($targetUrl, $pageId);
+        if (\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class)->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
+            $siteService = GeneralUtility::makeInstance(SiteService::class);
+
+            $targetUrl = $siteService->getFrontendUrl($targetUrl, $pageId);
+        }
 
         return $targetUrl;
     }

@@ -31,31 +31,33 @@ class SiteService
      */
     public function getFrontendUrl(string $url, int $pageUid): string
     {
-        try {
-            $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
+        if (GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class)->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
+            try {
+                $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
 
-            $site = $siteFinder->getSiteByPageId($pageUid);
-            $base = $site->getBase()->getHost();
-            $configuration = $site->getConfiguration();
+                $site = $siteFinder->getSiteByPageId($pageUid);
+                $base = $site->getBase()->getHost();
+                $configuration = $site->getConfiguration();
 
-            if (array_key_exists('frontendBase', $configuration)) {
-                $frontendBaseUrl = $this->resolveFrontendBaseWithVariants(
-                    $configuration['frontendBase'] ?? '',
-                    $configuration['baseVariants'] ?? null
-                );
+                if (array_key_exists('frontendBase', $configuration)) {
+                    $frontendBaseUrl = $this->resolveFrontendBaseWithVariants(
+                        $configuration['frontendBase'] ?? '',
+                        $configuration['baseVariants'] ?? null
+                    );
 
-                if ($frontendBaseUrl !== '') {
-                    $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
-                    $frontBase = $frontendBase->getHost();
+                    if ($frontendBaseUrl !== '') {
+                        $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
+                        $frontBase = $frontendBase->getHost();
 
-                    if (is_int(strpos($url, $base))) {
-                        $url = str_replace($base, $frontBase, $url);
+                        if (is_int(strpos($url, $base))) {
+                            $url = str_replace($base, $frontBase, $url);
+                        }
                     }
                 }
+            } catch (SiteNotFoundException $exception) {
             }
-        } catch (SiteNotFoundException $exception) {
+            return $url;
         }
-        return $url;
     }
 
     /**
