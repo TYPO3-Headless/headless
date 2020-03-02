@@ -94,6 +94,17 @@ lib.languages {
 }
 ```
 
+### Feature toggle "FrontendBaseUrlInPagePreview"
+
+To change the setting for this extension feature either use Localconfiguration.php: or AdditionalConfiguration.php: 
+
+```
+$GLOBALS[‘TYPO3_CONF_VARS’][‘SYS’][‘features’][‘FrontendBaseUrlInPagePreview’] = true
+```
+
+This feature toggle extends current SiteConfiguration (and it's variants) with new field for Frontend Url 
+(url frontend of PWA app). This new field is used when there is a need to preview a page such as: "view" module or right click on a page + show, or the 'eye' icon in page view.
+
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
 
