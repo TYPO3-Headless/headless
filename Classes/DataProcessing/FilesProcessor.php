@@ -161,7 +161,7 @@ class FilesProcessor implements DataProcessorInterface
      * @param array $dimensions
      * @return array
      */
-    protected function processFiles(array $dimensions): array
+    protected function processFiles(array $dimensions = []): array
     {
         $data = [];
 
