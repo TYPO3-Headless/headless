@@ -67,6 +67,7 @@ class FileUtility
                 'description' => $metaData['description'] ? $metaData['description'] : $fileReference->getProperty('description'),
                 'mimeType' => $fileReference->getMimeType(),
                 'type' => explode('/', $fileReference->getMimeType())[0],
+                'filename' => $fileReference->getProperty('name'),
                 'originalUrl' => $fileReference->getPublicUrl(),
                 'fileReferenceUid' => $fileReferenceUid,
                 'size' => $this->calculateKilobytesToFileSize($fileReference->getSize()),
