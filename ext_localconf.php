@@ -3,6 +3,10 @@ defined('TYPO3_MODE') || die();
 
 call_user_func(
     function () {
+        if (!isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['FrontendBaseUrlInPagePreview'])) {
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['FrontendBaseUrlInPagePreview'] = false;
+        }
+
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_fe.php']['hook_eofe']['headless'] =
             \FriendsOfTYPO3\Headless\Hooks\IntScriptEncoderHook::class . '->performExtraJsonEncoding';
 
@@ -14,6 +18,12 @@ call_user_func(
             'FriendsOfTYPO3\Headless\ViewHelpers'
         ];
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['typoLink_PostProc'][] = \FriendsOfTYPO3\Headless\Hooks\TypolinkHook::class . '->handleLink';
+
+        if (\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class)->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][TYPO3\CMS\Viewpage\Controller\ViewModuleController::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Controller\ViewModuleController::class
+            ];
+        }
 
         /** @var \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry $rendererRegistry */
         $rendererRegistry = \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry::getInstance();
