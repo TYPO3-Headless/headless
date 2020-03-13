@@ -58,7 +58,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                         break 2;
                     }
                     $currentMediaScaling = $this->equalMediaHeight / max($this->fileObjects[$fileKey]['properties']['cropDimensions']['height'], 1);
-                    $totalRowWidth += ['properties']['cropDimensions']['width'] * $currentMediaScaling;
+                    $totalRowWidth += $this->fileObjects[$fileKey]['properties']['cropDimensions']['width'] * $currentMediaScaling;
                 }
                 $maximumRowWidth = max($totalRowWidth, $maximumRowWidth);
                 $mediaInRowScaling = $totalRowWidth / $galleryWidthMinusBorderAndSpacing;
