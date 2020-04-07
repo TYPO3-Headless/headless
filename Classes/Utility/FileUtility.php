@@ -33,17 +33,14 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
  */
 class FileUtility
 {
-    /**
-     * @var string
-     */
-    protected $cropVariant = 'default';
 
     /**
      * @param FileReference|File $fileReference
      * @param $dimensions
+     * @param $cropVariant
      * @return array
      */
-    public function processFile($fileReference, array $dimensions = []): array
+    public function processFile($fileReference, array $dimensions = [], $cropVariant = 'default'): array
     {
         /** @var ContentObjectRenderer $cObj */
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
@@ -52,13 +49,14 @@ class FileUtility
         $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
-            $fileReference = $this->processImageFile($fileReference, $dimensions);
+            $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
             $publicUrl = $this->getImageService()->getImageUri($fileReference, true);
         } elseif (isset($fileRenderer)) {
             $publicUrl = $fileRenderer->render($fileReference, '', '', ['returnUrl' => true]);
         } else {
             $publicUrl = $this->getAbsoluteUrl($fileReference->getPublicUrl());
         }
+
         return [
             'publicUrl' => $publicUrl,
             'properties' => [
@@ -92,20 +90,20 @@ class FileUtility
     /**
      * @param FileReference|File $image
      * @param array $dimensions
+     * @param string $cropVariant
      * @return ProcessedFile
      */
-    public function processImageFile($image, array $dimensions = []): ProcessedFile
+    public function processImageFile($image, array $dimensions = [], string $cropVariant): ProcessedFile
     {
         try {
             $properties = $image->getProperties();
-
             $imageService = GeneralUtility::makeInstance(ImageService::class);
             $cropString = $properties['crop'];
             if ($image->hasProperty('crop') && $image->getProperty('crop')) {
                 $cropString = $image->getProperty('crop');
             }
             $cropVariantCollection = CropVariantCollection::create((string)$cropString);
-            $cropVariant = $properties['cropVariant'] ?: 'default';
+            $cropVariant = $cropVariant ? : 'default';
             $cropArea = $cropVariantCollection->getCropArea($cropVariant);
             $processingInstructions = [
                 'width' => isset($dimensions['width']) ? $dimensions['width'] : null,
