@@ -165,8 +165,10 @@ class FilesProcessor implements DataProcessorInterface
     {
         $data = [];
 
+        $cropVariant = isset($this->processorConfiguration['processingConfiguration.']['cropVariant']) ? $this->processorConfiguration['processingConfiguration.']['cropVariant'] : 'default';
+
         foreach ($this->fileObjects as $fileObject) {
-            $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions);
+            $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
         }
         return $data;
     }
