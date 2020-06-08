@@ -49,7 +49,9 @@ class FileUtility
         $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
-            $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
+            if ('image/svg+xml' !== $fileReference->getMimeType()) {
+                $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
+            }
             $publicUrl = $this->getImageService()->getImageUri($fileReference, true);
         } elseif (isset($fileRenderer)) {
             $publicUrl = $fileRenderer->render($fileReference, '', '', ['returnUrl' => true]);
