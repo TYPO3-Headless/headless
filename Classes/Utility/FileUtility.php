@@ -49,7 +49,9 @@ class FileUtility
         $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
-            $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
+            if ($fileReference->getMimeType() !== 'image/svg+xml') {
+                $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
+            }
             $publicUrl = $this->getImageService()->getImageUri($fileReference, true);
         } elseif (isset($fileRenderer)) {
             $publicUrl = $fileRenderer->render($fileReference, '', '', ['returnUrl' => true]);
@@ -60,15 +62,15 @@ class FileUtility
         return [
             'publicUrl' => $publicUrl,
             'properties' => [
-                'title' => $metaData['title'] ? $metaData['title'] : $fileReference->getProperty('title'),
-                'alternative' => $metaData['alternative'] ? $metaData['alternative'] : $fileReference->getProperty('alternative'),
-                'description' => $metaData['description'] ? $metaData['description'] : $fileReference->getProperty('description'),
+                'title' => $metaData['title'] ?: $fileReference->getProperty('title'),
+                'alternative' => $metaData['alternative'] ?: $fileReference->getProperty('alternative'),
+                'description' => $metaData['description'] ?: $fileReference->getProperty('description'),
                 'mimeType' => $fileReference->getMimeType(),
                 'type' => explode('/', $fileReference->getMimeType())[0],
                 'filename' => $fileReference->getProperty('name'),
                 'originalUrl' => $fileReference->getPublicUrl(),
                 'fileReferenceUid' => $fileReferenceUid,
-                'size' => $this->calculateKilobytesToFileSize($fileReference->getSize()),
+                'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getSize()),
                 'link' => !empty($metaData['link']) ? $cObj->typoLink_URL([
                     'parameter' => $metaData['link']
                 ]) : null,
@@ -77,11 +79,10 @@ class FileUtility
                     'height' => $fileReference->getProperty('height'),
                 ],
                 'cropDimensions' => [
-                    'width' => $this->getCroppedDimensionalProperty($fileReference, 'width'),
-                    'height' => $this->getCroppedDimensionalProperty($fileReference, 'height')
+                    'width' => $this->getCroppedDimensionalProperty($fileReference, 'width', $cropVariant),
+                    'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant)
                 ],
                 'autoplay' => $fileReference->getProperty('autoplay'),
-
                 'extension' => $metaData['extension']
             ]
         ];
@@ -93,7 +94,7 @@ class FileUtility
      * @param string $cropVariant
      * @return ProcessedFile
      */
-    public function processImageFile($image, array $dimensions = [], string $cropVariant): ProcessedFile
+    public function processImageFile($image, array $dimensions = [], string $cropVariant = 'default'): ProcessedFile
     {
         try {
             $properties = $image->getProperties();
@@ -103,11 +104,11 @@ class FileUtility
                 $cropString = $image->getProperty('crop');
             }
             $cropVariantCollection = CropVariantCollection::create((string)$cropString);
-            $cropVariant = $cropVariant ? : 'default';
+            $cropVariant = $cropVariant ?: 'default';
             $cropArea = $cropVariantCollection->getCropArea($cropVariant);
             $processingInstructions = [
-                'width' => isset($dimensions['width']) ? $dimensions['width'] : null,
-                'height' => isset($dimensions['height']) ? $dimensions['height'] : null,
+                'width' => $dimensions['width'] ?? null,
+                'height' => $dimensions['height'] ?? null,
                 'minWidth' => $dimensions['minWidth'] ?? $properties['minWidth'],
                 'minHeight' => $dimensions['minHeight'] ?? $properties['minHeight'],
                 'maxWidth' => $dimensions['maxWidth'] ?? $properties['maxWidth'],
@@ -130,7 +131,7 @@ class FileUtility
         $siteUrl = $this->getNormalizedParams()->getSiteUrl();
         $sitePath = str_replace($this->getNormalizedParams()->getRequestHost(), '', $siteUrl);
         $absoluteUrl = trim($fileUrl);
-        if (strtolower(substr($absoluteUrl, 0, 4)) !== 'http') {
+        if (stripos($absoluteUrl, 'http') !== 0) {
             $fileUrl = preg_replace('#^' . preg_quote($sitePath, '#') . '#', '', $fileUrl);
             $fileUrl = $siteUrl . $fileUrl;
         }
@@ -145,34 +146,28 @@ class FileUtility
      * @param FileInterface $fileObject
      * @param string $dimensionalProperty 'width' or 'height'
      *
+     * @param string $cropVariant defaults to 'default' variant
      * @return int
      */
-    protected function getCroppedDimensionalProperty(FileInterface $fileObject, $dimensionalProperty)
+    protected function getCroppedDimensionalProperty(FileInterface $fileObject, string $dimensionalProperty, string $cropVariant = 'default'): int
     {
         if (!$fileObject->hasProperty('crop') || empty($fileObject->getProperty('crop'))) {
-            return $fileObject->getProperty($dimensionalProperty);
+            return (int)$fileObject->getProperty($dimensionalProperty);
         }
 
         $croppingConfiguration = $fileObject->getProperty('crop');
         $cropVariantCollection = CropVariantCollection::create((string)$croppingConfiguration);
-        return (int)$cropVariantCollection->getCropArea($this->cropVariant)->makeAbsoluteBasedOnFile($fileObject)->asArray()[$dimensionalProperty];
+        return (int)$cropVariantCollection->getCropArea($cropVariant)->makeAbsoluteBasedOnFile($fileObject)->asArray()[$dimensionalProperty];
     }
 
     /**
      * @param int $value
      * @return string
      */
-    protected function calculateKilobytesToFileSize(?int $value): string
+    protected function calculateKilobytesToFileSize(int $value): string
     {
         $units = LocalizationUtility::translate('viewhelper.format.bytes.units', 'fluid');
         $units = GeneralUtility::trimExplode(',', $units, true);
-
-        if (is_numeric($value)) {
-            $value = (float)$value;
-        }
-        if (!is_int($value) && !is_float($value)) {
-            $value = 0;
-        }
         $bytes = max($value, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
