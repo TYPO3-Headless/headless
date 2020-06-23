@@ -152,7 +152,7 @@ class FileUtility
     protected function getCroppedDimensionalProperty(FileInterface $fileObject, string $dimensionalProperty, string $cropVariant = 'default'): int
     {
         if (!$fileObject->hasProperty('crop') || empty($fileObject->getProperty('crop'))) {
-            return (int) $fileObject->getProperty($dimensionalProperty);
+            return (int)$fileObject->getProperty($dimensionalProperty);
         }
 
         $croppingConfiguration = $fileObject->getProperty('crop');
