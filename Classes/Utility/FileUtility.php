@@ -49,7 +49,7 @@ class FileUtility
         $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
-            if ('image/svg+xml' !== $fileReference->getMimeType()) {
+            if ($fileReference->getMimeType() !== 'image/svg+xml') {
                 $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
             }
             $publicUrl = $this->getImageService()->getImageUri($fileReference, true);
@@ -131,7 +131,7 @@ class FileUtility
         $siteUrl = $this->getNormalizedParams()->getSiteUrl();
         $sitePath = str_replace($this->getNormalizedParams()->getRequestHost(), '', $siteUrl);
         $absoluteUrl = trim($fileUrl);
-        if (0 !== stripos($absoluteUrl, 'http')) {
+        if (stripos($absoluteUrl, 'http') !== 0) {
             $fileUrl = preg_replace('#^' . preg_quote($sitePath, '#') . '#', '', $fileUrl);
             $fileUrl = $siteUrl . $fileUrl;
         }
@@ -149,7 +149,7 @@ class FileUtility
      * @param string $cropVariant defaults to 'default' variant
      * @return int
      */
-    protected function getCroppedDimensionalProperty(FileInterface $fileObject, string $dimensionalProperty, string $cropVariant = 'default')
+    protected function getCroppedDimensionalProperty(FileInterface $fileObject, string $dimensionalProperty, string $cropVariant = 'default'): int
     {
         if (!$fileObject->hasProperty('crop') || empty($fileObject->getProperty('crop'))) {
             return $fileObject->getProperty($dimensionalProperty);
