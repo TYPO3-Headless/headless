@@ -79,12 +79,12 @@ class FilesProcessor implements DataProcessorInterface
 
         if (isset($processorConfiguration['processingConfiguration.'])) {
             $dimensions = [
-                'width' => isset($processorConfiguration['processingConfiguration.']['width']) ? $processorConfiguration['processingConfiguration.']['width'] : null,
-                'height' => isset($processorConfiguration['processingConfiguration.']['height']) ? $processorConfiguration['processingConfiguration.']['height'] : null,
-                'minWidth' => isset($processorConfiguration['processingConfiguration.']['minWidth']) ? $processorConfiguration['processingConfiguration.']['minWidth'] : null,
-                'minHeight' => isset($processorConfiguration['processingConfiguration.']['minHeight']) ? $processorConfiguration['processingConfiguration.']['minHeight'] : null,
-                'maxWidth' => isset($processorConfiguration['processingConfiguration.']['maxWidth']) ? $processorConfiguration['processingConfiguration.']['maxWidth'] : null,
-                'maxHeight' => isset($processorConfiguration['processingConfiguration.']['maxHeight']) ? $processorConfiguration['processingConfiguration.']['maxHeight'] : null,
+                'width' => $processorConfiguration['processingConfiguration.']['width'] ?? null,
+                'height' => $processorConfiguration['processingConfiguration.']['height'] ?? null,
+                'minWidth' => $processorConfiguration['processingConfiguration.']['minWidth'] ?? null,
+                'minHeight' => $processorConfiguration['processingConfiguration.']['minHeight'] ?? null,
+                'maxWidth' => $processorConfiguration['processingConfiguration.']['maxWidth'] ?? null,
+                'maxHeight' => $processorConfiguration['processingConfiguration.']['maxHeight'] ?? null,
             ];
         }
 
@@ -99,6 +99,10 @@ class FilesProcessor implements DataProcessorInterface
 
         $this->fileObjects = $this->fetchData();
         $processedData[$targetFieldName] = $this->processFiles($dimensions);
+
+        if (isset($processorConfiguration['processingConfiguration.']['removeData']) && (int)$processorConfiguration['processingConfiguration.']['removeData'] === 1) {
+            unset($processedData['data']);
+        }
 
         return $processedData;
     }
@@ -165,7 +169,7 @@ class FilesProcessor implements DataProcessorInterface
     {
         $data = [];
 
-        $cropVariant = isset($this->processorConfiguration['processingConfiguration.']['cropVariant']) ? $this->processorConfiguration['processingConfiguration.']['cropVariant'] : 'default';
+        $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
 
         foreach ($this->fileObjects as $fileObject) {
             $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
