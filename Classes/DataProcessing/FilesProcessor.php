@@ -27,6 +27,8 @@ use TYPO3\CMS\Frontend\Resource\FileCollector;
  */
 class FilesProcessor implements DataProcessorInterface
 {
+    use DataProcessingTrait;
+
     /**
      * @var array
      */
@@ -100,11 +102,7 @@ class FilesProcessor implements DataProcessorInterface
         $this->fileObjects = $this->fetchData();
         $processedData[$targetFieldName] = $this->processFiles($dimensions);
 
-        if (isset($processorConfiguration['processingConfiguration.']['removeData']) && (int)$processorConfiguration['processingConfiguration.']['removeData'] === 1) {
-            unset($processedData['data']);
-        }
-
-        return $processedData;
+        return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
     }
 
     /**
