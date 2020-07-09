@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 /***
@@ -51,6 +52,15 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
  *        references.fieldName = media
  *     }
  *   }
+ *
+ *   # To customize JSON output you could use `overwriteMenuLevelConfig`
+ *   overwriteMenuLevelConfig {
+ *     stdWrap.cObject {
+ *       100 = TEXT
+ *       100.field = uid
+ *       100.wrap = ,"uid":|
+ *     }
+ *   }
  * }
  */
 class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
@@ -58,10 +68,7 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
     use DataProcessingTrait;
 
     /**
-     * Allowed configuration keys for menu generation, other keys
-     * will throw an exception to prevent configuration errors.
-     *
-     * @var array
+     * @inheritDoc
      */
     public $allowedConfigurationKeys = [
         'cache_period',
@@ -102,7 +109,10 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
         'titleField.',
         'dataProcessing',
         'dataProcessing.',
+
+        // New properties for EXT:headless
         'appendData',
+        'overwriteMenuLevelConfig.',
     ];
 
     /**
@@ -120,8 +130,25 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
         'titleField.',
         'dataProcessing',
         'dataProcessing.',
+
+        // New properties for EXT:headless
         'appendData',
+        'overwriteMenuLevelConfig.',
     ];
+
+    /**
+     * Build the menu configuration so it can be treated by HMENU cObject and allow customization for $this->menuLevelConfig
+     */
+    public function buildConfiguration()
+    {
+        // Before rendering the actual menu via HMENU we want to update $this->menuLevelConfig
+        $overwriteMenuLevelConfig = $this->getConfigurationValue('overwriteMenuLevelConfig.');
+        if (is_array($overwriteMenuLevelConfig)) {
+            ArrayUtility::mergeRecursiveWithOverrule($this->menuLevelConfig, $overwriteMenuLevelConfig);
+        }
+
+        parent::buildConfiguration();
+    }
 
     /**
      * @inheritDoc
