@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
+
 /***
  *
  * This file is part of the "headless" Extension for TYPO3 CMS.
@@ -53,48 +55,72 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
  */
 class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
 {
+    use DataProcessingTrait;
+
     /**
+     * Allowed configuration keys for menu generation, other keys
+     * will throw an exception to prevent configuration errors.
+     *
      * @var array
      */
-    protected $menuLevelConfig = [
-        'doNotLinkIt' => '1',
-        'wrapItemAndSub' => '{|}, |*| {|}, |*| {|}',
-        'stdWrap.' => [
-            'cObject' => 'COA',
-            'cObject.' => [
-                '20' => 'TEXT',
-                '20.' => [
-                    'field' => 'nav_title // title',
-                    'trim' => '1',
-                    'wrap' => '"title":|',
-                    'preUserFunc' => 'TYPO3\CMS\Frontend\DataProcessing\MenuProcessor->jsonEncodeUserFunc'
-                ],
-                '21' => 'TEXT',
-                '21.' => [
-                    'value' => self::LINK_PLACEHOLDER,
-                    'wrap' => ',"link":|',
-                ],
-                '22' => 'TEXT',
-                '22.' => [
-                    'value' => self::TARGET_PLACEHOLDER,
-                    'wrap' => ',"target":|',
-                ],
-                '30' => 'TEXT',
-                '30.' => [
-                    'value' => '0',
-                    'wrap' => ',"active":|'
-                ],
-                '40' => 'TEXT',
-                '40.' => [
-                    'value' => '0',
-                    'wrap' => ',"current":|'
-                ],
-                '50' => 'TEXT',
-                '50.' => [
-                    'value' => '0',
-                    'wrap' => ',"spacer":|'
-                ]
-            ]
-        ]
+    public $allowedConfigurationKeys = [
+        'cache_period',
+        'entryLevel',
+        'entryLevel.',
+        'special',
+        'special.',
+        'minItems',
+        'minItems.',
+        'maxItems',
+        'maxItems.',
+        'begin',
+        'begin.',
+        'alternativeSortingField',
+        'alternativeSortingField.',
+        'showAccessRestrictedPages',
+        'showAccessRestrictedPages.',
+        'excludeUidList',
+        'excludeUidList.',
+        'excludeDoktypes',
+        'includeNotInMenu',
+        'includeNotInMenu.',
+        'alwaysActivePIDlist',
+        'alwaysActivePIDlist.',
+        'protectLvar',
+        'addQueryString',
+        'addQueryString.',
+        'if',
+        'if.',
+        'levels',
+        'levels.',
+        'expandAll',
+        'expandAll.',
+        'includeSpacer',
+        'includeSpacer.',
+        'as',
+        'titleField',
+        'titleField.',
+        'dataProcessing',
+        'dataProcessing.',
+        'appendData',
     ];
+
+    /**
+     * @inheritDoc
+     */
+    public function process(
+        ContentObjectRenderer $cObj,
+        array $contentObjectConfiguration,
+        array $processorConfiguration,
+        array $processedData
+    ) {
+        $processedData = parent::process(
+            $cObj,
+            $contentObjectConfiguration,
+            $processorConfiguration,
+            $processedData
+        );
+
+        return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
+    }
 }
