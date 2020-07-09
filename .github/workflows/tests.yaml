@@ -1,0 +1,48 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+    tests:
+        runs-on: ubuntu-18.04
+        strategy:
+            max-parallel: 2
+            matrix:
+                php-versions: [7.2, 7.3]
+                typo3-versions:
+                    - { typo3: 9, testing: 4 }
+                    - { typo3: 10, testing: 5 }
+
+        name: Run tests with PHP ${{ matrix.php-versions }} using TYPO3 ${{ matrix.typo3-versions.typo3 }} with testing framework version ${{ matrix.typo3-versions.testing }}
+        steps:
+            - uses: actions/checkout@v2
+
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php-versions }}
+                  extensions: intl, mbstring, pdo_sqlite
+
+            - name: Cache composer dependencies
+              uses: actions/cache@v1
+              with:
+                  path: ~/.composer/cache
+                  key: php-${{ matrix.php-versions }}-typo3-${{ matrix.typo3-versions.typo3 }}-testing-${{ matrix.typo3-versions.testing }}-composer-${{ hashFiles('composer.json') }}
+                  restore-keys: |
+                      php-${{ matrix.php-versions }}-typo3-${{ matrix.typo3-versions.typo3 }}-testing-${{ matrix.typo3-versions.testing }}composer-
+                      php-${{ matrix.php-versions }}-typo3-
+
+            - name: Install composer dependencies
+              run: composer require typo3/minimal "^${{ matrix.typo3-versions.typo3 }}" typo3/testing-framework "^${{ matrix.typo3-versions.testing }}" --prefer-dist --no-progress --no-suggest
+
+            - name: Run PHP lint
+              run: composer run-script test-php-lint
+
+            - name: Run Unit tests
+              run: composer run-script test-unit
+
+            - name: Functional tests
+              run: composer run-script test-functional
+
+            - name: Run PHPCS
+              run: composer run-script test-php-cs-fixer
+
