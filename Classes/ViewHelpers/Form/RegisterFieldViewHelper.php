@@ -17,7 +17,6 @@ namespace FriendsOfTYPO3\Headless\ViewHelpers\Form;
 
 /**
  * Registers field for generating hidden fields
- *
  */
 class RegisterFieldViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\AbstractFormFieldViewHelper
 {
@@ -29,7 +28,6 @@ class RegisterFieldViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\Abstract
      */
     public function initializeArguments()
     {
-
         $this->registerArgument('name', 'string', 'Name of input tag');
         $this->registerArgument('value', 'mixed', 'Value of input tag');
         $this->registerArgument(
@@ -40,7 +38,6 @@ class RegisterFieldViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\Abstract
         $this->registerArgument('additionalAttributes', 'array', 'Additional tag attributes. They will be added directly to the resulting HTML tag.', false);
         $this->registerArgument('checked', 'bool', 'Specifies that the input element should be preselected');
         $this->registerArgument('multiple', 'bool', 'Specifies whether this checkbox belongs to a multivalue (is part of a checkbox group)', false, false);
-
     }
 
     /**
@@ -52,7 +49,6 @@ class RegisterFieldViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\Abstract
 
         $checked = $this->arguments['checked'];
         $multiple = $this->arguments['multiple'];
-
 
         $valueAttribute = $this->getValueAttribute();
         $propertyValue = null;
@@ -77,8 +73,6 @@ class RegisterFieldViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\Abstract
         } elseif ($propertyValue !== null) {
             $checked = (boolean)$propertyValue === (boolean)$valueAttribute;
         }
-
-
 
         $this->registerFieldNameForFormTokenGeneration($nameAttribute);
     }

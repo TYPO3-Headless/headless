@@ -78,7 +78,6 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
             $this->tag->addAttribute('novalidate', 'novalidate');
         }
 
-
         $this->addFormObjectNameToViewHelperVariableContainer();
         $this->addFormObjectToViewHelperVariableContainer();
         $this->addFieldNamePrefixToViewHelperVariableContainer();
@@ -98,7 +97,6 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
         $this->removeFormFieldNamesFromViewHelperVariableContainer();
         $this->removeCheckboxFieldNamesFromViewHelperVariableContainer();
 
-
         return json_encode($this->data);
     }
 
@@ -111,8 +109,10 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
             $formActionUri = $this->arguments['actionUri'];
         } else {
             if (isset($this->arguments['noCacheHash'])) {
-                trigger_error('Using the argument "noCacheHash" in <f:form> ViewHelper has no effect anymore. Remove the argument in your fluid template, as it will result in a fatal error.',
-                    E_USER_DEPRECATED);
+                trigger_error(
+                    'Using the argument "noCacheHash" in <f:form> ViewHelper has no effect anymore. Remove the argument in your fluid template, as it will result in a fatal error.',
+                    E_USER_DEPRECATED
+                );
             }
             /** @var UriBuilder $uriBuilder */
             $uriBuilder = $this->renderingContext->getControllerContext()->getUriBuilder();
@@ -187,14 +187,22 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
             '@controller' => $controllerName,
             '@action' => $actionName,
         ];
-        $this->addHiddenField('__referrer[@extension]',
-            $extensionName);
-        $this->addHiddenField('__referrer[@controller]',
-            $controllerName);
-        $this->addHiddenField('__referrer[@action]',
-            $actionName);
-        $this->addHiddenField('__referrer[@request]',
-            $this->hashService->appendHmac(json_encode($actionRequest)));
+        $this->addHiddenField(
+            '__referrer[@extension]',
+            $extensionName
+        );
+        $this->addHiddenField(
+            '__referrer[@controller]',
+            $controllerName
+        );
+        $this->addHiddenField(
+            '__referrer[@action]',
+            $actionName
+        );
+        $this->addHiddenField(
+            '__referrer[@request]',
+            $this->hashService->appendHmac(json_encode($actionRequest))
+        );
     }
 
     /**
@@ -240,16 +248,19 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
 
     /**
      * Render the request hash field
-     *
      */
     protected function renderTrustedPropertiesField()
     {
         $formFieldNames
-            = $this->viewHelperVariableContainer->get(\TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class,
-            'formFieldNames');
+            = $this->viewHelperVariableContainer->get(
+                \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class,
+                'formFieldNames'
+            );
         $requestHash
-            = $this->mvcPropertyMappingConfigurationService->generateTrustedPropertiesToken($formFieldNames,
-            $this->getFieldNamePrefix());
+            = $this->mvcPropertyMappingConfigurationService->generateTrustedPropertiesToken(
+                $formFieldNames,
+                $this->getFieldNamePrefix()
+            );
         $this->addHiddenField('__trustedProperties', $requestHash);
     }
 
