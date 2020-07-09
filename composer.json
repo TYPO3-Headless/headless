@@ -33,7 +33,8 @@
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^2.15",
     "justinrainbow/json-schema": "1.5.*",
-    "typo3/testing-framework": "^4 || ^5",
+    "php-parallel-lint/php-parallel-lint": "^0.4",
+    "typo3/testing-framework": "^4 || ^5"
     "helmich/typo3-typoscript-lint": "^2.1"
   },
   "autoload": {
@@ -51,17 +52,34 @@
     "bin-dir": ".Build/bin"
   },
   "scripts": {
+    "test": [
+      "@test-php-lint",
+      "@test-php-cs-fixer",
+      "@test-unit",
+      "@test-functional"
+    ],
     "post-autoload-dump": [
       "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
     ],
-    "cgl": [
+    "test-php-lint": [
+      ".Build/bin/parallel-lint ./Classes/",
+      ".Build/bin/parallel-lint ./Configuration/TCA/",
+      ".Build/bin/parallel-lint ./Tests/"
+    ],
+    "test-php-cs-fixer": [
       "php-cs-fixer fix -v --dry-run --using-cache false --diff --diff-format=udiff"
     ],
-    "cgl-fix": [
+    "test-php-cs-fixer-fix": [
       "php-cs-fixer fix -v --using-cache false"
     ],
     "typoscript-lint": [
       "typoscript-lint"
+    ],
+    "test-unit": [
+      ".Build/bin/phpunit --configuration Tests/Unit/phpunit.xml"
+    ],
+    "test-functional": [
+      ".Build/bin/phpunit --configuration Tests/Functional/phpunit.xml"
     ]
   },
   "extra": {
