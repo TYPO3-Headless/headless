@@ -61,7 +61,7 @@
       "php-cs-fixer fix -v --using-cache false"
     ],
     "typoscript-lint": [
-      "typoscript-lint Configuration/TypoScript/setup.typoscript"
+      "typoscript-lint Configuration/TypoScript/"
     ]
   },
   "extra": {
