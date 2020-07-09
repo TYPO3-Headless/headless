@@ -45,6 +45,4 @@ class JsonDecoderTest extends UnitTestCase
             ['""', false]
         ];
     }
-
-
 }
