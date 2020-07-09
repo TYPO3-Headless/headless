@@ -1,6 +1,6 @@
 # TYPO3 Extension "headless" - JSON content API for TYPO3 PWA solution
 
-[![Build Status](https://travis-ci.org/TYPO3-Initiatives/headless.svg?branch=master)](https://travis-ci.org/TYPO3-Initiatives/headless)
+[![CI Status](https://github.com/TYPO3-Initiatives/headless/workflows/CI/badge.svg)](https://github.com/TYPO3-Initiatives/headless/actions)
 
 Headless allows you to render JSON from TYPO3 content. You can customize output by changing types, names and nesting of fields.
 
