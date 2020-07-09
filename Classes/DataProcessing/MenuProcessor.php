@@ -108,6 +108,24 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
     /**
      * @inheritDoc
      */
+    public $removeConfigurationKeysForHmenu = [
+        'levels',
+        'levels.',
+        'expandAll',
+        'expandAll.',
+        'includeSpacer',
+        'includeSpacer.',
+        'as',
+        'titleField',
+        'titleField.',
+        'dataProcessing',
+        'dataProcessing.',
+        'appendData',
+    ];
+
+    /**
+     * @inheritDoc
+     */
     public function process(
         ContentObjectRenderer $cObj,
         array $contentObjectConfiguration,
