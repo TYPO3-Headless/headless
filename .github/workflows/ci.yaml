@@ -172,3 +172,11 @@ jobs:
         run: composer install --no-progress
       - name: "Run Typoscript lint"
         run: "composer typoscript-lint"
+  yaml-lint:
+    name: "Yaml linter"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: "Yaml lint"
+        uses: ibiqlik/action-yamllint@v1
