@@ -148,3 +148,27 @@ jobs:
 
       - name: "Upload EXT:${{ env.TYPO3_EXTENSION_KEY }} as ${{ github.event.ref }} to TER"
         run: php ~/.composer/vendor/bin/upload "./$TYPO3_EXTENSION_KEY" "$TYPO3_USER" "$TYPO3_PASSWORD" "${{ github.event.head_commit.message }}"
+  typoscript-lint:
+    name: "Typoscript lint"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [7.4]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "${{ matrix.php-versions }}"
+      - name: "Cache composer dependencies"
+        uses: actions/cache@v1
+        with:
+          path: ~/.composer/cache
+          key: php-${{ matrix.php-versions }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            php-${{ matrix.php-versions }}-composer-
+      - name: "Install composer dependencies"
+        run: composer install --no-progress
+      - name: "Run Typoscript lint"
+        run: "composer typoscript-lint"
