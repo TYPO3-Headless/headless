@@ -33,7 +33,8 @@
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^2.15",
     "justinrainbow/json-schema": "1.5.*",
-    "typo3/testing-framework": "^4 || ^5"
+    "typo3/testing-framework": "^4 || ^5",
+    "helmich/typo3-typoscript-lint": "^2.1"
   },
   "autoload": {
     "psr-4": {
