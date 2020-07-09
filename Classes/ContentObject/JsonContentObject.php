@@ -159,25 +159,35 @@ class JsonContentObject extends AbstractContentObject
         $editedData = ['data', 'current'];
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
             if (isset($data[$value])) {
-                $dataProcessingData = $data[$value];
+                $dataProcessingData = $this->mergeValue($dataProcessingData, $data[$value], $value);
             }
             $editedData[] = $value;
         }
-        if (count($data) > count($editedData)) {
-            foreach ($data as $key => $value) {
-                if (!empty($value) && !in_array($key, $editedData)) {
-                    if (is_array($value)) {
-                        foreach ($value as $valueKey => $valueItem) {
-                            $dataProcessingData[$valueKey] = $valueItem;
-                        }
-                    } else {
-                        if (empty($dataProcessingData)) {
-                            $dataProcessingData = $value;
-                        } else {
-                            $dataProcessingData[$key] = $value;
-                        }
-                    }
-                }
+        foreach ($data as $dataKey => $dataValue) {
+            if (!empty($dataValue) && !in_array($dataKey, $editedData)) {
+                $dataProcessingData = $this->mergeValue($dataProcessingData, $dataValue, $dataKey);
+            }
+        }
+        return $dataProcessingData;
+    }
+
+    /**
+     * @param array $dataProcessingData
+     * @param $value
+     * @param $key
+     * @return array
+     */
+    protected function mergeValue(array $dataProcessingData, $value, $key): array
+    {
+        if (is_array($value)) {
+            foreach ($value as $valueKey => $valueItem) {
+                $dataProcessingData[$valueKey] = $valueItem;
+            }
+        } else {
+            if (empty($dataProcessingData)) {
+                $dataProcessingData = $value;
+            } else {
+                $dataProcessingData[$key] = $value;
             }
         }
         return $dataProcessingData;
