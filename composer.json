@@ -73,7 +73,7 @@
       "php-cs-fixer fix -v --using-cache false"
     ],
     "typoscript-lint": [
-      "typoscript-lint"
+      ".Build/bin/typoscript-lint -c Configuration/TsLint.yml --ansi -n --fail-on-warnings -vvv Configuration/TypoScript"
     ],
     "test-unit": [
       ".Build/bin/phpunit --configuration Tests/Unit/phpunit.xml"
