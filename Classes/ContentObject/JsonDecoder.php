@@ -40,7 +40,7 @@ final class JsonDecoder implements JsonDecoderInterface
             return false;
         }
 
-        $possibleJson = trim((string) $possibleJson);
+        $possibleJson = trim((string)$possibleJson);
 
         if ($possibleJson === '') {
             return false;

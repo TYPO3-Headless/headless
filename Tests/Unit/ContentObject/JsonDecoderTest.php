@@ -38,7 +38,7 @@ class JsonDecoderTest extends UnitTestCase
             ['.', false],
             ["''", false],
             ["'hello'", false],
-            ["\"hello\"", false],
+            ['"hello2"', false],
             [true, false],
             [false, false],
             ['[]', true],
