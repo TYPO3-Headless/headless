@@ -30,8 +30,10 @@ lib.contentElement {
                     pidInList = root
                     selectFields = sys_category.title
                     join = sys_category_record_mm on sys_category_record_mm.uid_local = sys_category.uid
-                    where.field = uid
-                    where.wrap = AND sys_category_record_mm.tablenames = 'tt_content' AND sys_category_record_mm.uid_foreign=|
+                    where {
+                        field = uid
+                        wrap = AND sys_category_record_mm.tablenames = 'tt_content' AND sys_category_record_mm.uid_foreign=|
+                    }
                 }
                 renderObj = TEXT
                 renderObj {

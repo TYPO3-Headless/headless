@@ -34,7 +34,8 @@
     "friendsofphp/php-cs-fixer": "^2.15",
     "justinrainbow/json-schema": "1.5.*",
     "php-parallel-lint/php-parallel-lint": "^0.4",
-    "typo3/testing-framework": "^4 || ^5"
+    "typo3/testing-framework": "^4 || ^5",
+    "helmich/typo3-typoscript-lint": "^2.1"
   },
   "autoload": {
     "psr-4": {
@@ -70,6 +71,9 @@
     ],
     "test-php-cs-fixer-fix": [
       "php-cs-fixer fix -v --using-cache false"
+    ],
+    "typoscript-lint": [
+      ".Build/bin/typoscript-lint -c Configuration/TsLint.yml --ansi -n --fail-on-warnings -vvv Configuration/TypoScript"
     ],
     "test-unit": [
       ".Build/bin/phpunit --configuration Tests/Unit/phpunit.xml"
