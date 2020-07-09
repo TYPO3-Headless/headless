@@ -1,0 +1,29 @@
+<f:spaceless>
+    <f:format.raw>
+        <f:flashMessages as="flashMessages">
+            [
+            <f:for each="{flashMessages}" as="flashMessage" iteration="msgIterator">
+                <f:format.json value="{
+                    title: '{flashMessage.title}',
+                    message: '{flashMessage.message}',
+                    severity: '{flashMessage.severity}',
+                    className: '{f:render(section:\'errorClass\', arguments:\'{severity: flashMessage.severity}\')}'
+                }"/>
+                {f:if(condition: msgIterator.isLast, else: ',')}
+            </f:for>
+            ]
+        </f:flashMessages>
+    </f:format.raw>
+</f:spaceless>
+<f:section name="errorClass">
+<f:spaceless>
+        <f:switch expression="{severity}">
+            <f:case value="-2">notice</f:case>
+            <f:case value="-1">info</f:case>
+            <f:case value="0">success</f:case>
+            <f:case value="1">warning</f:case>
+            <f:case value="2">danger</f:case>
+        <f:defaultCase></f:defaultCase>
+    </f:switch>
+</f:spaceless>
+</f:section>
