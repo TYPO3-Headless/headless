@@ -70,5 +70,4 @@ class TypolinkHook
     {
         return $GLOBALS['TSFE'];
     }
-
 }
