@@ -33,11 +33,9 @@ class TypolinkHook
      */
     public function handleLink(array $params, ContentObjectRenderer $ref): void
     {
-
-        /** @var array $setup */
         $setup = &$this->getTypoScriptFrontendController()->tmpl->setup;
-        if (! isset($setup['plugin.']['tx_headless.']['staticTemplate'])
-            || (bool)$setup['plugin.']['tx_headless.']['staticTemplate'] === false
+        if (!isset($setup['plugin.']['tx_headless.']['staticTemplate'])
+            || (bool) $setup['plugin.']['tx_headless.']['staticTemplate'] === false
         ) {
             // Just do nothing and don't modify the previously generated typolink when EXT:headless won't be used
             return;
