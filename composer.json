@@ -59,6 +59,9 @@
     ],
     "cgl-fix": [
       "php-cs-fixer fix -v --using-cache false"
+    ],
+    "typoscript-lint": [
+      "typoscript-lint Configuration/TypoScript/setup.typoscript"
     ]
   },
   "extra": {
