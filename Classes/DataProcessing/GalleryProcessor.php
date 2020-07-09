@@ -46,7 +46,6 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
         return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
     }
 
-
     /**
      * Calculate the width/height of the media elements
      *
