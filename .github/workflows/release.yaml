@@ -1,3 +1,4 @@
+---
 name: "TER deployment"
 
 on:
@@ -24,7 +25,8 @@ jobs:
       - name: Check if trigger is a valid tag
         id: check-tag
         run: |
-          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if [[ ${{ github.event.ref }} =~
+            ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo ::set-output name=match::true
           fi
 
@@ -57,7 +59,8 @@ jobs:
           extensions: intl, mbstring, xml, soap, zip, curl
 
       - name: Install TYPO3 TER client
-        run: composer global require namelesscoder/typo3-repository-client "^2.0" --prefer-dist --no-progress --no-suggest
+        run: composer global require namelesscoder/typo3-repository-client
+             "^2.0" --prefer-dist --no-progress --no-suggest
 
       - name: Remove .git folder
         run: rm -rf ./$TYPO3_EXTENSION_KEY/.git
@@ -65,5 +68,8 @@ jobs:
       - name: List extension folder
         run: ls -liAsh ./$TYPO3_EXTENSION_KEY
 
-      - name: Upload EXT:${{ env.TYPO3_EXTENSION_KEY }} as ${{ github.event.ref }} to TER
-        run: php ~/.composer/vendor/bin/upload "./$TYPO3_EXTENSION_KEY" "$TYPO3_USER" "$TYPO3_PASSWORD" "${{ github.event.head_commit.message }}"
+      - name: Upload EXT:${{ env.TYPO3_EXTENSION_KEY }}
+              as ${{ github.event.ref }} to TER
+        run: php ~/.composer/vendor/bin/upload "./$TYPO3_EXTENSION_KEY"
+             "$TYPO3_USER" "$TYPO3_PASSWORD"
+             "${{ github.event.head_commit.message }}"
