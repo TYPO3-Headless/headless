@@ -26,6 +26,12 @@ call_user_func(
             ];
         }
 
+        if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('form')) {
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Form\Controller\FormFrontendController::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Controller\FormFrontendController::class
+            ];
+        }
+
         /** @var \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry $rendererRegistry */
         $rendererRegistry = \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry::getInstance();
         $rendererRegistry->registerRendererClass(\FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer::class);

@@ -1,0 +1,14 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" xmlns:formvh="http://typo3.org/ns/TYPO3/CMS/Form/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:spaceless>
+    <f:format.raw>
+        <f:format.json value="{
+                id: formConfiguration.identifier,
+                hidden: hidden,
+                renderables: formConfiguration.renderables
+		}"/>
+    </f:format.raw>
+</f:spaceless>
+</html>
+<f:variable name="formRender">
+    <formvh:render overrideConfiguration="{formConfiguration}" />
+</f:variable>
