@@ -13,6 +13,7 @@ call_user_func(
         $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'headless/Configuration/TypoScript/';
         $GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] = array_merge($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'], [
             'JSON' => \FriendsOfTYPO3\Headless\ContentObject\JsonContentObject::class,
+            'CONTENTJSON' => \FriendsOfTYPO3\Headless\ContentObject\ContentJsonContentObject::class,
         ]);
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['fluid']['namespaces']['headless'] = [
             'FriendsOfTYPO3\Headless\ViewHelpers'

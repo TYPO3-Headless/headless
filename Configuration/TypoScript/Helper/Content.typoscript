@@ -1,12 +1,8 @@
-lib.content = USER
+lib.content = CONTENTJSON
 lib.content {
-    userFunc = FriendsOfTYPO3\Headless\Utility\ContentUtility->groupContent
-    10 = CONTENT
-    10 {
         table = tt_content
         select {
             orderBy = sorting
         }
-        renderObj.stdWrap.innerWrap = |###BREAK###
-    }
 }
+
