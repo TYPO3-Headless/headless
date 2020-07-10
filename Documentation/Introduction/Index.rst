@@ -6,50 +6,25 @@
 Introduction
 ============
 
-.. tip::
+.. Info::
 
-   New to reStructuredText and Sphinx?
-
-   Get an introduction:
-   https://docs.typo3.org/m/typo3/docs-how-to-document/master/en-us/WritingReST/Index.html
-
-   Use this cheat sheet as reference:
-   https://docs.typo3.org/m/typo3/docs-how-to-document/master/en-us/WritingReST/CheatSheet.html
+   This extension is part of the `TYPO3 PWA Initiative <https://typo3.org/community/teams/typo3-development/initiatives/pwa/>`__
+   and is still in an early stage of development.
 
 .. _what-it-does:
 
 What does it do?
 ================
 
-The aim of this chapter is to provide a general overview of your extension.
+The headless extension provides an JSON API which can serve as endpoint for any kind of application.
+It's using the standard TYPO3 features to render the page-tree structure and page-content into a JSON format.
+The JSON response object and the content elements are customizable with TypoScript.
 
-* What does it do?
-* What problems does it solve?
-* Who is the target audience?
+**Features**
 
-This chapter should provide information that will help inform 
-potential users and assist them in deciding if they should 
-install and use this extension.
-
-.. important::
-
-   Don't forget to set extension's version number in :file:`Settings.cfg` file,
-   in the :code:`release` property.
-   It will be automatically picked up on the cover page by the :code:`|release|` substitution.
-
-.. _screenshots:
-
-Screenshots
-===========
-
-This chapter should help people understand how the extension works.
-Remove it if it is not relevant.
-
-.. figure:: ../Images/IntroductionPackage.png
-   :class: with-shadow
-   :alt: Introduction Package
-   :width: 300px
-
-   Introduction Package after installation (caption of the image).
-
-How the Frontend of the Introduction Package looks like after installation (legend of the image).
+* JSON API for content elements
+* JSON API for navigation page-tree structure
+* Taking into account all language and translation configuration (e.g. fallback)
+* Easily extensible with custom fields or custom CE's
+* Support for EXT:felogin and EXT:form
+* Support for EXT:news (see additional extension `EXT:headless_news <https://github.com/TYPO3-Initiatives/headless_news>`__)
