@@ -45,16 +45,16 @@ final class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
         try {
             $encodedJson = json_encode($this->jsonDecoder->decode($data), $encodeOptions);
         } catch (\JsonException $e) {
-            $this->logger->emergency('Error while encoding json', ['error' => $e->getMessage()]);
+            $this->logger->critical('Error while encoding json', ['code' => $e->getCode(), 'message' => $e->getMessage()]);
             return '';
         }
 
-        if (\PHP_VERSION_ID >= 70300 && (JSON_THROW_ON_ERROR & $options)) {
+        if (\PHP_VERSION_ID >= 70300 && (JSON_THROW_ON_ERROR & $encodeOptions)) {
             return $encodedJson;
         }
 
-        if (JSON_ERROR_NONE !== json_last_error() && (false === $encodedJson || !($encodeOptions & JSON_PARTIAL_OUTPUT_ON_ERROR))) {
-            $this->logger->emergency('Error while encoding json', ['error' => json_last_error()]);
+        if (json_last_error() !== JSON_ERROR_NONE && ($encodedJson === false || !($encodeOptions & JSON_PARTIAL_OUTPUT_ON_ERROR))) {
+            $this->logger->critical('Error while encoding json', ['code' => json_last_error(), 'message' => json_last_error_msg()]);
             return '';
         }
 

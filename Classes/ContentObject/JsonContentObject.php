@@ -70,7 +70,7 @@ class JsonContentObject extends AbstractContentObject
             $data = $this->processFieldWithDataProcessing($conf);
         }
 
-        $json = $this->jsonEncoder->encode($data);
+        $json = $this->jsonEncoder->encode($data, \PHP_VERSION_ID >= 70300 ? JSON_THROW_ON_ERROR : 0);
 
         if (isset($conf['stdWrap.'])) {
             $json = $this->cObj->stdWrap($json, $conf['stdWrap.']);
