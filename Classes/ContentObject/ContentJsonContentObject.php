@@ -1,21 +1,19 @@
 <?php
+
+/***
+ *
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ *
+ *  (c) 2019
+ *
+ ***/
+
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
-
-/*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
- *
- * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
- */
-
 use TYPO3\CMS\Core\TimeTracker\TimeTracker;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
@@ -23,7 +21,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
- * Contains CONTENT class object.
+ * Contains ContentJson class object.
  */
 class ContentJsonContentObject extends AbstractContentObject
 {
@@ -31,12 +29,12 @@ class ContentJsonContentObject extends AbstractContentObject
      * Rendering the cObject, CONTENT
      *
      * @param array $conf Array of TypoScript properties
-     * @return string Output
+     * @return array Output
      */
     public function render($conf = [])
     {
         if (!empty($conf['if.']) && !$this->cObj->checkIf($conf['if.'])) {
-            return '';
+            return [];
         }
 
         $frontendController = $this->getFrontendController();
@@ -79,7 +77,7 @@ class ContentJsonContentObject extends AbstractContentObject
                 $this->getTimeTracker()->setTSlogMessage('NUMROWS: ' . count($records));
 
                 /** @var ContentObjectRenderer $cObj */
-                $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
+                $cObj = $this->getContentObjectRenderer();
                 $cObj->setParent($this->cObj->data, $this->cObj->currentRecord);
                 $this->cObj->currentRecordNumber = 0;
 
