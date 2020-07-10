@@ -9,7 +9,7 @@
 .. _start:
 
 =============================================================
-Extension Name
+TYPO3 PWA initiative – EXT:headless
 =============================================================
 
 :Version:
@@ -19,17 +19,46 @@ Extension Name
    en
 
 :Authors:
-   Your name
+   * Tymoteusz Motylewski (Macopedia)
+   * Łukasz Uznański (Macopedia)
+   * Adam Marcinkowski (Macopedia)
+   * Vaclav Janoch (ITplusX)
 
 :Email:
-   you@domain.tld
+   extensions@macopedia.pl
 
 :License:
    This extension documentation is published under the
-   `CC BY-NC-SA 4.0 <https://creativecommons.org/licenses/by-nc-sa/4.0/>`__ (Creative Commons)
-   license
+   `CC BY-NC-SA 4.0 <https://creativecommons.org/licenses/by-nc-sa/4.0/>`__
+   (Creative Commons) license
 
-{extension.description}
+Headless allows you to render JSON from TYPO3 content. You can customize output
+by changing types, names and nesting of fields.
+
+This extension provides backend part (JSON API) for TYPO3 PWA solution.
+Second part is a JavaScript application
+`nuxt-typo3 <https://github.com/TYPO3-Initiatives/nuxt-typo3>`__
+which consumes JSON API and renders the content using Vue.js and Nuxt.
+You can find the frontend documentation here:
+https://typo3-initiatives.github.io/nuxt-typo3/
+
+**Features**
+
+* JSON API for content elements
+* JSON API for navigation, layouts
+* taking into account all language/translation configuration (e.g. fallback)
+* support for EXT:news (in additional extension:
+  https://github.com/TYPO3-Initiatives/headless_news)
+* easily extensible with custom fields or custom CE's
+
+Development for this extension is happening as part of the TYPO3 PWA initiative,
+see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
+
+If you have any questions just drop a line in
+`#initiative-pwa <https://typo3.slack.com/archives/CDJK80WV6>`__ Slack channel.
+
+A special thanks goes to `macopedia.com <https://macopedia.com>`__ company,
+which is sponsoring development of this solution.
 
 **TYPO3**
 
@@ -38,16 +67,13 @@ a GNU/GPL CMS/Framework available from `typo3.org <https://typo3.org/>`_ .
 
 **Community Documentation**
 
-This documentation is community documentation for the TYPO3 extension {extension.name}
+This documentation is for the TYPO3 PWA initiative extension
+`headless <https://github.com/TYPO3-Initiatives/headless/>`__
 
 It is maintained as part of this third party extension.
 
 If you find an error or something is missing, please:
-`Report a Problem <https://github.com/TYPO3-Documentation/TYPO3CMS-Example-ExtensionManual/issues/new>`__
-
-**Extension Manual**
-
-This documentation is for the TYPO3 extension <extkey>.
+`Report a Problem <https://github.com/TYPO3-Initiatives/headless/issues/new>`__
 
 **For Contributors**
 
