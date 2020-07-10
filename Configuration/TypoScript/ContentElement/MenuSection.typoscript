@@ -28,7 +28,7 @@ tt_content.menu_section {
                                     references.fieldName = media
                                     as = media
                                 }
-                                20 = TYPO3\CMS\Frontend\DataProcessing\DatabaseQueryProcessor
+                                20 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
                                 20 {
                                     table = tt_content
                                     pidInList.field = uid
