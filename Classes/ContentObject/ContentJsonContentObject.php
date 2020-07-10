@@ -30,12 +30,12 @@ class ContentJsonContentObject extends AbstractContentObject
      * Rendering the cObject, CONTENT
      *
      * @param array $conf Array of TypoScript properties
-     * @return array Output
+     * @return  string Output
      */
     public function render($conf = [])
     {
         if (!empty($conf['if.']) && !$this->cObj->checkIf($conf['if.'])) {
-            return [];
+            return '';
         }
 
         $frontendController = $this->getFrontendController();
@@ -127,7 +127,7 @@ class ContentJsonContentObject extends AbstractContentObject
             --$frontendController->recordRegister[$originalRec];
         }
 
-        return json_encode($theValue);
+        return json_encode($theValue)??'';
     }
 
     /**
