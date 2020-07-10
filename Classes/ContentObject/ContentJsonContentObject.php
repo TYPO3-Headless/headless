@@ -14,6 +14,7 @@
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
+
 use TYPO3\CMS\Core\TimeTracker\TimeTracker;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
