@@ -5,7 +5,7 @@ name: "TER deployment"
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   # Check if there is a valid tag
@@ -26,7 +26,7 @@ jobs:
       - name: Check if trigger is a valid tag
         id: check-tag
         run: |
-          if [[${{ github.event.ref }} =~^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$]];
+          if [[${{ github.event.ref }} =~^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$]];
           then
             echo ::set-output name=match::true
           fi
