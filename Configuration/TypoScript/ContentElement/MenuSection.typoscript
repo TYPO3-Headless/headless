@@ -6,8 +6,9 @@ tt_content.menu_section {
                 menu = TEXT
                 menu {
                     dataProcessing {
-                        10 = TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
                         10 {
+                            appendData = 1
                             as = menu
                             special = list
                             special {
@@ -27,7 +28,7 @@ tt_content.menu_section {
                                     references.fieldName = media
                                     as = media
                                 }
-                                20 = TYPO3\CMS\Frontend\DataProcessing\DatabaseQueryProcessor
+                                20 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
                                 20 {
                                     table = tt_content
                                     pidInList.field = uid

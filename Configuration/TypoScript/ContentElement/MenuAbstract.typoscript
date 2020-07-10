@@ -6,8 +6,9 @@ tt_content.menu_abstract {
                 menu = TEXT
                 menu {
                     dataProcessing {
-                        10 = TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
                         10 {
+                            appendData = 1
                             special = directory
                             special.value.field = pages
                             as = menu
