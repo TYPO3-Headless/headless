@@ -1,4 +1,5 @@
 ---
+
 name: "TER deployment"
 
 on:
@@ -59,6 +60,7 @@ jobs:
           extensions: intl, mbstring, xml, soap, zip, curl
 
       - name: Install TYPO3 TER client
+
         run: composer global require namelesscoder/typo3-repository-client
              "^2.0" --prefer-dist --no-progress --no-suggest
 
