@@ -13,7 +13,7 @@ declare(strict_types=1);
  *
  ***/
 
-namespace FriendsOfTYPO3\Headless\ContentObject;
+namespace FriendsOfTYPO3\Headless\Json;
 
 interface JsonDecoderInterface
 {

@@ -15,6 +15,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
+use FriendsOfTYPO3\Headless\Json\JsonDecoder;
+use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -33,9 +36,9 @@ class JsonContentObject extends AbstractContentObject
     protected $contentDataProcessor;
 
     /**
-     * @var JsonDecoderInterface
+     * @var JsonEncoderInterface
      */
-    protected $jsonDecoder;
+    protected $jsonEncoder;
 
     /**
      * @param ContentObjectRenderer $cObj
@@ -44,7 +47,7 @@ class JsonContentObject extends AbstractContentObject
     {
         parent::__construct($cObj);
         $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
-        $this->jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
+        $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class, GeneralUtility::makeInstance(JsonDecoder::class));
     }
 
     /**
@@ -67,7 +70,7 @@ class JsonContentObject extends AbstractContentObject
             $data = $this->processFieldWithDataProcessing($conf);
         }
 
-        $json = json_encode($this->jsonDecoder->decode($data));
+        $json = $this->jsonEncoder->encode($data);
 
         if (isset($conf['stdWrap.'])) {
             $json = $this->cObj->stdWrap($json, $conf['stdWrap.']);
