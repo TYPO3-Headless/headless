@@ -45,10 +45,11 @@ class FileUtility
         /** @var ContentObjectRenderer $cObj */
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $fileReferenceUid = $fileReference->getUid();
+        $uidLocal = $fileReference->getProperty('uid_local');
         $metaData = $fileReference->toArray();
         $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
         $crop = $fileReference->getProperty('crop');
-        $preProcessedUrl = $fileReference->getPublicUrl();
+        $originalFileUrl = $fileReference->getPublicUrl();
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
             if ($fileReference->getMimeType() !== 'image/svg+xml') {
@@ -70,8 +71,8 @@ class FileUtility
                 'mimeType' => $fileReference->getMimeType(),
                 'type' => explode('/', $fileReference->getMimeType())[0],
                 'filename' => $fileReference->getProperty('name'),
-                'originalUrl' => $fileReference->getPublicUrl(),
-                'preProcessedUrl' => $preProcessedUrl,
+                'originalUrl' => $originalFileUrl,
+                'uidLocal' => $uidLocal,
                 'fileReferenceUid' => $fileReferenceUid,
                 'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getSize()),
                 'link' => !empty($metaData['link']) ? $cObj->typoLink_URL([

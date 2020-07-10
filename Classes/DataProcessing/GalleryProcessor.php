@@ -17,8 +17,8 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
 
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
-use TYPO3\CMS\Core\Resource\DuplicationBehavior;
 use TYPO3\CMS\Core\Resource\FileInterface;
+use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -26,6 +26,11 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcessor
 {
     use DataProcessingTrait;
+
+    /**
+     * @var FileReference[]
+     */
+    protected $fileReferenceCache = [];
 
     /**
      * @var array<int, array<string, string|array>>
@@ -181,7 +186,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
 
                 if ($fileObj) {
                     if (($this->equalMediaWidth || $this->equalMediaHeight) && $fileObj['properties']['type'] === 'image') {
-                        $image = $this->getImageService()->getImage($fileObj['properties']['preProcessedUrl'], null, true);
+                        $image = $this->getImageService()->getImage($fileObj['properties']['originalUrl'], null, true);
                         $fileObj = $this->getFileUtility()->processFile($image, $this->mediaDimensions[$fileKey] ?? []);
                     }
 
@@ -220,104 +225,18 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      */
     private function createFileObject(array $processedFile): FileInterface
     {
-        return new class($processedFile['properties']) implements FileInterface {
-            public function __construct(array $properties)
-            {
-                $this->properties = $properties['dimensions'];
-            }
+        $uid = (int)$processedFile['properties']['uidLocal'];
+        if (!isset($this->fileReferenceCache[$uid])) {
+            $this->fileReferenceCache[$uid] = GeneralUtility::makeInstance(
+                FileReference::class,
+                array_merge(
+                    $processedFile['properties'],
+                    $processedFile['properties']['dimensions'],
+                    ['uid_local' => $uid]
+                )
+            );
+        }
 
-            public function hasProperty($key)
-            {
-                return array_key_exists($key, $this->properties);
-            }
-
-            public function getProperty($key)
-            {
-                if (!$this->hasProperty($key)) {
-                    throw new \InvalidArgumentException('Property "' . $key . '" was not found in file reference or original file.', 1314226805);
-                }
-                return $this->properties[$key];
-            }
-
-            public function getSize()
-            {
-            }
-
-            public function getSha1()
-            {
-            }
-
-            public function getNameWithoutExtension()
-            {
-            }
-
-            public function getExtension()
-            {
-            }
-
-            public function getMimeType()
-            {
-            }
-
-            public function getModificationTime()
-            {
-            }
-
-            public function getCreationTime()
-            {
-            }
-
-            public function getContents()
-            {
-            }
-
-            public function setContents($contents)
-            {
-            }
-
-            public function delete()
-            {
-            }
-
-            public function rename($newName, $conflictMode = DuplicationBehavior::RENAME)
-            {
-            }
-
-            public function getPublicUrl($relativeToCurrentScript = false)
-            {
-            }
-
-            public function isIndexed()
-            {
-            }
-
-            public function getForLocalProcessing($writable = true)
-            {
-            }
-
-            public function toArray()
-            {
-            }
-
-            public function getIdentifier()
-            {
-            }
-
-            public function getName()
-            {
-            }
-
-            public function getStorage()
-            {
-            }
-
-            public function getHashedIdentifier()
-            {
-            }
-
-            public function getParentFolder()
-            {
-            }
-        };
+        return $this->fileReferenceCache[$uid];
     }
 }
