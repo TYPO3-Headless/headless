@@ -1,8 +1,8 @@
 lib.content = CONTENTJSON
 lib.content {
-        table = tt_content
-        select {
-            orderBy = sorting
-        }
+    table = tt_content
+    select {
+        orderBy = sorting
+    }
 }
 
