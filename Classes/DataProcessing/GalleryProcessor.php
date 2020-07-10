@@ -7,6 +7,7 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Service\ImageService;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 /***
  *
@@ -24,6 +25,27 @@ use TYPO3\CMS\Extbase\Service\ImageService;
  */
 class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcessor
 {
+    use DataProcessingTrait;
+
+    /**
+     * @inheritDoc
+     */
+    public function process(
+        ContentObjectRenderer $cObj,
+        array $contentObjectConfiguration,
+        array $processorConfiguration,
+        array $processedData
+    ) {
+        $processedData = parent::process(
+            $cObj,
+            $contentObjectConfiguration,
+            $processorConfiguration,
+            $processedData
+        );
+
+        return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
+    }
+
     /**
      * Calculate the width/height of the media elements
      *
