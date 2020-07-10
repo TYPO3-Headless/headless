@@ -33,12 +33,18 @@ class JsonContentObject extends AbstractContentObject
     protected $contentDataProcessor;
 
     /**
+     * @var JsonDecoderInterface
+     */
+    protected $jsonDecoder;
+
+    /**
      * @param ContentObjectRenderer $cObj
      */
     public function __construct(ContentObjectRenderer $cObj)
     {
         parent::__construct($cObj);
         $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
+        $this->jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
     }
 
     /**
@@ -61,7 +67,7 @@ class JsonContentObject extends AbstractContentObject
             $data = $this->processFieldWithDataProcessing($conf);
         }
 
-        $json = json_encode($this->decodeFieldsIfRequired($data));
+        $json = json_encode($this->jsonDecoder->decode($data));
 
         if (isset($conf['stdWrap.'])) {
             $json = $this->cObj->stdWrap($json, $conf['stdWrap.']);
@@ -91,11 +97,9 @@ class JsonContentObject extends AbstractContentObject
             $theValue = $setup[$theKey];
             if ((string)$theKey && strpos($theKey, '.') === false) {
                 $conf = $setup[$theKey . '.'];
-                $intVal = (isset($conf['intval']) && $conf['intval']) ? true : false;
-                $contentDataProcessing['dataProcessing.'] = isset($conf['dataProcessing.']) ? $conf['dataProcessing.'] : [];
-
+                $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
-                if ($intVal) {
+                if (isset($conf['intval']) && $conf['intval']) {
                     $content[$theKey] = (int)$content[$theKey];
                 }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
@@ -103,8 +107,8 @@ class JsonContentObject extends AbstractContentObject
                 }
             }
             if ((string)$theKey && strpos($theKey, '.') > 0 && !isset($setup[rtrim($theKey, '.')])) {
-                $contentFieldName = isset($theValue['source']) ? $theValue['source'] : rtrim($theKey, '.');
-                $contentFieldTypeProcessing['dataProcessing.'] = isset($theValue['dataProcessing.']) ? $theValue['dataProcessing.'] : [];
+                $contentFieldName = $theValue['source'] ?? rtrim($theKey, '.');
+                $contentFieldTypeProcessing['dataProcessing.'] = $theValue['dataProcessing.'] ?? [];
 
                 if (array_key_exists('fields.', $theValue)) {
                     $content[$contentFieldName] = $this->cObjGet($theValue['fields.']);
@@ -133,58 +137,7 @@ class JsonContentObject extends AbstractContentObject
                 $filteredKeys[] = (string)$key;
             }
         }
-        $filteredKeys = array_unique($filteredKeys);
-        return $filteredKeys;
-    }
-
-    /**
-     * @param array $haystack
-     * @param $needle
-     * @return string
-     */
-    protected function recursiveFind(array $haystack, $needle)
-    {
-        $iterator  = new RecursiveArrayIterator($haystack);
-        $recursive = new RecursiveIteratorIterator(
-            $iterator,
-            RecursiveIteratorIterator::SELF_FIRST
-        );
-        $iteration = 0;
-        foreach ($recursive as $key => $value) {
-            if ($key === 'dataProcessing.') {
-                $iteration++;
-                if ($iteration > 1) {
-                    return;
-                }
-            }
-            if ($key === $needle) {
-                yield $value;
-            }
-        }
-    }
-
-    /**
-     * @param array $data
-     * @return array
-     */
-    protected function decodeFieldsIfRequired(array $data): array
-    {
-        $json = [];
-
-        foreach ($data as $key => $singleData) {
-            if (is_string($singleData)) {
-                if (json_decode($singleData) === null) {
-                    $json[$key] = $singleData;
-                } else {
-                    $json[$key] = json_decode($singleData);
-                }
-            } elseif (is_array($singleData)) {
-                $json[$key] = $this->decodeFieldsIfRequired($singleData);
-            } else {
-                $json[$key] = $singleData;
-            }
-        }
-        return $json;
+        return array_unique($filteredKeys);
     }
 
     /**
@@ -209,5 +162,31 @@ class JsonContentObject extends AbstractContentObject
             }
         }
         return $dataProcessingData;
+    }
+
+    /**
+     * @param array $haystack
+     * @param $needle
+     * @return string
+     */
+    protected function recursiveFind(array $haystack, $needle)
+    {
+        $iterator = new RecursiveArrayIterator($haystack);
+        $recursive = new RecursiveIteratorIterator(
+            $iterator,
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+        $iteration = 0;
+        foreach ($recursive as $key => $value) {
+            if ($key === 'dataProcessing.') {
+                $iteration++;
+                if ($iteration > 1) {
+                    return;
+                }
+            }
+            if ($key === $needle) {
+                yield $value;
+            }
+        }
     }
 }
