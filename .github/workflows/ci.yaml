@@ -1,3 +1,4 @@
+---
 name: CI
 
 on: [push, pull_request]
@@ -20,7 +21,8 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.composer/cache
-          key: php-${{ matrix.php-versions }}-composer-${{ hashFiles('composer.json') }}
+          key: php-${{ matrix.php-versions }}
+               -composer-${{ hashFiles('composer.json') }}
           restore-keys: |
             php-${{ matrix.php-versions }}-composer-
       - name: "Install composer dependencies"
@@ -44,7 +46,8 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.composer/cache
-          key: php-${{ matrix.php-versions }}-composer-${{ hashFiles('composer.json') }}
+          key: php-${{ matrix.php-versions }}
+               -composer-${{ hashFiles('composer.json') }}
           restore-keys: |
             php-${{ matrix.php-versions }}-composer-
       - name: "Install composer dependencies"
@@ -58,10 +61,12 @@ jobs:
       matrix:
         php-versions: [7.2, 7.3, 7.4]
         typo3-versions:
-          - { typo3: 9, testing: 4 }
-          - { typo3: 10, testing: 5 }
+          - {typo3: 9, testing: 4}
+          - {typo3: 10, testing: 5}
 
-    name: "Run tests with PHP ${{ matrix.php-versions }} using TYPO3 ${{ matrix.typo3-versions.typo3 }} with testing framework version ${{ matrix.typo3-versions.testing }}"
+    name: "Run tests with PHP ${{ matrix.php-versions }}
+          using TYPO3 ${{ matrix.typo3-versions.typo3 }}
+          with testing framework version ${{ matrix.typo3-versions.testing }}"
     steps:
       - uses: actions/checkout@v2
 
@@ -74,13 +79,21 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.composer/cache
-          key: php-${{ matrix.php-versions }}-typo3-${{ matrix.typo3-versions.typo3 }}-testing-${{ matrix.typo3-versions.testing }}-composer-${{ hashFiles('composer.json') }}
+          key: php-${{ matrix.php-versions }}
+               -typo3-${{ matrix.typo3-versions.typo3 }}
+               -testing-${{ matrix.typo3-versions.testing }}
+               -composer-${{ hashFiles('composer.json') }}
           restore-keys: |
-            php-${{ matrix.php-versions }}-typo3-${{ matrix.typo3-versions.typo3 }}-testing-${{ matrix.typo3-versions.testing }}composer-
+            php-${{ matrix.php-versions }}
+            -typo3-${{ matrix.typo3-versions.typo3 }}
+            -testing-${{ matrix.typo3-versions.testing }}composer-
             php-${{ matrix.php-versions }}-typo3-
 
       - name: "Install composer dependencies"
-        run: composer require typo3/minimal "^${{ matrix.typo3-versions.typo3 }}" typo3/testing-framework "^${{ matrix.typo3-versions.testing }}" --prefer-dist --no-progress --no-suggest
+        run: composer require typo3/minimal
+             "^${{ matrix.typo3-versions.typo3 }}"
+             typo3/testing-framework "^${{ matrix.typo3-versions.testing }}"
+             --prefer-dist --no-progress --no-suggest
 
       - name: "Run Unit tests"
         run: composer run-script test-unit
@@ -104,10 +117,19 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.composer/cache
-          key: php-${{ matrix.php-versions }}-composer-${{ hashFiles('composer.json') }}
+          key: php-${{ matrix.php-versions }}
+               -composer-${{ hashFiles('composer.json') }}
           restore-keys: |
             php-${{ matrix.php-versions }}-composer-
       - name: "Install composer dependencies"
         run: composer install --no-progress
       - name: "Run Typoscript lint"
         run: "composer typoscript-lint"
+  yaml-lint:
+    name: "Yaml linter"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: "Yaml lint"
+        uses: ibiqlik/action-yamllint@v1
