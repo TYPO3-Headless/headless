@@ -2,21 +2,21 @@
 
 .. _developer:
 
-================
-Developer Corner
-================
+===============
+TODO: Developer
+===============
 
 Use this section to provide examples of code or detail any information that would be deemed relevant to a developer.
 
-For example explain how a certain feature was implemented.
 
+.. _developer-plugin-extbase:
 
-.. _developer-api:
+Internal Extbase plugins
+========================
 
-API
-===
+See issue `#139 <https://github.com/TYPO3-Initiatives/headless/issues/139>`__
 
-How to use the API...
+Example for PHP code block:
 
 .. code-block:: php
 
@@ -25,14 +25,31 @@ How to use the API...
    );
    $stuff->do();
 
-or some other language:
+Example for TypoScript code block:
 
-.. code-block:: javascript
-   :linenos:
-   :emphasize-lines: 2-4
+.. code-block:: typoscript
 
-   $(document).ready(
-      function () {
-         doStuff();
-      }
-   );
+   plugin.tx_headless {
+      # ...
+   }
+
+.. _developer-plugin-external:
+
+Integrating external plugins
+============================
+
+See issue `#138 <https://github.com/TYPO3-Initiatives/headless/issues/138>`__
+
+.. _developer-custom-contentelements:
+
+Create custom content elements
+==============================
+
+See issue `#137 <https://github.com/TYPO3-Initiatives/headless/issues/137>`__
+
+.. _developer-snippets:
+
+Snippets
+========
+
+See issue `#136 <https://github.com/TYPO3-Initiatives/headless/issues/136>`__
