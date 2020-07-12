@@ -30,7 +30,7 @@ class ContentJsonContentObject extends AbstractContentObject
      * Rendering the cObject, CONTENT
      *
      * @param array $conf Array of TypoScript properties
-     * @return  string Output
+     * @return string Output
      */
     public function render($conf = [])
     {
