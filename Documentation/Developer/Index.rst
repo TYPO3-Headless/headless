@@ -3,35 +3,97 @@
 .. _developer:
 
 ===============
-TODO: Developer
+Developer
 ===============
 
-Use this section to provide examples of code or detail any information that would be deemed relevant to a developer.
-
+This chapter will explain different usecases for developer working with headless extension.
 
 .. _developer-plugin-extbase:
 
 Internal Extbase plugins
 ========================
 
-See issue `#139 <https://github.com/TYPO3-Initiatives/headless/issues/139>`__
+To integrate a custom frontend plugin which return its data inside the JSON object, we have to do the following:
 
-Example for PHP code block:
+Follow the standard proceeding to `register and configure extbase plugins <https://docs.typo3.org/m/typo3/book-extbasefluid/master/en-us/4-FirstExtension/7-configuring-the-plugin.html>`__:
 
 .. code-block:: php
 
-   $stuff = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
-      '\\Foo\\Bar\\Utility\\Stuff'
-   );
-   $stuff->do();
+  \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
+    'Vendor.ExtName',
+    'DemoPlugin', [
+      'Demo' => 'index',
+    ],
+    []
+  );
 
-Example for TypoScript code block:
+  \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
+     'ext_key',
+     'DemoPlugin',
+     'My Demo Plugin'
+  );
+
+Create the `DemoController.php`:
+
+.. code-block:: php
+
+  class DemoController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController {
+    public function indexAction() {
+      return json_encode($this->settings);
+    }
+  }
+
+Use the plugin through TypoScript:
 
 .. code-block:: typoscript
 
-   plugin.tx_headless {
-      # ...
-   }
+  tt_content.list =< lib.contentElementWithHeader
+  tt_content.list {
+    fields {
+      content {
+        fields {
+          data = CASE
+          data {
+            key.field = list_type
+            demoplugin_type = USER
+            demoplugin_type {
+              userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+              vendorName = Vendor
+              extensionName = ExtName
+              pluginName = DemoPlugin
+              controller = Demo
+
+              settings {
+                test = TEXT
+                test.value = The demo is working
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+Clear the cache and in the response we will see the following JSON output (shortened):
+
+.. code-block:: json
+
+  {
+    "content": {
+      "colPos0": [{
+        "type": "demoplugin_type",
+        "appearance": {...},
+        "content": {
+          "data": {
+            "test": {
+              "value": "The demo is working",
+              "_typoScriptNodeValue": "TEXT"
+            },
+          }
+        }
+      }]
+    }
+  }
 
 .. _developer-plugin-external:
 
