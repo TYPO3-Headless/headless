@@ -18,12 +18,34 @@ trait DataProcessingTrait
             unset($processedData['data']);
             if (isset($processedData[$processorConfiguration['as']])
                 && is_array($processedData[$processorConfiguration['as']])) {
+                $isMenuProcessor = __CLASS__ === MenuProcessor::class;
+
                 foreach ($processedData[$processorConfiguration['as']] as &$item) {
                     unset($item['data']);
+
+                    if ($isMenuProcessor && isset($item['children']) && is_array($item['children'])) {
+                        $this->removeDataInChildrenNodes($item['children']);
+                    }
                 }
             }
         }
 
         return $processedData;
+    }
+
+    /**
+     * Removes recursively "data" in children nodes
+     *
+     * @param array $children
+     * @param string $nodeName
+     */
+    private function removeDataInChildrenNodes(array &$children, string $nodeName = 'children'): void
+    {
+        foreach ($children as &$childrenItem) {
+            unset($childrenItem['data']);
+            if (isset($childrenItem[$nodeName]) && is_array($childrenItem[$nodeName])) {
+                $this->removeDataInChildrenNodes($childrenItem[$nodeName], $nodeName);
+            }
+        }
     }
 }
