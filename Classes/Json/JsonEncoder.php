@@ -17,6 +17,10 @@ namespace FriendsOfTYPO3\Headless\Json;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * Backported from Symfony Serializer
+ * @see https://github.com/symfony/symfony/blob/master/src/Symfony/Component/Serializer/Encoder/JsonEncode.php
+ */
 final class JsonEncoder implements JsonEncoderInterface
 {
     /**
