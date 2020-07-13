@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /***
  *
  * This file is part of the "headless" Extension for TYPO3 CMS.
@@ -13,15 +11,14 @@ declare(strict_types=1);
  *
  ***/
 
+declare(strict_types=1);
+
 namespace FriendsOfTYPO3\Headless\Json;
 
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-final class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
+final class JsonEncoder implements JsonEncoderInterface
 {
-    use LoggerAwareTrait;
-
     /**
      * @var JsonDecoderInterface
      */
@@ -30,14 +27,15 @@ final class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
     /**
      * @param JsonDecoderInterface $jsonDecoder
      */
-    public function __construct(JsonDecoderInterface $jsonDecoder)
+    public function __construct(JsonDecoderInterface $jsonDecoder = null)
     {
-        $this->jsonDecoder = $jsonDecoder;
+        $this->jsonDecoder = $jsonDecoder ?? GeneralUtility::makeInstance(JsonDecoder::class);
     }
 
     /**
      * @param array $data
      * @param int $encodeOptions
+     * @throws JsonEncoderException
      * @return string
      */
     public function encode(array $data, int $encodeOptions = 0): string
@@ -45,17 +43,15 @@ final class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
         try {
             $encodedJson = json_encode($this->jsonDecoder->decode($data), $encodeOptions);
         } catch (\JsonException $e) {
-            $this->logger->critical('Error while encoding json', ['code' => $e->getCode(), 'message' => $e->getMessage()]);
-            return '';
+            throw new JsonEncoderException($e->getMessage(), $e->getCode(), $e);
         }
 
-        if (\PHP_VERSION_ID >= 70300 && (JSON_THROW_ON_ERROR & $encodeOptions)) {
+        if (\PHP_VERSION_ID >= 70300 && (\JSON_THROW_ON_ERROR & $encodeOptions)) {
             return $encodedJson;
         }
 
-        if (json_last_error() !== JSON_ERROR_NONE && ($encodedJson === false || !($encodeOptions & JSON_PARTIAL_OUTPUT_ON_ERROR))) {
-            $this->logger->critical('Error while encoding json', ['code' => json_last_error(), 'message' => json_last_error_msg()]);
-            return '';
+        if (json_last_error() !== JSON_ERROR_NONE && ($encodedJson === false || !($encodeOptions & \JSON_PARTIAL_OUTPUT_ON_ERROR))) {
+            throw new JsonEncoderException(json_last_error_msg(), json_last_error());
         }
 
         return $encodedJson;

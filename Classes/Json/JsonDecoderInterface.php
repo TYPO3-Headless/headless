@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /***
  *
  * This file is part of the "headless" Extension for TYPO3 CMS.
@@ -12,6 +10,8 @@ declare(strict_types=1);
  *  (c) 2020
  *
  ***/
+
+declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Json;
 

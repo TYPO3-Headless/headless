@@ -15,9 +15,11 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
-use FriendsOfTYPO3\Headless\Json\JsonDecoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderException;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -28,8 +30,10 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 /**
  * Contains JSON class object
  */
-class JsonContentObject extends AbstractContentObject
+class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var ContentDataProcessor
      */
@@ -47,7 +51,7 @@ class JsonContentObject extends AbstractContentObject
     {
         parent::__construct($cObj);
         $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
-        $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class, GeneralUtility::makeInstance(JsonDecoder::class));
+        $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
     }
 
     /**
@@ -70,7 +74,12 @@ class JsonContentObject extends AbstractContentObject
             $data = $this->processFieldWithDataProcessing($conf);
         }
 
-        $json = $this->jsonEncoder->encode($data, \PHP_VERSION_ID >= 70300 ? JSON_THROW_ON_ERROR : 0);
+        try {
+            $json = $this->jsonEncoder->encode($data, \PHP_VERSION_ID >= 70300 ? \JSON_THROW_ON_ERROR : 0);
+        } catch (JsonEncoderException $e) {
+            $this->logger->critical('Error while encoding json', ['code' => $e->getCode(), 'message' => $e->getMessage()]);
+            return '[]';
+        }
 
         if (isset($conf['stdWrap.'])) {
             $json = $this->cObj->stdWrap($json, $conf['stdWrap.']);

@@ -15,7 +15,6 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Json;
 
-interface JsonEncoderInterface
+class JsonEncoderException extends \UnexpectedValueException
 {
-    public function encode(array $data, int $encodeOptions = 0): string;
 }
