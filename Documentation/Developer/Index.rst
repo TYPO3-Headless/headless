@@ -99,7 +99,86 @@ Clear the cache and in the response we will see the following JSON output (short
 Integrating external plugins
 ============================
 
-See issue `#138 <https://github.com/TYPO3-Initiatives/headless/issues/138>`__
+The integration of other extension plugins is pretty simple. We're providing the `headless_news <https://github.com/TYPO3-Initiatives/headless_news>`__
+extension as an example of how it works.
+
+Main part is a user function definition to run a plugin from TypoScript:
+
+.. code-block:: typoscript
+
+  tt_content.list =< lib.contentElementWithHeader
+  tt_content.list {
+    fields {
+      content {
+        fields {
+          data = CASE
+          data {
+            key.field = list_type
+            news_pi1 = USER
+            news_pi1 {
+              userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+              vendorName = GeorgRinger
+              extensionName = News
+              pluginName = Pi1
+              controller = News
+              view < plugin.tx_news.view
+              persistence < plugin.tx_news.persistence
+              settings < plugin.tx_news.settings
+            }
+          }
+        }
+      }
+    }
+  }
+
+For any other plugin, just change the `vendorName`, `extensionName`, `pluginName` and `controller` options,
+and import needed constant and setup values (like for view, persistence and settings in this case).
+
+Than use the constants of that extension to overwrite the paths to the fluid templates:
+
+.. code-block:: typoscript
+
+  plugin.tx_news {
+    view {
+      templateRootPath = EXT:headless_news/Resources/Private/News/Templates/
+      partialRootPath = EXT:headless_news/Resources/Private/News/Partials/
+      layoutRootPath = EXT:headless_news/Resources/Private/News/Layouts/
+    }
+  }
+
+As last step we need to re-implement the template logic to generate JSON instead of HTML structure.
+We do this by creating Fluid templates at the location specified in the previous step.
+
+Because we don't enforce any standard for the JSON structure, we are pretty free here to adjust the
+structure to our needs (or to the requests of our frontend developer).
+
+Here is the shortened `List.html` template which generates news items into a JSON array:
+
+.. code-block:: html
+
+  <f:spaceless>
+    {"list": [<f:for each="{news}" as="newsItem" iteration="newsIterator">
+    <f:if condition="{settings.excludeAlreadyDisplayedNews}">
+      <f:then>
+        <n:format.nothing>
+          <n:excludeDisplayedNews newsItem="{newsItem}"/>
+        </n:format.nothing>
+      </f:then>
+    </f:if>
+    <f:render section="NewsListView" arguments="{newsItem: newsItem,settings:settings,iterator:iterator}" />
+      {f:if(condition: newsIterator.isLast, else: ',')}
+    </f:for>],
+    "settings":
+    <f:format.raw>
+      <f:format.json value="{
+        orderBy: settings.orderBy,
+        orderDirection: settings.orderDirection,
+        templateLayout: settings.templateLayout,
+        action: 'list'
+      }"/>
+    </f:format.raw>
+    }
+  </f:spaceless>
 
 .. _developer-custom-contentelements:
 
