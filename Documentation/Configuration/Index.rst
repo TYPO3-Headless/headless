@@ -3,19 +3,7 @@
 .. _configuration:
 
 ===================
-TODO: Configuration
+Configuration
 ===================
 
-How is the extension configured?
-
-
-Example
-=======
-
-Example for TypoScript code block:
-
-.. code-block:: typoscript
-
-   plugin.tx_headless {
-      # ...
-   }
+This extension has no configuration options yet.

@@ -62,7 +62,6 @@ Use the plugin through TypoScript:
               extensionName = ExtName
               pluginName = DemoPlugin
               controller = Demo
-
               settings {
                 test = TEXT
                 test.value = The demo is working
