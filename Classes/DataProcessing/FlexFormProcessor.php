@@ -35,7 +35,8 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *   as = flexform
  * }
  */
-class FlexFormProcessor implements DataProcessorInterface {
+class FlexFormProcessor implements DataProcessorInterface
+{
     /**
      * @var FlexFormService
      */
@@ -44,7 +45,8 @@ class FlexFormProcessor implements DataProcessorInterface {
     /**
      * Constructor
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->flexFormService = GeneralUtility::makeInstance(FlexFormService::class);
     }
 
@@ -55,7 +57,8 @@ class FlexFormProcessor implements DataProcessorInterface {
      * @param array $processedData Key/value store of processed data (e.g. to be passed to a Fluid View)
      * @return array the processed data as key/value store
      */
-    public function process(ContentObjectRenderer $cObj, array $contentObjectConfiguration, array $processorConfiguration, array $processedData) {
+    public function process(ContentObjectRenderer $cObj, array $contentObjectConfiguration, array $processorConfiguration, array $processedData)
+    {
         $fieldName = $cObj->stdWrapValue('fieldName', $processorConfiguration);
 
         // default flexform field name
