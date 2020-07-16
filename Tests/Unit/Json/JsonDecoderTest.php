@@ -15,7 +15,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Test\Unit\ContentObject;
 
-use FriendsOfTYPO3\Headless\ContentObject\JsonDecoder;
+use FriendsOfTYPO3\Headless\Json\JsonDecoder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
