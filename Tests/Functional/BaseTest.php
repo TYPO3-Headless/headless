@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ *
+ * (c) 2020
+ */
+
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Test\Functional;
@@ -62,10 +71,10 @@ abstract class BaseTest extends FunctionalTestCase
         $validator->check($data, $schema);
         if (false === $validator->isValid()) {
             foreach ($validator->getErrors() as $error) {
-                $this->fail(sprintf('Property "%s" is not valid: %s in %s', $error['property'], $error['message'], $jsonString));
+                self::fail(sprintf('Property "%s" is not valid: %s in %s', $error['property'], $error['message'], $jsonString));
             }
         } else {
-            $this->assertTrue(true);
+            self::assertTrue(true);
         }
     }
 
@@ -82,42 +91,42 @@ abstract class BaseTest extends FunctionalTestCase
 
     protected function checkDefaultContentFields($contentElement, $id, $pid, $type, $colPos = 0, $categories = '')
     {
-        $this->assertEquals($id, $contentElement['id'], 'id mismatch');
-        $this->assertEquals($pid, $contentElement['pid'], 'pid mismatch');
-        $this->assertEquals($type, $contentElement['type'], 'type mismatch');
-        $this->assertEquals($colPos, $contentElement['colPos'], 'colPos mismatch');
-        $this->assertEquals($categories, $contentElement['categories'], 'categories mismatch');
+        self::assertEquals($id, $contentElement['id'], 'id mismatch');
+        self::assertEquals($pid, $contentElement['pid'], 'pid mismatch');
+        self::assertEquals($type, $contentElement['type'], 'type mismatch');
+        self::assertEquals($colPos, $contentElement['colPos'], 'colPos mismatch');
+        self::assertEquals($categories, $contentElement['categories'], 'categories mismatch');
     }
 
     protected function checkAppearanceFields($contentElement, $layout = 'default', $frameClass = 'default', $spaceBefore = '', $spaceAfter = '')
     {
         $contentElementAppearance = $contentElement['appearance'];
 
-        $this->assertEquals($layout, $contentElementAppearance['layout'], 'layout mismatch');
-        $this->assertEquals($frameClass, $contentElementAppearance['frameClass'], 'frameClass mismatch');
-        $this->assertEquals($spaceBefore, $contentElementAppearance['spaceBefore'], 'spaceBefore mismatch');
-        $this->assertEquals($spaceAfter, $contentElementAppearance['spaceAfter'], 'spaceAfter mismatch');
+        self::assertEquals($layout, $contentElementAppearance['layout'], 'layout mismatch');
+        self::assertEquals($frameClass, $contentElementAppearance['frameClass'], 'frameClass mismatch');
+        self::assertEquals($spaceBefore, $contentElementAppearance['spaceBefore'], 'spaceBefore mismatch');
+        self::assertEquals($spaceAfter, $contentElementAppearance['spaceAfter'], 'spaceAfter mismatch');
     }
 
     protected function checkHeaderFields($contentElement, $header = '', $subheader = '', $headerLayout = 0, $headerPosition= '')
     {
         $contentElementContent = $contentElement['content'];
 
-        $this->assertEquals($header, $contentElementContent['header'], 'header mismatch');
-        $this->assertEquals($subheader, $contentElementContent['subheader'], 'subheader mismatch');
-        $this->assertEquals($headerLayout, $contentElementContent['headerLayout'], 'headerLayout mismatch');
-        $this->assertEquals($headerPosition, $contentElementContent['headerPosition'], 'headerPosition mismatch');
-        $this->assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
+        self::assertEquals($header, $contentElementContent['header'], 'header mismatch');
+        self::assertEquals($subheader, $contentElementContent['subheader'], 'subheader mismatch');
+        self::assertEquals($headerLayout, $contentElementContent['headerLayout'], 'headerLayout mismatch');
+        self::assertEquals($headerPosition, $contentElementContent['headerPosition'], 'headerPosition mismatch');
+        self::assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
     }
 
     protected function checkHeaderFieldsLink($contentElement, $link, $type, $urlPrefix, $target)
     {
         $contentElementHeaderFieldsLink = $contentElement['content']['headerLink'];
 
-        $this->assertTrue(is_array($contentElementHeaderFieldsLink), 'headerLink not an array');
-        $this->assertEquals($link, $contentElementHeaderFieldsLink['link'], 'link mismatch');
-        $this->assertEquals($type, $contentElementHeaderFieldsLink['type'], 'type mismatch');
-        $this->assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['url'], 'url mismatch');
-        $this->assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
+        self::assertTrue(is_array($contentElementHeaderFieldsLink), 'headerLink not an array');
+        self::assertEquals($link, $contentElementHeaderFieldsLink['link'], 'link mismatch');
+        self::assertEquals($type, $contentElementHeaderFieldsLink['type'], 'type mismatch');
+        self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['url'], 'url mismatch');
+        self::assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
     }
 }
