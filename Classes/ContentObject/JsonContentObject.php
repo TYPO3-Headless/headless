@@ -1,20 +1,23 @@
 <?php
 
-/***
- *
+/*
  * This file is part of the "headless" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- *  (c) 2019
- *
- ***/
+ * (c) 2020
+ */
 
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
+use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderException;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -25,12 +28,19 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 /**
  * Contains JSON class object
  */
-class JsonContentObject extends AbstractContentObject
+class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var ContentDataProcessor
      */
     protected $contentDataProcessor;
+
+    /**
+     * @var JsonEncoderInterface
+     */
+    protected $jsonEncoder;
 
     /**
      * @param ContentObjectRenderer $cObj
@@ -39,6 +49,7 @@ class JsonContentObject extends AbstractContentObject
     {
         parent::__construct($cObj);
         $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
+        $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
     }
 
     /**
@@ -61,7 +72,12 @@ class JsonContentObject extends AbstractContentObject
             $data = $this->processFieldWithDataProcessing($conf);
         }
 
-        $json = json_encode($this->decodeFieldsIfRequired($data));
+        try {
+            $json = $this->jsonEncoder->encode($data, \PHP_VERSION_ID >= 70300 ? \JSON_THROW_ON_ERROR : 0);
+        } catch (JsonEncoderException $e) {
+            $this->logger->critical('Error while encoding json', ['code' => $e->getCode(), 'message' => $e->getMessage()]);
+            return '[]';
+        }
 
         if (isset($conf['stdWrap.'])) {
             $json = $this->cObj->stdWrap($json, $conf['stdWrap.']);
@@ -91,11 +107,9 @@ class JsonContentObject extends AbstractContentObject
             $theValue = $setup[$theKey];
             if ((string)$theKey && strpos($theKey, '.') === false) {
                 $conf = $setup[$theKey . '.'];
-                $intVal = (isset($conf['intval']) && $conf['intval']) ? true : false;
-                $contentDataProcessing['dataProcessing.'] = isset($conf['dataProcessing.']) ? $conf['dataProcessing.'] : [];
-
+                $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
-                if ($intVal) {
+                if (isset($conf['intval']) && $conf['intval']) {
                     $content[$theKey] = (int)$content[$theKey];
                 }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
@@ -103,8 +117,8 @@ class JsonContentObject extends AbstractContentObject
                 }
             }
             if ((string)$theKey && strpos($theKey, '.') > 0 && !isset($setup[rtrim($theKey, '.')])) {
-                $contentFieldName = isset($theValue['source']) ? $theValue['source'] : rtrim($theKey, '.');
-                $contentFieldTypeProcessing['dataProcessing.'] = isset($theValue['dataProcessing.']) ? $theValue['dataProcessing.'] : [];
+                $contentFieldName = $theValue['source'] ?? rtrim($theKey, '.');
+                $contentFieldTypeProcessing['dataProcessing.'] = $theValue['dataProcessing.'] ?? [];
 
                 if (array_key_exists('fields.', $theValue)) {
                     $content[$contentFieldName] = $this->cObjGet($theValue['fields.']);
@@ -133,58 +147,7 @@ class JsonContentObject extends AbstractContentObject
                 $filteredKeys[] = (string)$key;
             }
         }
-        $filteredKeys = array_unique($filteredKeys);
-        return $filteredKeys;
-    }
-
-    /**
-     * @param array $haystack
-     * @param $needle
-     * @return string
-     */
-    protected function recursiveFind(array $haystack, $needle)
-    {
-        $iterator  = new RecursiveArrayIterator($haystack);
-        $recursive = new RecursiveIteratorIterator(
-            $iterator,
-            RecursiveIteratorIterator::SELF_FIRST
-        );
-        $iteration = 0;
-        foreach ($recursive as $key => $value) {
-            if ($key === 'dataProcessing.') {
-                $iteration++;
-                if ($iteration > 1) {
-                    return;
-                }
-            }
-            if ($key === $needle) {
-                yield $value;
-            }
-        }
-    }
-
-    /**
-     * @param array $data
-     * @return array
-     */
-    protected function decodeFieldsIfRequired(array $data): array
-    {
-        $json = [];
-
-        foreach ($data as $key => $singleData) {
-            if (is_string($singleData)) {
-                if (json_decode($singleData) === null) {
-                    $json[$key] = $singleData;
-                } else {
-                    $json[$key] = json_decode($singleData);
-                }
-            } elseif (is_array($singleData)) {
-                $json[$key] = $this->decodeFieldsIfRequired($singleData);
-            } else {
-                $json[$key] = $singleData;
-            }
-        }
-        return $json;
+        return array_unique($filteredKeys);
     }
 
     /**
@@ -209,5 +172,31 @@ class JsonContentObject extends AbstractContentObject
             }
         }
         return $dataProcessingData;
+    }
+
+    /**
+     * @param array $haystack
+     * @param $needle
+     * @return string
+     */
+    protected function recursiveFind(array $haystack, $needle)
+    {
+        $iterator = new RecursiveArrayIterator($haystack);
+        $recursive = new RecursiveIteratorIterator(
+            $iterator,
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+        $iteration = 0;
+        foreach ($recursive as $key => $value) {
+            if ($key === 'dataProcessing.') {
+                $iteration++;
+                if ($iteration > 1) {
+                    return;
+                }
+            }
+            if ($key === $needle) {
+                yield $value;
+            }
+        }
     }
 }

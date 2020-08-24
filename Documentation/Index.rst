@@ -1,12 +1,3 @@
-.. Helpful documentation links
-   How to Document an Extension: https://docs.typo3.org/m/typo3/docs-how-to-document/master/en-us/WritingDocForExtension/Index.html
-   Sphinx syntax overview: https://docs.typo3.org/m/typo3/docs-how-to-document/master/en-us/WritingReST/Reference.html
-   Sphinx official docs: https://www.sphinx-doc.org/en/master/
-
-.. To pre-render the document during writing (https://docs.typo3.org/m/typo3/docs-how-to-document/master/en-us/RenderingDocs/Quickstart.html):
-   $ source <(docker run --rm t3docs/render-documentation show-shell-commands)
-   $ dockrun_t3rd makehtml
-
 .. include:: Includes.txt
 
 .. _start:
@@ -76,10 +67,3 @@ or `report a problem <https://github.com/TYPO3-Initiatives/headless/issues/new>`
    :maxdepth: 3
    :titlesonly:
    :glob:
-
-   Introduction/Index
-   Installation/Index
-   Configuration/Index
-   Developer/Index
-   FAQ/Index
-   Sitemap

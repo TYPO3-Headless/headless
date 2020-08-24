@@ -1,15 +1,13 @@
 <?php
 
-/***
- *
+/*
  * This file is part of the "headless" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- *  (c) 2019
- *
- ***/
+ * (c) 2020
+ */
 
 declare(strict_types=1);
 
@@ -45,8 +43,11 @@ class FileUtility
         /** @var ContentObjectRenderer $cObj */
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $fileReferenceUid = $fileReference->getUid();
+        $uidLocal = $fileReference->getProperty('uid_local');
         $metaData = $fileReference->toArray();
         $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
+        $crop = $fileReference->getProperty('crop');
+        $originalFileUrl = $fileReference->getPublicUrl();
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
             if ($fileReference->getMimeType() !== 'image/svg+xml') {
@@ -68,7 +69,8 @@ class FileUtility
                 'mimeType' => $fileReference->getMimeType(),
                 'type' => explode('/', $fileReference->getMimeType())[0],
                 'filename' => $fileReference->getProperty('name'),
-                'originalUrl' => $fileReference->getPublicUrl(),
+                'originalUrl' => $originalFileUrl,
+                'uidLocal' => $uidLocal,
                 'fileReferenceUid' => $fileReferenceUid,
                 'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getSize()),
                 'link' => !empty($metaData['link']) ? $cObj->typoLink_URL([
@@ -82,6 +84,7 @@ class FileUtility
                     'width' => $this->getCroppedDimensionalProperty($fileReference, 'width', $cropVariant),
                     'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant)
                 ],
+                'crop' => $crop,
                 'autoplay' => $fileReference->getProperty('autoplay'),
                 'extension' => $metaData['extension']
             ]
