@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ *
+ * (c) 2020
+ */
+
 $EM_CONF[$_EXTKEY] = [
     'title' => 'Headless',
     'description' => 'This extension provides way to output content from TYPO3 in JSON format.',

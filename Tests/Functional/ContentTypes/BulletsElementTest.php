@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ *
+ * (c) 2020
+ */
+
 declare(strict_types=1);
 
 use FriendsOfTYPO3\Headless\Test\Functional\ContentTypes\BaseContentTypeTest;
@@ -15,7 +24,7 @@ class BulletsElementTest extends BaseContentTypeTest
             new InternalRequest('https://website.local/')
         );
 
-        $this->assertEquals(200, $response->getStatusCode());
+        self::assertEquals(200, $response->getStatusCode());
 
         $fullTree = json_decode((string)$response->getBody(), true);
 
@@ -26,8 +35,8 @@ class BulletsElementTest extends BaseContentTypeTest
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 1, 2);
         $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 _blank LinkClass LinkTitle parameter=999', 'page', '/page1?parameter=999&cHash=', ' target="_blank"');
 
-        $this->assertEquals(1, $contentElement['content']['bulletsType']);
-        $this->assertTrue(is_array($contentElement['content']['bodytext']));
-        $this->assertEquals($testBulletsContent, $contentElement['content']['bodytext']);
+        self::assertEquals(1, $contentElement['content']['bulletsType']);
+        self::assertTrue(is_array($contentElement['content']['bodytext']));
+        self::assertEquals($testBulletsContent, $contentElement['content']['bodytext']);
     }
 }

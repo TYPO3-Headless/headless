@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ *
+ * (c) 2020
+ */
+
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Test\Unit\DataProcessing;
@@ -58,7 +68,7 @@ final class DatabaseQueryProcessorTest extends UnitTestCase
         $processedData = [];
         $this->contentObjectRenderer->checkIf($processorConfiguration['if.'])->shouldBeCalledOnce()->willReturn(false);
         $this->contentObjectRenderer->stdWrapValue(Argument::any())->shouldNotBeCalled();
-        $this->assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
+        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
     }
 
     /**
@@ -74,7 +84,7 @@ final class DatabaseQueryProcessorTest extends UnitTestCase
         $processedData = [];
         $this->contentObjectRenderer->checkIf($processorConfiguration['if.'])->shouldBeCalledOnce()->willReturn(true);
         $this->contentObjectRenderer->stdWrapValue('table', $processorConfiguration)->shouldBeCalledOnce()->willReturn('');
-        $this->assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
+        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
     }
 
     /**
@@ -102,13 +112,13 @@ final class DatabaseQueryProcessorTest extends UnitTestCase
         $this->contentObjectRenderer->stdWrapValue('as', $processorConfigurationWithoutTable, 'records')->shouldBeCalledOnce()->willReturn('records');
 
         $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
-        $this->subject->expects($this->any())->method('createContentObjectRenderer')->willReturn($contentObjectRenderer->reveal());
+        $this->subject->expects(self::any())->method('createContentObjectRenderer')->willReturn($contentObjectRenderer->reveal());
 
         $this->contentDataProcessor->process($contentObjectRenderer, $processorConfigurationWithoutTable, $records[0])->shouldBeCalledOnce()->willReturn($records[0]);
         $this->contentObjectRenderer->getRecords('tt_content', $processorConfigurationWithoutTable)->shouldBeCalledOnce()->willReturn($records);
 
         $processedData['records'] = $records;
-        $this->assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
+        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
     }
 
     /**
@@ -144,7 +154,7 @@ final class DatabaseQueryProcessorTest extends UnitTestCase
         $this->contentObjectRenderer->stdWrapValue('as', $processorConfigurationWithoutTable, 'records')->shouldBeCalledOnce()->willReturn('records');
 
         $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
-        $this->subject->expects($this->any())->method('createContentObjectRenderer')->willReturn($contentObjectRenderer->reveal());
+        $this->subject->expects(self::any())->method('createContentObjectRenderer')->willReturn($contentObjectRenderer->reveal());
 
         $expectedRecords = [
             [
@@ -162,6 +172,6 @@ final class DatabaseQueryProcessorTest extends UnitTestCase
 
         $processedData['records'] = $expectedRecords;
 
-        $this->assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
+        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
     }
 }

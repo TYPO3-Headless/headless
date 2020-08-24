@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ *
+ * (c) 2020
+ */
+
 declare(strict_types=1);
 
 use FriendsOfTYPO3\Headless\Test\Functional\ContentTypes\BaseContentTypeTest;
@@ -13,7 +22,7 @@ class TextMediaElementTest extends BaseContentTypeTest
             new InternalRequest('https://website.local/')
         );
 
-        $this->assertEquals(200, $response->getStatusCode());
+        self::assertEquals(200, $response->getStatusCode());
 
         $fullTree = json_decode((string)$response->getBody(), true);
 
@@ -24,7 +33,7 @@ class TextMediaElementTest extends BaseContentTypeTest
         $this->checkHeaderFields($contentElement);
 
         // typolink parser was called on bodytext
-        $this->assertStringContainsString('<a href="/page1?parameter=999&amp;cHash=', $contentElement['content']['bodytext']);
+        self::assertStringContainsString('<a href="/page1?parameter=999&amp;cHash=', $contentElement['content']['bodytext']);
 
         $this->checkGalleryContentFields($contentElement);
     }
