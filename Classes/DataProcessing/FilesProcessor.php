@@ -173,9 +173,9 @@ class FilesProcessor implements DataProcessorInterface
 
     /**
      * @param array $dimensions
-     * @return array
+     * @return array|null
      */
-    protected function processFiles(array $dimensions = []): array
+    protected function processFiles(array $dimensions = []): ?array
     {
         $data = [];
         $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
@@ -226,7 +226,7 @@ class FilesProcessor implements DataProcessorInterface
 
         if (isset($this->processorConfiguration['processingConfiguration.']['returnFlattenObject']) &&
             (int)$this->processorConfiguration['processingConfiguration.']['returnFlattenObject'] === 1) {
-            return $data[0] ?? [];
+            return $data[0] ?? null;
         }
 
         return $data;
