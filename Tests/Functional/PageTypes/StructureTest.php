@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ *
+ * (c) 2020
+ */
+
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Test\Functional\PageTypes;
@@ -17,20 +26,20 @@ class StructurePageTypesTest extends BasePageTypesTest
             new InternalRequest('https://website.local/?type=834')
         );
 
-        $this->assertEquals(200, $response->getStatusCode());
+        self::assertEquals(200, $response->getStatusCode());
 
         $pageTree = json_decode((string)$response->getBody(), true);
 
-        $this->assertTrue(isset($pageTree['navigation']));
-        $this->assertEquals(1, count($pageTree['navigation']));
-        $this->assertTrue(isset($pageTree['navigation'][0]));
-        $this->assertEquals(2, count($pageTree['navigation'][0]['children']));
-        $this->assertEquals(1, count($pageTree['navigation'][0]['children'][0]['children']));
-        $this->assertEquals(0, count($pageTree['navigation'][0]['children'][1]['children']));
+        self::assertTrue(isset($pageTree['navigation']));
+        self::assertEquals(1, count($pageTree['navigation']));
+        self::assertTrue(isset($pageTree['navigation'][0]));
+        self::assertEquals(2, count($pageTree['navigation'][0]['children']));
+        self::assertEquals(1, count($pageTree['navigation'][0]['children'][0]['children']));
+        self::assertEquals(0, count($pageTree['navigation'][0]['children'][1]['children']));
 
-        $this->assertEquals('/', $pageTree['navigation'][0]['link']);
-        $this->assertEquals('/page1', $pageTree['navigation'][0]['children'][0]['link']);
-        $this->assertEquals('/page1/page1_1', $pageTree['navigation'][0]['children'][0]['children'][0]['link']);
-        $this->assertEquals('/page2', $pageTree['navigation'][0]['children'][1]['link']);
+        self::assertEquals('/', $pageTree['navigation'][0]['link']);
+        self::assertEquals('/page1', $pageTree['navigation'][0]['children'][0]['link']);
+        self::assertEquals('/page1/page1_1', $pageTree['navigation'][0]['children'][0]['children'][0]['link']);
+        self::assertEquals('/page2', $pageTree['navigation'][0]['children'][1]['link']);
     }
 }

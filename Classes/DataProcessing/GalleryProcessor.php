@@ -1,31 +1,39 @@
 <?php
 
-declare(strict_types=1);
-
-namespace FriendsOfTYPO3\Headless\DataProcessing;
-
-use FriendsOfTYPO3\Headless\Utility\FileUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Service\ImageService;
-use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
-
-/***
- *
+/*
  * This file is part of the "headless" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- *  (c) 2019
- *
- ***/
-
-/**
- * Class GalleryProcessor
+ * (c) 2020
  */
+
+declare(strict_types=1);
+
+namespace FriendsOfTYPO3\Headless\DataProcessing;
+
+use FriendsOfTYPO3\Headless\Utility\FileUtility;
+use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
+use TYPO3\CMS\Core\Resource\FileInterface;
+use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Service\ImageService;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
+
 class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcessor
 {
     use DataProcessingTrait;
+
+    /**
+     * @var FileReference[]
+     */
+    protected $fileReferenceCache = [];
+
+    /**
+     * @var array<int, array<string, string|array>>
+     */
+    protected $fileObjects = [];
 
     /**
      * @inheritDoc
@@ -47,12 +55,10 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
     }
 
     /**
-     * Calculate the width/height of the media elements
+     * @inheritDoc
      *
-     * Based on the width of the gallery, defined equal width or height by a user, the spacing between columns and
-     * the use of a border, defined by user, where the border width and padding are taken into account
-     *
-     * File objects MUST already be filtered. They need a height and width to be shown in the gallery
+     * replaced only calls to $this->getCroppedDimensionalPropertyFromProcessedFile()
+     * because of already processed files by FilesProcessor
      */
     protected function calculateMediaWidthsAndHeights()
     {
@@ -79,8 +85,8 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                     if ($fileKey > $this->galleryData['count']['files'] - 1) {
                         break 2;
                     }
-                    $currentMediaScaling = $this->equalMediaHeight / max($this->fileObjects[$fileKey]['properties']['cropDimensions']['height'], 1);
-                    $totalRowWidth += $this->fileObjects[$fileKey]['properties']['cropDimensions']['width'] * $currentMediaScaling;
+                    $currentMediaScaling = $this->equalMediaHeight / max($this->getCroppedDimensionalPropertyFromProcessedFile($this->fileObjects[$fileKey], 'height'), 1);
+                    $totalRowWidth += $this->getCroppedDimensionalPropertyFromProcessedFile($this->fileObjects[$fileKey], 'width') * $currentMediaScaling;
                 }
                 $maximumRowWidth = max($totalRowWidth, $maximumRowWidth);
                 $mediaInRowScaling = $totalRowWidth / $galleryWidthMinusBorderAndSpacing;
@@ -91,7 +97,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
             foreach ($this->fileObjects as $key => $fileObject) {
                 $mediaHeight = floor($this->equalMediaHeight / $mediaScalingCorrection);
                 $mediaWidth = floor(
-                    $fileObject['properties']['cropDimensions']['width'] * ($mediaHeight / max($fileObject['properties']['cropDimensions']['height'], 1))
+                    $this->getCroppedDimensionalPropertyFromProcessedFile($fileObject, 'width') * ($mediaHeight / max($this->getCroppedDimensionalPropertyFromProcessedFile($fileObject, 'height'), 1))
                 );
                 $this->mediaDimensions[$key] = [
                     'width' => $mediaWidth,
@@ -115,7 +121,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
             foreach ($this->fileObjects as $key => $fileObject) {
                 $mediaWidth = floor($this->equalMediaWidth / $mediaScalingCorrection);
                 $mediaHeight = floor(
-                    $fileObject['properties']['cropDimensions']['height'] * ($mediaWidth / max($fileObject['properties']['cropDimensions']['width'], 1))
+                    $this->getCroppedDimensionalPropertyFromProcessedFile($fileObject, 'height') * ($mediaWidth / max($this->getCroppedDimensionalPropertyFromProcessedFile($fileObject, 'width'), 1))
                 );
                 $this->mediaDimensions[$key] = [
                     'width' => $mediaWidth,
@@ -126,8 +132,42 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
             // Recalculate gallery width
             $this->galleryData['width'] = floor($totalRowWidth / $mediaScalingCorrection);
 
-            // Automatic setting of width and height
+        // Automatic setting of width and height
+        } else {
+            $maxMediaWidth = (int)($galleryWidthMinusBorderAndSpacing / $this->galleryData['count']['columns']);
+            foreach ($this->fileObjects as $key => $fileObject) {
+                $croppedWidth = $this->getCroppedDimensionalPropertyFromProcessedFile($fileObject, 'width');
+                $mediaWidth = $croppedWidth > 0 ? min($maxMediaWidth, $croppedWidth) : $maxMediaWidth;
+                $mediaHeight = floor(
+                    $this->getCroppedDimensionalPropertyFromProcessedFile($fileObject, 'height') * ($mediaWidth / max($this->getCroppedDimensionalPropertyFromProcessedFile($fileObject, 'width'), 1))
+                );
+                $this->mediaDimensions[$key] = [
+                    'width' => $mediaWidth,
+                    'height' => $mediaHeight
+                ];
+            }
         }
+    }
+
+    /**
+     * Replaces original method (because of already processed files)
+     *
+     * @param array $processedFile
+     * @param string $property
+     * @return int
+     */
+    private function getCroppedDimensionalPropertyFromProcessedFile(array $processedFile, string $property): int
+    {
+        if (empty($processedFile['properties']['crop'])) {
+            return (int)$processedFile['properties']['dimensions'][$property];
+        }
+
+        $croppingConfiguration = $processedFile['properties']['crop'];
+        $cropVariantCollection = CropVariantCollection::create((string)$croppingConfiguration);
+
+        return (int)$cropVariantCollection->getCropArea($this->cropVariant)
+            ->makeAbsoluteBasedOnFile($this->createFileObject($processedFile))
+            ->asArray()[$property];
     }
 
     /**
@@ -140,8 +180,15 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
         for ($row = 1; $row <= $this->galleryData['count']['rows']; $row++) {
             for ($column = 1; $column <= $this->galleryData['count']['columns']; $column++) {
                 $fileKey = (($row - 1) * $this->galleryData['count']['columns']) + $column - 1;
-                if ($this->fileObjects[$fileKey]) {
-                    $this->galleryData['rows'][$row]['columns'][$column] = $this->fileObjects[$fileKey];
+                $fileObj = $this->fileObjects[$fileKey] ?? null;
+
+                if ($fileObj) {
+                    if (($this->equalMediaWidth || $this->equalMediaHeight) && $fileObj['properties']['type'] === 'image') {
+                        $image = $this->getImageService()->getImage($fileObj['properties']['originalUrl'], null, true);
+                        $fileObj = $this->getFileUtility()->processFile($image, $this->mediaDimensions[$fileKey] ?? []);
+                    }
+
+                    $this->galleryData['rows'][$row]['columns'][$column] = $fileObj;
                 }
             }
         }
@@ -166,5 +213,28 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
     protected function getImageService(): ImageService
     {
         return GeneralUtility::makeInstance(ImageService::class);
+    }
+
+    /**
+     * small helper for handling cropping based on already processed file
+     *
+     * @param array $processedFile
+     * @return FileInterface
+     */
+    private function createFileObject(array $processedFile): FileInterface
+    {
+        $uid = (int)$processedFile['properties']['uidLocal'];
+        if (!isset($this->fileReferenceCache[$uid])) {
+            $this->fileReferenceCache[$uid] = GeneralUtility::makeInstance(
+                FileReference::class,
+                array_merge(
+                    $processedFile['properties'],
+                    $processedFile['properties']['dimensions'],
+                    ['uid_local' => $uid]
+                )
+            );
+        }
+
+        return $this->fileReferenceCache[$uid];
     }
 }
