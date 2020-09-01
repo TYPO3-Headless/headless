@@ -16,11 +16,24 @@ If you have any questions just drop a line in #initiative-pwa Slack channel.
 - JSON API for content elements
 - JSON API for navigation, layouts
 - taking into account all language/translation configuration (e.g. fallback)
-- support for EXT:news (in additional extension: https://github.com/TYPO3-Initiatives/headless_news)
 - easily extensible with custom fields or custom CE's
+- basic support for EXT:form
+- support for felogin (comming soon)
+
+### Additional extensions and integrations
+
+- headless support for EXT:news https://github.com/TYPO3-Initiatives/headless_news
+- headless support for EXT:solr https://github.com/TYPO3-Initiatives/headless_solr
+- headless support for EXT:powermail https://github.com/TYPO3-Initiatives/headless_powermail
+- headless support for EXT:gridelements https://github.com/itplusx/headless_gridelements
 
 ## Requirements
 Extension requires TYPO3 in version at least 9.5.
+
+## Quickstart / Demo
+
+If you want to take a look at working demo including frontend, backend and demo data, use our DDEV based demo project here:
+https://github.com/TYPO3-Initiatives/pwa-demo
 
 ## Installation
 Install extension using composer\
@@ -110,6 +123,7 @@ This feature toggle extends current SiteConfiguration (and it's variants) with n
 
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
+If you have any questions, join #initiative-pwa Slack channel.
 
 ## Credits
 
