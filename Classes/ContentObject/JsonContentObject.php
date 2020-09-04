@@ -152,9 +152,9 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
 
     /**
      * @param array $dataProcessing
-     * @return array
+     * @return array|null (null if flag is set)
      */
-    protected function processFieldWithDataProcessing(array $dataProcessing): array
+    protected function processFieldWithDataProcessing(array $dataProcessing): ?array
     {
         $data = $this->contentDataProcessor->process(
             $this->cObj,
@@ -166,6 +166,13 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
         );
 
         $dataProcessingData = [];
+        foreach ($this->recursiveFind($dataProcessing, 'returnNullIfEmpty') as $value) {
+            if ((int)$value === 1) {
+                $dataProcessingData = null;
+                break;
+            }
+        }
+
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
             if (isset($data[$value])) {
                 $dataProcessingData = $data[$value];
