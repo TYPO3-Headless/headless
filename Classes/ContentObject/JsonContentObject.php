@@ -116,8 +116,11 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 $conf = $setup[$theKey . '.'];
                 $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
-                if (isset($conf['intval']) && $conf['intval']) {
+                if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
+                }
+                if ($theValue === 'BOOL') {
+                    $content[$theKey] = (bool)$content[$theKey];
                 }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
                     $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);

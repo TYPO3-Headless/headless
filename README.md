@@ -74,10 +74,10 @@ lib.page {
             foo1 = TEXT
             foo1 {
                 field = bar1
-            }   
+            }
         }
       }
-      
+
 }
 ```
 Output
@@ -87,6 +87,42 @@ Output
         {
             "foo": "bar",
             "foo1": "bar1"
+        }
+    ]
+}
+```
+## INT & BOOL Content Objects for use in JSON Content Object
+
+We introduce new simple content objects to improve JSON API response for frontend developers.
+We can set correct property types, so frontend does not have to deal with string values for fields with numeric values or field that should be true/false.
+```
+lib.page = JSON
+lib.page {
+  fields {
+      data {
+        fields {
+            foo = INT
+            foo {
+                # db value of foo_field = 1
+                field = foo_field
+            }
+            bar = BOOL
+            bar {
+                # db value of bar_field = 0
+                field = bar_field
+            }
+        }
+      }
+
+}
+```
+Output
+```
+{
+    "data": [
+        {
+            "foo": 1,
+            "bar": false
         }
     ]
 }
@@ -112,13 +148,13 @@ lib.languages {
 
 ### Feature toggle "FrontendBaseUrlInPagePreview"
 
-To change the setting for this extension feature either use Localconfiguration.php: or AdditionalConfiguration.php: 
+To change the setting for this extension feature either use Localconfiguration.php: or AdditionalConfiguration.php:
 
 ```
 $GLOBALS[‘TYPO3_CONF_VARS’][‘SYS’][‘features’][‘FrontendBaseUrlInPagePreview’] = true
 ```
 
-This feature toggle extends current SiteConfiguration (and it's variants) with new field for Frontend Url 
+This feature toggle extends current SiteConfiguration (and it's variants) with new field for Frontend Url
 (url frontend of PWA app). This new field is used when there is a need to preview a page such as: "view" module or right click on a page + show, or the 'eye' icon in page view.
 
 ## Development
