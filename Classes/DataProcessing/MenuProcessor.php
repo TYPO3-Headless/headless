@@ -122,6 +122,7 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
         // New properties for EXT:headless
         'appendData',
         'overwriteMenuLevelConfig.',
+        'overwriteMenuConfig.',
     ];
 
     /**
@@ -143,6 +144,7 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
         // New properties for EXT:headless
         'appendData',
         'overwriteMenuLevelConfig.',
+        'overwriteMenuConfig.',
     ];
 
     /**
@@ -152,11 +154,17 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
     {
         // Before rendering the actual menu via HMENU we want to update $this->menuLevelConfig
         $overwriteMenuLevelConfig = $this->getConfigurationValue('overwriteMenuLevelConfig.');
-        if (is_array($overwriteMenuLevelConfig)) {
+        if (\is_array($overwriteMenuLevelConfig)) {
             ArrayUtility::mergeRecursiveWithOverrule($this->menuLevelConfig, $overwriteMenuLevelConfig);
         }
 
         parent::buildConfiguration();
+
+        // override built configuration
+        $overwriteMenuConfig = $this->getConfigurationValue('overwriteMenuConfig.');
+        if (\is_array($overwriteMenuConfig)) {
+            ArrayUtility::mergeRecursiveWithOverrule($this->menuConfig, $overwriteMenuConfig);
+        }
     }
 
     /**

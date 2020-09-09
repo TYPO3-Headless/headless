@@ -173,9 +173,9 @@ class FilesProcessor implements DataProcessorInterface
 
     /**
      * @param array $dimensions
-     * @return array
+     * @return array|null
      */
-    protected function processFiles(array $dimensions = []): array
+    protected function processFiles(array $dimensions = []): ?array
     {
         $data = [];
         $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
@@ -183,18 +183,19 @@ class FilesProcessor implements DataProcessorInterface
         foreach ($this->fileObjects as $fileObject) {
             if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
                 $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+                $targetWidth = (int)($dimensions['width'] ?: $file['properties']['dimensions']['width']);
+                $targetHeight = (int)($dimensions['height'] ?: $file['properties']['dimensions']['height']);
 
                 if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x']) &&
                     (int)$this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x'] === 1 &&
-                    (int)$dimensions['width'] > 0 &&
-                    (int)$dimensions['height'] > 0) {
+                    ($targetWidth || $targetHeight)) {
                     $file['urlRetina'] = $this->getFileUtility()->processFile(
                         $fileObject,
                         array_merge(
                             $dimensions,
                             [
-                                'width' => (int)$dimensions['width'] * self::RETINA_RATIO,
-                                'height' => (int)$dimensions['height'] * self::RETINA_RATIO,
+                                'width' => $targetWidth * self::RETINA_RATIO,
+                                'height' => $targetHeight * self::RETINA_RATIO,
                             ]
                         ),
                         $cropVariant
@@ -203,15 +204,14 @@ class FilesProcessor implements DataProcessorInterface
 
                 if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.']['lqip']) &&
                     (int)$this->processorConfiguration['processingConfiguration.']['autogenerate.']['lqip'] === 1 &&
-                    (int)$dimensions['width'] > 0 &&
-                    (int)$dimensions['height'] > 0) {
+                    ($targetWidth || $targetHeight)) {
                     $file['urlLqip'] = $this->getFileUtility()->processFile(
                         $fileObject,
                         array_merge(
                             $dimensions,
                             [
-                                'width' => (int)$dimensions['width'] * self::LQIP_RATIO,
-                                'height' => (int)$dimensions['height'] * self::LQIP_RATIO,
+                                'width' => $targetWidth * self::LQIP_RATIO,
+                                'height' => $targetHeight * self::LQIP_RATIO,
                             ]
                         ),
                         $cropVariant
@@ -226,7 +226,7 @@ class FilesProcessor implements DataProcessorInterface
 
         if (isset($this->processorConfiguration['processingConfiguration.']['returnFlattenObject']) &&
             (int)$this->processorConfiguration['processingConfiguration.']['returnFlattenObject'] === 1) {
-            return $data[0] ?? [];
+            return $data[0] ?? null;
         }
 
         return $data;
