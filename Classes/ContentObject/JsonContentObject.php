@@ -43,6 +43,11 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     protected $jsonEncoder;
 
     /**
+     * @var array
+     */
+    private $conf;
+
+    /**
      * @param ContentObjectRenderer $cObj
      */
     public function __construct(ContentObjectRenderer $cObj)
@@ -64,6 +69,8 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
         if (!is_array($conf)) {
             $conf = [];
         }
+
+        $this->conf = $conf;
 
         if (isset($conf['fields.'])) {
             $data = $this->cObjGet($conf['fields.']);
@@ -109,8 +116,11 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 $conf = $setup[$theKey . '.'];
                 $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
-                if (isset($conf['intval']) && $conf['intval']) {
+                if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
+                }
+                if ($theValue === 'BOOL') {
+                    $content[$theKey] = (bool)$content[$theKey];
                 }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
                     $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
@@ -152,9 +162,9 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
 
     /**
      * @param array $dataProcessing
-     * @return array
+     * @return array|null (null if flag is set)
      */
-    protected function processFieldWithDataProcessing(array $dataProcessing): array
+    protected function processFieldWithDataProcessing(array $dataProcessing): ?array
     {
         $data = $this->contentDataProcessor->process(
             $this->cObj,
@@ -165,7 +175,10 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             ]
         );
 
-        $dataProcessingData = [];
+        // @TODO remove flag and make it default in BC release
+        $dataProcessingData = isset($this->conf['returnNullIfDataProcessingEmpty'])
+        && (int)$this->conf['returnNullIfDataProcessingEmpty'] === 1 ? null : [];
+
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
             if (isset($data[$value])) {
                 $dataProcessingData = $data[$value];

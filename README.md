@@ -16,11 +16,24 @@ If you have any questions just drop a line in #initiative-pwa Slack channel.
 - JSON API for content elements
 - JSON API for navigation, layouts
 - taking into account all language/translation configuration (e.g. fallback)
-- support for EXT:news (in additional extension: https://github.com/TYPO3-Initiatives/headless_news)
 - easily extensible with custom fields or custom CE's
+- basic support for EXT:form
+- support for felogin (comming soon)
+
+### Additional extensions and integrations
+
+- headless support for EXT:news https://github.com/TYPO3-Initiatives/headless_news
+- headless support for EXT:solr https://github.com/TYPO3-Initiatives/headless_solr
+- headless support for EXT:powermail https://github.com/TYPO3-Initiatives/headless_powermail
+- headless support for EXT:gridelements https://github.com/itplusx/headless_gridelements
 
 ## Requirements
 Extension requires TYPO3 in version at least 9.5.
+
+## Quickstart / Demo
+
+If you want to take a look at working demo including frontend, backend and demo data, use our DDEV based demo project here:
+https://github.com/TYPO3-Initiatives/pwa-demo
 
 ## Installation
 Install extension using composer\
@@ -61,10 +74,10 @@ lib.page {
             foo1 = TEXT
             foo1 {
                 field = bar1
-            }   
+            }
         }
       }
-      
+
 }
 ```
 Output
@@ -74,6 +87,42 @@ Output
         {
             "foo": "bar",
             "foo1": "bar1"
+        }
+    ]
+}
+```
+## INT & BOOL Content Objects for use in JSON Content Object
+
+We introduce new simple content objects to improve JSON API response for frontend developers.
+We can set correct property types, so frontend does not have to deal with string values for fields with numeric values or field that should be true/false.
+```
+lib.page = JSON
+lib.page {
+  fields {
+      data {
+        fields {
+            foo = INT
+            foo {
+                # db value of foo_field = 1
+                field = foo_field
+            }
+            bar = BOOL
+            bar {
+                # db value of bar_field = 0
+                field = bar_field
+            }
+        }
+      }
+
+}
+```
+Output
+```
+{
+    "data": [
+        {
+            "foo": 1,
+            "bar": false
         }
     ]
 }
@@ -99,17 +148,18 @@ lib.languages {
 
 ### Feature toggle "FrontendBaseUrlInPagePreview"
 
-To change the setting for this extension feature either use Localconfiguration.php: or AdditionalConfiguration.php: 
+To change the setting for this extension feature either use Localconfiguration.php: or AdditionalConfiguration.php:
 
 ```
 $GLOBALS[‘TYPO3_CONF_VARS’][‘SYS’][‘features’][‘FrontendBaseUrlInPagePreview’] = true
 ```
 
-This feature toggle extends current SiteConfiguration (and it's variants) with new field for Frontend Url 
+This feature toggle extends current SiteConfiguration (and it's variants) with new field for Frontend Url
 (url frontend of PWA app). This new field is used when there is a need to preview a page such as: "view" module or right click on a page + show, or the 'eye' icon in page view.
 
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
+If you have any questions, join #initiative-pwa Slack channel.
 
 ## Credits
 
