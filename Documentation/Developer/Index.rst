@@ -24,7 +24,8 @@ Create the `DemoController.php`:
   class DemoController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController {
     public function indexAction() {
       return json_encode([
-         'foo' => 'bar'
+         'foo' => 'bar',
+         'settings' => $this->settings
       ]);
     }
   }
@@ -48,6 +49,10 @@ Use the plugin through TypoScript:
               extensionName = ExtName
               pluginName = DemoPlugin
               controller = Demo
+              settings {
+                test = TEXT
+                test.value = The demo is working
+              }
             }
           }
         }
@@ -66,7 +71,11 @@ Clear the cache and in the response we will see the following JSON output (short
         "appearance": {...},
         "content": {
           "data": {
-           "foo": "bar"
+            "foo": "bar",
+            "test": {
+              "value": "The demo is working",
+              "_typoScriptNodeValue": "TEXT"
+            }
           }
         }
       }]
