@@ -17,29 +17,15 @@ To integrate a custom frontend plugin which return its data inside the JSON obje
 
 Follow the standard proceeding to `register and configure extbase plugins <https://docs.typo3.org/m/typo3/book-extbasefluid/master/en-us/4-FirstExtension/7-configuring-the-plugin.html>`__:
 
-.. code-block:: php
-
-  \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
-    'Vendor.ExtName',
-    'DemoPlugin', [
-      'Demo' => 'index',
-    ],
-    []
-  );
-
-  \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
-     'ext_key',
-     'DemoPlugin',
-     'My Demo Plugin'
-  );
-
 Create the `DemoController.php`:
 
 .. code-block:: php
 
   class DemoController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController {
     public function indexAction() {
-      return json_encode($this->settings);
+      return json_encode([
+         'foo' => 'bar'
+      ]);
     }
   }
 
@@ -62,10 +48,6 @@ Use the plugin through TypoScript:
               extensionName = ExtName
               pluginName = DemoPlugin
               controller = Demo
-              settings {
-                test = TEXT
-                test.value = The demo is working
-              }
             }
           }
         }
@@ -84,10 +66,7 @@ Clear the cache and in the response we will see the following JSON output (short
         "appearance": {...},
         "content": {
           "data": {
-            "test": {
-              "value": "The demo is working",
-              "_typoScriptNodeValue": "TEXT"
-            },
+           "foo": "bar"
           }
         }
       }]
