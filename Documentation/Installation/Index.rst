@@ -2,9 +2,9 @@
 
 .. _installation:
 
-============
+==============
 Installation
-============
+==============
 
 Follow the standard process of a TYPO3 installation (see :ref:`t3install:start`).
 After TYPO3 is running, we can continue installing the headless extension:

@@ -67,3 +67,10 @@ or `report a problem <https://github.com/TYPO3-Initiatives/headless/issues/new>`
    :maxdepth: 3
    :titlesonly:
    :glob:
+
+   Introduction/Index
+   Installation/Index
+   Configuration/Index
+   Developer/Index
+   FAQ/Index
+   Sitemap

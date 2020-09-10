@@ -2,9 +2,9 @@
 
 .. _introduction:
 
-============
+==============
 Introduction
-============
+==============
 
 .. Info::
 
@@ -28,3 +28,6 @@ The JSON response object and the content elements are customizable with TypoScri
 * Easily extensible with custom fields or custom CE's
 * Support for EXT:felogin and EXT:form
 * Support for EXT:news (see additional extension `EXT:headless_news <https://github.com/TYPO3-Initiatives/headless_news>`__)
+* Support for (`EXT:solr <https://github.com/TYPO3-Initiatives/headless_solr>`__)
+* Support for EXT:powermail (`EXT:powermail <https://github.com/TYPO3-Initiatives/headless_powermail>`__)
+* Support for EXT:gridelements (`EXT:gridelements <https://github.com/itplusx/headless_gridelements>`__)
