@@ -66,6 +66,19 @@ class TypolinkHook
             $link['link'] = $ref->wrap($link['link'], $wrap);
         }
         if ($params['linktxt'] !== '|') {
+            $decodedNestedTypolink = json_decode($params['finalTagParts']['url'], true);
+            if (
+            isset(
+                $decodedNestedTypolink['type'],
+                $decodedNestedTypolink['url'],
+                $decodedNestedTypolink['target'],
+                $decodedNestedTypolink['aTagParams'],
+                $decodedNestedTypolink['link']
+            )
+            ) {
+                $link = $decodedNestedTypolink;
+            }
+
             $ref->lastTypoLinkUrl = json_encode($link);
         }
     }
