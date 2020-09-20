@@ -1,20 +1,23 @@
 <?php
 
-/***
- *
+/*
  * This file is part of the "headless" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- *  (c) 2019
- *
- ***/
+ * (c) 2020
+ */
 
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
+use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderException;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -25,17 +28,24 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 /**
  * Contains JSON class object
  */
-class JsonContentObject extends AbstractContentObject
+class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var ContentDataProcessor
      */
     protected $contentDataProcessor;
 
     /**
-     * @var JsonDecoderInterface
+     * @var JsonEncoderInterface
      */
-    protected $jsonDecoder;
+    protected $jsonEncoder;
+
+    /**
+     * @var array
+     */
+    private $conf;
 
     /**
      * @param ContentObjectRenderer $cObj
@@ -44,7 +54,7 @@ class JsonContentObject extends AbstractContentObject
     {
         parent::__construct($cObj);
         $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
-        $this->jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
+        $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
     }
 
     /**
@@ -60,6 +70,8 @@ class JsonContentObject extends AbstractContentObject
             $conf = [];
         }
 
+        $this->conf = $conf;
+
         if (isset($conf['fields.'])) {
             $data = $this->cObjGet($conf['fields.']);
         }
@@ -67,7 +79,12 @@ class JsonContentObject extends AbstractContentObject
             $data = $this->processFieldWithDataProcessing($conf);
         }
 
-        $json = json_encode($this->jsonDecoder->decode($data));
+        try {
+            $json = $this->jsonEncoder->encode($data, \PHP_VERSION_ID >= 70300 ? \JSON_THROW_ON_ERROR : 0);
+        } catch (JsonEncoderException $e) {
+            $this->logger->critical('Error while encoding json', ['code' => $e->getCode(), 'message' => $e->getMessage()]);
+            return '[]';
+        }
 
         if (isset($conf['stdWrap.'])) {
             $json = $this->cObj->stdWrap($json, $conf['stdWrap.']);
@@ -99,8 +116,11 @@ class JsonContentObject extends AbstractContentObject
                 $conf = $setup[$theKey . '.'];
                 $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
-                if (isset($conf['intval']) && $conf['intval']) {
+                if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
+                }
+                if ($theValue === 'BOOL') {
+                    $content[$theKey] = (bool)$content[$theKey];
                 }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
                     $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
@@ -142,9 +162,9 @@ class JsonContentObject extends AbstractContentObject
 
     /**
      * @param array $dataProcessing
-     * @return array
+     * @return array|null (null if flag is set)
      */
-    protected function processFieldWithDataProcessing(array $dataProcessing): array
+    protected function processFieldWithDataProcessing(array $dataProcessing): ?array
     {
         $data = $this->contentDataProcessor->process(
             $this->cObj,
@@ -155,7 +175,10 @@ class JsonContentObject extends AbstractContentObject
             ]
         );
 
-        $dataProcessingData = [];
+        // @TODO remove flag and make it default in BC release
+        $dataProcessingData = isset($this->conf['returnNullIfDataProcessingEmpty'])
+        && (int)$this->conf['returnNullIfDataProcessingEmpty'] === 1 ? null : [];
+
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
             if (isset($data[$value])) {
                 $dataProcessingData = $data[$value];

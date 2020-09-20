@@ -1,15 +1,13 @@
 <?php
 
-/***
- *
+/*
  * This file is part of the "headless" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- *  (c) 2019
- *
- ***/
+ * (c) 2020
+ */
 
 declare(strict_types=1);
 
@@ -27,6 +25,9 @@ use TYPO3\CMS\Frontend\Resource\FileCollector;
  */
 class FilesProcessor implements DataProcessorInterface
 {
+    private const RETINA_RATIO = 2;
+    private const LQIP_RATIO = 0.1;
+
     use DataProcessingTrait;
 
     /**
@@ -40,7 +41,7 @@ class FilesProcessor implements DataProcessorInterface
     /**
      * The content object renderer
      *
-     * @var \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer
+     * @var ContentObjectRenderer
      */
     protected $contentObjectRenderer;
 
@@ -120,9 +121,17 @@ class FilesProcessor implements DataProcessorInterface
             // If no reference fieldName is set, there's nothing to do
             if (!empty($relationField)) {
                 // Fetch the references of the default element
-                $relationTable = $this->contentObjectRenderer->stdWrapValue('table', $referenceConfiguration, $this->contentObjectRenderer->getCurrentTable());
+                $relationTable = $this->contentObjectRenderer->stdWrapValue(
+                    'table',
+                    $referenceConfiguration,
+                    $this->contentObjectRenderer->getCurrentTable()
+                );
                 if (!empty($relationTable)) {
-                    $fileCollector->addFilesFromRelation($relationTable, $relationField, $this->contentObjectRenderer->data);
+                    $fileCollector->addFilesFromRelation(
+                        $relationTable,
+                        $relationField,
+                        $this->contentObjectRenderer->data
+                    );
                 }
             }
         }
@@ -142,7 +151,10 @@ class FilesProcessor implements DataProcessorInterface
         $folders = $this->contentObjectRenderer->stdWrapValue('folders', $this->processorConfiguration);
         if (!empty($folders)) {
             $folders = GeneralUtility::trimExplode(',', $folders, true);
-            $fileCollector->addFilesFromFolders($folders, !empty($this->processorConfiguration['folders.']['recursive']));
+            $fileCollector->addFilesFromFolders(
+                $folders,
+                !empty($this->processorConfiguration['folders.']['recursive'])
+            );
         }
 
         $sortingProperty = $this->contentObjectRenderer->stdWrapValue('sorting', $this->processorConfiguration);
@@ -161,17 +173,62 @@ class FilesProcessor implements DataProcessorInterface
 
     /**
      * @param array $dimensions
-     * @return array
+     * @return array|null
      */
-    protected function processFiles(array $dimensions = []): array
+    protected function processFiles(array $dimensions = []): ?array
     {
         $data = [];
-
         $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
 
         foreach ($this->fileObjects as $fileObject) {
-            $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+            if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
+                $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+                $targetWidth = (int)($dimensions['width'] ?: $file['properties']['dimensions']['width']);
+                $targetHeight = (int)($dimensions['height'] ?: $file['properties']['dimensions']['height']);
+
+                if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x']) &&
+                    (int)$this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x'] === 1 &&
+                    ($targetWidth || $targetHeight)) {
+                    $file['urlRetina'] = $this->getFileUtility()->processFile(
+                        $fileObject,
+                        array_merge(
+                            $dimensions,
+                            [
+                                'width' => $targetWidth * self::RETINA_RATIO,
+                                'height' => $targetHeight * self::RETINA_RATIO,
+                            ]
+                        ),
+                        $cropVariant
+                    )['publicUrl'];
+                }
+
+                if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.']['lqip']) &&
+                    (int)$this->processorConfiguration['processingConfiguration.']['autogenerate.']['lqip'] === 1 &&
+                    ($targetWidth || $targetHeight)) {
+                    $file['urlLqip'] = $this->getFileUtility()->processFile(
+                        $fileObject,
+                        array_merge(
+                            $dimensions,
+                            [
+                                'width' => $targetWidth * self::LQIP_RATIO,
+                                'height' => $targetHeight * self::LQIP_RATIO,
+                            ]
+                        ),
+                        $cropVariant
+                    )['publicUrl'];
+                }
+
+                $data[] = $file;
+            } else {
+                $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+            }
         }
+
+        if (isset($this->processorConfiguration['processingConfiguration.']['returnFlattenObject']) &&
+            (int)$this->processorConfiguration['processingConfiguration.']['returnFlattenObject'] === 1) {
+            return $data[0] ?? null;
+        }
+
         return $data;
     }
 
