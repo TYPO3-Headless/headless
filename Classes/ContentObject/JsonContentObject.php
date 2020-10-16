@@ -122,6 +122,13 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ($theValue === 'BOOL') {
                     $content[$theKey] = (bool)$content[$theKey];
                 }
+                if ($theValue === 'USER_INT') {
+                    $content[$theKey] = \preg_replace(
+                        '/(' . \preg_quote('<!--INT_SCRIPT.', '/') . '[0-9a-z]{32}' . \preg_quote('-->', '/') . ')/',
+                        'HEADLESS_JSON_START<<\1>>HEADLESS_JSON_END',
+                        $content[$theKey]
+                    );
+                }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
                     $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
                 }
