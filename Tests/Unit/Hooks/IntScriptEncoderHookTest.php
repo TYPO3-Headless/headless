@@ -23,20 +23,18 @@ class IntScriptEncoderHookTest extends UnitTestCase
     /**
      * @test
      */
-    public function processingOnForeignPageType()
+    public function processingIfHeadlessIsDistabled()
     {
-        $testPageType = 999;
         $testContent = 'HEADLESS_JSON_START<<PlainText>>HEADLESS_JSON_END';
 
-        $setup_constants = [];
-        $setup_constants['config.']['headless.']['type.']['headless'] = $testPageType;
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '0';
 
         $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup_constants = $setup_constants;
+        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->tmpl = $tmpl->reveal();
-        $tsfe->type = $testPageType+1;
 
         $tsfe->content = $testContent;
 
@@ -52,19 +50,17 @@ class IntScriptEncoderHookTest extends UnitTestCase
      */
     public function processingOnPlainTextWithNewline()
     {
-        $testPageType = 999;
         $testProcessed = 'PlainText' . PHP_EOL . 'NextLine';
         $testContent = 'HEADLESS_JSON_START<<' . $testProcessed . '>>HEADLESS_JSON_END';
 
-        $setup_constants = [];
-        $setup_constants['config.']['headless.']['type.']['headless'] = $testPageType;
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
 
         $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup_constants = $setup_constants;
+        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->tmpl = $tmpl->reveal();
-        $tsfe->type = $testPageType;
 
         $tsfe->content = $testContent;
 
@@ -80,19 +76,17 @@ class IntScriptEncoderHookTest extends UnitTestCase
      */
     public function processingOnQuotedText()
     {
-        $testPageType = 999;
         $testProcessed = '"PlainText' . PHP_EOL . 'NextLine"';
         $testContent = 'HEADLESS_JSON_START<<' . $testProcessed . '>>HEADLESS_JSON_END';
 
-        $setup_constants = [];
-        $setup_constants['config.']['headless.']['type.']['headless'] = $testPageType;
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
 
         $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup_constants = $setup_constants;
+        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->tmpl = $tmpl->reveal();
-        $tsfe->type = $testPageType;
 
         $tsfe->content = $testContent;
 
@@ -108,19 +102,17 @@ class IntScriptEncoderHookTest extends UnitTestCase
      */
     public function processingOnQuotedContent()
     {
-        $testPageType = 999;
         $testProcessed = '"PlainText' . PHP_EOL . 'NextLine"';
         $testContent = '"HEADLESS_JSON_START<<' . $testProcessed . '>>HEADLESS_JSON_END"';
 
-        $setup_constants = [];
-        $setup_constants['config.']['headless.']['type.']['headless'] = $testPageType;
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
 
         $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup_constants = $setup_constants;
+        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->tmpl = $tmpl->reveal();
-        $tsfe->type = $testPageType;
 
         $tsfe->content = $testContent;
 
@@ -136,21 +128,19 @@ class IntScriptEncoderHookTest extends UnitTestCase
      */
     public function processingOnQuotedJsonContent()
     {
-        $testPageType = 999;
         $testProcessed = json_encode([
             'key1' => 'value'
         ]);
         $testContent = '"HEADLESS_JSON_START<<' . $testProcessed . '>>HEADLESS_JSON_END"';
 
-        $setup_constants = [];
-        $setup_constants['config.']['headless.']['type.']['headless'] = $testPageType;
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
 
         $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup_constants = $setup_constants;
+        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->tmpl = $tmpl->reveal();
-        $tsfe->type = $testPageType;
 
         $tsfe->content = $testContent;
 
