@@ -45,6 +45,14 @@ class ContentUtility
         $data = [];
 
         foreach ($contentElements as $key => $element) {
+            if (\strpos($element, '<!--INT_SCRIPT') !== false) {
+                $element = \preg_replace(
+                    '/(' . \preg_quote('<!--INT_SCRIPT.', '/') . '[0-9a-z]{32}' . \preg_quote('-->', '/') . ')/',
+                    'HEADLESS_JSON_START<<\1>>HEADLESS_JSON_END',
+                    $element
+                );
+            }
+
             $element = json_decode($element);
             if ($element->colPos >= 0) {
                 $data['colPos' . $element->colPos][] = $element;
