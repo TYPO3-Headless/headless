@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Utility;
 
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /**
  * ContentUtility
  *
@@ -20,6 +22,16 @@ namespace FriendsOfTYPO3\Headless\Utility;
  */
 class ContentUtility
 {
+    /**
+     * @var UserIntHeadlessBlock
+     */
+    private $headlessWrapper;
+
+    public function __construct(?UserIntHeadlessBlock $headlessWrapper = null)
+    {
+        $this->headlessWrapper = $headlessWrapper ?? GeneralUtility::makeInstance(UserIntHeadlessBlock::class);
+    }
+
     /**
      * This method takes whole content as JSON string, breaks it per element, and pass to groupContentElementByColPos method to group content by colPos.
      *
@@ -47,11 +59,7 @@ class ContentUtility
         foreach ($contentElements as $key => $element) {
             if (\strpos($element, '<!--INT_SCRIPT') !== false
                 && \strpos($element, 'HEADLESS_JSON_START') === false) {
-                $element = \preg_replace(
-                    '/(' . \preg_quote('<!--INT_SCRIPT.', '/') . '[0-9a-z]{32}' . \preg_quote('-->', '/') . ')/',
-                    'HEADLESS_JSON_START<<\1>>HEADLESS_JSON_END',
-                    $element
-                );
+                $element = $this->headlessWrapper->wrap($element);
             }
 
             $element = json_decode($element);

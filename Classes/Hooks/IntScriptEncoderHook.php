@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Hooks;
 
+use FriendsOfTYPO3\Headless\Utility\UserIntHeadlessBlock;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 class IntScriptEncoderHook
@@ -33,24 +34,8 @@ class IntScriptEncoderHook
         }
 
         $tsfe->content = \preg_replace_callback(
-            '/("|)HEADLESS_JSON_START<<(.*?)>>HEADLESS_JSON_END("|)/s',
-            static function ($encodeThis) {
-                if ($encodeThis[1] === $encodeThis[3] && $encodeThis[1] === '"') {
-                    // have a look inside if it might be json already
-                    $decoded = \json_decode($encodeThis[2]);
-                    if ($decoded !== null) {
-                        return $encodeThis[2];
-                    }
-                    return \json_encode($encodeThis[2]);
-                }
-
-                // trim one occurence of double quotes at both ends
-                $jsonEncoded = \json_encode($encodeThis[2]);
-                if ($jsonEncoded[0] === '"' && $jsonEncoded[-1] === '"') {
-                    $jsonEncoded = \substr($jsonEncoded, 1, -1);
-                }
-                return $jsonEncoded;
-            },
+            '/("|)HEADLESS_JSON_START<<(.*)>>HEADLESS_JSON_END("|)/s',
+            [UserIntHeadlessBlock::class, 'unwrap'],
             $tsfe->content
         );
     }
