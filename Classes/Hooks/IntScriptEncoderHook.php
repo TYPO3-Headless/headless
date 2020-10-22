@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Hooks;
 
-use FriendsOfTYPO3\Headless\Utility\UserIntHeadlessBlock;
+use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 class IntScriptEncoderHook
@@ -33,10 +34,7 @@ class IntScriptEncoderHook
             return;
         }
 
-        $tsfe->content = \preg_replace_callback(
-            '/("|)HEADLESS_JSON_START<<(.*)>>HEADLESS_JSON_END("|)/s',
-            [UserIntHeadlessBlock::class, 'unwrap'],
-            $tsfe->content
-        );
+        $headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
+        $tsfe->content = $headlessUserInt->unwrap($tsfe->content);
     }
 }

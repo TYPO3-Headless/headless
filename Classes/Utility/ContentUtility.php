@@ -23,13 +23,13 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class ContentUtility
 {
     /**
-     * @var UserIntHeadlessBlock
+     * @var HeadlessUserInt
      */
     private $headlessWrapper;
 
-    public function __construct(?UserIntHeadlessBlock $headlessWrapper = null)
+    public function __construct(?HeadlessUserInt $headlessWrapper = null)
     {
-        $this->headlessWrapper = $headlessWrapper ?? GeneralUtility::makeInstance(UserIntHeadlessBlock::class);
+        $this->headlessWrapper = $headlessWrapper ?? GeneralUtility::makeInstance(HeadlessUserInt::class);
     }
 
     /**
@@ -58,7 +58,7 @@ class ContentUtility
 
         foreach ($contentElements as $key => $element) {
             if (\strpos($element, '<!--INT_SCRIPT') !== false
-                && \strpos($element, 'HEADLESS_JSON_START') === false) {
+                && \strpos($element, HeadlessUserInt::STANDARD) === false) {
                 $element = $this->headlessWrapper->wrap($element);
             }
 

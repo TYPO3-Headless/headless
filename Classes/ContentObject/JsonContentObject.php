@@ -16,7 +16,7 @@ namespace FriendsOfTYPO3\Headless\ContentObject;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderException;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
-use FriendsOfTYPO3\Headless\Utility\UserIntHeadlessBlock;
+use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use RecursiveArrayIterator;
@@ -48,9 +48,9 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
      */
     private $conf;
     /**
-     * @var UserIntHeadlessBlock
+     * @var HeadlessUserInt
      */
-    private $headlessBlockWrapper;
+    private $headlessUserInt;
 
     /**
      * @param ContentObjectRenderer $cObj
@@ -60,7 +60,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
         parent::__construct($cObj);
         $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
         $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
-        $this->headlessBlockWrapper = GeneralUtility::makeInstance(UserIntHeadlessBlock::class);
+        $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
     }
 
     /**
@@ -129,7 +129,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                     $content[$theKey] = (bool)$content[$theKey];
                 }
                 if ($theValue === 'USER_INT') {
-                    $content[$theKey]= $this->headlessBlockWrapper->wrap($content[$theKey]);
+                    $content[$theKey]= $this->headlessUserInt->wrap($content[$theKey]);
                 }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
                     $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
