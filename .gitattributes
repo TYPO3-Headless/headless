@@ -1,0 +1,11 @@
+* text=auto
+*.php diff=php
+
+# Ignore from prefer-dist install
+## Files
+.* export-ignore
+
+## Folders
+/.github export-ignore
+/Tests export-ignore
+/Documentation export-ignore
