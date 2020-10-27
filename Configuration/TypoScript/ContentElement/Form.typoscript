@@ -1,0 +1,34 @@
+tt_content.form_formframework =< lib.contentElement
+tt_content.form_formframework {
+    fields {
+        content {
+            fields {
+                link = TEXT
+                link {
+                    field = pid
+                    htmlSpecialChars = 1
+                    typolink {
+                        parameter {
+                            field = pid
+                        }
+                        additionalParams = &tx_form_formframework[action]=perform&tx_form_formframework[controller]=FormFrontend
+                        returnLast = url
+                    }
+                }
+
+                form = USER_INT
+                form {
+                    userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+                    vendorName = TYPO3\CMS
+                    extensionName = Form
+                    pluginName = Formframework
+                    controller = FormFrontend
+
+                    view < plugin.tx_form.view
+                    persistence < plugin.tx_form.persistence
+                    settings < plugin.tx_form.settings
+                }
+            }
+        }
+    }
+}
