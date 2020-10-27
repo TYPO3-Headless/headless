@@ -71,11 +71,13 @@ class FlexFormProcessor implements DataProcessorInterface
         // processing the flexform data
         $originalValue = $processedData['data'][$fieldName];
 
-        if (!is_string($originalValue)) {
+        if (\is_array($originalValue)) {
+            $flexformData = $originalValue;
+        } elseif (\is_string($originalValue)) {
+            $flexformData = $this->flexFormService->convertFlexFormContentToArray($originalValue);
+        } else {
             return $processedData;
         }
-
-        $flexformData = $this->flexFormService->convertFlexFormContentToArray($originalValue);
 
         // save result in "data" (default) or given variable name
         $targetVariableName = $cObj->stdWrapValue('as', $processorConfiguration);
