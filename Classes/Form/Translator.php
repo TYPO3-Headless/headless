@@ -9,6 +9,8 @@
  * (c) 2020
  */
 
+declare(strict_types=1);
+
 namespace FriendsOfTYPO3\Headless\Form;
 
 use function array_keys;
