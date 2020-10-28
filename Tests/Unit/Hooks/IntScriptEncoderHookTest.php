@@ -23,7 +23,7 @@ class IntScriptEncoderHookTest extends UnitTestCase
     /**
      * @test
      */
-    public function processingIfHeadlessIsDistabled()
+    public function processingIfHeadlessIsDisabled()
     {
         $testContent = 'HEADLESS_INT_START<<PlainText>>HEADLESS_INT_END';
 
