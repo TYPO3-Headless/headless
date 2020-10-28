@@ -19,6 +19,14 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 class DecodeViewHelper extends AbstractViewHelper
 {
     /**
+     * Initialize
+     */
+    public function initializeArguments(): void
+    {
+        $this->registerArgument('json', 'string', 'json to decode', false, '');
+    }
+
+    /**
      * @param string $json
      * @return mixed
      */

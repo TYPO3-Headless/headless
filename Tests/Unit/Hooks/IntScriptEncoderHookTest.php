@@ -23,20 +23,18 @@ class IntScriptEncoderHookTest extends UnitTestCase
     /**
      * @test
      */
-    public function processingOnForeignPageType()
+    public function processingIfHeadlessIsDisabled()
     {
-        $testPageType = 999;
-        $testContent = 'HEADLESS_JSON_START<<PlainText>>HEADLESS_JSON_END';
+        $testContent = 'HEADLESS_INT_START<<PlainText>>HEADLESS_INT_END';
 
-        $setup_constants = [];
-        $setup_constants['config.']['headless.']['type.']['headless'] = $testPageType;
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '0';
 
         $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup_constants = $setup_constants;
+        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->tmpl = $tmpl->reveal();
-        $tsfe->type = $testPageType+1;
 
         $tsfe->content = $testContent;
 
@@ -52,19 +50,17 @@ class IntScriptEncoderHookTest extends UnitTestCase
      */
     public function processingOnPlainTextWithNewline()
     {
-        $testPageType = 999;
         $testProcessed = 'PlainText' . PHP_EOL . 'NextLine';
-        $testContent = 'HEADLESS_JSON_START<<' . $testProcessed . '>>HEADLESS_JSON_END';
+        $testContent = 'HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END';
 
-        $setup_constants = [];
-        $setup_constants['config.']['headless.']['type.']['headless'] = $testPageType;
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
 
         $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup_constants = $setup_constants;
+        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->tmpl = $tmpl->reveal();
-        $tsfe->type = $testPageType;
 
         $tsfe->content = $testContent;
 
@@ -80,19 +76,17 @@ class IntScriptEncoderHookTest extends UnitTestCase
      */
     public function processingOnQuotedText()
     {
-        $testPageType = 999;
         $testProcessed = '"PlainText' . PHP_EOL . 'NextLine"';
-        $testContent = 'HEADLESS_JSON_START<<' . $testProcessed . '>>HEADLESS_JSON_END';
+        $testContent = 'HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END';
 
-        $setup_constants = [];
-        $setup_constants['config.']['headless.']['type.']['headless'] = $testPageType;
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
 
         $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup_constants = $setup_constants;
+        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->tmpl = $tmpl->reveal();
-        $tsfe->type = $testPageType;
 
         $tsfe->content = $testContent;
 
@@ -108,19 +102,17 @@ class IntScriptEncoderHookTest extends UnitTestCase
      */
     public function processingOnQuotedContent()
     {
-        $testPageType = 999;
         $testProcessed = '"PlainText' . PHP_EOL . 'NextLine"';
-        $testContent = '"HEADLESS_JSON_START<<' . $testProcessed . '>>HEADLESS_JSON_END"';
+        $testContent = '"HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END"';
 
-        $setup_constants = [];
-        $setup_constants['config.']['headless.']['type.']['headless'] = $testPageType;
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
 
         $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup_constants = $setup_constants;
+        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->tmpl = $tmpl->reveal();
-        $tsfe->type = $testPageType;
 
         $tsfe->content = $testContent;
 
@@ -136,21 +128,21 @@ class IntScriptEncoderHookTest extends UnitTestCase
      */
     public function processingOnQuotedJsonContent()
     {
-        $testPageType = 999;
-        $testProcessed = json_encode([
-            'key1' => 'value'
-        ]);
-        $testContent = '"HEADLESS_JSON_START<<' . $testProcessed . '>>HEADLESS_JSON_END"';
+        $testProcessed = json_encode(
+            [
+                'key1' => 'value'
+            ]
+        );
+        $testContent = '"HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END"';
 
-        $setup_constants = [];
-        $setup_constants['config.']['headless.']['type.']['headless'] = $testPageType;
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
 
         $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup_constants = $setup_constants;
+        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->tmpl = $tmpl->reveal();
-        $tsfe->type = $testPageType;
 
         $tsfe->content = $testContent;
 
@@ -159,5 +151,118 @@ class IntScriptEncoderHookTest extends UnitTestCase
         $classUnderTest->performExtraJsonEncoding([], $tsfe->reveal());
 
         self::assertEquals($testProcessed, $tsfe->content);
+    }
+
+    /**
+     * @test
+     */
+    public function processingOnNestedJsonContent()
+    {
+        $nestedProcessed = json_encode(
+            [
+                'key2' => 'value2'
+            ]
+        );
+
+        $testProcessed = str_replace(
+            '[nested]',
+            'NESTED_HEADLESS_INT_START<<' . $nestedProcessed . '>>NESTED_HEADLESS_INT_END',
+            json_encode(
+                [
+                    'key1' => 'value',
+                    'nestedContent' => '[nested]',
+                ]
+            )
+        );
+
+        $finalOutput = json_encode(
+            [
+                'key1' => 'value',
+                'nestedContent' => [
+                    'key2' => 'value2'
+                ],
+            ]
+        );
+
+        $testContent = '"HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END"';
+
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
+
+        $tmpl = $this->prophesize(TemplateService::class);
+        $tmpl->setup = $setup;
+
+        $tsfe = $this->prophesize(TypoScriptFrontendController::class);
+        $tsfe->tmpl = $tmpl->reveal();
+
+        $tsfe->content = $testContent;
+
+        $classUnderTest = new IntScriptEncoderHook();
+
+        $classUnderTest->performExtraJsonEncoding([], $tsfe->reveal());
+
+        self::assertEquals($finalOutput, $tsfe->content);
+    }
+
+    /**
+     * @test
+     */
+    public function processingOnMultipleUserIntOnPageJsonContent()
+    {
+        $nestedProcessed = json_encode(
+            [
+                'key2' => 'value2'
+            ]
+        );
+
+        $testProcessed2 = json_encode(
+            [
+                'key3' => 'value3'
+            ]
+        );
+
+        $testProcessed = str_replace(
+            '[nested]',
+            'NESTED_HEADLESS_INT_START<<' . $nestedProcessed . '>>NESTED_HEADLESS_INT_END',
+            json_encode(
+                [
+                    'key1' => 'value',
+                    'nestedContent' => '[nested]',
+                ]
+            )
+        );
+
+        $finalOutput = json_encode(
+            [
+                [
+                    'key1' => 'value',
+                    'nestedContent' => [
+                        'key2' => 'value2'
+                    ],
+                ],
+                [
+                    'key3' => 'value3',
+                ]
+            ]
+        );
+
+        $testContent = '["HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END","HEADLESS_INT_START<<' . $testProcessed2 . '>>HEADLESS_INT_END"]';
+
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
+
+        $tmpl = $this->prophesize(TemplateService::class);
+        $tmpl->setup = $setup;
+
+        $tsfe = $this->prophesize(TypoScriptFrontendController::class);
+        $tsfe->tmpl = $tmpl->reveal();
+
+        $tsfe->content = $testContent;
+
+        $classUnderTest = new IntScriptEncoderHook();
+
+        $classUnderTest->performExtraJsonEncoding([], $tsfe->reveal());
+
+        self::assertEquals($finalOutput, $tsfe->content);
     }
 }
