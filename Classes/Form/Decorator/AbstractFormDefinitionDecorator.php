@@ -16,6 +16,16 @@ namespace FriendsOfTYPO3\Headless\Form\Decorator;
 abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInterface
 {
     /**
+     * @var array<string, mixed>
+     */
+    protected $formStatus;
+
+    public function __construct(array $formStatus = [])
+    {
+        $this->formStatus = $formStatus;
+    }
+
+    /**
      * @param array<mixed> $definition
      * @return array<string,array<mixed>>
      */
@@ -55,7 +65,8 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
             }
         }
 
-        $decorated['identifier'] = $definition['identifier'];
+        $decorated['id'] = $definition['identifier'];
+        $decorated['api'] = $this->formStatus;
         $decorated['i18n'] = $definition['i18n']['properties'] ?? [];
         $decorated['elements'] = $pageElements;
 
