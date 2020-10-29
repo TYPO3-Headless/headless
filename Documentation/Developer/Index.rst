@@ -209,6 +209,43 @@ The definition of `fields` can be nested until various depth to reflect our desi
 `dataProcessing <https://docs.typo3.org/m/typo3/reference-coreapi/master/en-us/ApiOverview/ContentElements/AddingYourOwnContentElements.html#optional-use-data-processors>`__
 is possible the native way like in any other content elements (see content element definitions of this extension).
 
+EXT:form & form output decorators
+========================
+
+EXT:headless out of box provides for developers:
+
+- `FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator`
+- `FriendsOfTYPO3\Headless\Form\Decorator\AbstractFormDefinitionDecorator`
+- `FriendsOfTYPO3\Headless\Form\Decorator\DefinitionDecoratorInterface`
+
+`FormDefinitionDecorator` is default decorator and outputs
+
+.. code-block:: json
+
+  form: {
+    id: "ContactForm-1",
+    api: {
+      status: null,
+      errors: null,
+      actionAfterSuccess: null,
+        page: {
+          current: 0,
+          nextPage: null,
+          pages: 1
+        }
+    },
+    i18n: {},
+    elements: []
+  }
+
+You can anytime override & customize for your needs above output simply by create custom
+decorator which implements `DefinitionDecoratorInterface` or extend provided
+`AbstractFormDefinitionDecorator` which provides you ability override
+definition of each element or whole form definition.
+
+After creating custom output you can attach to your form simply by setting
+`formDecorator` in rendering options of form, :ref:`see more <configuration-ext-form>`
+
 .. _developer-snippets:
 
 Snippets
