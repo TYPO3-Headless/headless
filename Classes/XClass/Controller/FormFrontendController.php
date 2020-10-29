@@ -200,12 +200,13 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         /**
          * @var DefinitionDecoratorInterface $definitionDecorator
          */
-        $definitionDecorator = GeneralUtility::makeInstance($decoratorClass);
+        $definitionDecorator = GeneralUtility::makeInstance($decoratorClass, $formStatus);
 
-        $this->view->assignMultiple([
-            'formConfiguration' => $definitionDecorator($formDefinition, $currentPageIndex),
-            'formStatus' => $formStatus
-        ]);
+        if (!($definitionDecorator instanceof DefinitionDecoratorInterface)) {
+            $definitionDecorator = GeneralUtility::makeInstance(FormDefinitionDecorator::class, $formStatus);
+        }
+
+        $this->view->assign('formConfiguration', $definitionDecorator($formDefinition, $currentPageIndex));
     }
 
     /**
