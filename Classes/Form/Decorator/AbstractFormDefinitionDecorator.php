@@ -16,6 +16,16 @@ namespace FriendsOfTYPO3\Headless\Form\Decorator;
 abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInterface
 {
     /**
+     * @var array<string, mixed>
+     */
+    protected $formStatus;
+
+    public function __construct(array $formStatus = [])
+    {
+        $this->formStatus = $formStatus;
+    }
+
+    /**
      * @param array<mixed> $definition
      * @return array<string,array<mixed>>
      */
@@ -30,6 +40,11 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
 
             $element = $this->overrideElement($element);
 
+            if (isset($element['renderingOptions']['FEOverrideType'])) {
+                $element['type'] = $element['renderingOptions']['FEOverrideType'];
+                unset($element['renderingOptions']['FEOverrideType']);
+            }
+
             if (\in_array($element['type'], ['ImageUpload', 'FileUpload'])) {
                 unset($element['properties']['saveToFileMount']);
             }
@@ -40,15 +55,18 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
 
             foreach ($element['validators'] as &$validator) {
                 if ($validator['identifier'] === 'RegularExpression') {
-                    $validator['options']['regularExpression'] = trim(
-                        $validator['options']['regularExpression'],
-                        '/'
-                    );
+                    $jsRegex = $validator['FERegularExpression'] ?? null;
+
+                    if ($jsRegex) {
+                        $validator['options']['regularExpression'] = $jsRegex;
+                        unset($validator['FERegularExpression']);
+                    }
                 }
             }
         }
 
-        $decorated['identifier'] = $definition['identifier'];
+        $decorated['id'] = $definition['identifier'];
+        $decorated['api'] = $this->formStatus;
         $decorated['i18n'] = $definition['i18n']['properties'] ?? [];
         $decorated['elements'] = $pageElements;
 
