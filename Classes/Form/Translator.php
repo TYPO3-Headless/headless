@@ -11,10 +11,10 @@
 
 namespace FriendsOfTYPO3\Headless\Form;
 
+use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
 use function array_keys;
 use function array_merge;
 use function array_replace_recursive;
-use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
 use function is_array;
 
 final class Translator
