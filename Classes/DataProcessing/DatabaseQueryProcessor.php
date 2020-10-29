@@ -26,7 +26,7 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *
  * Example TypoScript configuration:
  *
- * 10 = TYPO3\CMS\Frontend\DataProcessing\DatabaseQueryProcessor
+ * 10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
  * 10 {
  *   table = tt_content
  *   pidInList = 123
