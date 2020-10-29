@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="{xslFile}"?>
+<f:spaceless>
+    <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <f:for each="{sitemaps}" as="sitemap">
+            <sitemap>
+                <f:if condition="{sitemap.page}">
+                    <f:then>
+                        <loc>{frontendBase}<f:uri.page pageType="{type}" additionalParams="{sitemap: sitemap.key, page: sitemap.page}"/></loc>
+                    </f:then>
+                    <f:else>
+                        <loc>{frontendBase}<f:uri.page pageType="{type}" additionalParams="{sitemap: sitemap.key}"/></loc>
+                    </f:else>
+                </f:if>
+                <lastmod>{sitemap.lastMod -> f:format.date(format: 'c')}</lastmod>
+            </sitemap>
+        </f:for>
+    </sitemapindex>
+</f:spaceless>
