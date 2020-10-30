@@ -8,7 +8,7 @@ Configuration
 
 This extension has no configuration options yet.
 
-.. _configuration-ext-from:
+.. _configuration-ext-form:
 
 EXT:form
 ========================
@@ -31,12 +31,12 @@ With EXT:headless you can add additional configuration in root line of form conf
 
 .. code-block:: yaml
 
-i18n:
-  identifier: i18n
-  properties:
-    someButtonLabel: 'Submit or Cancel'
-    someHelpMessage: 'You need fill this form'
-    requiredFields: 'These fields are required'
+ i18n:
+   identifier: 'i18n'
+   properties:
+      someButtonLabel: 'Submit or Cancel'
+      someHelpMessage: 'You need fill this form'
+      requiredFields: 'These fields are required'
 
 Above block will be automatically translated by provided xlf files like standard form in fluid.
 
@@ -57,8 +57,8 @@ You can override any time simply by put in form's config yaml:
 
 .. code-block:: yaml
 
-renderingOptions:
-  formDecorator: Your-Vendor\YourExtension\Form\CustomDefinitionDecorator
+   renderingOptions:
+     formDecorator: Your-Vendor\YourExtension\Form\CustomDefinitionDecorator
 
 More about form output decorator please see :ref:`customize form output <developer-ext-form>`
 
@@ -74,30 +74,27 @@ i.e.
 
 .. code-block:: yaml
 
-renderables:
-  -
-   renderingOptions:
-     previousButtonLabel: 'Previous step'
-     nextButtonLabel: 'Next step'
-   type: Page
-   identifier: page-1
-   label: Step
    renderables:
-     -
-       properties:
-         options:
-           Mr: Mr
-           Mrs: Mrs
-         elementDescription: ''
-         fluidAdditionalAttributes:
-           required: required
-       type: RadioButton
-       identifier: salutation
-       label: Salutation
-       validators:
-       -
-        identifier: NotEmpty
-        errorMessage: 1221560910
+      -
+         type: 'Page'
+         identifier: 'page-1'
+         label: 'Step'
+         renderables:
+            -
+               properties:
+                  options:
+                     Mr: 'Mr'
+                     Mrs: 'Mrs'
+                  elementDescription: ''
+                  fluidAdditionalAttributes:
+                     required: required
+                type: 'RadioButton'
+                identifier: 'salutation'
+                label: 'Salutation'
+                validators:
+                    -
+                      identifier: 'NotEmpty'
+                      errorMessage: 1221560910
 
 When creating RegexValidator, we have some differences
 when handling regular expressions by PHP & JS,
@@ -108,23 +105,23 @@ For example:
 
 .. code-block:: yaml
 
-renderables:
-  -
-    type: Page
-    renderables:
+   renderables:
       -
-        type: Text
-        identifier: testField
-        label: 'Test field'
-        validators:
-          -
-            identifier: RegularExpression
-            options:
-              regularExpression: '/^[a-z]+$/'
-            FERegularExpression:
-              expression: '^[a-z]+$'
-              flags: i
-            errorMessage: 1221565130
+         type: Page
+         renderables:
+            -
+              type: 'Text'
+              identifier: 'testField'
+              label: 'Test field'
+              validators:
+                -
+                   identifier: RegularExpression
+                   options:
+                     regularExpression: '/^[a-z]+$/'
+                   FERegularExpression:
+                     expression: '^[a-z]+$'
+                     flags: i
+                   errorMessage: 1221565130
 
 If Headless's form decorator finds option `FERegularExpression` in validator definition
 will override options.regularExpression by value of `regularExpression` option
@@ -143,9 +140,9 @@ and `customOptions` in definition of form element
 .. code-block:: yaml
 
  - defaultValue: ''
-   type: SingleSelectWithCountryList
-   identifier: country
-   label: Country
+   type: 'SingleSelectWithCountryList'
+   identifier: 'country'
+   label: 'Country'
    properties:
       customOptions: 'YourVendor\Your-Ext\Domain\Model\YourCustomOptionClassImplementingInterface'
 
@@ -158,23 +155,25 @@ set `FEOverrideType` in renderingOptions of custom element
 
 .. code-block:: yaml
 
-type: SingleSelectWithCountryList
-renderingOptions:
-  FEOverrideType: Select
+   type: 'SingleSelectWithCountryList'
+   renderingOptions:
+     FEOverrideType: 'Select'
 
 We use this value to override type, so response to the frontend dev will be
 
-.. code-block:: json
-{
-  "type": "Select"
-}
+.. code-block:: yaml
+
+   {
+     "type": "Select"
+   }
 
 instead of
 
-.. code-block:: json
-{
-  "type": "SingleSelectWithCountryList"
-}
+.. code-block:: yaml
+
+   {
+     "type": "SingleSelectWithCountryList"
+   }
 
 **JSON REDIRECT**
 
@@ -195,11 +194,11 @@ To use JsonRedirect you have to define it in setup.yaml of your extension form's
 
 .. code-block:: yaml
 
-TYPO3:
-  CMS:
-    Form:
-      prototypes:
-        standard:
-          finishersDefinition:
-            JsonRedirect:
-              implementationClassName: 'FriendsOfTYPO3\Headless\Form\Finisher\JsonRedirectFinisher'
+   TYPO3:
+     CMS:
+       Form:
+         prototypes:
+           standard:
+             finishersDefinition:
+               JsonRedirect:
+                 implementationClassName: 'FriendsOfTYPO3\Headless\Form\Finisher\JsonRedirectFinisher'
