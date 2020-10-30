@@ -42,7 +42,12 @@ class TypolinkHook
      */
     public function handleLink(array $params, ContentObjectRenderer $ref): void
     {
-        $setup = &$this->getTypoScriptFrontendController()->tmpl->setup;
+        if (!($GLOBALS['TSFE'] instanceof TypoScriptFrontendController)) {
+            return;
+        }
+
+        $setup = &$GLOBALS['TSFE']->tmpl->setup;
+
         if (!isset($setup['plugin.']['tx_headless.']['staticTemplate'])
             || (bool)$setup['plugin.']['tx_headless.']['staticTemplate'] === false
         ) {
@@ -81,13 +86,5 @@ class TypolinkHook
 
             $ref->lastTypoLinkUrl = json_encode($link);
         }
-    }
-
-    /**
-     * @return TypoScriptFrontendController
-     */
-    protected function getTypoScriptFrontendController()
-    {
-        return $GLOBALS['TSFE'];
     }
 }
