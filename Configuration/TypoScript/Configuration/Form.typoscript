@@ -1,7 +1,7 @@
 plugin.tx_form {
     view {
-        templateRootPaths = EXT:headless/Resources/Private/Form/Templates/
-        partialRootPaths = EXT:headless/Resources/Private/Form/Partials/
-        layoutRootPaths = EXT:headless/Resources/Private/Form/Layouts/
+        templateRootPaths.20 = EXT:headless/Resources/Private/Form/Templates/
+        partialRootPaths.20 = EXT:headless/Resources/Private/Form/Partials/
+        layoutRootPaths.20 = EXT:headless/Resources/Private/Form/Layouts/
     }
 }
