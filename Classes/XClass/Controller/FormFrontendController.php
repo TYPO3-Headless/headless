@@ -24,6 +24,15 @@ use TYPO3\CMS\Extbase\Mvc\Web\Response;
 use TYPO3\CMS\Extbase\Security\Cryptography\HashService;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 
+use function array_merge;
+use function array_pop;
+use function base64_encode;
+use function count;
+use function in_array;
+use function json_decode;
+use function serialize;
+use function str_replace;
+
 /**
  * The frontend controller
  *
@@ -93,7 +102,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         $formDefinitionObj = $factory->build($formDefinition, $prototypeName);
         $response = $this->controllerContext->getResponse() ?? $this->objectManager->get(Response::class);
         /**
-          * @var FormRuntime $formRuntime
+         * @var FormRuntime $formRuntime
          */
         $formRuntime = $formDefinitionObj->bind($this->controllerContext->getRequest(), $response);
         $formState = $formRuntime->getFormState();
@@ -108,29 +117,13 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         }
 
         $stateHash = $this->hashService->appendHmac(base64_encode(serialize($formState)));
-        $formFieldsNames = [];
 
         $currentPageIndex = $formRuntime->getCurrentPage() ? $formRuntime->getCurrentPage()->getIndex() : 0;
         $currentPageId = $currentPageIndex + 1;
         $formFields = $formDefinition['renderables'][$currentPageIndex]['renderables'];
 
         // provides support for custom options providers (dynamic selects/radio/checkboxes)
-        foreach ($formFields as &$field) {
-            if (!empty($field['properties']['customOptions'])) {
-                $customOptions = GeneralUtility::makeInstance($field['properties']['customOptions']);
-
-                if ($customOptions instanceof CustomOptionsInterface) {
-                    $field['properties']['options'] = $customOptions->get();
-                }
-
-                unset($field['properties']['customOptions']);
-            }
-
-            // phpcs:ignore Generic.Files.LineLength
-            $formFieldsNames[] = 'tx_form_formframework[' . $formDefinition['identifier'] . '][' . $field['identifier'] . ']';
-        }
-
-        unset($field);
+        $formFieldsNames = $this->generateFieldNamesAndReplaceCustomOptions($formFields, $formDefinition['identifier']);
 
         if ($honeyPot) {
             $formFields[] = [
@@ -182,7 +175,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         $formStatus['page'] = [
             'current' => $currentPageIndex,
             'nextPage' => $this->getNextPage($formRuntime),
-            'pages' => \count($formRuntime->getPages()),
+            'pages' => count($formRuntime->getPages()),
         ];
 
         if ($formState &&
@@ -222,7 +215,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
             $parsedErrors[str_replace($formIdentifier . '.', '', $key)] = $errorObj[0]->getMessage();
         }
 
-        return \count($parsedErrors) ? $parsedErrors : null;
+        return count($parsedErrors) ? $parsedErrors : null;
     }
 
     private function getNextPage(\TYPO3\CMS\Form\Domain\Runtime\FormRuntime $formRuntime): ?int
@@ -232,5 +225,42 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         }
 
         return null;
+    }
+
+    /**
+     * @param array<mixed> $formFields
+     * @param string $identifier
+     * @param array<mixed> $formFieldsNames
+     * @return array<int, string>
+     */
+    private function generateFieldNamesAndReplaceCustomOptions(array &$formFields, string $identifier): array
+    {
+        $formFieldsNames = [];
+
+        foreach ($formFields as &$field) {
+            if (in_array($field['type'], ['Fieldset', 'GridRow'], true) &&
+                isset($field['renderables']) &&
+                is_array($field['renderables'])) {
+                $formFieldsNames = array_merge(
+                    $formFieldsNames,
+                    $this->generateFieldNamesAndReplaceCustomOptions($field['renderables'], $identifier)
+                );
+            } else {
+                if (!empty($field['properties']['customOptions'])) {
+                    $customOptions = GeneralUtility::makeInstance($field['properties']['customOptions']);
+
+                    if ($customOptions instanceof CustomOptionsInterface) {
+                        $field['properties']['options'] = $customOptions->get();
+                    }
+
+                    unset($field['properties']['customOptions']);
+                }
+
+                // phpcs:ignore Generic.Files.LineLength
+                $formFieldsNames[] = 'tx_form_formframework[' . $identifier . '][' . $field['identifier'] . ']';
+            }
+        }
+
+        return $formFieldsNames;
     }
 }
