@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Form\Decorator;
 
+use function count;
+use function in_array;
+
 abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInterface
 {
     /**
@@ -35,42 +38,69 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
 
         $pageElements = $definition['renderables'][$currentPage]['renderables'] ?? [];
 
-        foreach ($pageElements as &$element) {
-            $element['name'] = 'tx_form_formframework[' . $element['identifier'] . ']';
+        $decorated['id'] = $definition['identifier'];
+        $decorated['api'] = $this->formStatus;
+        $decorated['i18n'] = $definition['i18n']['properties'] ?? [];
+        $decorated['elements'] = $this->handleRenderables($pageElements);
 
-            $element = $this->overrideElement($element);
+        return $this->overrideDefinition($decorated, $definition, $currentPage);
+    }
 
-            if (isset($element['renderingOptions']['FEOverrideType'])) {
-                $element['type'] = $element['renderingOptions']['FEOverrideType'];
-                unset($element['renderingOptions']['FEOverrideType']);
+    /**
+     * @param array<string, mixed> $renderables
+     * @return array<string, mixed>
+     */
+    protected function handleRenderables(array $renderables): array
+    {
+        foreach ($renderables as &$element) {
+            if (in_array($element['type'], ['Fieldset', 'GridRow'], true) &&
+                is_array($element['renderables']) &&
+                count($element['renderables'])) {
+                $element['elements'] = $this->handleRenderables($element['renderables']);
+                unset($element['renderables']);
+            } else {
+                $element = $this->prepareElement($element);
             }
+        }
 
-            if (\in_array($element['type'], ['ImageUpload', 'FileUpload'])) {
-                unset($element['properties']['saveToFileMount']);
-            }
+        return $renderables;
+    }
 
-            if (!isset($element['validators'])) {
-                continue;
-            }
+    /**
+     * @param array<string, mixed> $element
+     * @return array<string, mixed>
+     */
+    protected function prepareElement(array $element): array
+    {
+        $element['name'] = 'tx_form_formframework[' . $element['identifier'] . ']';
 
-            foreach ($element['validators'] as &$validator) {
-                if ($validator['identifier'] === 'RegularExpression') {
-                    $jsRegex = $validator['FERegularExpression'] ?? null;
+        $element = $this->overrideElement($element);
 
-                    if ($jsRegex) {
-                        $validator['options']['regularExpression'] = $jsRegex;
-                        unset($validator['FERegularExpression']);
-                    }
+        if (isset($element['renderingOptions']['FEOverrideType'])) {
+            $element['type'] = $element['renderingOptions']['FEOverrideType'];
+            unset($element['renderingOptions']['FEOverrideType']);
+        }
+
+        if (in_array($element['type'], ['ImageUpload', 'FileUpload'])) {
+            unset($element['properties']['saveToFileMount']);
+        }
+
+        if (!isset($element['validators'])) {
+            return $element;
+        }
+
+        foreach ($element['validators'] as &$validator) {
+            if ($validator['identifier'] === 'RegularExpression') {
+                $jsRegex = $validator['FERegularExpression'] ?? null;
+
+                if ($jsRegex) {
+                    $validator['options']['regularExpression'] = $jsRegex;
+                    unset($validator['FERegularExpression']);
                 }
             }
         }
 
-        $decorated['id'] = $definition['identifier'];
-        $decorated['api'] = $this->formStatus;
-        $decorated['i18n'] = $definition['i18n']['properties'] ?? [];
-        $decorated['elements'] = $pageElements;
-
-        return $this->overrideDefinition($decorated, $definition, $currentPage);
+        return $element;
     }
 
     /**
