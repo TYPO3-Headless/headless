@@ -25,9 +25,6 @@ use TYPO3\CMS\Frontend\Resource\FileCollector;
  */
 class FilesProcessor implements DataProcessorInterface
 {
-    private const RETINA_RATIO = 2;
-    private const LQIP_RATIO = 0.1;
-
     use DataProcessingTrait;
 
     /**
@@ -194,8 +191,8 @@ class FilesProcessor implements DataProcessorInterface
                         array_merge(
                             $dimensions,
                             [
-                                'width' => $targetWidth * self::RETINA_RATIO,
-                                'height' => $targetHeight * self::RETINA_RATIO,
+                                'width' => $targetWidth * FileUtility::RETINA_RATIO,
+                                'height' => $targetHeight * FileUtility::RETINA_RATIO,
                             ]
                         ),
                         $cropVariant
@@ -210,8 +207,8 @@ class FilesProcessor implements DataProcessorInterface
                         array_merge(
                             $dimensions,
                             [
-                                'width' => $targetWidth * self::LQIP_RATIO,
-                                'height' => $targetHeight * self::LQIP_RATIO,
+                                'width' => $targetWidth * FileUtility::LQIP_RATIO,
+                                'height' => $targetHeight * FileUtility::LQIP_RATIO,
                             ]
                         ),
                         $cropVariant

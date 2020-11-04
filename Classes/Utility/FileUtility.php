@@ -31,6 +31,8 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
  */
 class FileUtility
 {
+    public const RETINA_RATIO = 2;
+    public const LQIP_RATIO = 0.1;
 
     /**
      * @param FileReference|File $fileReference
