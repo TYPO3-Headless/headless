@@ -56,71 +56,86 @@ final class Translator
                 continue;
             }
 
-            foreach ($page['renderables'] as &$element) {
-                $properties = [];
-
-                if (isset($element['validators']) &&
-                    is_array($element['validators'])) {
-                    foreach ($element['validators'] as &$validator) {
-                        if (!isset($validator['errorMessage'])) {
-                            continue;
-                        }
-
-                        $validator['errorMessage'] = self::getTranslationService()->translateElementError(
-                            $element,
-                            $validator['errorMessage'],
-                            $formRuntime,
-                            is_array($validator['options']) ? $validator['options'] : []
-                        );
-                    }
-                }
-
-                if (isset($element['properties']) && is_array($element['properties'])) {
-                    foreach (array_keys($element['properties']) as $property
-                    ) {
-                        $properties[$property] = self::getTranslationService()->translateElementValue(
-                            $element,
-                            [$property],
-                            $formRuntime
-                        );
-                    }
-                }
-
-                if (isset($element['properties']['validationErrorMessages']) &&
-                    is_array($element['properties']['validationErrorMessages'])) {
-                    $properties['validationErrorMessages'] = [];
-                    foreach ($element['properties']['validationErrorMessages'] as $error) {
-                        $properties['validationErrorMessages'][] = [
-                            'code' => $error['code'],
-                            'message' => self::getTranslationService()->translateElementError(
-                                $element,
-                                $error['code'],
-                                $formRuntime
-                            ),
-                        ];
-                    }
-                }
-
-                $translatedDefaultValue = self::getTranslationService()->translateElementValue(
-                    $element,
-                    ['defaultValue'],
-                    $formRuntime
-                );
-
-                $pageTranslation['renderables'][] = [
-                    'label' => self::getTranslationService()->translateElementValue(
-                        $element,
-                        ['label'],
-                        $formRuntime
-                    ),
-                    'defaultValue' => $translatedDefaultValue ?: $element['defaultValue'],
-                    'properties' => $properties,
-                ];
-            }
+            $pageTranslation['renderables'] = $this->translateRenderables($page['renderables'], $formRuntime);
 
             $result['renderables'][] = array_replace_recursive($page, $pageTranslation);
         }
 
         return array_merge($formDefinition, $result);
+    }
+
+    /**
+     * @param array<int, mixed> $renderables
+     * @param array<string, mixed> $formRuntime
+     * @return array<int, mixed>
+     */
+    private function translateRenderables(array $renderables, array $formRuntime): array
+    {
+        foreach ($renderables as &$element) {
+            $properties = [];
+
+            if (isset($element['renderables']) && is_array($element['renderables'])) {
+                $element['renderables'] = $this->translateRenderables($element['renderables'], $formRuntime);
+            }
+
+            if (isset($element['validators']) &&
+                is_array($element['validators'])) {
+                foreach ($element['validators'] as &$validator) {
+                    if (!isset($validator['errorMessage'])) {
+                        continue;
+                    }
+
+                    $validator['errorMessage'] = self::getTranslationService()->translateElementError(
+                        $element,
+                        $validator['errorMessage'],
+                        $formRuntime,
+                        is_array($validator['options']) ? $validator['options'] : []
+                    );
+                }
+            }
+
+            if (is_array($element['properties'])) {
+                foreach (array_keys($element['properties']) as $property
+                ) {
+                    $properties[$property] = self::getTranslationService()->translateElementValue(
+                        $element,
+                        [$property],
+                        $formRuntime
+                    );
+                }
+            }
+
+            if (isset($element['properties']['validationErrorMessages']) &&
+                is_array($element['properties']['validationErrorMessages'])) {
+                $properties['validationErrorMessages'] = [];
+                foreach ($element['properties']['validationErrorMessages'] as $error) {
+                    $properties['validationErrorMessages'][] = [
+                        'code' => $error['code'],
+                        'message' => self::getTranslationService()->translateElementError(
+                            $element,
+                            $error['code'],
+                            $formRuntime
+                        ),
+                    ];
+                }
+            }
+
+            $translatedDefaultValue = self::getTranslationService()->translateElementValue(
+                $element,
+                ['defaultValue'],
+                $formRuntime
+            );
+
+            $element['label'] = self::getTranslationService()->translateElementValue(
+                $element,
+                ['label'],
+                $formRuntime
+            );
+
+            $element['defaultValue'] = $translatedDefaultValue ?: $element['defaultValue'];
+            $element['properties'] = $properties;
+        }
+
+        return $renderables;
     }
 }
