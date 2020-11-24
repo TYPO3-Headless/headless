@@ -68,6 +68,7 @@ class FileUtility
                 'title' => $metaData['title'] ?: $fileReference->getProperty('title'),
                 'alternative' => $metaData['alternative'] ?: $fileReference->getProperty('alternative'),
                 'description' => $metaData['description'] ?: $fileReference->getProperty('description'),
+                'copyright' => $metaData['copyright'] ?: $fileReference->getProperty('copyright'),
                 'mimeType' => $fileReference->getMimeType(),
                 'type' => explode('/', $fileReference->getMimeType())[0],
                 'filename' => $fileReference->getProperty('name'),
