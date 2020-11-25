@@ -18,7 +18,8 @@ return static function (ContainerConfigurator $configurator): void {
     $services = $configurator->services()
         ->defaults()
         ->autoconfigure()
-        ->autowire();
+        ->autowire()
+        ->private();
 
     $toLoad = $services->load('FriendsOfTYPO3\\Headless\\', '../Classes/*');
 
