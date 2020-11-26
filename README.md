@@ -47,10 +47,11 @@ In headless extension we implemented new JSON Content Object, which allows you t
 lib.page = JSON
 lib.page {
   fields {
-      header = TEXT
-      header {
-          field = header
-      }
+    header = TEXT
+    header {
+      field = header
+    }
+  }
 }
 ```
 Output
@@ -65,19 +66,20 @@ in addition, keyword `fields` allow you to nest multiple times fields in json, e
 lib.page = JSON
 lib.page {
   fields {
-      data {
-        fields {
-            foo = TEXT
-            foo {
-                field = bar
-            }
-            foo1 = TEXT
-            foo1 {
-                field = bar1
-            }
+    data {
+      fields {
+        foo = TEXT
+        foo {
+          field = bar
+        }
+
+        foo1 = TEXT
+        foo1 {
+          field = bar1
         }
       }
-
+    }
+  }
 }
 ```
 Output
@@ -99,21 +101,21 @@ We can set correct property types, so frontend does not have to deal with string
 lib.page = JSON
 lib.page {
   fields {
-      data {
-        fields {
-            foo = INT
-            foo {
-                # db value of foo_field = 1
-                field = foo_field
-            }
-            bar = BOOL
-            bar {
-                # db value of bar_field = 0
-                field = bar_field
-            }
+    data {
+      fields {
+        foo = INT
+        foo {
+          # db value of foo_field = 1
+          field = foo_field
+        }
+        bar = BOOL
+        bar {
+          # db value of bar_field = 0
+          field = bar_field
         }
       }
-
+    }
+  }
 }
 ```
 Output
@@ -136,13 +138,13 @@ You can use Data Processors just like in `FLUIDTEMPLATE` Content Object, e.g.
 ```
 lib.languages = JSON
 lib.languages {
-    dataProcessing {
-        10 = TYPO3\CMS\Frontend\DataProcessing\LanguageMenuProcessor
-        10 {
-            languages = auto
-            as = languages
-        }
+  dataProcessing {
+    10 = TYPO3\CMS\Frontend\DataProcessing\LanguageMenuProcessor
+    10 {
+      languages = auto
+      as = languages
     }
+  }
 }
 ```
 
@@ -151,7 +153,7 @@ lib.languages {
 To change the setting for this extension feature either use Localconfiguration.php: or AdditionalConfiguration.php:
 
 ```
-$GLOBALS[‘TYPO3_CONF_VARS’][‘SYS’][‘features’][‘FrontendBaseUrlInPagePreview’] = true
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['FrontendBaseUrlInPagePreview'] = true;
 ```
 
 This feature toggle extends current SiteConfiguration (and it's variants) with new field for Frontend Url
