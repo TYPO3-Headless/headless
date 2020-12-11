@@ -23,6 +23,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Web\Response;
 use TYPO3\CMS\Extbase\Security\Cryptography\HashService;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
+use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 use function array_merge;
 use function array_pop;
@@ -60,6 +61,15 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      */
     public function renderAction(): void
     {
+        // check if headless not loaded & call original method in case of fluid configuration
+        $typoScriptSetup = $GLOBALS['TSFE'] instanceof TypoScriptFrontendController ? $GLOBALS['TSFE']->tmpl->setup : [];
+        if (!isset($typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'])
+            || (bool)$typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'] === false
+        ) {
+            parent::renderAction();
+            return;
+        }
+
         $formDefinition = [];
         if (!empty($this->settings['persistenceIdentifier'])) {
             $formDefinition = $this->formPersistenceManager->load($this->settings['persistenceIdentifier']);
