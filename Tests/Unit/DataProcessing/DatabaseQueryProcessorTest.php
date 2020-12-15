@@ -145,8 +145,10 @@ final class DatabaseQueryProcessorTest extends UnitTestCase
             ],
         ];
 
-        $fields = GeneralUtility::makeInstance(TypoScriptService::class)->convertTypoScriptArrayToPlainArray($processorConfiguration['fields.']);
+        $typoscriptService = GeneralUtility::makeInstance(TypoScriptService::class);
 
+        $fields = $typoscriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['fields.']);
+        $jsonCE = $typoscriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON']);
         $processedData = [];
 
         $this->contentObjectRenderer->stdWrapValue('table', $processorConfiguration)->shouldBeCalledOnce()->willReturn('tt_content');
@@ -166,9 +168,10 @@ final class DatabaseQueryProcessorTest extends UnitTestCase
         $this->contentDataProcessor->process($contentObjectRenderer, $processorConfigurationWithoutTable, $expectedRecords[0])->shouldBeCalledOnce()->willReturn($expectedRecords[0]);
 
         $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['fields.'])->shouldBeCalledOnce()->willReturn($fields);
+        $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON'])->shouldBeCalledOnce()->willReturn($jsonCE);
 
         $contentObjectRenderer->start($records[0], $processorConfiguration['table'])->shouldBeCalledOnce();
-        $contentObjectRenderer->cObjGetSingle($processorConfiguration['fields.']['title'], $processorConfiguration['fields.']['title.'])->willReturn('title');
+        $contentObjectRenderer->cObjGetSingle('JSON', $jsonCE)->willReturn('{"title":"title"}');
 
         $processedData['records'] = $expectedRecords;
 
