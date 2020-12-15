@@ -123,10 +123,8 @@ class DatabaseQueryProcessor implements DataProcessorInterface
 
             if (isset($processorConfiguration['fields.'])) {
                 $fields = $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['fields.']);
-                array_walk($fields, static function (&$item, $field) use ($processorConfiguration, $recordContentObjectRenderer) {
-                    $item = $recordContentObjectRenderer->cObjGetSingle($processorConfiguration['fields.'][$field], $processorConfiguration['fields.'][$field . '.']);
-                });
-                $record = $fields;
+                $jsonCE = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON']);
+                $record = \json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
             }
 
             $processedRecordVariables[$key] = $record;
