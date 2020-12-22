@@ -16,16 +16,11 @@ headless_domains {
 
     10 = JSON
     10 {
-        fields {
-            domains = TEXT
-            domains {
-                dataProcessing {
-                    10 = FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor
-                    10 {
-                        as = sites
-                        siteSchema = FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema
-                    }
-                }
+        dataProcessing {
+            10 = FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor
+            10 {
+                as = sites
+                siteSchema = FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema
             }
         }
     }

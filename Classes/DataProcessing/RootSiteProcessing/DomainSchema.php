@@ -21,7 +21,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use function is_array;
 use function str_replace;
 
-class DomainSchema implements SiteSchemaInterface
+final class DomainSchema implements SiteSchemaInterface
 {
     /**
      * @var SiteService
@@ -72,7 +72,7 @@ class DomainSchema implements SiteSchemaInterface
             ];
 
             // process if necessary
-            if (!empty($processorConfiguration['dataProcessing.']) &&
+            if (isset($processorConfiguration['dataProcessing.']) &&
                 is_array($processorConfiguration['dataProcessing.'])) {
                 $domain = $this->processAdditionalDataProcessors(
                     $domain,

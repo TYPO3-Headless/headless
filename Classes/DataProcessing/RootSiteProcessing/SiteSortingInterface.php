@@ -18,13 +18,6 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 interface SiteSortingInterface
 {
     /**
-     * @param array<Site> $sites
-     * @param array<int, array<mixed>> $pages
-     * @param string $sortingField
-     */
-    public function __construct(array $sites, array $pages, string $sortingField);
-
-    /**
      * @return array<Site>
      */
     public function sort(): array;

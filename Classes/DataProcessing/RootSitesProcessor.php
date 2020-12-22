@@ -18,13 +18,52 @@ use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProviderInterf
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteSchemaInterface;
 use InvalidArgumentException;
+use RuntimeException;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 
-class RootSitesProcessor implements DataProcessorInterface
+use function is_a;
+
+/*
+ * Example usage:
+    10 = FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor
+    10 {
+       as = sites
+       # allow to override provider of data for output processor, if empty defaults to FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider
+       # your-class implementing FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProviderInterfac
+       # example value: Vendor\Project\RootSiteProcessing\CustomSiteProvider
+       siteProvider =
+       # allow to override output of processor, if empty defaults to FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteSchema
+       # your-class implementing FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteSchemaInterface
+       # example value: Vendor\Project\RootSiteProcessing\CustomSiteSchema
+       siteSchema =
+       # provider configuration, if empty defaults to 'sorting' field from pages table
+       # example value = custom_sorting
+       sortingField =
+       # if empty defaults to sort by "sorting" field from `pages` table
+       # your-class implementing FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteSortingInterface
+       # example value: Vendor\Project\RootSiteProcessing\CustomSorting
+       sortingImplementation =
+       # list of uid of root pages should be returned, i.e. you have 5 root pages(1,2,3,4,5), but two (4,5) of not ready to display, so you can hide it
+       # example value = 1,2,3
+       allowedSites =
+       # automatically fetch root sites from another page/separator and filter sites yaml configs by returned list from database
+       # very useful when you have multi site setup in one instance.
+       # example value = 1
+       sitesFromPid =
+       # if empty defaults to uid,title,sorting - list of columns to fetch from database and provided for SiteSchema/DomainSchema to use
+       # example value = uid,title,sorting
+       dbColumns =
+       # if empty defaults to "title" field from pages table, get site name from database
+       # example value = your-custom-field-from-pages-table
+       titleField =
+    }
+ */
+final class RootSitesProcessor implements DataProcessorInterface
 {
     /**
      * @var ContentDataProcessor
@@ -51,19 +90,33 @@ class RootSitesProcessor implements DataProcessorInterface
             return $processedData;
         }
 
+        if (!GeneralUtility::makeInstance(Features::class)->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
+            throw new RuntimeException('FrontendBaseUrlInPagePreview option should be enabled!');
+        }
+
         $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
 
         $siteProviderClass = $processorConfiguration['siteProvider'] ?? SiteProvider::class;
         $siteSchemaClass = $processorConfiguration['siteSchema'] ?? SiteSchema::class;
 
-        if (!\is_a($siteProviderClass, SiteProviderInterface::class, true)) {
+        if (!is_a($siteProviderClass, SiteProviderInterface::class, true)) {
             // phpcs:ignore Generic.Files.LineLength
-            throw new InvalidArgumentException('Invalid siteProvider implementation! Please provide class with FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProviderInterface implemented!');
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Invalid siteProvider implementation! Please provide class with %s implemented!',
+                    SiteProviderInterface::class
+                )
+            );
         }
 
-        if (!\is_a($siteSchemaClass, SiteSchemaInterface::class, true)) {
+        if (!is_a($siteSchemaClass, SiteSchemaInterface::class, true)) {
             // phpcs:ignore Generic.Files.LineLength
-            throw new InvalidArgumentException('Invalid SiteSchema implementation! Please provide class with FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteSchemaInterface implemented!');
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Invalid SiteSchema implementation! Please provide class with %s implemented!',
+                    SiteSchemaInterface::class
+                )
+            );
         }
 
         /**
@@ -78,11 +131,14 @@ class RootSitesProcessor implements DataProcessorInterface
         $siteSchema = GeneralUtility::makeInstance($siteSchemaClass);
 
         $targetVariableName = $cObj->stdWrapValue('as', $processorConfiguration, 'sites');
-        $processedData[$targetVariableName] = $siteSchema->process($siteProvider, [
-            'processorConfiguration' => $processorConfiguration,
-            'siteUid' => $siteUid,
-            'cObj' => $cObj
-        ]);
+        $processedData[$targetVariableName] = $siteSchema->process(
+            $siteProvider,
+            [
+                'processorConfiguration' => $processorConfiguration,
+                'siteUid' => $siteUid,
+                'cObj' => $cObj
+            ]
+        );
 
         return $processedData;
     }

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
 use FriendsOfTYPO3\Headless\Service\SiteService;
-use InvalidArgumentException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -22,7 +21,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use function is_array;
 use function trim;
 
-class SiteSchema implements SiteSchemaInterface
+final class SiteSchema implements SiteSchemaInterface
 {
     /**
      * @var SiteService
@@ -48,10 +47,10 @@ class SiteSchema implements SiteSchemaInterface
     {
         $processorConfiguration = $options['processorConfiguration'] ?? [];
         $siteUid = (int)($options['siteUid'] ?? 0);
-        $titleField = ($processorConfiguration['titleField'] ?? 'title');
+        $titleField = $processorConfiguration['titleField'] ?? 'title';
 
         if (trim($titleField) === '') {
-            throw new InvalidArgumentException('Invalid title field');
+            $titleField = 'title';
         }
 
         $cObj = $options['cObj'] ?? GeneralUtility::makeInstance(ContentObjectRenderer::class);
@@ -83,7 +82,7 @@ class SiteSchema implements SiteSchemaInterface
             ];
 
             // process page if necessary
-            if (!empty($processorConfiguration['dataProcessing.']) &&
+            if (isset($processorConfiguration['dataProcessing.']) &&
                 is_array($processorConfiguration['dataProcessing.'])) {
                 $page = $this->processAdditionalDataProcessors(
                     $page,
