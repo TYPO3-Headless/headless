@@ -36,6 +36,10 @@ call_user_func(
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][TYPO3\CMS\Viewpage\Controller\ViewModuleController::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\Controller\ViewModuleController::class
             ];
+
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\Driver\LocalDriver::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\ResourceLocalDriver::class
+            ];
         }
 
         if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('form')) {
