@@ -22,31 +22,24 @@ class FrontendBaseUtility
     /**
      * @param string $frontendUrl
      * @param array|null $baseVariants
+     * @param string $returnField
      * @return string
      */
-    public function resolveWithVariants(string $frontendUrl, ?array $baseVariants): string
+    public function resolveWithVariants(string $frontendUrl, ?array $baseVariants = null, string $returnField = 'frontendBase'): string
     {
         if (empty($baseVariants)) {
             return $frontendUrl;
         }
-
-        $expressionLanguageResolver = GeneralUtility::makeInstance(
-            Resolver::class,
-            'site',
-            []
-        );
-
+        $expressionLanguageResolver = GeneralUtility::makeInstance(Resolver::class, 'site', []);
         foreach ($baseVariants as $baseVariant) {
             try {
                 if ($expressionLanguageResolver->evaluate($baseVariant['condition'])) {
-                    return $baseVariant['frontendBase'];
+                    return $baseVariant[$returnField];
                 }
-            } catch (SyntaxError $e) {
-                // silently fail and do not evaluate
+            } catch (SyntaxError $e) { // silently fail and do not evaluate
                 // no logger here, as Site is currently cached and serialized
             }
         }
-
         return $frontendUrl;
     }
 }
