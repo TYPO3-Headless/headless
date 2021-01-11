@@ -34,9 +34,10 @@ class FrontendBaseUtility
         foreach ($baseVariants as $baseVariant) {
             try {
                 if ($expressionLanguageResolver->evaluate($baseVariant['condition'])) {
-                    return $baseVariant[$returnField];
+                    return $baseVariant[$returnField] ?? '';
                 }
-            } catch (SyntaxError $e) { // silently fail and do not evaluate
+            } catch (SyntaxError $e) {
+                // silently fail and do not evaluate
                 // no logger here, as Site is currently cached and serialized
             }
         }
