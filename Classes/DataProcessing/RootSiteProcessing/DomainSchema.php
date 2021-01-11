@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
 use FriendsOfTYPO3\Headless\Service\SiteService;
+use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -31,12 +32,20 @@ final class DomainSchema implements SiteSchemaInterface
      * @var ContentDataProcessor
      */
     private $contentDataProcessor;
+    /**
+     * @var FrontendBaseUtility
+     */
+    private $frontendBaseUtility;
 
-    public function __construct(SiteService $service = null, ContentDataProcessor $contentObjectRenderer = null)
-    {
+    public function __construct(
+        SiteService $service = null,
+        ContentDataProcessor $contentObjectRenderer = null,
+        FrontendBaseUtility $frontendBaseUtility = null
+    ) {
         $this->siteService = $service ?? GeneralUtility::makeInstance(SiteService::class);
         $this->contentDataProcessor = $contentObjectRenderer ??
             GeneralUtility::makeInstance(ContentDataProcessor::class);
+        $this->frontendBaseUtility = $frontendBaseUtility ?? GeneralUtility::makeInstance(FrontendBaseUtility::class);
     }
 
     /**
@@ -61,10 +70,18 @@ final class DomainSchema implements SiteSchemaInterface
                 $locales[] = $language->getTypo3Language();
             }
 
+            $conf = $site->getConfiguration();
+
             $domain = [
                 'name' => str_replace($protocol, '', $url),
                 'baseURL' => $url,
-                'api' => ['baseURL' => $baseUrl],
+                'api' => [
+                    'baseURL' => $this->frontendBaseUtility->resolveWithVariants(
+                        $conf['frontendApiProxy'] ?? $baseUrl,
+                        $conf['baseVariants'] ?? null,
+                        'frontendApiProxy'
+                    )
+                ],
                 'i18n' => [
                     'locales' => $locales,
                     'defaultLocale' => $site->getDefaultLanguage()->getTypo3Language()
