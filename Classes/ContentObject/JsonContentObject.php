@@ -171,9 +171,9 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
 
     /**
      * @param array $dataProcessing
-     * @return array|null (null if flag is set)
+     * @return mixed (null if flag is set)
      */
-    protected function processFieldWithDataProcessing(array $dataProcessing): ?array
+    protected function processFieldWithDataProcessing(array $dataProcessing)
     {
         $data = $this->contentDataProcessor->process(
             $this->cObj,
