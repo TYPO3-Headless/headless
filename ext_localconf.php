@@ -40,6 +40,14 @@ call_user_func(
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\Driver\LocalDriver::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\ResourceLocalDriver::class
             ];
+
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Routing\PageRouter::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Routing\PageRouter::class
+            ];
+
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Frontend\Typolink\PageLinkBuilder::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Typolink\PageLinkBuilder::class,
+            ];
         }
 
         if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('form')) {
