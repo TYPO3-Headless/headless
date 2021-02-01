@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\XClass;
 
 use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -29,7 +30,8 @@ class ResourceLocalDriver extends \TYPO3\CMS\Core\Resource\Driver\LocalDriver
             return;
         }
 
-        if ($this->hasCapability(ResourceStorage::CAPABILITY_PUBLIC)) {
+        if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface &&
+            $this->hasCapability(ResourceStorage::CAPABILITY_PUBLIC)) {
             $conf = $GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getConfiguration();
             $frontendBase = GeneralUtility::makeInstance(FrontendBaseUtility::class);
             $this->configuration['baseUri'] = $frontendBase->resolveWithVariants(
