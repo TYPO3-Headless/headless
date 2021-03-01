@@ -56,6 +56,19 @@ lib.page {
                     }
                 }
 
+                robots {
+                    fields {
+                        noIndex = BOOL
+                        noIndex {
+                            field = no_index
+                        }
+
+                        noFollow = BOOL
+                        noFollow {
+                            field = no_follow
+                        }
+                    }
+                }
             }
         }
         socialMedia {
