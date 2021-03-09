@@ -32,17 +32,11 @@ call_user_func(
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['typoLink_PostProc'][] =
             \FriendsOfTYPO3\Headless\Hooks\TypolinkHook::class . '->handleLink';
 
-        if (\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class)->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
+        $features = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class);
+
+        if ($features->isFeatureEnabled('headless.frontendUrls') || $features->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][TYPO3\CMS\Viewpage\Controller\ViewModuleController::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\Controller\ViewModuleController::class
-            ];
-
-            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\Driver\LocalDriver::class] = [
-                'className' => FriendsOfTYPO3\Headless\XClass\ResourceLocalDriver::class
-            ];
-
-            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Extbase\Service\ImageService::class] = [
-                'className' => FriendsOfTYPO3\Headless\XClass\ImageService::class
             ];
 
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Routing\PageRouter::class] = [
@@ -51,6 +45,16 @@ call_user_func(
 
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Frontend\Typolink\PageLinkBuilder::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\Typolink\PageLinkBuilder::class,
+            ];
+        }
+
+        if ($features->isFeatureEnabled('headless.storageProxy')) {
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\Driver\LocalDriver::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\ResourceLocalDriver::class
+            ];
+
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Extbase\Service\ImageService::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\ImageService::class
             ];
         }
 
