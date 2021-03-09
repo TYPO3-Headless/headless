@@ -1,15 +1,13 @@
 <?php
 
-/***
- *
+/*
  * This file is part of the "headless" Extension for TYPO3 CMS.
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- *  (c) 2020
- *
- ***/
+ * (c) 2021
+ */
 
 declare(strict_types=1);
 
@@ -20,7 +18,6 @@ namespace FriendsOfTYPO3\Headless\ViewHelpers\Form;
  */
 class RegisterFieldViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\AbstractFormFieldViewHelper
 {
-
     /**
      * Initialize the arguments.
      *
@@ -71,7 +68,7 @@ class RegisterFieldViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\Abstract
         } elseif ($multiple === true) {
             $nameAttribute .= '[]';
         } elseif ($propertyValue !== null) {
-            $checked = (boolean)$propertyValue === (boolean)$valueAttribute;
+            $checked = (bool)$propertyValue === (bool)$valueAttribute;
         }
 
         $this->registerFieldNameForFormTokenGeneration($nameAttribute);

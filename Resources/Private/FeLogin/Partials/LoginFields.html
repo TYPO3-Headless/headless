@@ -35,6 +35,26 @@
             }
         }"
         />,
+        <f:if condition="{permaloginStatus} > -1">
+            <f:if condition="{permaloginStatus} == 1">
+                <f:then>
+                    <f:format.json value="{
+                        type: 'hidden',
+                        name: 'permalogin',
+                        value: '1'
+                    }"
+                    />,
+                </f:then>
+                <f:else>
+                    <f:format.json value="{
+                        type: 'hidden',
+                        name: 'permalogin',
+                        value: '0'
+                    }"
+                    />,
+                </f:else>
+            </f:if>
+        </f:if>
         <f:format.json value="{
             type: 'hidden',
             name: 'pid',

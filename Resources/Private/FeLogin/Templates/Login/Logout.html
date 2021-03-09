@@ -1,0 +1,18 @@
+<f:spaceless>
+    <f:format.raw>
+        <f:format.json value="{
+            form: {
+                title: '{f:translate(key:\'logout\')}',
+                action: '{f:uri.action(action:\'login\')}',
+                method: 'POST',
+                fields: '{f:render(partial: \'LogoutFields\', arguments: \'{_all}\') -> headless:format.json.decode()-> headless:loginForm(action:\'login\', name:\'field\') -> headless:format.json.decode()}'
+            },
+            message: {
+                header: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'status_header\\\'}\')}',
+                message: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'status_message\\\'}\')}: {f:translate(key:\'username\')} {user.username}'
+            },
+            recovery: '{f:render(partial: \'Recovery\', arguments: \'{_all}\') -> headless:format.json.decode()}',
+            flashMessages: '{f:render(partial: \'FlashMessages\', arguments: \'{_all}\') -> headless:format.json.decode()}'
+        }"/>
+    </f:format.raw>
+</f:spaceless>
