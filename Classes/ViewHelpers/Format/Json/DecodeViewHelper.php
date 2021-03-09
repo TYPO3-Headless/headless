@@ -6,7 +6,7 @@
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- * (c) 2020
+ * (c) 2021
  */
 
 namespace FriendsOfTYPO3\Headless\ViewHelpers\Format\Json;
@@ -18,6 +18,14 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  */
 class DecodeViewHelper extends AbstractViewHelper
 {
+    /**
+     * Initialize
+     */
+    public function initializeArguments(): void
+    {
+        $this->registerArgument('json', 'string', 'json to decode', false, '');
+    }
+
     /**
      * @param string $json
      * @return mixed

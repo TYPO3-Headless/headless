@@ -41,16 +41,20 @@ Install extension using composer\
 
 Then, you should include extension typoscript template, and you are ready to go. Also, please remember to don't use fluid styled content on the same page tree together with ext:headless.
 
+## Documentation
+[Documentation](https://docs.typo3.org/p/friendsoftypo3/headless/master/en-us/Index.html)
+
 ## JSON  Content Object
 In headless extension we implemented new JSON Content Object, which allows you to specify what fields you want to output, and how they will look. First of all, let's take a look at simple example
 ```
 lib.page = JSON
 lib.page {
   fields {
-      header = TEXT
-      header {
-          field = header
-      }
+    header = TEXT
+    header {
+      field = header
+    }
+  }
 }
 ```
 Output
@@ -65,19 +69,20 @@ in addition, keyword `fields` allow you to nest multiple times fields in json, e
 lib.page = JSON
 lib.page {
   fields {
-      data {
-        fields {
-            foo = TEXT
-            foo {
-                field = bar
-            }
-            foo1 = TEXT
-            foo1 {
-                field = bar1
-            }
+    data {
+      fields {
+        foo = TEXT
+        foo {
+          field = bar
+        }
+
+        foo1 = TEXT
+        foo1 {
+          field = bar1
         }
       }
-
+    }
+  }
 }
 ```
 Output
@@ -99,21 +104,21 @@ We can set correct property types, so frontend does not have to deal with string
 lib.page = JSON
 lib.page {
   fields {
-      data {
-        fields {
-            foo = INT
-            foo {
-                # db value of foo_field = 1
-                field = foo_field
-            }
-            bar = BOOL
-            bar {
-                # db value of bar_field = 0
-                field = bar_field
-            }
+    data {
+      fields {
+        foo = INT
+        foo {
+          # db value of foo_field = 1
+          field = foo_field
+        }
+        bar = BOOL
+        bar {
+          # db value of bar_field = 0
+          field = bar_field
         }
       }
-
+    }
+  }
 }
 ```
 Output
@@ -136,26 +141,46 @@ You can use Data Processors just like in `FLUIDTEMPLATE` Content Object, e.g.
 ```
 lib.languages = JSON
 lib.languages {
-    dataProcessing {
-        10 = TYPO3\CMS\Frontend\DataProcessing\LanguageMenuProcessor
-        10 {
-            languages = auto
-            as = languages
-        }
+  dataProcessing {
+    10 = TYPO3\CMS\Frontend\DataProcessing\LanguageMenuProcessor
+    10 {
+      languages = auto
+      as = languages
     }
+  }
 }
 ```
 
-### Feature toggle "FrontendBaseUrlInPagePreview"
+### Available features toggles
 
 To change the setting for this extension feature either use Localconfiguration.php: or AdditionalConfiguration.php:
 
-```
-$GLOBALS[‘TYPO3_CONF_VARS’][‘SYS’][‘features’][‘FrontendBaseUrlInPagePreview’] = true
-```
+**headless.frontendUrls** or **~~FrontendBaseUrlInPagePreview~~** (deprecated)
 
 This feature toggle extends current SiteConfiguration (and it's variants) with new field for Frontend Url
-(url frontend of PWA app). This new field is used when there is a need to preview a page such as: "view" module or right click on a page + show, or the 'eye' icon in page view.
+(url frontend of PWA app). This new field is used when there is a need to preview a page such as: "view" module or right click on a page + show, or the 'eye' icon in page view
+& allow generating proper cross-domain links for headless instance.
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
+```
+
+**headless.storageProxy**
+
+Enable ability to set storage proxy in site configuration (and it's variants) & serve files via proxy from same domain
+
+Feature flag requires TYPO3 >= 10.4.10
+
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.storageProxy'] = true;
+```
+
+**headless.nextMajor**
+
+Enable new APIs/behaviors of ext:headless, but contains breaking changes & require upgrade path for you application. Use with caution.
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
+```
+
 
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/

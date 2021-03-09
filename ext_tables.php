@@ -6,7 +6,7 @@
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- * (c) 2020
+ * (c) 2021
  */
 
 defined('TYPO3_MODE') || die();

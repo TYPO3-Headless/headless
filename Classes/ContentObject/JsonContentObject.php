@@ -6,7 +6,7 @@
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- * (c) 2020
+ * (c) 2021
  */
 
 declare(strict_types=1);
@@ -16,6 +16,7 @@ namespace FriendsOfTYPO3\Headless\ContentObject;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderException;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
+use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use RecursiveArrayIterator;
@@ -46,6 +47,10 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
      * @var array
      */
     private $conf;
+    /**
+     * @var HeadlessUserInt
+     */
+    private $headlessUserInt;
 
     /**
      * @param ContentObjectRenderer $cObj
@@ -55,6 +60,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
         parent::__construct($cObj);
         $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
         $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
+        $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
     }
 
     /**
@@ -121,6 +127,9 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 }
                 if ($theValue === 'BOOL') {
                     $content[$theKey] = (bool)$content[$theKey];
+                }
+                if ($theValue === 'USER_INT') {
+                    $content[$theKey]= $this->headlessUserInt->wrap($content[$theKey]);
                 }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
                     $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);

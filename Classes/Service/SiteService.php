@@ -6,16 +6,16 @@
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- * (c) 2020
+ * (c) 2021
  */
 
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Service;
 
-use Symfony\Component\ExpressionLanguage\SyntaxError;
+use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
-use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -29,61 +29,40 @@ class SiteService
      */
     public function getFrontendUrl(string $url, int $pageUid): string
     {
-        if (GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class)->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
-            try {
-                $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
-
-                $site = $siteFinder->getSiteByPageId($pageUid);
-                $base = $site->getBase()->getHost();
-                $configuration = $site->getConfiguration();
-
-                if (array_key_exists('frontendBase', $configuration)) {
-                    $frontendBaseUrl = $this->resolveFrontendBaseWithVariants(
-                        $configuration['frontendBase'] ?? '',
-                        $configuration['baseVariants'] ?? null
-                    );
-
-                    if ($frontendBaseUrl !== '') {
-                        $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
-                        $frontBase = $frontendBase->getHost();
-
-                        if (is_int(strpos($url, $base))) {
-                            $url = str_replace($base, $frontBase, $url);
-                        }
-                    }
-                }
-            } catch (SiteNotFoundException $exception) {
-            }
+        if (!GeneralUtility::makeInstance(Features::class)
+            ->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
             return $url;
         }
-    }
 
-    /**
-     * @param string $frontendUrl
-     * @param array|null $baseVariants
-     * @return string
-     */
-    protected function resolveFrontendBaseWithVariants(string $frontendUrl, ?array $baseVariants): string
-    {
-        if (!empty($baseVariants)) {
-            $expressionLanguageResolver = GeneralUtility::makeInstance(
-                Resolver::class,
-                'site',
-                []
+        try {
+            $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
+            $frontendBaseUtility = GeneralUtility::makeInstance(FrontendBaseUtility::class);
+
+            $site = $siteFinder->getSiteByPageId($pageUid);
+            $base = $site->getBase()->getHost();
+            $configuration = $site->getConfiguration();
+
+            if (!array_key_exists('frontendBase', $configuration)) {
+                return $url;
+            }
+
+            $frontendBaseUrl = $frontendBaseUtility->resolveWithVariants(
+                $configuration['frontendBase'] ?? '',
+                $configuration['baseVariants'] ?? null
             );
-            foreach ($baseVariants as $baseVariant) {
-                try {
-                    if ($expressionLanguageResolver->evaluate($baseVariant['condition'])) {
-                        $frontendUrl = $baseVariant['frontendBase'];
-                        break;
-                    }
-                } catch (SyntaxError $e) {
-                    // silently fail and do not evaluate
-                    // no logger here, as Site is currently cached and serialized
+
+            if ($frontendBaseUrl !== '') {
+                $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
+                $frontBase = $frontendBase->getHost();
+
+                if (is_int(strpos($url, $base))) {
+                    $url = str_replace($base, $frontBase, $url);
                 }
             }
+        } catch (SiteNotFoundException $exception) {
         }
-        return $frontendUrl;
+
+        return $url;
     }
 
     /**

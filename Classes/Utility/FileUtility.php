@@ -6,7 +6,7 @@
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- * (c) 2020
+ * (c) 2021
  */
 
 declare(strict_types=1);
@@ -31,6 +31,8 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
  */
 class FileUtility
 {
+    public const RETINA_RATIO = 2;
+    public const LQIP_RATIO = 0.1;
 
     /**
      * @param FileReference|File $fileReference

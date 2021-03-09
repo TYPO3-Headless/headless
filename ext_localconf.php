@@ -6,13 +6,13 @@
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- * (c) 2020
+ * (c) 2021
  */
 
 defined('TYPO3_MODE') || die();
 
 call_user_func(
-    function () {
+    static function () {
         if (!isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['FrontendBaseUrlInPagePreview'])) {
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['FrontendBaseUrlInPagePreview'] = false;
         }
@@ -35,6 +35,32 @@ call_user_func(
         if (\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class)->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][TYPO3\CMS\Viewpage\Controller\ViewModuleController::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\Controller\ViewModuleController::class
+            ];
+
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\Driver\LocalDriver::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\ResourceLocalDriver::class
+            ];
+
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Extbase\Service\ImageService::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\ImageService::class
+            ];
+
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Routing\PageRouter::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Routing\PageRouter::class
+            ];
+
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Frontend\Typolink\PageLinkBuilder::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Typolink\PageLinkBuilder::class,
+            ];
+        }
+
+        if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('form')) {
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Form\Controller\FormFrontendController::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Controller\FormFrontendController::class
+            ];
+
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Form\Domain\Runtime\FormRuntime::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\FormRuntime::class
             ];
         }
 

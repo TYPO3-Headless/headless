@@ -6,7 +6,7 @@
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- * (c) 2020
+ * (c) 2021
  */
 
 declare(strict_types=1);
@@ -26,7 +26,7 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *
  * Example TypoScript configuration:
  *
- * 10 = TYPO3\CMS\Frontend\DataProcessing\DatabaseQueryProcessor
+ * 10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
  * 10 {
  *   table = tt_content
  *   pidInList = 123
@@ -123,10 +123,8 @@ class DatabaseQueryProcessor implements DataProcessorInterface
 
             if (isset($processorConfiguration['fields.'])) {
                 $fields = $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['fields.']);
-                array_walk($fields, static function (&$item, $field) use ($processorConfiguration, $recordContentObjectRenderer) {
-                    $item = $recordContentObjectRenderer->cObjGetSingle($processorConfiguration['fields.'][$field], $processorConfiguration['fields.'][$field . '.']);
-                });
-                $record = $fields;
+                $jsonCE = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON']);
+                $record = \json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
             }
 
             $processedRecordVariables[$key] = $record;

@@ -6,7 +6,7 @@
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- * (c) 2020
+ * (c) 2021
  */
 
 declare(strict_types=1);
@@ -71,11 +71,13 @@ class FlexFormProcessor implements DataProcessorInterface
         // processing the flexform data
         $originalValue = $processedData['data'][$fieldName];
 
-        if (!is_string($originalValue)) {
+        if (\is_array($originalValue)) {
+            $flexformData = $originalValue;
+        } elseif (\is_string($originalValue)) {
+            $flexformData = $this->flexFormService->convertFlexFormContentToArray($originalValue);
+        } else {
             return $processedData;
         }
-
-        $flexformData = $this->flexFormService->convertFlexFormContentToArray($originalValue);
 
         // save result in "data" (default) or given variable name
         $targetVariableName = $cObj->stdWrapValue('as', $processorConfiguration);

@@ -6,7 +6,7 @@
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  *
- * (c) 2020
+ * (c) 2021
  */
 
 $EM_CONF[$_EXTKEY] = [
@@ -17,7 +17,7 @@ $EM_CONF[$_EXTKEY] = [
     'author_email' => 'extensions@macopedia.pl',
     'category' => 'fe',
     'internal' => '',
-    'version' => '2.2.0',
+    'version' => '2.4.0',
     'constraints' => [
         'depends' => [
             'typo3' => '9.5.0-10.4.99',

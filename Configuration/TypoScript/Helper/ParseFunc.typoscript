@@ -5,7 +5,7 @@ lib {
         makelinks {
             http {
                 keep = {$styles.content.links.keep}
-                extTarget = {$styles.content.links.extTarget}
+                extTarget.data = parameters:target
             }
             mailto {
                 keep = path
@@ -17,7 +17,7 @@ lib {
                 current = 1
                 typolink {
                     parameter.data = parameters : allParams
-                    extTarget = {$styles.content.links.extTarget}
+                    extTarget.data = parameters:target
                 }
                 parseFunc.constants = 1
             }
@@ -29,8 +29,7 @@ lib {
                     title.data = parameters:title
                     ATagParams.data = parameters:allParams
                     target.data = parameters:target
-                    extTarget = {$styles.content.links.extTarget}
-                    extTarget.override.data = parameters:target
+                    extTarget.data = parameters:target
                 }
             }
         }
@@ -122,7 +121,7 @@ lib {
                 current = 1
                 typolink {
                     parameter.data = parameters : allParams
-                    extTarget = {$styles.content.links.extTarget}
+                    extTarget.data = parameters:target
                 }
                 parseFunc.constants = 1
             }
@@ -134,8 +133,7 @@ lib {
                     title.data = parameters:title
                     ATagParams.data = parameters:allParams
                     target.data = parameters:target
-                    extTarget = {$styles.content.links.extTarget}
-                    extTarget.override.data = parameters:target
+                    extTarget.data = parameters:target
                 }
             }
         }
