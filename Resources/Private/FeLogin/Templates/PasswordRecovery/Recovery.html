@@ -1,0 +1,52 @@
+<f:spaceless>
+    <f:format.raw>
+        <f:format.json value="{
+            message: {
+                header: '{f:translate(key:\'forgot_header\')}',
+                message: '{f:translate(key:\'forgot_reset_message\')}'
+            },
+            errors: '{f:render(partial: \'ValidationErrors\', arguments: \'{_all}\') -> headless:format.json.decode()}',
+            backToLogin: {
+                url: '{f:uri.action(action:\'login\', controller:\'Login\')}',
+                text: '{f:translate(key:\'forgot_header_backToLogin\')}'
+            },
+            form: {
+                title: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'reset_password\\\'}\')}',
+                action: '{f:uri.action(action:\'recovery\')}',
+                method: 'POST',
+                fields: '{f:render(section: \'fields\', arguments: \'{_all}\') -> headless:format.json.decode()}'
+            },
+            flashMessages: '{f:render(partial: \'FlashMessages\', arguments: \'{_all}\') -> headless:format.json.decode()}'
+        }"/>
+    </f:format.raw>
+</f:spaceless>
+<f:section name="fields">
+    <f:spaceless>
+        <f:format.raw>
+            [
+                <f:format.json value="{
+                    type: 'text',
+                    label: '{f:translate(key:\'input.username.recovery\', extensionName:\'headless\')}',
+                    name: 'userIdentifier',
+                    namespace: 'tx_felogin_login',
+                    validate: {
+                        required: 1,
+                        email: 1
+                    },
+                    options: {
+                        attr: {
+                            placeholder: '{f:translate(key:\'input.username.recovery.placeholder\', extensionName:\'headless\')}'
+                        }
+                    }
+                }"
+                />,
+                <f:format.json value="{
+                    type: 'submit',
+                    name: 'submit',
+                    value: '{f:translate(key:\'input.submit.recovery\', extensionName:\'headless\')}'
+                    }"
+                />
+            ]
+        </f:format.raw>
+    </f:spaceless>
+</f:section>
