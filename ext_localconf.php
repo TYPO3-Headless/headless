@@ -35,10 +35,6 @@ call_user_func(
         $features = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class);
 
         if ($features->isFeatureEnabled('headless.frontendUrls') || $features->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
-            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][TYPO3\CMS\Viewpage\Controller\ViewModuleController::class] = [
-                'className' => FriendsOfTYPO3\Headless\XClass\Controller\ViewModuleController::class
-            ];
-
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Routing\PageRouter::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\Routing\PageRouter::class
             ];
