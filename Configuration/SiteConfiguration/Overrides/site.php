@@ -9,7 +9,10 @@
  * (c) 2021
  */
 
-if (\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class)->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
+$features = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class);
+
+if ($features->isFeatureEnabled('headless.frontendUrls') ||
+    $features->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
     $tempColumns = [
         'frontendBase' => [
             'label' => 'Frontend Entry Point',
@@ -22,14 +25,44 @@ if (\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configu
         ]
     ];
 
+    $replaceShowItem = 'base, frontendBase, ';
+
+    if ($features->isFeatureEnabled('headless.storageProxy') &&
+        version_compare((new TYPO3\CMS\Core\Information\Typo3Version()), '10.4.10', '>=')) {
+        $tempColumns['frontendApiProxy'] = [
+            'label' => 'Frontend API proxy url',
+            'description' => 'Main URL to for proxy API',
+            'config' => [
+                'type' => 'input',
+                'eval' => 'trim',
+                'placeholder' => 'http://www.domain.local/api',
+            ],
+        ];
+
+        $tempColumns['frontendFileApi'] = [
+            'label' => 'Frontend API proxy url for files',
+            'description' => 'Main URL to for proxy API files',
+            'config' => [
+                'type' => 'input',
+                'eval' => 'trim',
+                'placeholder' => 'http://www.domain.local/api/fileadmin',
+            ],
+        ];
+
+        $replaceShowItem .= 'frontendApiProxy, frontendFileApi,';
+    }
+
     $GLOBALS['SiteConfiguration']['site']['columns']['base']['label'] = 'TYPO3 Entry Point';
     $GLOBALS['SiteConfiguration']['site']['columns']['base']['description'] = 'Main URL to call the TYPO3 headless api in default language.';
 
-    $GLOBALS['SiteConfiguration']['site']['columns'] = array_merge($GLOBALS['SiteConfiguration']['site']['columns'], $tempColumns);
+    $GLOBALS['SiteConfiguration']['site']['columns'] = array_merge(
+        $GLOBALS['SiteConfiguration']['site']['columns'],
+        $tempColumns
+    );
 
     $GLOBALS['SiteConfiguration']['site']['palettes']['base']['showitem'] = str_replace(
         'base,',
-        'base, frontendBase, ',
+        $replaceShowItem,
         $GLOBALS['SiteConfiguration']['site']['palettes']['base']['showitem']
     );
 }

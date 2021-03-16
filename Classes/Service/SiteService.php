@@ -20,6 +20,11 @@ use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+use function array_key_exists;
+use function is_int;
+use function str_replace;
+use function strpos;
+
 class SiteService
 {
     /**
@@ -29,8 +34,10 @@ class SiteService
      */
     public function getFrontendUrl(string $url, int $pageUid): string
     {
-        if (!GeneralUtility::makeInstance(Features::class)
-            ->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
+        $features = GeneralUtility::makeInstance(Features::class);
+
+        if (!$features->isFeatureEnabled('FrontendBaseUrlInPagePreview') &&
+            !$features->isFeatureEnabled('headless.frontendUrls')) {
             return $url;
         }
 

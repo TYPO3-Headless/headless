@@ -22,11 +22,11 @@ use RuntimeException;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 
 use function is_a;
+use function sprintf;
 
 /*
  * Example usage:
@@ -63,13 +63,9 @@ use function is_a;
        titleField =
     }
  */
+
 final class RootSitesProcessor implements DataProcessorInterface
 {
-    /**
-     * @var ContentDataProcessor
-     */
-    private $contentDataProcessor;
-
     /**
      * @param ContentObjectRenderer $cObj
      * @param array<string,mixed> $contentObjectConfiguration
@@ -90,17 +86,18 @@ final class RootSitesProcessor implements DataProcessorInterface
             return $processedData;
         }
 
-        if (!GeneralUtility::makeInstance(Features::class)->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
-            throw new RuntimeException('FrontendBaseUrlInPagePreview option should be enabled!');
-        }
+        $features = GeneralUtility::makeInstance(Features::class);
 
-        $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
+        if (!$features->isFeatureEnabled('FrontendBaseUrlInPagePreview') &&
+            !$features->isFeatureEnabled('headless.frontendUrls')) {
+            $msg = 'headless.frontendUrls or FrontendBaseUrlInPagePreview option should be enabled!';
+            throw new RuntimeException($msg);
+        }
 
         $siteProviderClass = $processorConfiguration['siteProvider'] ?? SiteProvider::class;
         $siteSchemaClass = $processorConfiguration['siteSchema'] ?? SiteSchema::class;
 
         if (!is_a($siteProviderClass, SiteProviderInterface::class, true)) {
-            // phpcs:ignore Generic.Files.LineLength
             throw new InvalidArgumentException(
                 sprintf(
                     'Invalid siteProvider implementation! Please provide class with %s implemented!',
@@ -110,7 +107,6 @@ final class RootSitesProcessor implements DataProcessorInterface
         }
 
         if (!is_a($siteSchemaClass, SiteSchemaInterface::class, true)) {
-            // phpcs:ignore Generic.Files.LineLength
             throw new InvalidArgumentException(
                 sprintf(
                     'Invalid SiteSchema implementation! Please provide class with %s implemented!',
