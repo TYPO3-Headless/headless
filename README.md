@@ -174,6 +174,14 @@ Feature flag requires TYPO3 >= 10.4.10
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.storageProxy'] = true;
 ```
 
+**headless.redirectMiddlewares**
+
+Enable new & replace core middlewares for handling redirects. Headless mode requires redirects to be handled by frontend app.
+
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.redirectMiddlewares'] = true;
+```
+
 **headless.nextMajor**
 
 Enable new APIs/behaviors of ext:headless, but contains breaking changes & require upgrade path for you application. Use with caution.
