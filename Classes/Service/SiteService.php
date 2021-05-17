@@ -47,6 +47,7 @@ class SiteService
 
             $site = $siteFinder->getSiteByPageId($pageUid);
             $base = $site->getBase()->getHost();
+            $port = $site->getBase()->getPort();
             $configuration = $site->getConfiguration();
 
             if (!array_key_exists('frontendBase', $configuration)) {
@@ -61,9 +62,39 @@ class SiteService
             if ($frontendBaseUrl !== '') {
                 $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
                 $frontBase = $frontendBase->getHost();
+                $frontPort = $frontendBase->getPort();
 
                 if (is_int(strpos($url, $base))) {
                     $url = str_replace($base, $frontBase, $url);
+                }
+
+                if ($port !== $frontPort) {
+                    if ($port) {
+                        if ($frontPort) {
+                            // replace port
+                            $url = str_replace(
+                                ':' . $port,
+                                ':' . $frontPort,
+                                $url
+                            );
+                        } else {
+                            // remove port
+                            $url = str_replace(
+                                ':' . $port,
+                                '',
+                                $url
+                            );
+                        }
+                    } else {
+                        if ($frontPort) {
+                            // add port
+                            $url = str_replace(
+                                $frontBase,
+                                $frontBase . ':' . $frontPort,
+                                $url
+                            );
+                        }
+                    }
                 }
             }
         } catch (SiteNotFoundException $exception) {
