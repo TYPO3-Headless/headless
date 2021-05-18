@@ -1,0 +1,143 @@
+lib.categorie_fields {
+  title = TEXT
+  title {
+    field = title
+  }
+
+  slug = TEXT
+  slug {
+    field = slug
+  }
+
+  /**
+   * This part dosnt work 'fields < lib.categorie_fields'
+   */
+  // parent = TEXT
+  // parent {
+  //   dataProcessing {
+  //     10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
+  //     10 {
+  //       table = sys_category
+  //       pidInList = -1
+  //       recursive = 99
+  //       selectFields = sys_category.*
+  //       where {
+  //           field = parent
+  //           wrap = sys_category.uid='|'
+  //       }
+
+  //       as = parent
+
+  //       fields < lib.categorie_fields
+  //     }
+  //   }
+  // }
+
+  seo_title = TEXT
+  seo_title {
+    field = seo_title
+  }
+
+  seo_description = TEXT
+  seo_description {
+    field = seo_description
+  }
+
+  seo_headline = TEXT
+  seo_headline {
+    field = seo_headline
+  }
+
+  seo_text = TEXT
+  seo_text {
+    field = seo_text
+    parseFunc =< lib.parseFunc_links
+  }
+
+  description = TEXT
+  description {
+    field = description
+    parseFunc =< lib.parseFunc_links
+  }
+
+  images = TEXT
+  images {
+    dataProcessing {
+      10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+      10 {
+        references.fieldName = images
+        as = media
+      }
+    }
+  }
+
+  single_pid = TEXT
+  single_pid {
+    field = single_pid
+    htmlSpecialChars = 1
+    typolink {
+      parameter {
+        field = single_pid
+      }
+      returnLast = url
+    }
+  }
+
+  shortcut = TEXT
+  shortcut {
+    field = shortcut
+    htmlSpecialChars = 1
+    typolink {
+      parameter {
+        field = shortcut
+      }
+      returnLast = url
+    }
+  }
+}
+
+lib.categories_pages = TEXT
+lib.categories_pages {
+  dataProcessing {
+    10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
+    10 {
+      table = sys_category
+      pidInList = -1
+      recursive = 999
+      selectFields = sys_category.*
+      join = sys_category_record_mm on sys_category.uid = sys_category_record_mm.uid_local
+      where {
+          field = uid
+          wrap = sys_category_record_mm.tablenames = 'pages' and sys_category_record_mm.uid_foreign='|'
+      }
+
+      orderBy = sys_category.sorting
+      as = categories
+
+      fields < lib.categorie_fields
+    }
+  }
+}
+
+lib.categories_tt_content = TEXT
+lib.categories_tt_content {
+  dataProcessing {
+    10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
+    10 {
+      table = sys_category
+      pidInList = -1
+      recursive = 999
+      selectFields = sys_category.*
+      join = sys_category_record_mm on sys_category.uid = sys_category_record_mm.uid_local
+      where {
+          field = uid
+          wrap = sys_category_record_mm.tablenames = 'tt_content' and sys_category_record_mm.uid_foreign='|'
+      }
+
+      orderBy = sys_category.sorting
+      as = categories
+
+      fields < lib.categorie_fields
+    }
+  }
+}
