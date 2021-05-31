@@ -18,5 +18,22 @@ call_user_func(
         if ($features->isFeatureEnabled('headless.frontendUrls') || $features->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
             $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_befunc.php']['viewOnClickClass'][] = \FriendsOfTYPO3\Headless\Hooks\PreviewUrlHook::class;
         }
+
+        if ($features->isFeatureEnabled('headless.jsonViewModule')) {
+            \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
+                'Headless',
+                'web',
+                'jsonview',
+                'bottom',
+                [
+                    \FriendsOfTYPO3\Headless\Controller\JsonViewController::class => 'main'
+                ],
+                [
+                    'access' => 'admin',
+                    'icon' => 'EXT:headless/Resources/Public/Icons/module-jsonview.svg',
+                    'labels' => 'LLL:EXT:headless/Resources/Private/Language/locallang_mod.xlf'
+                ]
+            );
+        }
     }
 );

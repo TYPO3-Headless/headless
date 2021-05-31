@@ -18,6 +18,7 @@ If you have any questions just drop a line in #initiative-pwa Slack channel.
 - taking into account all language/translation configuration (e.g. fallback)
 - easily extensible with custom fields or custom CE's
 - basic support for EXT:form
+- [BETA] backend module for simulating page preview (with specific page type, lang, usergroup)
 - support for felogin (comming soon)
 
 ### Additional extensions and integrations
@@ -187,6 +188,13 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.redirectMiddlewares'] =
 Enable new APIs/behaviors of ext:headless, but contains breaking changes & require upgrade path for you application. Use with caution.
 ```
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
+```
+
+**headless.jsonViewModule**
+
+Enable new [BETA] backend module for previewing page (page type, language, usergroup and custom arguments). It is also possible to define new pageType views (ex. detail news preview if page has target plugin).
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.jsonViewModule'] = true;
 ```
 
 

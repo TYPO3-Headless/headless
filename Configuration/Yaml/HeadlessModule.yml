@@ -1,0 +1,21 @@
+pageTypeModes:
+  default:
+    title: Default page view
+    pageType: 0
+    bootContent: 1
+
+  initialData:
+    title: Initial Data
+    pageType: 834
+
+#  Example of detail news preset
+#
+#  detailNews:
+#    title: Detail news
+#    pageType: 0
+#    bootContent: 1
+#    arguments:
+#      tx_news_pi1:
+#        action: detail
+#        controller: News
+#        news: 1
