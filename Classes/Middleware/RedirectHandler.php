@@ -75,6 +75,10 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
      */
     protected function buildRedirectResponse(UriInterface $uri, array $redirectRecord): ResponseInterface
     {
+        if (!($this->request->getAttribute('site')->getConfiguration()['headless'] ?? false)) {
+            return parent::buildRedirectResponse($uri, $redirectRecord);
+        }
+
         $resolvedTarget = $this->linkService->resolve($redirectRecord['target']);
         $targetUrl = $this->siteService->getFrontendUrl((string)$uri, (int)$resolvedTarget['pageuid']);
 
@@ -92,10 +96,12 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
             $redirectUrlEvent = $this->dispatchHooks($redirectUrlEvent);
         }
 
-        return new JsonResponse([
-            'redirectUrl' => $redirectUrlEvent->getTargetUrl(),
-            'statusCode' => $redirectUrlEvent->getTargetStatusCode()
-        ]);
+        return new JsonResponse(
+            [
+                'redirectUrl' => $redirectUrlEvent->getTargetUrl(),
+                'statusCode' => $redirectUrlEvent->getTargetStatusCode()
+            ]
+        );
     }
 
     private function dispatchHooks(RedirectUrlEvent $redirectUrlEvent): RedirectUrlEvent
