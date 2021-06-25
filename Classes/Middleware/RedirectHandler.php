@@ -15,11 +15,13 @@ namespace FriendsOfTYPO3\Headless\Middleware;
 
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
 use FriendsOfTYPO3\Headless\Service\SiteService;
+use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Information\Typo3Version;
@@ -45,19 +47,24 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
      * @var ServerRequestInterface
      */
     private $request;
+    /**
+     * @var Features
+     */
+    private $features;
 
     public function __construct(
         RedirectService $redirectService,
         SiteService $siteService = null,
         LinkService $linkService = null,
-        EventDispatcher $eventDispatcher = null
+        EventDispatcher $eventDispatcher = null,
+        Features $features = null
     ) {
         parent::__construct($redirectService);
         $this->siteService = $siteService ?? GeneralUtility::makeInstance(SiteService::class);
         $this->linkService = $linkService ?? GeneralUtility::makeInstance(LinkService::class);
-
+        $this->features = $features ?? GeneralUtility::makeInstance(Features::class);
         if ((new Typo3Version())->getMajorVersion() >= 10) {
-            $this->eventDispatcher = $eventDispatcher ?? GeneralUtility::makeInstance(EventDispatcherInterface::class);
+            $this->eventDispatcher = $eventDispatcher ?? GeneralUtility::makeInstance(EventDispatcher::class);
         }
     }
 
@@ -80,7 +87,12 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
         }
 
         $resolvedTarget = $this->linkService->resolve($redirectRecord['target']);
-        $targetUrl = $this->siteService->getFrontendUrl((string)$uri, (int)$resolvedTarget['pageuid']);
+
+        if ($resolvedTarget['type'] === LinkService::TYPE_FILE || $resolvedTarget['type'] === LinkService::TYPE_FOLDER) {
+            $targetUrl = $this->handleFileTypes($resolvedTarget);
+        } else {
+            $targetUrl = $this->siteService->getFrontendUrl((string)$uri, (int)$resolvedTarget['pageuid']);
+        }
 
         $redirectUrlEvent = new RedirectUrlEvent(
             $this->request,
@@ -96,12 +108,10 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
             $redirectUrlEvent = $this->dispatchHooks($redirectUrlEvent);
         }
 
-        return new JsonResponse(
-            [
-                'redirectUrl' => $redirectUrlEvent->getTargetUrl(),
-                'statusCode' => $redirectUrlEvent->getTargetStatusCode()
-            ]
-        );
+        return new JsonResponse([
+            'redirectUrl' => $redirectUrlEvent->getTargetUrl(),
+            'statusCode' => $redirectUrlEvent->getTargetStatusCode()
+        ]);
     }
 
     private function dispatchHooks(RedirectUrlEvent $redirectUrlEvent): RedirectUrlEvent
@@ -120,5 +130,27 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
         }
 
         return $redirectUrlEvent;
+    }
+
+    /**
+     * @param array<string,mixed> $resolvedTarget
+     */
+    private function handleFileTypes(array $resolvedTarget): string
+    {
+        $port = $this->request->getUri()->getPort();
+        $siteConf = $this->request->getAttribute('site')->getConfiguration();
+        $baseFileUrl = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . ($port ? ':' . $port : '');
+
+        if ($this->features->isFeatureEnabled('headless.storageProxy')) {
+            $frontendBase = GeneralUtility::makeInstance(FrontendBaseUtility::class);
+            // we have to get frontendApiProxy, because getPublicUrl() returns storage folder already
+            $baseFileUrl = $frontendBase->resolveWithVariants(
+                $siteConf['frontendApiProxy'] ?? $baseFileUrl,
+                $siteConf['baseVariants'] ?? null,
+                'frontendApiProxy'
+            );
+        }
+
+        return $baseFileUrl . '/' . $resolvedTarget[$resolvedTarget['type']]->getPublicUrl();
     }
 }

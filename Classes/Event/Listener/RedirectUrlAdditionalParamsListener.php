@@ -45,8 +45,11 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
      */
     private $siteService;
 
-    public function __construct(TypoLinkCodecService $typoLinkCodecService, LinkService $linkService, SiteService $siteService)
-    {
+    public function __construct(
+        TypoLinkCodecService $typoLinkCodecService,
+        LinkService $linkService,
+        SiteService $siteService
+    ) {
         $this->typoLinkCodecService = $typoLinkCodecService;
         $this->linkService = $linkService;
         $this->siteService = $siteService;
@@ -55,7 +58,6 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
     public function __invoke(RedirectUrlEvent $event): void
     {
         $request = $event->getRequest();
-        $port = $request->getUri()->getPort();
         $url = $event->getOriginalTargetUrl();
 
         if ($url->getPath() === $request->getUri()->getPath()) {
@@ -66,27 +68,30 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
         $redirectTarget = $linkParameterParts['url'] ?? '';
         $linkDetails = $this->resolveLinkDetailsFromLinkTarget($redirectTarget);
 
-        if ($linkDetails['type'] === LinkService::TYPE_PAGE) {
-            if (strpos($linkParameterParts['additionalParams'], '[action]=') > 0 && strpos($linkParameterParts['additionalParams'], '[controller]=') > 0) {
-                try {
-                    $site = $request->getAttribute('site');
-                    parse_str($linkParameterParts['url'], $typolinkData);
-                    parse_str($linkParameterParts['additionalParams'], $params);
-                    $languageId = $typolinkData['L'] ? (int)$typolinkData['L'] : 0;
-                    if ($languageId > 0) {
-                        $language = $site->getLanguageById($languageId);
-                        $params['_language'] = $language;
-                    }
-                    $frontendUrl = GeneralUtility::makeInstance(PageRouter::class, $site)->generateUri($linkDetails['pageuid'], $params);
-                    $frontendUrl = $this->siteService->getFrontendUrl((string)$frontendUrl, (int)$linkDetails['pageuid']);
-                    $event->setTargetUrl($frontendUrl);
-                } catch (\Exception $exception) {
-                    $this->logger->error('Error during action redirect', ['record' => $event->getRedirectRecord(), 'uri' => $url]);
+        if (($linkDetails['type'] === LinkService::TYPE_PAGE) &&
+            strpos($linkParameterParts['additionalParams'], '[action]=') > 0 &&
+            strpos($linkParameterParts['additionalParams'], '[controller]=') > 0) {
+            try {
+                $site = $request->getAttribute('site');
+                parse_str($linkParameterParts['url'], $typolinkData);
+                parse_str($linkParameterParts['additionalParams'], $params);
+                $languageId = $typolinkData['L'] ? (int)$typolinkData['L'] : 0;
+                if ($languageId > 0) {
+                    $language = $site->getLanguageById($languageId);
+                    $params['_language'] = $language;
                 }
+                $frontendUrl = GeneralUtility::makeInstance(
+                    PageRouter::class,
+                    $site
+                )->generateUri($linkDetails['pageuid'], $params);
+                $frontendUrl = $this->siteService->getFrontendUrl((string)$frontendUrl, (int)$linkDetails['pageuid']);
+                $event->setTargetUrl($frontendUrl);
+            } catch (\Exception $exception) {
+                $this->logger->error(
+                    'Error during action redirect',
+                    ['record' => $event->getRedirectRecord(), 'uri' => $url]
+                );
             }
-        } elseif ($linkDetails['type'] === LinkService::TYPE_FILE) {
-            $frontendUrl = 'https://' . $request->getUri()->getHost() . ($port ? ':' . $port : '') . '/' . $linkDetails['url'];
-            $event->setTargetUrl($frontendUrl);
         }
     }
 
@@ -118,7 +123,6 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
                     break;
                 default:
                     // we have to return the link details without having a "URL" parameter
-
             }
         } catch (InvalidPathException $e) {
             return [];
