@@ -19,6 +19,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Http\JsonResponse;
+use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
@@ -32,9 +33,9 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
      */
     private $controller;
 
-    public function __construct(TypoScriptFrontendController $controller)
+    public function __construct(TypoScriptFrontendController $controller = null)
     {
-        $this->controller = $controller;
+        $this->controller = $controller ?: $GLOBALS['TSFE'];
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -43,11 +44,15 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
         if ($redirectToUri !== null && $redirectToUri !== (string)$request->getUri()) {
             $this->releaseTypoScriptFrontendControllerLocks();
 
-            $parsed = parse_url($redirectToUri);
-            if (is_array($parsed)) {
-                $path = $parsed['path'] ?? '/';
-                return new JsonResponse(['redirectUrl' => $path, 'statusCode' => 307]);
+            if ($this->isHeadlessEnabled()) {
+                $parsed = parse_url($redirectToUri);
+                if (is_array($parsed)) {
+                    $path = $parsed['path'] ?? '/';
+                    return new JsonResponse(['redirectUrl' => $path, 'statusCode' => 307]);
+                }
             }
+
+            return new RedirectResponse($redirectToUri, 307);
         }
 
         // See if the current page is of doktype "External URL", if so, do a redirect as well.
@@ -62,7 +67,11 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
 
             if ($externalUrl !== '') {
                 $this->releaseTypoScriptFrontendControllerLocks();
-                return new JsonResponse(['redirectUrl' => $externalUrl, 'statusCode' => 303]);
+                if ($this->isHeadlessEnabled()) {
+                    return new JsonResponse(['redirectUrl' => $externalUrl, 'statusCode' => 303]);
+                }
+
+                return new RedirectResponse($externalUrl, 303);
             }
         }
 
@@ -73,6 +82,11 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
     {
         $redirectToUri = $this->controller->getRedirectUriForShortcut($request);
         return $redirectToUri ?? $this->controller->getRedirectUriForMountPoint($request);
+    }
+
+    protected function releaseTypoScriptFrontendControllerLocks(): void
+    {
+        $this->controller->releaseLocks();
     }
 
     /**
@@ -102,8 +116,11 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
         return $redirectTo;
     }
 
-    protected function releaseTypoScriptFrontendControllerLocks(): void
+    private function isHeadlessEnabled(): bool
     {
-        $this->controller->releaseLocks();
+        $setup = $this->controller->tmpl->setup;
+
+        return !(!isset($setup['plugin.']['tx_headless.']['staticTemplate'])
+            || (bool)$setup['plugin.']['tx_headless.']['staticTemplate'] === false);
     }
 }
