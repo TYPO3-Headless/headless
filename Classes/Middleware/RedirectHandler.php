@@ -29,6 +29,9 @@ use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Redirects\Service\RedirectService;
 
+use function is_array;
+use function parse_url;
+
 final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\RedirectHandler
 {
     /**
@@ -92,6 +95,11 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
             $targetUrl = $this->handleFileTypes($resolvedTarget);
         } else {
             $targetUrl = $this->siteService->getFrontendUrl((string)$uri, (int)$resolvedTarget['pageuid']);
+        }
+
+        $parsed = parse_url($targetUrl);
+        if (is_array($parsed) && ($parsed['host'] ?? '') === $this->request->getUri()->getHost()) {
+            $targetUrl = $parsed['path'] ?? '';
         }
 
         $redirectUrlEvent = new RedirectUrlEvent(
