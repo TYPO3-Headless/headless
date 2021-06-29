@@ -26,6 +26,7 @@ use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Redirects\Service\RedirectService;
 
@@ -85,10 +86,22 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
      */
     protected function buildRedirectResponse(UriInterface $uri, array $redirectRecord): ResponseInterface
     {
-        if (!($this->request->getAttribute('site')->getConfiguration()['headless'] ?? false)) {
+        /**
+         * @var Site
+         */
+        $site = $this->request->getAttribute('site');
+
+        if (!($site instanceof Site)) {
             return parent::buildRedirectResponse($uri, $redirectRecord);
         }
 
+        $siteConf = $this->request->getAttribute('site')->getConfiguration();
+
+        if (!($siteConf['headless'] ?? false)) {
+            return parent::buildRedirectResponse($uri, $redirectRecord);
+        }
+
+        $requestDomainUrl = $this->siteService->getFrontendUrl((string)$this->request->getUri(), $site->getRootPageId());
         $resolvedTarget = $this->linkService->resolve($redirectRecord['target']);
 
         if ($resolvedTarget['type'] === LinkService::TYPE_FILE || $resolvedTarget['type'] === LinkService::TYPE_FOLDER) {
@@ -97,9 +110,13 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
             $targetUrl = $this->siteService->getFrontendUrl((string)$uri, (int)$resolvedTarget['pageuid']);
         }
 
-        $parsed = parse_url($targetUrl);
-        if (is_array($parsed) && ($parsed['host'] ?? '') === $this->request->getUri()->getHost()) {
-            $targetUrl = $parsed['path'] ?? '';
+        $parsedTargetUrl = parse_url($targetUrl);
+        $parsedDomainUrl = parse_url($requestDomainUrl);
+
+        if (is_array($parsedTargetUrl) &&
+            is_array($parsedDomainUrl) &&
+            ($parsedTargetUrl['host'] ?? '') === ($parsedDomainUrl['host'] ?? '')) {
+            $targetUrl = $parsedTargetUrl['path'] ?? '';
         }
 
         $redirectUrlEvent = new RedirectUrlEvent(
