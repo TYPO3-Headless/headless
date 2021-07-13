@@ -32,6 +32,7 @@ use TYPO3\CMS\Redirects\Service\RedirectService;
 
 use function is_array;
 use function parse_url;
+use function strpos;
 
 final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\RedirectHandler
 {
@@ -101,22 +102,28 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
             return parent::buildRedirectResponse($uri, $redirectRecord);
         }
 
+        $frontendDomainTrim = true;
         $requestDomainUrl = $this->siteService->getFrontendUrl((string)$this->request->getUri(), $site->getRootPageId());
         $resolvedTarget = $this->linkService->resolve($redirectRecord['target']);
 
         if ($resolvedTarget['type'] === LinkService::TYPE_FILE || $resolvedTarget['type'] === LinkService::TYPE_FOLDER) {
             $targetUrl = $this->handleFileTypes($resolvedTarget);
+        } elseif ($resolvedTarget['type'] === LinkService::TYPE_UNKNOWN && strpos($resolvedTarget['file'], '/') === 0) {
+            $frontendDomainTrim = false;
+            $targetUrl = $resolvedTarget['file'];
         } else {
             $targetUrl = $this->siteService->getFrontendUrl((string)$uri, (int)$resolvedTarget['pageuid']);
         }
 
-        $parsedTargetUrl = parse_url($targetUrl);
-        $parsedDomainUrl = parse_url($requestDomainUrl);
+        if ($frontendDomainTrim) {
+            $parsedTargetUrl = parse_url($targetUrl);
+            $parsedDomainUrl = parse_url($requestDomainUrl);
 
-        if (is_array($parsedTargetUrl) &&
-            is_array($parsedDomainUrl) &&
-            ($parsedTargetUrl['host'] ?? '') === ($parsedDomainUrl['host'] ?? '')) {
-            $targetUrl = $parsedTargetUrl['path'] ?? '';
+            if (is_array($parsedTargetUrl) &&
+                is_array($parsedDomainUrl) &&
+                ($parsedTargetUrl['host'] ?? '') === ($parsedDomainUrl['host'] ?? '')) {
+                $targetUrl = $parsedTargetUrl['path'] ?? '';
+            }
         }
 
         $redirectUrlEvent = new RedirectUrlEvent(
