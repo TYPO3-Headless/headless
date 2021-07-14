@@ -68,34 +68,15 @@ class SiteService
                     $url = str_replace($base, $frontBase, $url);
                 }
 
-                if ($port !== $frontPort) {
-                    if ($port) {
-                        if ($frontPort) {
-                            // replace port
-                            $url = str_replace(
-                                ':' . $port,
-                                ':' . $frontPort,
-                                $url
-                            );
-                        } else {
-                            // remove port
-                            $url = str_replace(
-                                ':' . $port,
-                                '',
-                                $url
-                            );
-                        }
-                    } else {
-                        if ($frontPort) {
-                            // add port
-                            $url = str_replace(
-                                $frontBase,
-                                $frontBase . ':' . $frontPort,
-                                $url
-                            );
-                        }
-                    }
+                if ($port === $frontPort) {
+                    return $url;
                 }
+
+                $url = str_replace(
+                    $frontBase . ($port ? ':' . $port : ''),
+                    $frontBase . ($frontPort ? ':' . $frontPort : ''),
+                    $url
+                );
             }
         } catch (SiteNotFoundException $exception) {
         }
