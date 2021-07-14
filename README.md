@@ -181,6 +181,10 @@ Enable new & replace core middlewares for handling redirects. Headless mode requ
 ```
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.redirectMiddlewares'] = true;
 ```
+To enable headless support for `EXT:redirect` please also add to you site(s) configuration's yaml file following flag:
+
+`headless: true`
+
 
 **headless.nextMajor**
 
