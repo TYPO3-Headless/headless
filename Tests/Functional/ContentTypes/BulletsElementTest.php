@@ -16,7 +16,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
 class BulletsElementTest extends BaseContentTypeTest
 {
-    public function testTextContentElement()
+    public function testBulletsContentElement()
     {
         $testBulletsContent = ['Top1', 'Top2', 'Top3'];
 
