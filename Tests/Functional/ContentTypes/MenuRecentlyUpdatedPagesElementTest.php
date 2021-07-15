@@ -16,7 +16,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
 class MenuRecentlyUpdatedPagesElementTest extends BaseContentTypeTest
 {
-    public function testTextContentElement()
+    public function testMenuContentElement()
     {
         $response = $this->executeFrontendRequest(
             new InternalRequest('https://website.local/')
@@ -27,8 +27,6 @@ class MenuRecentlyUpdatedPagesElementTest extends BaseContentTypeTest
         $fullTree = json_decode((string)$response->getBody(), true);
 
         $contentElement = $fullTree['content']['colPos1'][7];
-
-        print_r($contentElement);
 
         $this->checkDefaultContentFields($contentElement, 16, 1, 'menu_recently_updated', 1);
         $this->checkAppearanceFields($contentElement, 'default', 'default', 'SpaceBefore', 'SpaceAfter');
