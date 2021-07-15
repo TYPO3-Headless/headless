@@ -16,7 +16,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
 class MenuSectionElementTest extends BaseContentTypeTest
 {
-    public function testTextContentElement()
+    public function testMenuContentElement()
     {
         $response = $this->executeFrontendRequest(
             new InternalRequest('https://website.local/')
