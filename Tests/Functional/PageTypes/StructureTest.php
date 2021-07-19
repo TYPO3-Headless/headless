@@ -33,7 +33,7 @@ class StructurePageTypesTest extends BasePageTypesTest
         self::assertTrue(isset($pageTree['navigation']));
         self::assertEquals(1, count($pageTree['navigation']));
         self::assertTrue(isset($pageTree['navigation'][0]));
-        self::assertEquals(2, count($pageTree['navigation'][0]['children']));
+        self::assertEquals(3, count($pageTree['navigation'][0]['children']));
         self::assertEquals(1, count($pageTree['navigation'][0]['children'][0]['children']));
         self::assertEquals(0, count($pageTree['navigation'][0]['children'][1]['children']));
 

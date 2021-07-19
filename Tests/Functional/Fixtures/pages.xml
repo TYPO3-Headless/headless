@@ -32,4 +32,12 @@
         <deleted>0</deleted>
         <perms_everybody>15</perms_everybody>
     </pages>
+    <pages>
+        <uid>5</uid>
+        <pid>1</pid>
+        <title>Page 3</title>
+        <slug>/page3</slug>
+        <deleted>0</deleted>
+        <perms_everybody>15</perms_everybody>
+    </pages>
 </dataset>
