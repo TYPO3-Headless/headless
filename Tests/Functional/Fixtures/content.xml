@@ -257,7 +257,7 @@ Top3]]></bodytext>
         <subheader>SubHeader</subheader>
         <header_layout>0</header_layout>
         <header_position>2</header_position>
-        <pages>1,2,3,4</pages>
+        <pages>1</pages>
     </tt_content>
     <tt_content>
         <uid>17</uid>
