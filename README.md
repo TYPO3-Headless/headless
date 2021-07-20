@@ -170,6 +170,8 @@ Enable ability to set storage proxy in site configuration (and it's variants) & 
 
 Feature flag requires TYPO3 >= 10.4.10
 
+*WARNING* if you install `TYPO3 >= 10.4.18` please update also `ext:headless` to version `>= 2.5.3`
+
 ```
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.storageProxy'] = true;
 ```
