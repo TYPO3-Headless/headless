@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\XClass;
 
 use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
+use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function rtrim;
@@ -24,7 +25,7 @@ class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
     /**
      * @inheritDoc
      */
-    protected function getImageFromSourceString(string $src, bool $treatIdAsReference): object
+    protected function getImageFromSourceString(string $src, bool $treatIdAsReference): ?FileInterface
     {
         if ($this->environmentService->isEnvironmentInFrontendMode()) {
             $conf = $GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getConfiguration();
