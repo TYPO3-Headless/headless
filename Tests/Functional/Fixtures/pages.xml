@@ -40,4 +40,47 @@
         <deleted>0</deleted>
         <perms_everybody>15</perms_everybody>
     </pages>
+    <pages>
+        <uid>6</uid>
+        <pid>5</pid>
+        <title>Page 4</title>
+        <slug>/page4</slug>
+        <deleted>0</deleted>
+        <perms_everybody>15</perms_everybody>
+    </pages>
+    <pages>
+        <uid>7</uid>
+        <pid>6</pid>
+        <title>Page 5</title>
+        <slug>/page5</slug>
+        <deleted>0</deleted>
+        <perms_everybody>15</perms_everybody>
+    </pages>
+    <pages>
+        <uid>8</uid>
+        <pid>1</pid>
+        <title>Page 8</title>
+        <slug>/page8</slug>
+        <deleted>0</deleted>
+        <perms_everybody>15</perms_everybody>
+        <keywords>test</keywords>
+    </pages>
+    <pages>
+        <uid>9</uid>
+        <pid>1</pid>
+        <title>Page 9</title>
+        <slug>/page9</slug>
+        <deleted>0</deleted>
+        <perms_everybody>15</perms_everybody>
+        <keywords>test</keywords>
+    </pages>
+    <pages>
+        <uid>10</uid>
+        <pid>9</pid>
+        <title>Page 10</title>
+        <slug>/page10</slug>
+        <deleted>0</deleted>
+        <perms_everybody>15</perms_everybody>
+        <keywords>test</keywords>
+    </pages>
 </dataset>
