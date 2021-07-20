@@ -245,22 +245,6 @@ Top3]]></bodytext>
         <pages>1,4</pages>
     </tt_content>
     <tt_content>
-        <uid>20</uid>
-        <pid>2</pid>
-        <sorting>1</sorting>
-        <colPos>1</colPos>
-        <CType>menu_categorized_pages</CType>
-        <space_before_class>SpaceBefore</space_before_class>
-        <space_after_class>SpaceAfter</space_after_class>
-        <categories>1</categories>
-        <selected_categories>3</selected_categories>
-        <category_field>categories</category_field>
-        <header>Header</header>
-        <subheader>SubHeader</subheader>
-        <header_layout>0</header_layout>
-        <header_position>2</header_position>
-    </tt_content>
-    <tt_content>
         <uid>16</uid>
         <pid>1</pid>
         <sorting>1</sorting>
@@ -306,6 +290,37 @@ Top3]]></bodytext>
         <subheader>SubHeader</subheader>
         <header_layout>0</header_layout>
         <header_position>2</header_position>
+    </tt_content>
+    <tt_content>
+        <uid>20</uid>
+        <pid>2</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_categorized_pages</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <categories>1</categories>
+        <selected_categories>3</selected_categories>
+        <category_field>categories</category_field>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+    </tt_content>
+    <tt_content>
+        <uid>21</uid>
+        <pid>5</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_sitemap_pages</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+        <pages>5</pages>
     </tt_content>
     <sys_category>
         <uid>1</uid>
