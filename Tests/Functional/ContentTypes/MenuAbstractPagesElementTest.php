@@ -26,7 +26,7 @@ class MenuAbstractPagesElementTest extends BaseContentTypeTest
 
         $fullTree = json_decode((string)$response->getBody(), true);
 
-        $contentElement = $fullTree['content']['colPos1']['11'];
+        $contentElement = $fullTree['content']['colPos1']['12'];
 
         $this->checkDefaultContentFields($contentElement, 23, 1, 'menu_abstract', 1);
         $this->checkAppearanceFields($contentElement, 'default', 'default', 'SpaceBefore', 'SpaceAfter');
@@ -43,5 +43,6 @@ class MenuAbstractPagesElementTest extends BaseContentTypeTest
         self::assertEquals('0', $contentElement['content']['menu'][0]['active']);
         self::assertEquals('0', $contentElement['content']['menu'][0]['current']);
         self::assertEquals('0', $contentElement['content']['menu'][0]['spacer']);
+        self::assertEquals('Test', $contentElement['content']['menu'][0]['abstract']);
     }
 }
