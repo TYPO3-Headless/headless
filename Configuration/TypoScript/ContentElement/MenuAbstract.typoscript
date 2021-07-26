@@ -12,14 +12,14 @@ tt_content.menu_abstract {
                             special = directory
                             special.value.field = pages
                             overwriteMenuLevelConfig {
-                                    stdWrap.cObject {
-                                      100 = TEXT
-                                      100 {
+                                stdWrap.cObject {
+                                    100 = TEXT
+                                    100 {
                                         field = abstract
                                         wrap = ,"abstract":"|"
-                                      }
                                     }
-                                  }
+                                }
+                            }
                             as = menu
                             dataProcessing {
                                 10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
