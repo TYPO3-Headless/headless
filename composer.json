@@ -59,6 +59,10 @@
       "@test-unit",
       "@test-functional"
     ],
+    "test-coverage": [
+      "@test-unit-coverage",
+      "@test-functional-coverage"
+    ],
     "post-autoload-dump": [
       "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
     ],
@@ -81,6 +85,12 @@
     ],
     "test-functional": [
       ".Build/bin/phpunit --configuration Tests/Functional/phpunit.xml"
+    ],
+    "test-unit-coverage": [
+      ".Build/bin/phpunit --whitelist Classes --coverage-text Tests/Unit"
+    ],
+    "test-functional-coverage": [
+      ".Build/bin/phpunit --whitelist Classes --coverage-text Tests/Functional"
     ],
     "json-lint": [
       "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/bin/jsonlint -q"
