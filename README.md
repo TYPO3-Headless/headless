@@ -192,7 +192,7 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
 
 **headless.jsonViewModule**
 
-Enable new [BETA] backend module for previewing page (page type, language, usergroup and custom arguments). It is also possible to define new pageType views (ex. detail news preview if page has target plugin).
+Enable new [BETA] backend module for previewing page (page type, language, usergroup and custom arguments). It is also possible to define new pageType views (ex. detail news preview if page has target plugin). This module is compatible with TYPO3 10.4.
 ```
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.jsonViewModule'] = true;
 ```
