@@ -64,7 +64,7 @@ final class JsonViewConfigurationService implements JsonViewConfigurationService
      */
     public function getCurrentPageType(array $settings, JsonViewDemandDtoInterface $demand): string
     {
-        return $settings['pageTypeModes'][$demand->getPageTypeMode()]['pageType'] ?: '0';
+        return (string)$settings['pageTypeModes'][$demand->getPageTypeMode()]['pageType'] ?: '0';
     }
 
     /**
