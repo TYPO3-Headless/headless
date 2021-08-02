@@ -25,7 +25,10 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 final class BackendTsfeService implements BackendTsfeServiceInterface
 {
-    private array $backendExtensionConfiguration = [];
+    /**
+     * @var array
+     */
+    private $backendExtensionConfiguration = [];
 
     /**
      * @param int $pageId
@@ -41,8 +44,10 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
         array $settings,
         bool $bootContent = false
     ): void {
+        /** @var VisibilityAspect $visibilityAspect */
         $visibilityAspect = GeneralUtility::makeInstance(VisibilityAspect::class, true, $demand->isHiddenContentVisible());
         $feUser = GeneralUtility::makeInstance(FrontendUserAuthentication::class);
+        /** @var UserAspect $userAspect */
         $userAspect = GeneralUtility::makeInstance(UserAspect::class, $feUser);
 
         if ($demand->getFeGroup() > 0) {

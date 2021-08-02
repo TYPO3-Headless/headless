@@ -21,14 +21,45 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class JsonViewDemandDto implements JsonViewDemandDtoInterface
 {
-    private int $pageId = 0;
-    private Site $site;
-    private \TYPO3\CMS\Core\Site\Entity\SiteLanguage $siteLanguage;
-    private int $feGroup = 0;
-    private bool $hiddenContentVisible = true;
-    private string $pageTypeMode = 'default';
-    private string $pluginNamespace;
-    private bool $initialized = false;
+    /**
+     * @var int
+     */
+    private $pageId = 0;
+
+    /**
+     * @var Site
+     */
+    private $site;
+
+    /**
+     * @var \TYPO3\CMS\Core\Site\Entity\SiteLanguage
+     */
+    private $siteLanguage;
+
+    /**
+     * @var int
+     */
+    private $feGroup = 0;
+
+    /**
+     * @var bool
+     */
+    private $hiddenContentVisible = true;
+
+    /**
+     * @var string
+     */
+    private $pageTypeMode = 'default';
+
+    /**
+     * @var string
+     */
+    private $pluginNamespace;
+
+    /**
+     * @var bool
+     */
+    private $initialized = false;
 
     /**
      * @param ServerRequest $request
