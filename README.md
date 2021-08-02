@@ -171,6 +171,8 @@ Enable ability to set storage proxy in site configuration (and it's variants) & 
 
 Feature flag requires TYPO3 >= 10.4.10
 
+*WARNING* if you install `TYPO3 >= 10.4.18` please update also `ext:headless` to version `>= 2.5.3`
+
 ```
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.storageProxy'] = true;
 ```
@@ -182,6 +184,10 @@ Enable new & replace core middlewares for handling redirects. Headless mode requ
 ```
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.redirectMiddlewares'] = true;
 ```
+To enable headless support for `EXT:redirect` please also add to you site(s) configuration's yaml file following flag:
+
+`headless: true`
+
 
 **headless.nextMajor**
 
