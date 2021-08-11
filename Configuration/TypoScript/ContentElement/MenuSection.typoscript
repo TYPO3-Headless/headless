@@ -23,8 +23,10 @@ tt_content.menu_section {
                                 }
                             }
                             // Always activate includeNotInMenu for a section menu of the current page
-                            includeNotInMenu.override = 1
-                            includeNotInMenu.override.if.isFalse.field = pages
+                            includeNotInMenu {
+                                override = 1
+                                override.if.isFalse.field = pages
+                            }
 
                             dataProcessing {
                                 10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
