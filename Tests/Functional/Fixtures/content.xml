@@ -336,6 +336,21 @@ Top3]]></bodytext>
         <header_layout>0</header_layout>
         <header_position>2</header_position>
     </tt_content>
+    <tt_content>
+        <uid>23</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_abstract</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+        <pages>5</pages>
+    </tt_content>
     <sys_category>
         <uid>1</uid>
         <pid>0</pid>
