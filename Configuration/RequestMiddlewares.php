@@ -12,13 +12,24 @@
 return (static function (): array {
     $features = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class);
 
+    $middlewares = [
+        'frontend' => [
+            'headless/cms-frontend/prepare-user-int' => [
+                'after' => [
+                    'typo3/cms-frontend/content-length-headers',
+                ],
+                'target' => \FriendsOfTYPO3\Headless\Middleware\UserIntMiddleware::class
+            ],
+        ],
+    ];
+
     if (!$features->isFeatureEnabled('headless.redirectMiddlewares')) {
-        return [];
+        return $middlewares;
     }
 
     $rearrangedMiddlewares = $features->isFeatureEnabled('rearrangedRedirectMiddlewares');
 
-    return [
+    return array_merge_recursive($middlewares, [
         'frontend' => [
             'typo3/cms-redirects/redirecthandler' => [
                 'disabled' => true,
@@ -45,5 +56,5 @@ return (static function (): array {
                 ],
             ],
         ]
-    ];
+    ]);
 })();
