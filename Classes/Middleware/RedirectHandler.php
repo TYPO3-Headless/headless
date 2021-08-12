@@ -104,7 +104,12 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
 
         $frontendDomainTrim = true;
         $requestDomainUrl = $this->siteService->getFrontendUrl((string)$this->request->getUri(), $site->getRootPageId());
-        $resolvedTarget = $this->linkService->resolve($redirectRecord['target']);
+
+        if ($redirectRecord['target'] === '/') {
+            $resolvedTarget = ['type' => LinkService::TYPE_UNKNOWN, 'file' => '/'];
+        } else {
+            $resolvedTarget = $this->linkService->resolve($redirectRecord['target']);
+        }
 
         if ($resolvedTarget['type'] === LinkService::TYPE_FILE || $resolvedTarget['type'] === LinkService::TYPE_FOLDER) {
             $targetUrl = $this->handleFileTypes($resolvedTarget);
