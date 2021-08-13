@@ -87,10 +87,13 @@
       ".Build/bin/phpunit --configuration Tests/Functional/phpunit.xml"
     ],
     "test-unit-coverage": [
-      ".Build/bin/phpunit --whitelist Classes --coverage-text Tests/Unit"
+      ".Build/bin/phpunit --whitelist Classes --coverage-php=coverage/unit.cov Tests/Unit"
     ],
     "test-functional-coverage": [
-      ".Build/bin/phpunit --whitelist Classes --coverage-text Tests/Functional"
+      ".Build/bin/phpunit -c Tests/Functional/phpunit.xml --whitelist Classes --coverage-php=coverage/functional.cov Tests/Functional"
+    ],
+    "test-merge-coverage": [
+      "@php phpcov merge --clover=clover.xml --html=test.html coverage/"
     ],
     "json-lint": [
       "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/bin/jsonlint -q"
