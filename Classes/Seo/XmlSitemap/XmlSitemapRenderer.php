@@ -17,6 +17,8 @@ use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Seo\XmlSitemap\Exception\InvalidConfigurationException;
 
+use function trim;
+
 /**
  * Class to render the XML Sitemap to be used as a UserFunction
  * @internal this class is not part of TYPO3's Core API.
@@ -38,11 +40,18 @@ class XmlSitemapRenderer extends \TYPO3\CMS\Seo\XmlSitemap\XmlSitemapRenderer
         $conf = $GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getConfiguration();
         $frontendBase = GeneralUtility::makeInstance(FrontendBaseUtility::class);
 
+        $variantKey = trim($this->configuration['config']['overrideFrontendBaseKey'] ?? 'frontendBase');
+
+        if ($variantKey === '') {
+            $variantKey = 'frontendBase';
+        }
+
         $this->view->assign(
             'frontendBase',
             $frontendBase->resolveWithVariants(
-                $conf['frontendBase'] ?? '',
-                $conf['baseVariants'] ?? null
+                $conf[$variantKey] ?? '',
+                $conf['baseVariants'] ?? null,
+                $variantKey
             )
         );
     }
