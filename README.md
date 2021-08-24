@@ -195,6 +195,23 @@ Enable new APIs/behaviors of ext:headless, but contains breaking changes & requi
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
 ```
 
+**headless.pluginBodyResponse**
+
+Available since `> 2.5.3`
+
+Enable clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests.
+For getting clean for plugins on page, please enable this flag and send `responsePluginId` field with ID of plugin in body with plugin data.
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.pluginBodyResponse'] = true;
+```
+Example POST request with plugin form. Please #PLUGIN_ID# replace with id of plugin from page response
+```
+POST https://example.tld/path-to-form-plugin
+Content-Type: application/x-www-form-urlencoded
+
+responsePluginId=#PLUGIN_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
+```
+
 
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/

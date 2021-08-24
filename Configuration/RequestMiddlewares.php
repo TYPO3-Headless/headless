@@ -23,6 +23,15 @@ return (static function (): array {
         ],
     ];
 
+    if ($features->isFeatureEnabled('headless.pluginBodyResponse')) {
+        $middlewares['frontend']['headless/cms-frontend/plugin-body-response'] = [
+            'after' => [
+                'typo3/cms-adminpanel/data-persister',
+            ],
+            'target' => \FriendsOfTYPO3\Headless\Middleware\PluginBodyResponseMiddleware::class
+        ];
+    }
+
     if (!$features->isFeatureEnabled('headless.redirectMiddlewares')) {
         return $middlewares;
     }
