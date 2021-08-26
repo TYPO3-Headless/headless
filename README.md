@@ -212,6 +212,16 @@ Content-Type: application/x-www-form-urlencoded
 responsePluginId=#PLUGIN_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
 ```
 
+**headless.simplifiedLinkTarget**
+
+Available since `> 2.5.3`
+
+Enable simplified target links' property
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.simplifiedLinkTarget'] = true;
+```
+Simplified output return only value i.e. `_blank` for target attribute instead of html string ` target="_blank"`
+
 
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
@@ -226,5 +236,3 @@ A special thanks goes to [macopedia.com](https://macopedia.com) company, which i
 - Łukasz Uznański (Macopedia)
 - Adam Marcinkowski (Macopedia)
 - Vaclav Janoch (ITplusX)
-
-
