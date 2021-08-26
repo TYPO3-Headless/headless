@@ -33,6 +33,8 @@ return static function (ContainerConfigurator $configurator): void {
         ];
     }
 
+    $excludes[] = '../Classes/XClass/Domain/Model/FormDefinition.php';
+
     $toLoad->exclude($excludes);
 
     $services->set(JsonEncoder::class)->public();
