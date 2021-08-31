@@ -1,4 +1,5 @@
 tt_content.textpic =< lib.contentElementWithHeader
+tt_content.textpic < lib.baseImage
 tt_content.textpic {
     fields {
         content {
