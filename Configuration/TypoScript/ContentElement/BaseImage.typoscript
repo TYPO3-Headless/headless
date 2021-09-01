@@ -1,4 +1,3 @@
-lib.baseImage =< lib.contentElementWithHeader
 lib.baseImage {
     fields {
         content {
