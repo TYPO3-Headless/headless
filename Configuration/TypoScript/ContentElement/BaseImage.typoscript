@@ -1,0 +1,13 @@
+lib.baseImage =< lib.contentElementWithHeader
+lib.baseImage {
+    fields {
+        content {
+            fields {
+                enlargeImageOnClick = BOOL
+                enlargeImageOnClick {
+                    field = image_zoom
+                }
+            }
+        }
+    }
+}
