@@ -22,7 +22,7 @@ use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
-class PluginBodyResponseMiddleware implements MiddlewareInterface
+class ElementBodyResponseMiddleware implements MiddlewareInterface
 {
     /**
      * @var TypoScriptFrontendController
@@ -51,9 +51,9 @@ class PluginBodyResponseMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        $pluginId = (int)($request->getParsedBody()['responsePluginId'] ?? 0);
+        $elementId = (int)($request->getParsedBody()['responseElementId'] ?? 0);
 
-        if (!$pluginId || !in_array($request->getMethod(), ['POST', 'PUT', 'DELETE'], true)) {
+        if (!$elementId || !in_array($request->getMethod(), ['POST', 'PUT', 'DELETE'], true)) {
             return $response;
         }
 
@@ -64,7 +64,7 @@ class PluginBodyResponseMiddleware implements MiddlewareInterface
         }
 
         $stream = new Stream('php://temp', 'r+');
-        $stream->write($this->jsonEncoder->encode($this->getPluginBody($responseJson['content'] ?? [], $pluginId)));
+        $stream->write($this->jsonEncoder->encode($this->getPluginBody($responseJson['content'] ?? [], $elementId)));
 
         return $response->withBody($stream);
     }

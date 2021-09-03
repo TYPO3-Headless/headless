@@ -195,14 +195,14 @@ Enable new APIs/behaviors of ext:headless, but contains breaking changes & requi
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
 ```
 
-**headless.pluginBodyResponse**
+**headless.elementBodyResponse**
 
 Available since `> 2.5.3`
 
 Enable clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests.
 For getting clean for plugins on page, please enable this flag and send `responsePluginId` field with ID of plugin in body with plugin data.
 ```
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.pluginBodyResponse'] = true;
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.elementBodyResponse'] = true;
 ```
 Example POST request with plugin form. Please #PLUGIN_ID# replace with id of plugin from page response
 ```
