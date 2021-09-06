@@ -22,7 +22,7 @@ use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
-class ElementBodyResponseMiddleware implements MiddlewareInterface
+final class ElementBodyResponseMiddleware implements MiddlewareInterface
 {
     /**
      * @var TypoScriptFrontendController
@@ -64,23 +64,23 @@ class ElementBodyResponseMiddleware implements MiddlewareInterface
         }
 
         $stream = new Stream('php://temp', 'r+');
-        $stream->write($this->jsonEncoder->encode($this->getPluginBody($responseJson['content'] ?? [], $elementId)));
+        $stream->write($this->jsonEncoder->encode($this->extractElement($responseJson['content'] ?? [], $elementId)));
 
         return $response->withBody($stream);
     }
 
     /**
      * @param array<string, mixed> $content
-     * @param int $pluginId
+     * @param int $elementId
      * @return array<string, mixed>
      */
-    private function getPluginBody(array $content, int $pluginId): array
+    private function extractElement(array $content, int $elementId): array
     {
         $body = [];
 
         foreach ($content as $colPos => $items) {
             foreach ($items as $item) {
-                if ((int)$item['id'] === $pluginId) {
+                if ((int)$item['id'] === $elementId) {
                     return $item;
                 }
             }
