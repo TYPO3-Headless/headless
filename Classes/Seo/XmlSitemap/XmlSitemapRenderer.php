@@ -17,6 +17,8 @@ use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Seo\XmlSitemap\Exception\InvalidConfigurationException;
 
+use function is_array;
+use function parse_url;
 use function trim;
 
 /**
@@ -35,24 +37,43 @@ class XmlSitemapRenderer extends \TYPO3\CMS\Seo\XmlSitemap\XmlSitemapRenderer
         return parent::render($_, $typoScriptConfiguration);
     }
 
-    private function prepareBaseUrl(): void
+    /**
+     * @param string|null $sitemapType
+     * @param string|null $sitemap
+     * @return string
+     */
+    protected function getXslFilePath(string $sitemapType = null, string $sitemap = null): string
+    {
+        $path = parent::getXslFilePath($sitemapType, $sitemap);
+        $parsed = parse_url($this->getVariantValueByKey('frontendApiProxy'));
+
+        if (is_array($parsed)) {
+            $path = ($parsed['path'] ?? '') . $path;
+        }
+
+        return $path;
+    }
+
+    private function getVariantValueByKey(string $variantKey): string
     {
         $conf = $GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getConfiguration();
         $frontendBase = GeneralUtility::makeInstance(FrontendBaseUtility::class);
 
-        $variantKey = trim($this->configuration['config']['overrideFrontendBaseKey'] ?? 'frontendBase');
+        return $frontendBase->resolveWithVariants(
+            $conf[$variantKey] ?? '',
+            $conf['baseVariants'] ?? null,
+            $variantKey
+        );
+    }
+
+    private function prepareBaseUrl(): void
+    {
+        $variantKey = trim($this->configuration['config']['overrideVariantKey'] ?? 'frontendBase');
 
         if ($variantKey === '') {
             $variantKey = 'frontendBase';
         }
 
-        $this->view->assign(
-            'frontendBase',
-            $frontendBase->resolveWithVariants(
-                $conf[$variantKey] ?? '',
-                $conf['baseVariants'] ?? null,
-                $variantKey
-            )
-        );
+        $this->view->assign('frontendBase', $this->getVariantValueByKey($variantKey));
     }
 }
