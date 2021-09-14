@@ -46,12 +46,17 @@ class TypolinkHook
             return;
         }
 
+        $features = GeneralUtility::makeInstance(Features::class);
+        $linkTarget = $params['tagAttributes']['target'] ?? '';
+
         $link = [
             'type' => $params['finalTagParts']['TYPE'],
             'url' => $params['finalTagParts']['url'],
-            'target' => $params['finalTagParts']['targetParams'],
+            'target' => $features->isFeatureEnabled('headless.simplifiedLinkTarget') ? $linkTarget : $params['finalTagParts']['targetParams'],
+            'title' => $params['tagAttributes']['title'] ?? '',
+            'class' => $params['tagAttributes']['class'] ?? '',
+            'link' => $params['linktxt'],
             'aTagParams' => $params['finalTagParts']['aTagParams'],
-            'link' => $params['linktxt']
         ];
 
         $wrap = isset($params['conf']['wrap.'])
@@ -62,21 +67,20 @@ class TypolinkHook
             $link['link'] = $ref->wrap($link['link'], $wrap);
         }
 
-        if ($link['type'] === 'url' &&
-            GeneralUtility::makeInstance(Features::class)->isFeatureEnabled('headless.nextMajor')) {
+        if ($link['type'] === 'url' && $features->isFeatureEnabled('headless.nextMajor')) {
             return;
         }
 
         if ($params['linktxt'] !== '|') {
             $decodedNestedTypolink = json_decode($params['finalTagParts']['url'], true);
             if (
-            isset(
-                $decodedNestedTypolink['type'],
-                $decodedNestedTypolink['url'],
-                $decodedNestedTypolink['target'],
-                $decodedNestedTypolink['aTagParams'],
-                $decodedNestedTypolink['link']
-            )
+                isset(
+                    $decodedNestedTypolink['type'],
+                    $decodedNestedTypolink['url'],
+                    $decodedNestedTypolink['target'],
+                    $decodedNestedTypolink['aTagParams'],
+                    $decodedNestedTypolink['link']
+                )
             ) {
                 $link = $decodedNestedTypolink;
             }

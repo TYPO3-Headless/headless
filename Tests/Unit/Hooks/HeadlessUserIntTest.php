@@ -13,38 +13,13 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Test\Unit\Hooks;
 
-use FriendsOfTYPO3\Headless\Hooks\IntScriptEncoderHook;
+use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use TYPO3\CMS\Core\TypoScript\TemplateService;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-class IntScriptEncoderHookTest extends UnitTestCase
+class HeadlessUserIntTest extends UnitTestCase
 {
-    /**
-     * @test
-     */
-    public function processingIfHeadlessIsDisabled()
-    {
-        $testContent = 'HEADLESS_INT_START<<PlainText>>HEADLESS_INT_END';
-
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '0';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
-        $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
-        $tsfe->content = $testContent;
-
-        $classUnderTest = new IntScriptEncoderHook();
-
-        $classUnderTest->performExtraJsonEncoding([], $tsfe->reveal());
-
-        self::assertEquals($testContent, $tsfe->content);
-    }
-
     /**
      * @test
      */
@@ -64,9 +39,9 @@ class IntScriptEncoderHookTest extends UnitTestCase
 
         $tsfe->content = $testContent;
 
-        $classUnderTest = new IntScriptEncoderHook();
+        $classUnderTest = new HeadlessUserInt();
 
-        $classUnderTest->performExtraJsonEncoding([], $tsfe->reveal());
+        $tsfe->content = $classUnderTest->unwrap($tsfe->content);
 
         self::assertEquals(json_encode($testProcessed), '"' . $tsfe->content . '"');
     }
@@ -90,9 +65,9 @@ class IntScriptEncoderHookTest extends UnitTestCase
 
         $tsfe->content = $testContent;
 
-        $classUnderTest = new IntScriptEncoderHook();
+        $classUnderTest = new HeadlessUserInt();
 
-        $classUnderTest->performExtraJsonEncoding([], $tsfe->reveal());
+        $tsfe->content = $classUnderTest->unwrap($tsfe->content);
 
         self::assertEquals(json_encode($testProcessed), '"' . $tsfe->content . '"');
     }
@@ -116,9 +91,9 @@ class IntScriptEncoderHookTest extends UnitTestCase
 
         $tsfe->content = $testContent;
 
-        $classUnderTest = new IntScriptEncoderHook();
+        $classUnderTest = new HeadlessUserInt();
 
-        $classUnderTest->performExtraJsonEncoding([], $tsfe->reveal());
+        $tsfe->content = $classUnderTest->unwrap($tsfe->content);
 
         self::assertEquals(json_encode($testProcessed), $tsfe->content);
     }
@@ -146,9 +121,9 @@ class IntScriptEncoderHookTest extends UnitTestCase
 
         $tsfe->content = $testContent;
 
-        $classUnderTest = new IntScriptEncoderHook();
+        $classUnderTest = new HeadlessUserInt();
 
-        $classUnderTest->performExtraJsonEncoding([], $tsfe->reveal());
+        $tsfe->content = $classUnderTest->unwrap($tsfe->content);
 
         self::assertEquals($testProcessed, $tsfe->content);
     }
@@ -197,9 +172,9 @@ class IntScriptEncoderHookTest extends UnitTestCase
 
         $tsfe->content = $testContent;
 
-        $classUnderTest = new IntScriptEncoderHook();
+        $classUnderTest = new HeadlessUserInt();
 
-        $classUnderTest->performExtraJsonEncoding([], $tsfe->reveal());
+        $tsfe->content = $classUnderTest->unwrap($tsfe->content);
 
         self::assertEquals($finalOutput, $tsfe->content);
     }
@@ -259,9 +234,9 @@ class IntScriptEncoderHookTest extends UnitTestCase
 
         $tsfe->content = $testContent;
 
-        $classUnderTest = new IntScriptEncoderHook();
+        $classUnderTest = new HeadlessUserInt();
 
-        $classUnderTest->performExtraJsonEncoding([], $tsfe->reveal());
+        $tsfe->content = $classUnderTest->unwrap($tsfe->content);
 
         self::assertEquals($finalOutput, $tsfe->content);
     }

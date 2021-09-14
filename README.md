@@ -17,8 +17,8 @@ If you have any questions just drop a line in #initiative-pwa Slack channel.
 - JSON API for navigation, layouts
 - taking into account all language/translation configuration (e.g. fallback)
 - easily extensible with custom fields or custom CE's
-- basic support for EXT:form
-- support for felogin (comming soon)
+- support for EXT:form
+- support for EXT:felogin
 
 ### Additional extensions and integrations
 
@@ -170,6 +170,8 @@ Enable ability to set storage proxy in site configuration (and it's variants) & 
 
 Feature flag requires TYPO3 >= 10.4.10
 
+*WARNING* if you install `TYPO3 >= 10.4.18` please update also `ext:headless` to version `>= 2.5.3`
+
 ```
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.storageProxy'] = true;
 ```
@@ -181,6 +183,10 @@ Enable new & replace core middlewares for handling redirects. Headless mode requ
 ```
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.redirectMiddlewares'] = true;
 ```
+To enable headless support for `EXT:redirect` please also add to you site(s) configuration's yaml file following flag:
+
+`headless: true`
+
 
 **headless.nextMajor**
 
@@ -188,6 +194,33 @@ Enable new APIs/behaviors of ext:headless, but contains breaking changes & requi
 ```
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
 ```
+
+**headless.elementBodyResponse**
+
+Available since `2.6`
+
+Enable clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests.
+For getting clean for plugins on page, please enable this flag and send `responsePluginId` field with ID of plugin in body with plugin data.
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.elementBodyResponse'] = true;
+```
+Example POST request with plugin form. Please #ELEMENT_ID# replace with id of plugin from page response
+```
+POST https://example.tld/path-to-form-plugin
+Content-Type: application/x-www-form-urlencoded
+
+responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
+```
+
+**headless.simplifiedLinkTarget**
+
+Available since `2.6`
+
+Enable simplified target links' property
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.simplifiedLinkTarget'] = true;
+```
+Simplified output return only value i.e. `_blank` for target attribute instead of html string ` target="_blank"`
 
 
 ## Development
@@ -203,5 +236,3 @@ A special thanks goes to [macopedia.com](https://macopedia.com) company, which i
 - Łukasz Uznański (Macopedia)
 - Adam Marcinkowski (Macopedia)
 - Vaclav Janoch (ITplusX)
-
-
