@@ -39,6 +39,7 @@
         <title>Page 3</title>
         <slug>/page3</slug>
         <deleted>0</deleted>
+        <abstract>Test</abstract>
         <perms_everybody>15</perms_everybody>
     </pages>
     <pages>
@@ -47,6 +48,7 @@
         <title>Page 4</title>
         <slug>/page4</slug>
         <deleted>0</deleted>
+        <abstract>Test</abstract>
         <perms_everybody>15</perms_everybody>
     </pages>
     <pages>

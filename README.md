@@ -195,6 +195,33 @@ Enable new APIs/behaviors of ext:headless, but contains breaking changes & requi
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
 ```
 
+**headless.elementBodyResponse**
+
+Available since `2.6`
+
+Enable clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests.
+For getting clean for plugins on page, please enable this flag and send `responsePluginId` field with ID of plugin in body with plugin data.
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.elementBodyResponse'] = true;
+```
+Example POST request with plugin form. Please #ELEMENT_ID# replace with id of plugin from page response
+```
+POST https://example.tld/path-to-form-plugin
+Content-Type: application/x-www-form-urlencoded
+
+responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
+```
+
+**headless.simplifiedLinkTarget**
+
+Available since `2.6`
+
+Enable simplified target links' property
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.simplifiedLinkTarget'] = true;
+```
+Simplified output return only value i.e. `_blank` for target attribute instead of html string ` target="_blank"`
+
 
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
@@ -209,5 +236,3 @@ A special thanks goes to [macopedia.com](https://macopedia.com) company, which i
 - Łukasz Uznański (Macopedia)
 - Adam Marcinkowski (Macopedia)
 - Vaclav Janoch (ITplusX)
-
-

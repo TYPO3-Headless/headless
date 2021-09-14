@@ -1,4 +1,5 @@
 tt_content.textmedia =< lib.contentElementWithHeader
+tt_content.textmedia < lib.baseImage
 tt_content.textmedia {
     fields {
         content {
