@@ -17,8 +17,8 @@ If you have any questions just drop a line in #initiative-pwa Slack channel.
 - JSON API for navigation, layouts
 - taking into account all language/translation configuration (e.g. fallback)
 - easily extensible with custom fields or custom CE's
-- basic support for EXT:form
-- support for felogin (comming soon)
+- support for EXT:form
+- support for EXT:felogin
 
 ### Additional extensions and integrations
 
