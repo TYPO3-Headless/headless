@@ -16,7 +16,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
 class HtmlElementTest extends BaseContentTypeTest
 {
-    public function testTextContentElement()
+    public function testHtmlContentElement()
     {
         $response = $this->executeFrontendRequest(
             new InternalRequest('https://website.local/')
