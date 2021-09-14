@@ -17,8 +17,8 @@ If you have any questions just drop a line in #initiative-pwa Slack channel.
 - JSON API for navigation, layouts
 - taking into account all language/translation configuration (e.g. fallback)
 - easily extensible with custom fields or custom CE's
-- basic support for EXT:form
-- support for felogin (comming soon)
+- support for EXT:form
+- support for EXT:felogin
 
 ### Additional extensions and integrations
 
@@ -197,24 +197,24 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
 
 **headless.elementBodyResponse**
 
-Available since `> 2.5.3`
+Available since `2.6`
 
 Enable clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests.
 For getting clean for plugins on page, please enable this flag and send `responsePluginId` field with ID of plugin in body with plugin data.
 ```
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.elementBodyResponse'] = true;
 ```
-Example POST request with plugin form. Please #PLUGIN_ID# replace with id of plugin from page response
+Example POST request with plugin form. Please #ELEMENT_ID# replace with id of plugin from page response
 ```
 POST https://example.tld/path-to-form-plugin
 Content-Type: application/x-www-form-urlencoded
 
-responsePluginId=#PLUGIN_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
+responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
 ```
 
 **headless.simplifiedLinkTarget**
 
-Available since `> 2.5.3`
+Available since `2.6`
 
 Enable simplified target links' property
 ```
