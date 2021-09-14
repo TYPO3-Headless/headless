@@ -17,9 +17,6 @@ call_user_func(
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['FrontendBaseUrlInPagePreview'] = false;
         }
 
-        $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_fe.php']['hook_eofe']['headless'] =
-            \FriendsOfTYPO3\Headless\Hooks\IntScriptEncoderHook::class . '->performExtraJsonEncoding';
-
         $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'headless/Configuration/TypoScript/';
         $GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] = array_merge($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'], [
             'JSON' => \FriendsOfTYPO3\Headless\ContentObject\JsonContentObject::class,
@@ -62,6 +59,12 @@ call_user_func(
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Form\Domain\Runtime\FormRuntime::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\FormRuntime::class
             ];
+
+            if (version_compare((new TYPO3\CMS\Core\Information\Typo3Version())->getMajorVersion(), '10', '<')) {
+                $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Form\Domain\Model\FormDefinition::class] = [
+                    'className' => \FriendsOfTYPO3\Headless\XClass\Domain\Model\FormDefinition::class
+                ];
+            }
         }
 
         /** @var \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry $rendererRegistry */

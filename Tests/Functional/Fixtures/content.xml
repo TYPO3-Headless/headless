@@ -199,6 +199,158 @@ Top3]]></bodytext>
         <header_layout>0</header_layout>
         <header_position>2</header_position>
     </tt_content>
+    <tt_content>
+        <uid>13</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_sitemap</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+        <pages>1,2,3</pages>
+    </tt_content>
+    <tt_content>
+        <uid>14</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_pages</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+        <pages>1,2,3,4</pages>
+    </tt_content>
+    <tt_content>
+        <uid>15</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_section</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+        <pages>1,4</pages>
+    </tt_content>
+    <tt_content>
+        <uid>16</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_recently_updated</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+        <pages>1</pages>
+    </tt_content>
+    <tt_content>
+        <uid>17</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>header</CType>
+        <categories>3</categories>
+    </tt_content>
+    <tt_content>
+        <uid>18</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>textpic</CType>
+        <categories>3</categories>
+    </tt_content>
+    <tt_content>
+        <uid>19</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_categorized_content</CType>
+        <categories>3</categories>
+        <selected_categories>3</selected_categories>
+        <category_field>categories</category_field>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+    </tt_content>
+    <tt_content>
+        <uid>20</uid>
+        <pid>2</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_categorized_pages</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <categories>1</categories>
+        <selected_categories>3</selected_categories>
+        <category_field>categories</category_field>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+    </tt_content>
+    <tt_content>
+        <uid>21</uid>
+        <pid>5</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_sitemap_pages</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+        <pages>5</pages>
+    </tt_content>
+    <tt_content>
+        <uid>22</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_related_pages</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+    </tt_content>
+    <tt_content>
+        <uid>23</uid>
+        <pid>1</pid>
+        <sorting>1</sorting>
+        <colPos>1</colPos>
+        <CType>menu_abstract</CType>
+        <space_before_class>SpaceBefore</space_before_class>
+        <space_after_class>SpaceAfter</space_after_class>
+        <categories>1</categories>
+        <header>Header</header>
+        <subheader>SubHeader</subheader>
+        <header_layout>0</header_layout>
+        <header_position>2</header_position>
+        <pages>5</pages>
+    </tt_content>
     <sys_category>
         <uid>1</uid>
         <pid>0</pid>
@@ -208,6 +360,11 @@ Top3]]></bodytext>
         <uid>2</uid>
         <pid>0</pid>
         <title>SysCategory2Title</title>
+    </sys_category>
+    <sys_category>
+        <uid>3</uid>
+        <pid>0</pid>
+        <title>SysCategory3Title</title>
     </sys_category>
     <sys_category_record_mm>
         <tablenames>tt_content</tablenames>
@@ -220,6 +377,28 @@ Top3]]></bodytext>
         <uid_foreign>1</uid_foreign>
         <uid_local>2</uid_local>
         <fieldname>categories</fieldname>
+    </sys_category_record_mm>
+    <sys_category_record_mm>
+        <tablenames>pages</tablenames>
+        <uid_foreign>5</uid_foreign>
+        <uid_local>3</uid_local>
+        <fieldname>categories</fieldname>
+    </sys_category_record_mm>
+    <sys_category_record_mm>
+        <tablenames>tt_content</tablenames>
+        <uid_foreign>17</uid_foreign>
+        <uid_local>3</uid_local>
+        <fieldname>categories</fieldname>
+        <sorting>1</sorting>
+        <sorting_foreign>0</sorting_foreign>
+    </sys_category_record_mm>
+    <sys_category_record_mm>
+        <tablenames>tt_content</tablenames>
+        <uid_foreign>18</uid_foreign>
+        <uid_local>3</uid_local>
+        <fieldname>categories</fieldname>
+        <sorting>1</sorting>
+        <sorting_foreign>0</sorting_foreign>
     </sys_category_record_mm>
     <sys_file>
         <uid>1</uid>
