@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Utility;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
 
 /**
  * ContentUtility
@@ -27,8 +28,14 @@ class ContentUtility
      */
     private $headlessWrapper;
 
+    /**
+     * @var ConfigurationManager
+     */
+    private $configurationManager;
+
     public function __construct(?HeadlessUserInt $headlessWrapper = null)
     {
+        $this->configurationManager = GeneralUtility::makeInstance(ConfigurationManager::class)->getContentObject();
         $this->headlessWrapper = $headlessWrapper ?? GeneralUtility::makeInstance(HeadlessUserInt::class);
     }
 
@@ -41,7 +48,7 @@ class ContentUtility
      */
     public function groupContent($content, array $configuration): string
     {
-        $contents = $this->cObj->cObjGetSingle($configuration['10'], $configuration['10.']);
+        $contents = $this->configurationManager->cObjGetSingle($configuration['10'], $configuration['10.']);
         $contentData = array_map('trim', (array_slice(explode('###BREAK###', $contents), 0, -1)));
         return json_encode($this->groupContentElementsByColPos($contentData));
     }

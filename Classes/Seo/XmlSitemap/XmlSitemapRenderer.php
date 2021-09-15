@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Seo\XmlSitemap;
 
 use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Seo\XmlSitemap\Exception\InvalidConfigurationException;
 
@@ -28,13 +29,16 @@ use function trim;
 class XmlSitemapRenderer extends \TYPO3\CMS\Seo\XmlSitemap\XmlSitemapRenderer
 {
     /**
+     * @param string $_
+     * @param array $typoScriptConfiguration
+     * @param ServerRequestInterface $request
      * @return string
      * @throws InvalidConfigurationException
      */
-    public function render(string $_, array $typoScriptConfiguration): string
+    public function render(string $_, array $typoScriptConfiguration, ServerRequestInterface $request): string
     {
         $this->prepareBaseUrl();
-        return parent::render($_, $typoScriptConfiguration);
+        return parent::render($_, $typoScriptConfiguration, $request);
     }
 
     /**
