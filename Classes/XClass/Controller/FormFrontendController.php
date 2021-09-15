@@ -18,11 +18,12 @@ use FriendsOfTYPO3\Headless\Form\Decorator\DefinitionDecoratorInterface;
 use FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator;
 use FriendsOfTYPO3\Headless\Form\Translator;
 use FriendsOfTYPO3\Headless\XClass\FormRuntime;
+use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Mvc\Web\Response;
 use TYPO3\CMS\Extbase\Security\Cryptography\HashService;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
+use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 use function array_merge;
@@ -42,7 +43,7 @@ use function str_replace;
  */
 class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendController
 {
-    private $jsonFormTranslator;
+    private Translator $jsonFormTranslator;
 
     public function __construct()
     {
@@ -59,15 +60,14 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      *
      * @internal
      */
-    public function renderAction(): void
+    public function renderAction(): ResponseInterface
     {
         // check if headless not loaded & call original method in case of fluid configuration
         $typoScriptSetup = $GLOBALS['TSFE'] instanceof TypoScriptFrontendController ? $GLOBALS['TSFE']->tmpl->setup : [];
         if (!isset($typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'])
             || (bool)$typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'] === false
         ) {
-            parent::renderAction();
-            return;
+            return parent::renderAction();
         }
 
         $formDefinition = [];
@@ -108,13 +108,18 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         }
 
         $prototypeName = $formDefinition['prototypeName'] ?? 'standard';
-        $factory = $this->objectManager->get(ArrayFormFactory::class);
+        /**
+         * @var ArrayFormFactory $factory
+         */
+        $factory = GeneralUtility::makeInstance(ArrayFormFactory::class);
+        /**
+         * @var FormDefinition $formDefinitionObj
+         */
         $formDefinitionObj = $factory->build($formDefinition, $prototypeName);
-        $response = $this->controllerContext->getResponse() ?? $this->objectManager->get(Response::class);
         /**
          * @var FormRuntime $formRuntime
          */
-        $formRuntime = $formDefinitionObj->bind($this->controllerContext->getRequest(), $response);
+        $formRuntime = $formDefinitionObj->bind($this->controllerContext->getRequest());
         $formState = $formRuntime->getFormState();
         $finisherResponse = $formRuntime->run();
 
@@ -173,7 +178,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
         $formDefinition['renderables'][$currentPageIndex]['renderables'] = $formFields;
 
-        $formDefinition['i18n'] = $i18n;
+        $formDefinition['i18n'] = count($i18n) ? $i18n : null;
         $formDefinition = $this->jsonFormTranslator->translate(
             $formDefinition,
             $formRuntime->getFormDefinition()->getRenderingOptions()
@@ -210,6 +215,8 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         }
 
         $this->view->assign('formConfiguration', $definitionDecorator($formDefinition, $currentPageIndex));
+
+        return $this->jsonResponse();
     }
 
     /**
