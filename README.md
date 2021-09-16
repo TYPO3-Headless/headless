@@ -200,7 +200,7 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
 Available since `2.6`
 
 Enable clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests.
-For getting clean for plugins on page, please enable this flag and send `responsePluginId` field with ID of plugin in body with plugin data.
+For getting clean for plugins on page, please enable this flag and send `responseElementId` field with ID of plugin in body with plugin data.
 ```
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.elementBodyResponse'] = true;
 ```
