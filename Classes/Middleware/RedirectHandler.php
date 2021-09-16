@@ -117,6 +117,11 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
             $frontendDomainTrim = false;
             $targetUrl = $resolvedTarget['file'];
         } else {
+            if (substr($uri->getPath(), 0, 3) === '%7B') {
+                $path = rawurldecode($uri->getPath());
+                $path = json_decode($path, true);
+                $uri = new \TYPO3\CMS\Core\Http\Uri($path['url']);
+            }
             $targetUrl = $this->siteService->getFrontendUrl((string)$uri, (int)$resolvedTarget['pageuid']);
         }
 
