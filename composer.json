@@ -84,6 +84,16 @@
     ],
     "json-lint": [
       "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/bin/jsonlint -q"
+    ],
+    "prepare-release": [
+      "rm .gitignore",
+      "rm -rf .Build",
+      "rm -rf .github",
+      "rm -rf Tests",
+      "rm .editorconfig",
+      "rm .gitattributes",
+      "rm .php-cs-fixer.php",
+      "rm CONTRIBUTING.rst"
     ]
   },
   "extra": {
