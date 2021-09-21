@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Test\Functional\PageTypes;
 
 use FriendsOfTYPO3\Headless\Test\Functional\BaseTest;
-use JsonSchema\RefResolver;
+use JsonSchema\SchemaStorage;
 use JsonSchema\Uri\UriRetriever;
 use JsonSchema\Validator;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
@@ -33,8 +33,8 @@ abstract class BasePageTypesTest extends BaseTest
         $schema = $retriever->retrieve(
             'file://' . $jsonSchemaFile
         );
-        $refResolver = new RefResolver($retriever);
-        $refResolver->resolve(
+        $refResolver = new SchemaStorage($retriever);
+        $refResolver->resolveRef(
             $schema,
             'file://' . $jsonSchemaFile
         );
