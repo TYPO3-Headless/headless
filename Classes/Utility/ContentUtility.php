@@ -14,22 +14,26 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Utility;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 /**
- * ContentUtility
+ * Class group elements by column position, for easier frontend rendering.
  *
- * This class group elements by column position, for easier frontend rendering.
+ * @deprecated
  */
 class ContentUtility
 {
-    /**
-     * @var HeadlessUserInt
-     */
-    private $headlessWrapper;
+    private ContentObjectRenderer $cObj;
+    private HeadlessUserInt $headlessWrapper;
 
-    public function __construct(?HeadlessUserInt $headlessWrapper = null)
+    public function __construct()
     {
-        $this->headlessWrapper = $headlessWrapper ?? GeneralUtility::makeInstance(HeadlessUserInt::class);
+        $this->headlessWrapper = GeneralUtility::makeInstance(HeadlessUserInt::class);
+    }
+
+    public function setContentObjectRenderer(ContentObjectRenderer $cObj): void
+    {
+        $this->cObj = $cObj;
     }
 
     /**

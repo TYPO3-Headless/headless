@@ -59,7 +59,7 @@ jobs:
 #    strategy:
 #      max-parallel: 2
 #      matrix:
-#        php-versions: [7.2, 7.3, 7.4]
+#        php-versions: [7.4]
 #        typo3-versions:
 #          - {typo3: 9, testing: 4}
 #          - {typo3: 10, testing: 5}
