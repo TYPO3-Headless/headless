@@ -14,12 +14,12 @@ LICENSE.md file that was distributed with this source code.
 (c) $year
 EOF;
 
-return PhpCsFixer\Config::create()
+return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
     ->setRules(
         [
             '@DoctrineAnnotation' => true,
-            '@PSR2' => true,
+            '@PSR12' => true,
             'array_syntax' => ['syntax' => 'short'],
             'blank_line_after_opening_tag' => true,
             'braces' => ['allow_single_line_closure' => true],
@@ -29,10 +29,7 @@ return PhpCsFixer\Config::create()
             'declare_equal_normalize' => ['space' => 'none'],
             'dir_constant' => true,
             'function_typehint_space' => true,
-            'general_phpdoc_annotation_remove' => [
-                'author'
-            ],
-            'hash_to_slash_comment' => true,
+            'general_phpdoc_annotation_remove' => ['annotations' => ['author']],
             'lowercase_cast' => true,
             'method_argument_space' => ['on_multiline' => 'ensure_fully_multiline'],
             'modernize_types_casting' => true,
@@ -42,7 +39,7 @@ return PhpCsFixer\Config::create()
             'no_blank_lines_after_phpdoc' => true,
             'no_empty_phpdoc' => true,
             'no_empty_statement' => true,
-            'no_extra_consecutive_blank_lines' => true,
+            'no_extra_blank_lines' => true,
             'no_leading_import_slash' => true,
             'no_leading_namespace_whitespace' => true,
             'no_null_property_initialization' => true,
@@ -56,11 +53,13 @@ return PhpCsFixer\Config::create()
             'no_whitespace_in_blank_line' => true,
             'ordered_imports' => [
                 'imports_order' => [
-                    'class', 'function', 'const',
+                    'class',
+                    'function',
+                    'const',
                 ],
                 'sort_algorithm' => 'alpha',
             ],
-            'php_unit_construct' => ['assertEquals', 'assertSame', 'assertNotEquals', 'assertNotSame'],
+            'php_unit_construct' => ['assertions' => ['assertEquals', 'assertSame', 'assertNotEquals', 'assertNotSame']],
             'php_unit_mock_short_will_return' => true,
             'php_unit_test_case_static_method_calls' => ['call_type' => 'self'],
             'phpdoc_no_access' => true,
@@ -71,12 +70,13 @@ return PhpCsFixer\Config::create()
             'phpdoc_types' => true,
             'phpdoc_types_order' => ['null_adjustment' => 'always_last', 'sort_algorithm' => 'none'],
             'return_type_declaration' => ['space_before' => 'none'],
+            'single_line_comment_style' => ['comment_types' => ['hash']],
             'single_quote' => true,
             'single_trait_insert_per_statement' => true,
             'whitespace_after_comma_in_array' => true,
             'header_comment' => [
                 'header' => $header,
-                'commentType' => 'comment',
+                'comment_type' => 'comment',
                 'location' => 'after_open',
                 'separate' => 'both'
             ],

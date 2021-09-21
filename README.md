@@ -17,8 +17,8 @@ If you have any questions just drop a line in #initiative-pwa Slack channel.
 - JSON API for navigation, layouts
 - taking into account all language/translation configuration (e.g. fallback)
 - easily extensible with custom fields or custom CE's
-- basic support for EXT:form
-- support for felogin (comming soon)
+- support for EXT:form
+- support for EXT:felogin
 
 ### Additional extensions and integrations
 
@@ -40,6 +40,9 @@ Install extension using composer\
 ``composer require friendsoftypo3/headless``
 
 Then, you should include extension typoscript template, and you are ready to go. Also, please remember to don't use fluid styled content on the same page tree together with ext:headless.
+
+## Documentation
+[Documentation](https://docs.typo3.org/p/friendsoftypo3/headless/master/en-us/Index.html)
 
 ## JSON  Content Object
 In headless extension we implemented new JSON Content Object, which allows you to specify what fields you want to output, and how they will look. First of all, let's take a look at simple example
@@ -148,16 +151,77 @@ lib.languages {
 }
 ```
 
-### Feature toggle "FrontendBaseUrlInPagePreview"
+### Available features toggles
 
 To change the setting for this extension feature either use Localconfiguration.php: or AdditionalConfiguration.php:
 
-```
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['FrontendBaseUrlInPagePreview'] = true;
-```
+**headless.frontendUrls** or **~~FrontendBaseUrlInPagePreview~~** (deprecated)
 
 This feature toggle extends current SiteConfiguration (and it's variants) with new field for Frontend Url
-(url frontend of PWA app). This new field is used when there is a need to preview a page such as: "view" module or right click on a page + show, or the 'eye' icon in page view.
+(url frontend of PWA app). This new field is used when there is a need to preview a page such as: "view" module or right click on a page + show, or the 'eye' icon in page view
+& allow generating proper cross-domain links for headless instance.
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
+```
+
+**headless.storageProxy**
+
+Enable ability to set storage proxy in site configuration (and it's variants) & serve files via proxy from same domain
+
+Feature flag requires TYPO3 >= 10.4.10
+
+*WARNING* if you install `TYPO3 >= 10.4.18` please update also `ext:headless` to version `>= 2.5.3`
+
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.storageProxy'] = true;
+```
+
+**headless.redirectMiddlewares**
+
+Enable new & replace core middlewares for handling redirects. Headless mode requires redirects to be handled by frontend app.
+
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.redirectMiddlewares'] = true;
+```
+To enable headless support for `EXT:redirect` please also add to you site(s) configuration's yaml file following flag:
+
+`headless: true`
+
+
+**headless.nextMajor**
+
+Enable new APIs/behaviors of ext:headless, but contains breaking changes & require upgrade path for you application. Use with caution.
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
+```
+
+**headless.elementBodyResponse**
+
+Available since `2.6`
+
+Enable clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests.
+For getting clean for plugins on page, please enable this flag and send `responseElementId` field with ID of plugin in body with plugin data.
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.elementBodyResponse'] = true;
+```
+Example POST request with plugin form. Please #ELEMENT_ID# replace with id of plugin from page response
+```
+POST https://example.tld/path-to-form-plugin
+Content-Type: application/x-www-form-urlencoded
+
+responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
+```
+
+**headless.simplifiedLinkTarget**
+
+Available since `2.6`
+
+Enable simplified target links' property
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.simplifiedLinkTarget'] = true;
+```
+Simplified output return only value i.e. `_blank` for target attribute instead of html string ` target="_blank"`
+
 
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
@@ -172,5 +236,3 @@ A special thanks goes to [macopedia.com](https://macopedia.com) company, which i
 - Łukasz Uznański (Macopedia)
 - Adam Marcinkowski (Macopedia)
 - Vaclav Janoch (ITplusX)
-
-

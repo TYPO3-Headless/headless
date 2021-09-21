@@ -27,11 +27,11 @@
     }
   ],
   "require": {
-    "typo3/cms-core": "^9.5 || ^10.0",
+    "typo3/cms-core": "^10.4 || ^11",
     "ext-json": "*"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^2.15",
+    "friendsofphp/php-cs-fixer": "^3.1",
     "justinrainbow/json-schema": "1.5.*",
     "php-parallel-lint/php-parallel-lint": "^0.4",
     "typo3/testing-framework": "^4 || ^5",
@@ -68,10 +68,10 @@
       ".Build/bin/parallel-lint ./Tests/"
     ],
     "test-php-cs-fixer": [
-      "php-cs-fixer fix -v --dry-run --using-cache false --diff --diff-format=udiff"
+      "php-cs-fixer fix -v --dry-run --using-cache no --diff"
     ],
     "test-php-cs-fixer-fix": [
-      "php-cs-fixer fix -v --using-cache false"
+      "php-cs-fixer fix -v --using-cache no"
     ],
     "typoscript-lint": [
       ".Build/bin/typoscript-lint -c Configuration/TsLint.yml --ansi -n --fail-on-warnings -vvv Configuration/TypoScript"
@@ -84,6 +84,16 @@
     ],
     "json-lint": [
       "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/bin/jsonlint -q"
+    ],
+    "prepare-release": [
+      "rm .gitignore",
+      "rm -rf .Build",
+      "rm -rf .github",
+      "rm -rf Tests",
+      "rm .editorconfig",
+      "rm .gitattributes",
+      "rm .php-cs-fixer.php",
+      "rm CONTRIBUTING.rst"
     ]
   },
   "extra": {

@@ -31,7 +31,6 @@ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
  */
 class PaginationService
 {
-
     /**
      * @var array
      */

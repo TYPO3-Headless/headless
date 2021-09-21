@@ -1,0 +1,18 @@
+<f:spaceless>
+    <f:format.raw>
+        <f:if condition="{settings.showForgotPassword}">
+            <f:then>
+                <f:format.json value="{
+                    link: '{f:uri.action(action:\'recovery\', controller:\'PasswordRecovery\')}',
+                    text: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'forgot_header\\\'}\')}'
+                }"
+                />
+            </f:then>
+            <f:else>
+                <f:format.json value="{
+                }"
+                />
+            </f:else>
+        </f:if>
+    </f:format.raw>
+</f:spaceless>

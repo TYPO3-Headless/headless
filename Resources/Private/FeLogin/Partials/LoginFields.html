@@ -1,0 +1,103 @@
+<headless:form.registerField name="user"/>
+<headless:form.registerField name="pass"/>
+<headless:form.registerField name="logintype" value="login"/>
+<headless:form.registerField name="pid" value="{storagePid}"/>
+<f:spaceless>
+    <f:format.raw>
+        [
+        <f:format.json value="{
+            type: 'text',
+            label: '{f:translate(key:\'input.username\')}',
+            name: 'user',
+            validate: {
+                required: 1,
+                email: 1
+            },
+            options: {
+                attr: {
+                    placeholder: '{f:translate(key:\'input.username.placeholder\')}'
+                }
+            }
+        }"
+        />,
+        <f:format.json value="{
+            type: 'password',
+            label: '{f:translate(key:\'input.password\', extensionName:\'headless\')}',
+            name: 'pass',
+            validate: {
+                required: 1,
+                password: 1
+            },
+            options: {
+                attr: {
+                    placeholder: '{f:translate(key:\'input.password.placeholder\', extensionName:\'headless\')}'
+                }
+            }
+        }"
+        />,
+        <f:if condition="{permaloginStatus} > -1">
+            <f:if condition="{permaloginStatus} == 1">
+                <f:then>
+                    <f:format.json value="{
+                        type: 'hidden',
+                        name: 'permalogin',
+                        value: '1'
+                    }"
+                    />,
+                </f:then>
+                <f:else>
+                    <f:format.json value="{
+                        type: 'hidden',
+                        name: 'permalogin',
+                        value: '0'
+                    }"
+                    />,
+                </f:else>
+            </f:if>
+        </f:if>
+        <f:format.json value="{
+            type: 'hidden',
+            name: 'pid',
+            value: '{storagePid}'
+        }"
+        />,
+        <f:format.json value="{
+            type: 'hidden',
+            name: 'logintype',
+            value: 'login'
+        }"
+        />,
+        <f:format.json value="{
+            type: 'hidden',
+            name: 'redirect_url',
+            value: '{redirectURL}'
+        }"
+        />
+        ,
+        <f:format.json value="{
+            type: 'hidden',
+            name: 'noredirect',
+            value: '{noRedirect}'
+        }"
+        />,
+        <f:format.json value="{
+            type: 'hidden',
+            name: 'redirectReferrer',
+            value: '{redirectReferrer}'
+        }"
+        />,
+        <f:format.json value="{
+            type: 'hidden',
+            name: 'referer',
+            value: '{referer}'
+        }"
+        />,
+        <f:format.json value="{
+            type: 'submit',
+            name: 'submit',
+            value: '{f:translate(key:\'input.submit\', extensionName:\'headless\')}'
+            }"
+        />
+        ]
+    </f:format.raw>
+</f:spaceless>

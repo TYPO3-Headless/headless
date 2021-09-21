@@ -13,8 +13,18 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Form\Finisher;
 
+use FriendsOfTYPO3\Headless\Service\SiteService;
+use JsonException;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Mvc\Request;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
+use function is_array;
+use function is_string;
+use function json_encode;
+use function ltrim;
+use function parse_url;
+use const JSON_THROW_ON_ERROR;
 
 /**
  * This finisher redirects to another Controller.
@@ -29,23 +39,12 @@ class JsonRedirectFinisher extends AbstractFinisher
     protected $defaultOptions = [
         'pageUid' => 1,
         'additionalParameters' => '',
+        'statusCode' => 303,
         'message' => null,
     ];
 
-    /**
-     * @var \TYPO3\CMS\Extbase\Mvc\Web\Request
-     */
-    protected $request;
-
-    /**
-     * @var \TYPO3\CMS\Extbase\Mvc\Web\Response
-     */
-    protected $response;
-
-    /**
-     * @var \TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder
-     */
-    protected $uriBuilder;
+    protected Request $request;
+    protected UriBuilder $uriBuilder;
 
     /**
      * Executes this finisher
@@ -55,8 +54,7 @@ class JsonRedirectFinisher extends AbstractFinisher
     {
         $formRuntime = $this->finisherContext->getFormRuntime();
         $this->request = $formRuntime->getRequest();
-        $this->response = $formRuntime->getResponse();
-        $this->uriBuilder = $this->objectManager->get(UriBuilder::class);
+        $this->uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
         $this->uriBuilder->setRequest($this->request);
 
         /**
@@ -70,6 +68,8 @@ class JsonRedirectFinisher extends AbstractFinisher
             $pageUid = (int)$pageUid;
         }
 
+        $statusCode = (int)$this->parseOption('statusCode');
+
         /**
          * @var string|null
          */
@@ -80,38 +80,43 @@ class JsonRedirectFinisher extends AbstractFinisher
 
         $this->finisherContext->cancel();
 
-        return $this->prepareRedirect($pageUid, $additionalParameters, $message);
+        return $this->prepareRedirect($pageUid, $additionalParameters, $statusCode, $message);
     }
 
-    /**
-     * @param int $pageUid Target page uid. If NULL, the current page uid is used
-     * @param string $additionalParameters
-     * @param string|null $message (optional)
-     * @return string|null
-     */
     protected function prepareRedirect(
         int $pageUid = 1,
         string $additionalParameters = '',
+        int $statusCode = 303,
         ?string $message = null
     ): ?string {
-        $typolinkConfiguration = [
-            'parameter' => $pageUid,
-            'additionalParams' => $additionalParameters,
-        ];
-        /**
-         * @phpstan-ignore-next-line
-         */
-        $redirectUri = $this->getTypoScriptFrontendController()->cObj->typoLink_URL($typolinkConfiguration);
-
         try {
-            return \json_encode(
+            $targetUrl = $this->getTypoScriptFrontendController()->cObj->typoLink_URL([
+                'parameter' => $pageUid,
+                'additionalParams' => $additionalParameters,
+                'forceAbsoluteUrl' => 1,
+            ]);
+
+            $site = $this->request->getServerRequest()->getAttribute('site');
+            $siteService = GeneralUtility::makeInstance(SiteService::class);
+            $requestDomainUrl = $siteService->getFrontendUrl((string)$this->request->getServerRequest()->getUri(), $site->getRootPageId());
+            $parsedTargetUrl = parse_url($targetUrl);
+            $parsedDomainUrl = parse_url($requestDomainUrl);
+
+            if (is_array($parsedTargetUrl) &&
+                is_array($parsedDomainUrl) &&
+                ($parsedTargetUrl['host'] ?? '') === ($parsedDomainUrl['host'] ?? '')) {
+                $targetUrl = $parsedTargetUrl['path'] ?? '';
+            }
+
+            return json_encode(
                 [
+                    'redirectUrl' => $targetUrl,
+                    'statusCode' => $statusCode,
                     'message' => $message,
-                    'redirectUri' => $redirectUri,
                 ],
-                \PHP_VERSION_ID >= 70300 ? \JSON_THROW_ON_ERROR : 0
+                JSON_THROW_ON_ERROR
             );
-        } catch (\JsonException $e) {
+        } catch (JsonException $e) {
             return null;
         }
     }

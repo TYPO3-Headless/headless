@@ -16,7 +16,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
 class TableElementTest extends BaseContentTypeTest
 {
-    public function testTextContentElement()
+    public function testTableContentElement()
     {
         $testTableContent = json_decode('[["Cell1.1","Cell1.2","Cell1.3","Cell1.4","",""],["Cell2.1","","","","",""],["Cell3.1","","","","",""],["\"","","","","",""]]', true);
 

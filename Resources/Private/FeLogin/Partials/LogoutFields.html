@@ -1,0 +1,26 @@
+<headless:form.registerField name="logintype" value="logout" />
+<headless:form.registerField name="pid" value="{storagePid}"/>
+<f:spaceless>
+    <f:format.raw>
+        [
+        <f:format.json value="{
+            type: 'hidden',
+            name: 'pid',
+            value: '{storagePid}'
+        }"
+        />,
+        <f:format.json value="{
+            type: 'hidden',
+            name: 'logintype',
+            value: 'logout'
+        }"
+        />,
+        <f:format.json value="{
+            type: 'submit',
+            name: 'submit',
+            value: '{f:translate(key:\'logout\', extensionName:\'felogin\')}'
+            }"
+        />
+        ]
+    </f:format.raw>
+</f:spaceless>
