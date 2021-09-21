@@ -27,14 +27,14 @@
     }
   ],
   "require": {
-    "typo3/cms-core": "^10.4 || ^11",
+    "typo3/cms-core": "^11.4",
     "ext-json": "*"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.1",
     "justinrainbow/json-schema": "1.5.*",
     "php-parallel-lint/php-parallel-lint": "^0.4",
-    "typo3/testing-framework": "^4 || ^5",
+    "typo3/testing-framework": "^6",
     "helmich/typo3-typoscript-lint": "^2.1",
     "seld/jsonlint": "^1.8"
   },
