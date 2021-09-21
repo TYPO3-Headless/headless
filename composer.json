@@ -35,6 +35,7 @@
     "friendsofphp/php-cs-fixer": "^3.1",
     "helmich/typo3-typoscript-lint": "^2.1",
     "justinrainbow/json-schema": "^5.2",
+    "phpspec/prophecy-phpunit": "^2.0",
     "phpstan/extension-installer": "^1.1",
     "phpstan/phpstan": "^0.12.99",
     "saschaegerer/phpstan-typo3": "^0.13.3",
@@ -43,13 +44,17 @@
     "typo3/testing-framework": "^6"
   },
   "config": {
-    "bin-dir": ".Build/bin",
+    "preferred-install": {
+      "*": "dist"
+    },
+    "sort-packages": true,
     "vendor-dir": ".Build/vendor"
   },
   "extra": {
     "typo3/cms": {
+      "app-dir": ".Build",
       "extension-key": "headless",
-      "web-dir": ".Build"
+      "web-dir": ".Build/public"
     }
   },
   "autoload": {
@@ -68,7 +73,7 @@
     ],
     "ci:composer:normalize": "@composer normalize --dry-run",
     "ci:json:lint": [
-      "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/bin/jsonlint -q"
+      "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/vendor/bin/jsonlint -q"
     ],
     "ci:php:cs-fixer": [
       "php-cs-fixer fix -v --dry-run --using-cache no --diff"
@@ -82,15 +87,15 @@
       "@ci:test:functional"
     ],
     "ci:test:functional": [
-      ".Build/bin/phpunit --configuration Tests/Functional/phpunit.xml"
+      ".Build/vendor/bin/phpunit --configuration Tests/Functional/phpunit.xml"
     ],
     "ci:test:unit": [
-      ".Build/bin/phpunit --configuration Tests/Unit/phpunit.xml"
+      ".Build/vendor/bin/phpunit --configuration Tests/Unit/phpunit.xml"
     ],
     "ci:ts:lint": [
-      ".Build/bin/typoscript-lint -c Configuration/TsLint.yml --ansi -n --fail-on-warnings -vvv Configuration/TypoScript"
+      ".Build/vendor/bin/typoscript-lint -c Configuration/TsLint.yml --ansi -n --fail-on-warnings -vvv Configuration/TypoScript"
     ],
-    "ci:yaml:lint": "find . ! -path '*.Build/*' -name '*.yml' | xargs php ./.Build/bin/yaml-lint",
+    "ci:yaml:lint": "find . ! -path '*.Build/*' -name '*.yml' | xargs php ./.Build/vendor/bin/yaml-lint",
     "docs:generate": [
       "docker run --rm t3docs/render-documentation show-shell-commands > tempfile.sh; echo 'dockrun_t3rd makehtml' >> tempfile.sh; bash tempfile.sh; rm tempfile.sh"
     ],
