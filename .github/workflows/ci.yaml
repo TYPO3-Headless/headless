@@ -1,34 +1,34 @@
 ---
 name: CI
 
-on: [push, pull_request]
-
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  schedule:
+    - cron: '15 3 * * 1'
 jobs:
   php-lint:
     name: "PHP linter"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-versions: [7.4, 8.0]
+    runs-on: ubuntu-20.04
     steps:
-      - name: Checkout
+      - name: "Checkout"
         uses: actions/checkout@v2
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "${{ matrix.php-versions }}"
-      - name: "Cache composer dependencies"
-        uses: actions/cache@v1
-        with:
-          path: ~/.composer/cache
-          key: php-${{ matrix.php-versions }}
-               -composer-${{ hashFiles('composer.json') }}
-          restore-keys: |
-            php-${{ matrix.php-versions }}-composer-
-      - name: "Install composer dependencies"
-        run: composer install --no-progress
+          php-version: "${{ matrix.php-version }}"
+          coverage: none
+          tools: composer:v2
       - name: "Run PHP lint"
         run: "composer ci:php:lint"
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - 7.4
+          - 8.0
   code-quality:
     name: "Code quality checks"
     runs-on: ubuntu-20.04
@@ -58,6 +58,7 @@ jobs:
       matrix:
         command:
           - "json:lint"
+          - "yaml:lint"
           - "ts:lint"
           - "php:cs-fixer"
         php-version:
