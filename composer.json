@@ -22,21 +22,32 @@
     },
     {
       "name": "TYPO3 PWA Initiative",
-      "role": "Developer",
-      "email": "extensions@macopedia.pl"
+      "email": "extensions@macopedia.pl",
+      "role": "Developer"
     }
   ],
   "require": {
-    "typo3/cms-core": "^11.4",
-    "ext-json": "*"
+    "ext-json": "*",
+    "typo3/cms-core": "^11.4"
   },
   "require-dev": {
+    "ergebnis/composer-normalize": "^2.15.0",
     "friendsofphp/php-cs-fixer": "^3.1",
-    "justinrainbow/json-schema": "1.5.*",
-    "php-parallel-lint/php-parallel-lint": "^0.4",
-    "typo3/testing-framework": "^6",
     "helmich/typo3-typoscript-lint": "^2.1",
-    "seld/jsonlint": "^1.8"
+    "justinrainbow/json-schema": "^5.2",
+    "php-parallel-lint/php-parallel-lint": "^0.4",
+    "seld/jsonlint": "^1.8",
+    "typo3/testing-framework": "^6"
+  },
+  "config": {
+    "bin-dir": ".Build/bin",
+    "vendor-dir": ".Build/vendor"
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "headless",
+      "web-dir": ".Build"
+    }
   },
   "autoload": {
     "psr-4": {
@@ -48,42 +59,38 @@
       "TYPO3\\JsonResponse\\": ".Build/vendor/typo3/testing-framework/Resources/Core/Functional/Extensions/json_response/Classes"
     }
   },
-  "config": {
-    "vendor-dir": ".Build/vendor",
-    "bin-dir": ".Build/bin"
-  },
   "scripts": {
-    "test": [
-      "@test-php-lint",
-      "@test-php-cs-fixer",
-      "@test-unit",
-      "@test-functional"
-    ],
     "post-autoload-dump": [
       "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
     ],
-    "test-php-lint": [
+    "ci:json:lint": [
+      "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/bin/jsonlint -q"
+    ],
+    "ci:php:cs-fixer": [
+      "php-cs-fixer fix -v --dry-run --using-cache no --diff"
+    ],
+    "ci:php:lint": [
       ".Build/bin/parallel-lint ./Classes/",
       ".Build/bin/parallel-lint ./Configuration/TCA/",
       ".Build/bin/parallel-lint ./Tests/"
     ],
-    "test-php-cs-fixer": [
-      "php-cs-fixer fix -v --dry-run --using-cache no --diff"
+    "ci:test": [
+      "@ci:phplint",
+      "@ci:php:cs-fixer",
+      "@ci:test:unit",
+      "@ci:test:functional"
     ],
-    "test-php-cs-fixer-fix": [
-      "php-cs-fixer fix -v --using-cache no"
-    ],
-    "typoscript-lint": [
-      ".Build/bin/typoscript-lint -c Configuration/TsLint.yml --ansi -n --fail-on-warnings -vvv Configuration/TypoScript"
-    ],
-    "test-unit": [
-      ".Build/bin/phpunit --configuration Tests/Unit/phpunit.xml"
-    ],
-    "test-functional": [
+    "ci:test:functional": [
       ".Build/bin/phpunit --configuration Tests/Functional/phpunit.xml"
     ],
-    "json-lint": [
-      "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/bin/jsonlint -q"
+    "ci:test:unit": [
+      ".Build/bin/phpunit --configuration Tests/Unit/phpunit.xml"
+    ],
+    "ci:ts:lint": [
+      ".Build/bin/typoscript-lint -c Configuration/TsLint.yml --ansi -n --fail-on-warnings -vvv Configuration/TypoScript"
+    ],
+    "fix:php:cs-fixer": [
+      "php-cs-fixer fix -v --using-cache no"
     ],
     "prepare-release": [
       "rm .gitignore",
@@ -95,11 +102,5 @@
       "rm .php-cs-fixer.php",
       "rm CONTRIBUTING.rst"
     ]
-  },
-  "extra": {
-    "typo3/cms": {
-      "web-dir": ".Build",
-      "extension-key": "headless"
-    }
   }
 }
