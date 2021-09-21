@@ -15,8 +15,8 @@ namespace FriendsOfTYPO3\Headless\Test\Unit\DataProcessing;
 
 use FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor;
 use Prophecy\Argument;
-use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\ObjectProphecy;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
