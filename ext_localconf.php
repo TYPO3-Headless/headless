@@ -53,12 +53,6 @@ call_user_func(
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Form\Domain\Runtime\FormRuntime::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\FormRuntime::class
             ];
-
-            if (version_compare((new TYPO3\CMS\Core\Information\Typo3Version())->getMajorVersion(), '10', '<')) {
-                $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Form\Domain\Model\FormDefinition::class] = [
-                    'className' => \FriendsOfTYPO3\Headless\XClass\Domain\Model\FormDefinition::class
-                ];
-            }
         }
 
         /** @var \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry $rendererRegistry */

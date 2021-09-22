@@ -26,8 +26,7 @@ if ($features->isFeatureEnabled('headless.frontendUrls')) {
 
     $replaceShowItem = 'base, frontendBase, ';
 
-    if ($features->isFeatureEnabled('headless.storageProxy') &&
-        version_compare((new TYPO3\CMS\Core\Information\Typo3Version()), '10.4.10', '>=')) {
+    if ($features->isFeatureEnabled('headless.storageProxy')) {
         $tempColumns['frontendApiProxy'] = [
             'label' => 'Frontend API proxy url',
             'description' => 'Main URL to for proxy API',
