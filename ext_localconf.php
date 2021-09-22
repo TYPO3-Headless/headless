@@ -13,10 +13,6 @@ defined('TYPO3_MODE') || die();
 
 call_user_func(
     static function () {
-        if (!isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['FrontendBaseUrlInPagePreview'])) {
-            $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['FrontendBaseUrlInPagePreview'] = false;
-        }
-
         $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'headless/Configuration/TypoScript/';
         $GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] = array_merge($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'], [
             'JSON' => \FriendsOfTYPO3\Headless\ContentObject\JsonContentObject::class,
@@ -29,7 +25,7 @@ call_user_func(
 
         $features = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class);
 
-        if ($features->isFeatureEnabled('headless.frontendUrls') || $features->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
+        if ($features->isFeatureEnabled('headless.frontendUrls')) {
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Routing\PageRouter::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\Routing\PageRouter::class
             ];

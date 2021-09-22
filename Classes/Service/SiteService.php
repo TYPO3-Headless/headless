@@ -36,8 +36,7 @@ class SiteService
     {
         $features = GeneralUtility::makeInstance(Features::class);
 
-        if (!$features->isFeatureEnabled('FrontendBaseUrlInPagePreview') &&
-            !$features->isFeatureEnabled('headless.frontendUrls')) {
+        if (!$features->isFeatureEnabled('headless.frontendUrls')) {
             return $url;
         }
 

@@ -11,8 +11,7 @@
 
 $features = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class);
 
-if ($features->isFeatureEnabled('headless.frontendUrls') ||
-    $features->isFeatureEnabled('FrontendBaseUrlInPagePreview')) {
+if ($features->isFeatureEnabled('headless.frontendUrls')) {
     $tempColumns = [
         'frontendBase' => [
             'label' => 'Frontend Entry Point',
