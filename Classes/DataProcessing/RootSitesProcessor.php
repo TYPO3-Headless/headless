@@ -88,9 +88,8 @@ final class RootSitesProcessor implements DataProcessorInterface
 
         $features = GeneralUtility::makeInstance(Features::class);
 
-        if (!$features->isFeatureEnabled('FrontendBaseUrlInPagePreview') &&
-            !$features->isFeatureEnabled('headless.frontendUrls')) {
-            $msg = 'headless.frontendUrls or FrontendBaseUrlInPagePreview option should be enabled!';
+        if (!$features->isFeatureEnabled('headless.frontendUrls')) {
+            $msg = 'headless.frontendUrls option should be enabled!';
             throw new RuntimeException($msg);
         }
 
