@@ -48,7 +48,7 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *              parameter {
  *                  field = link
  *              }
- *              returnLast = url
+ *              returnLast = result
  *          }
  *      }
  *   }
