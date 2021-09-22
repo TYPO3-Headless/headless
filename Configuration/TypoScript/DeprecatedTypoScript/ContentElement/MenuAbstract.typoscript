@@ -1,0 +1,37 @@
+tt_content.menu_abstract =< lib.contentElementWithHeader
+tt_content.menu_abstract {
+    fields {
+        content {
+            fields {
+                menu = TEXT
+                menu {
+                    dataProcessing {
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+                        10 {
+                            appendData = 1
+                            special = directory
+                            special.value.field = pages
+                            overwriteMenuLevelConfig {
+                                stdWrap.cObject {
+                                    100 = TEXT
+                                    100 {
+                                        field = abstract
+                                        wrap = ,"abstract":"|"
+                                    }
+                                }
+                            }
+                            as = menu
+                            dataProcessing {
+                                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                                10 {
+                                    references.fieldName = media
+                                    as = media
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

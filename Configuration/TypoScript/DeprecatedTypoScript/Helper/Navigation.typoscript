@@ -1,0 +1,15 @@
+lib.primaryNavigation = JSON
+lib.primaryNavigation {
+    dataProcessing {
+        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+        10 {
+            special = rootline
+            special.value = -8
+            levels = 7
+            expandAll = 1
+            includeSpacer = 0
+            titleField = nav_title // title
+            as = primaryNavigation
+        }
+    }
+}

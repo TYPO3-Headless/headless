@@ -1,0 +1,7 @@
+plugin.tx_felogin_login {
+    view {
+        templateRootPaths.10 = EXT:headless/Resources/Private/FeLogin/Templates/
+        partialRootPaths.10 = EXT:headless/Resources/Private/FeLogin/Partials/
+        layoutRootPaths.10 = EXT:headless//Resources/Private/FeLogin/Layouts/
+    }
+}
