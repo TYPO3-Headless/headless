@@ -52,7 +52,7 @@ lib.page {
                         parameter {
                             field = canonical_link
                         }
-                        returnLast = url
+                        returnLast = result
                     }
                 }
 
