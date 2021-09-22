@@ -1,0 +1,30 @@
+lib.pageAppearance = JSON
+lib.pageAppearance {
+    fields {
+        layout = TEXT
+        layout {
+            field = layout
+            wrap = layout-|
+        }
+        backendLayout = TEXT
+        backendLayout {
+            field = backend_layout
+            ifEmpty {
+                data = levelfield:-2,backend_layout_next_level,slide
+                ifEmpty.ifEmpty = default
+            }
+            replacement.10 {
+                search = pagets__
+                replace =
+            }
+        }
+        backendLayoutNextLevel = TEXT
+        backendLayoutNextLevel {
+            field = backend_layout_next_level
+            replacement.10 {
+                search = pagets__
+                replace =
+            }
+        }
+    }
+}

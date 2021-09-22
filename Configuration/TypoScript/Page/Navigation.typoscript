@@ -1,0 +1,17 @@
+lib.navigation = JSON
+lib.navigation {
+    fields {
+        slug = TEXT
+        slug {
+            field = slug
+        }
+        navTitle = TEXT
+        navTitle {
+            field = nav_title
+        }
+        target = TEXT
+        target {
+            field = target
+        }
+    }
+}

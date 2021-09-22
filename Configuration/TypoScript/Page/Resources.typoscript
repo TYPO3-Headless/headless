@@ -1,0 +1,15 @@
+lib.resources = JSON
+lib.resources {
+    fields {
+        media = TEXT
+        media {
+            dataProcessing {
+                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                10 {
+                    as = media
+                    references.fieldName = media
+                }
+            }
+        }
+    }
+}

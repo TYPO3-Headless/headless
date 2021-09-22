@@ -1,0 +1,61 @@
+lib.meta = JSON
+lib.meta {
+    fields {
+        title = TEXT
+        title {
+            field = seo_title
+            stdWrap.ifEmpty.cObject = TEXT
+            stdWrap.ifEmpty.cObject {
+              field = title
+            }
+        }
+        subtitle = TEXT
+        subtitle {
+            field = subtitle
+        }
+        abstract = TEXT
+        abstract {
+            field = abstract
+        }
+        description = TEXT
+        description {
+            field = description
+        }
+        keywords = TEXT
+        keywords {
+            field = keywords
+        }
+        canonical = TEXT
+        canonical {
+            field = canonical_link
+            htmlSpecialChars = 1
+            typolink {
+                parameter {
+                    field = canonical_link
+                }
+                returnLast = result
+            }
+        }
+        robots {
+            fields {
+                noIndex = BOOL
+                noIndex {
+                    field = no_index
+                }
+
+                noFollow = BOOL
+                noFollow {
+                    field = no_follow
+                }
+            }
+        }
+        author = TEXT
+        author {
+            field = author
+        }
+        authorEmail = TEXT
+        authorEmail {
+            field = author_email
+        }
+    }
+}

@@ -11,10 +11,9 @@ lib.contentElementWithHeader {
                 subheader {
                     field = subheader
                 }
-                headerLayout = TEXT
+                headerLayout = INT
                 headerLayout {
                     field = header_layout
-                    intval = 1
                 }
                 headerPosition = TEXT
                 headerPosition {

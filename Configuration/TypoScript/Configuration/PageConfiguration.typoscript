@@ -16,9 +16,15 @@ page {
     10 = JSON
     10 {
         fields {
-            page =< lib.page
+            general =< lib.general
+            meta =< lib.meta
+            socialMedia =< lib.socialMedia
+            resources =< lib.resources
+            categories =< lib.categories
+            navigation =< lib.navigation
+            breadcrumbs =< lib.breadcrumbs
+            appearance =< lib.pageAppearance
             content =< lib.content
-            languages =< lib.languages
         }
     }
 }

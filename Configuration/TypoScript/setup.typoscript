@@ -6,6 +6,12 @@ plugin.tx_headless {
 
 ## Include helpers
 <INCLUDE_TYPOSCRIPT: source="DIR:EXT:headless/Configuration/TypoScript/Helper/" extensions="typoscript">
+## Include page
+<INCLUDE_TYPOSCRIPT: source="DIR:EXT:headless/Configuration/TypoScript/Page/" extensions="typoscript">
+## Include languages
+<INCLUDE_TYPOSCRIPT: source="DIR:EXT:headless/Configuration/TypoScript/Languages/" extensions="typoscript">
+## Include navigation
+<INCLUDE_TYPOSCRIPT: source="DIR:EXT:headless/Configuration/TypoScript/Navigation/" extensions="typoscript">
 ## Include content elements
 <INCLUDE_TYPOSCRIPT: source="DIR:EXT:headless/Configuration/TypoScript/ContentElement/" extensions="typoscript">
 ## Include configuration
