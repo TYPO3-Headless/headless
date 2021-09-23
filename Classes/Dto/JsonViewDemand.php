@@ -19,7 +19,7 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-final class JsonViewDemandDto implements JsonViewDemandDtoInterface
+final class JsonViewDemand implements JsonViewDemandInterface
 {
     /**
      * @var int
@@ -99,12 +99,12 @@ final class JsonViewDemandDto implements JsonViewDemandDtoInterface
     }
 
     /**
-     * @param $request
+     * @param ServerRequest $request
      * @param string $argumentName
      * @param $defaultValue
      * @return mixed
      */
-    protected function getActionArgument($request, string $argumentName, $defaultValue = null)
+    protected function getActionArgument(ServerRequest $request, string $argumentName, $defaultValue = null)
     {
         return $request->getParsedBody()[$argumentName]
             ?? $request->getQueryParams()[$argumentName]
@@ -112,9 +112,6 @@ final class JsonViewDemandDto implements JsonViewDemandDtoInterface
             ?? $defaultValue;
     }
 
-    /**
-     * @return int
-     */
     public function getPageId(): int
     {
         return $this->pageId;
@@ -136,50 +133,32 @@ final class JsonViewDemandDto implements JsonViewDemandDtoInterface
         return $this->siteLanguage;
     }
 
-    /**
-     * @return int
-     */
     public function getFeGroup(): int
     {
         return $this->feGroup;
     }
 
-    /**
-     * @return bool
-     */
     public function isHiddenContentVisible(): bool
     {
         return $this->hiddenContentVisible;
     }
 
-    /**
-     * @return string
-     */
     public function getPageTypeMode(): string
     {
         return $this->pageTypeMode;
     }
 
-    /**
-     * @return int
-     */
     public function getLanguageId(): int
     {
         return $this->getSiteLanguage()->getLanguageId();
     }
 
-    /**
-     * @return string
-     */
     public function getPluginNamespace(): string
     {
         return $this->pluginNamespace;
     }
 
-    /**
-     * @return array
-     */
-    public function getCurrentDemandArgumentsAsArray(): array
+    public function toArray(): array
     {
         return [
             'pageType' => $this->getPageTypeMode(),
@@ -191,9 +170,6 @@ final class JsonViewDemandDto implements JsonViewDemandDtoInterface
         ];
     }
 
-    /**
-     * @return bool
-     */
     public function isInitialized(): bool
     {
         return $this->initialized;

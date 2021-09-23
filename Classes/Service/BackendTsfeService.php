@@ -13,10 +13,11 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Service;
 
-use FriendsOfTYPO3\Headless\Dto\JsonViewDemandDtoInterface;
+use FriendsOfTYPO3\Headless\Dto\JsonViewDemandInterface;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Context\VisibilityAspect;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -31,70 +32,16 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
     private $backendExtensionConfiguration = [];
 
     /**
-     * @param int $pageId
-     * @param JsonViewDemandDtoInterface $demand
-     * @param JsonViewConfigurationServiceInterface $configurationService
-     * @param array $settings
-     * @param bool $bootContent
-     */
-    public function bootFrontendControllerForPage(
-        int $pageId,
-        JsonViewDemandDtoInterface $demand,
-        JsonViewConfigurationServiceInterface $configurationService,
-        array $settings,
-        bool $bootContent = false
-    ): void {
-        /** @var VisibilityAspect $visibilityAspect */
-        $visibilityAspect = GeneralUtility::makeInstance(VisibilityAspect::class, true, $demand->isHiddenContentVisible());
-        $feUser = GeneralUtility::makeInstance(FrontendUserAuthentication::class);
-        /** @var UserAspect $userAspect */
-        $userAspect = GeneralUtility::makeInstance(UserAspect::class, $feUser);
-
-        if ($demand->getFeGroup() > 0) {
-            $feUser->user = [
-                'usergroup' => $demand->getFeGroup()
-            ];
-        }
-
-        $context = GeneralUtility::makeInstance(Context::class);
-        $context->setAspect('visibility', $visibilityAspect);
-        $context->setAspect('frontend.user', $userAspect);
-
-        $controller = GeneralUtility::makeInstance(
-            TypoScriptFrontendController::class,
-            $context,
-            $demand->getSite(),
-            $demand->getSiteLanguage(),
-            $configurationService->getPageArgumentsForDemand($demand, $settings, $pageId),
-            $feUser
-        );
-
-        $controller->fetch_the_id();
-        $controller->getConfigArray();
-        $controller->settingLanguage();
-        $controller->newCObj();
-
-        if (!$GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
-            $GLOBALS['TSFE'] = $controller;
-        }
-
-        if (!$GLOBALS['TSFE']->sys_page instanceof PageRepository) {
-            $GLOBALS['TSFE']->sys_page = GeneralUtility::makeInstance(PageRepository::class);
-        }
-
-        if ($bootContent === true) {
-            $controller->preparePageContentGeneration($this->getFrontendRequest($demand, $configurationService, $settings));
-        }
-    }
-
-    /**
-     * @param JsonViewDemandDtoInterface $demand
+     * @param JsonViewDemandInterface $demand
      * @param JsonViewConfigurationServiceInterface $configurationService
      * @param array $settings
      * @return string
      */
-    public function getPageFromTsfe(JsonViewDemandDtoInterface $demand, JsonViewConfigurationServiceInterface $configurationService, array $settings): string
-    {
+    public function getPageFromTsfe(
+        JsonViewDemandInterface $demand,
+        JsonViewConfigurationServiceInterface $configurationService,
+        array $settings
+    ): string {
         if ($GLOBALS['TSFE'] === null) {
             $this->bootFrontendControllerForPage(
                 $demand->getPageId(),
@@ -126,6 +73,101 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
     }
 
     /**
+     * @param int $pageId
+     * @param JsonViewDemandInterface $demand
+     * @param JsonViewConfigurationServiceInterface $configurationService
+     * @param array $settings
+     * @param bool $bootContent
+     */
+    public function bootFrontendControllerForPage(
+        int $pageId,
+        JsonViewDemandInterface $demand,
+        JsonViewConfigurationServiceInterface $configurationService,
+        array $settings,
+        bool $bootContent = false
+    ): void {
+        /** @var VisibilityAspect $visibilityAspect */
+        $visibilityAspect = GeneralUtility::makeInstance(
+            VisibilityAspect::class,
+            true,
+            $demand->isHiddenContentVisible()
+        );
+        $feUser = GeneralUtility::makeInstance(FrontendUserAuthentication::class);
+        /** @var UserAspect $userAspect */
+        $userAspect = GeneralUtility::makeInstance(UserAspect::class, $feUser);
+
+        if ($demand->getFeGroup() > 0) {
+            $feUser->user = [
+                'usergroup' => $demand->getFeGroup()
+            ];
+        }
+
+        $context = GeneralUtility::makeInstance(Context::class);
+        $context->setAspect('visibility', $visibilityAspect);
+        $context->setAspect('frontend.user', $userAspect);
+
+        $controller = GeneralUtility::makeInstance(
+            TypoScriptFrontendController::class,
+            $context,
+            $demand->getSite(),
+            $demand->getSiteLanguage(),
+            $configurationService->getPageArgumentsForDemand($pageId, $demand),
+            $feUser
+        );
+
+        $controller->fetch_the_id();
+        $controller->getConfigArray();
+        $controller->settingLanguage();
+        $controller->newCObj();
+
+        if (!$GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
+            $GLOBALS['TSFE'] = $controller;
+        }
+
+        if (!$GLOBALS['TSFE']->sys_page instanceof PageRepository) {
+            $GLOBALS['TSFE']->sys_page = GeneralUtility::makeInstance(PageRepository::class);
+        }
+
+        if ($bootContent) {
+            $controller->preparePageContentGeneration(
+                $this->getFrontendRequest($demand, $configurationService, $settings)
+            );
+        }
+    }
+
+    /**
+     * @param JsonViewDemandInterface $demand
+     * @param JsonViewConfigurationServiceInterface $configurationService
+     * @param array $settings
+     * @return ServerRequest
+     */
+    public function getFrontendRequest(
+        JsonViewDemandInterface $demand,
+        JsonViewConfigurationServiceInterface $configurationService,
+        array $settings
+    ): ServerRequest {
+        $feUser = GeneralUtility::makeInstance(FrontendUserAuthentication::class);
+
+        if ($demand->getFeGroup() > 0) {
+            $feUser->user = [
+                'usergroup' => $demand->getFeGroup()
+            ];
+        }
+
+        $frontendRequest = new ServerRequest();
+        $pageTypeArguments = $configurationService->getPageTypeArguments($demand);
+
+        return $frontendRequest
+            ->withQueryParams($pageTypeArguments)
+            ->withAttribute('routing', $pageTypeArguments)
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_FE)
+            ->withAttribute('site', $demand->getSite())
+            ->withAttribute('language', $demand->getSiteLanguage())
+            ->withAttribute('frontend.user', $feUser)
+            ->withAttribute('noCache', true);
+    }
+
+    /**
      * Trick TYPO3 into using plugins configuration in backend environment
      */
     private function useFrontendExtensionConfiguration()
@@ -145,34 +187,5 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
     private function restoreBackendExtensionConfiguration()
     {
         $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'] = $this->backendExtensionConfiguration;
-    }
-
-    /**
-     * @param JsonViewDemandDtoInterface $demand
-     * @param JsonViewConfigurationServiceInterface $configurationService
-     * @param array $settings
-     * @return ServerRequest
-     */
-    public function getFrontendRequest(JsonViewDemandDtoInterface $demand, JsonViewConfigurationServiceInterface $configurationService, array $settings)
-    {
-        $feUser = GeneralUtility::makeInstance(FrontendUserAuthentication::class);
-
-        if ($demand->getFeGroup() > 0) {
-            $feUser->user = [
-                'usergroup' => $demand->getFeGroup()
-            ];
-        }
-
-        $frontendRequest = new ServerRequest();
-        $pageTypeArguments = $configurationService->getPageTypeArguments($settings, $demand);
-
-        return $frontendRequest
-            ->withQueryParams($pageTypeArguments)
-            ->withAttribute('routing', $pageTypeArguments)
-            ->withAttribute('applicationType', 1)
-            ->withAttribute('site', $demand->getSite())
-            ->withAttribute('language', $demand->getSiteLanguage())
-            ->withAttribute('frontend.user', $feUser)
-            ->withAttribute('noCache', true);
     }
 }

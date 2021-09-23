@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Utility;
 
 use FriendsOfTYPO3\Headless\Controller\JsonViewController;
-use FriendsOfTYPO3\Headless\Dto\JsonViewDemandDto;
+use FriendsOfTYPO3\Headless\Dto\JsonViewDemand;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Core\Context\Context;
@@ -22,6 +22,7 @@ use TYPO3\CMS\Core\Context\LanguageAspectFactory;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class JsonViewMenusUtility
@@ -39,12 +40,7 @@ class JsonViewMenusUtility
         $this->uriBuilder = $uriBuilder;
     }
 
-    /**
-     * @param BackendTemplateView $view
-     * @param JsonViewDemandDto $demand
-     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
-     */
-    public function addLanguageMenu(BackendTemplateView $view, JsonViewDemandDto $demand)
+    public function addLanguageMenu(BackendTemplateView $view, JsonViewDemand $demand): void
     {
         $menu = [];
 
@@ -69,42 +65,58 @@ class JsonViewMenusUtility
         }
     }
 
-    /**
-     * @param BackendTemplateView $view
-     * @param JsonViewDemandDto $demand
-     * @param array $yamlSettings
-     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
-     */
-    public function addPageTypeMenu(BackendTemplateView $view, JsonViewDemandDto $demand, array $yamlSettings = [])
+    public function getTranslatedPageRecord(int $languageId, JsonViewDemand $demand): array
     {
-        if ($yamlSettings['pageTypeModes']) {
-            $menu = [];
+        $targetSiteLanguage = $demand->getSite()->getLanguageById($languageId);
+        $languageAspect = LanguageAspectFactory::createFromSiteLanguage($targetSiteLanguage);
 
-            foreach ($yamlSettings['pageTypeModes'] as $mode => $config) {
-                if (isset($config['pageType'])) {
-                    $menuItem = [
-                        'title' => $config['title'] . ' [type=' . $config['pageType'] . '] ',
-                        'href' => (string)$this->uriBuilder->buildUriFromRoute(
-                            JsonViewController::MODULE_NAME,
-                            $this->getCurrentDemandWithOverride($demand, ['pageTypeMode' => $mode])
-                        )
-                    ];
+        $context = clone GeneralUtility::makeInstance(Context::class);
+        $context->setAspect('language', $languageAspect);
 
-                    $menuItem['active'] = $demand->getPageTypeMode() === $mode;
-                    $menu[] = $menuItem;
-                }
-            }
+        $pageRepository = GeneralUtility::makeInstance(PageRepository::class, $context);
 
-            $view->assign('pageTypesMenu', $menu);
+        if ($languageId > 0) {
+            return $pageRepository->getPageOverlay($demand->getPageId(), $languageId);
         }
+
+        return $pageRepository->getPage($demand->getPageId());
     }
 
-    /**
-     * @param BackendTemplateView $view
-     * @param JsonViewDemandDto $demand
-     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
-     */
-    public function addShowHiddenContentOption(BackendTemplateView $view, JsonViewDemandDto $demand)
+    public function getCurrentDemandWithOverride(JsonViewDemand $demand, array $override = []): array
+    {
+        $demandArguments = $demand->toArray();
+        ArrayUtility::mergeRecursiveWithOverrule($demandArguments, $override);
+
+        return $demandArguments;
+    }
+
+    public function addPageTypeMenu(BackendTemplateView $view, JsonViewDemand $demand, array $yamlSettings = []): void
+    {
+        $menu = [];
+
+        if ($yamlSettings['pageTypeModes'] === []) {
+            return;
+        }
+
+        foreach ($yamlSettings['pageTypeModes'] as $mode => $config) {
+            if (isset($config['pageType'])) {
+                $menuItem = [
+                    'title' => $config['title'] . ' [type=' . $config['pageType'] . '] ',
+                    'href' => (string)$this->uriBuilder->buildUriFromRoute(
+                        JsonViewController::MODULE_NAME,
+                        $this->getCurrentDemandWithOverride($demand, ['pageTypeMode' => $mode])
+                    )
+                ];
+
+                $menuItem['active'] = $demand->getPageTypeMode() === $mode;
+                $menu[] = $menuItem;
+            }
+        }
+
+        $view->assign('pageTypesMenu', $menu);
+    }
+
+    public function addShowHiddenContentOption(BackendTemplateView $view, JsonViewDemand $demand): void
     {
         $menuItem = '';
         $contentOptions = [0, 1];
@@ -124,12 +136,7 @@ class JsonViewMenusUtility
         $view->assign('showHiddenContentOption', $menuItem);
     }
 
-    /**
-     * @param BackendTemplateView $view
-     * @param JsonViewDemandDto $demand
-     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
-     */
-    public function addFrontendGroups(BackendTemplateView $view, JsonViewDemandDto $demand)
+    public function addFrontendGroups(BackendTemplateView $view, JsonViewDemand $demand): void
     {
         $menu = [];
         $groups = $this->getDatabaseFrontendGroups();
@@ -154,10 +161,7 @@ class JsonViewMenusUtility
         }
     }
 
-    /**
-     * @return array
-     */
-    public function getDatabaseFrontendGroups()
+    public function getDatabaseFrontendGroups(): array
     {
         $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
         $schemaManager = $connectionPool
@@ -171,18 +175,14 @@ class JsonViewMenusUtility
             return $queryBuilder
                 ->select('uid', 'title')
                 ->from('fe_groups')
-                ->execute();
+                ->execute()
+                ->fetchAllAssociative();
         }
 
         return [];
     }
 
-    /**
-     * @param JsonViewDemandDto $demand
-     * @return string[]
-     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
-     */
-    protected function getDefaultMenuItemForUserGroups(JsonViewDemandDto $demand)
+    protected function getDefaultMenuItemForUserGroups(JsonViewDemand $demand): array
     {
         return [
             'href' => (string)$this->uriBuilder->buildUriFromRoute(
@@ -197,37 +197,5 @@ class JsonViewMenusUtility
             ),
             'title' => 'Show for all'
         ];
-    }
-
-    /**
-     * @param int $languageId
-     * @param JsonViewDemandDto $demand
-     * @return mixed
-     */
-    public function getTranslatedPageRecord(int $languageId, JsonViewDemandDto $demand)
-    {
-        $targetSiteLanguage = $demand->getSite()->getLanguageById($languageId);
-        $languageAspect = LanguageAspectFactory::createFromSiteLanguage($targetSiteLanguage);
-
-        $context = clone GeneralUtility::makeInstance(Context::class);
-        $context->setAspect('language', $languageAspect);
-
-        $pageRepository = GeneralUtility::makeInstance(PageRepository::class, $context);
-
-        if ($languageId > 0) {
-            return $pageRepository->getPageOverlay($demand->getPageId(), $languageId);
-        }
-
-        return $pageRepository->getPage($demand->getPageId());
-    }
-
-    /**
-     * @param JsonViewDemandDto $demand
-     * @param array $override
-     * @return array
-     */
-    public function getCurrentDemandWithOverride(JsonViewDemandDto $demand, array $override = []): array
-    {
-        return array_merge($demand->getCurrentDemandArgumentsAsArray(), $override);
     }
 }

@@ -13,136 +13,157 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Service;
 
-use FriendsOfTYPO3\Headless\Dto\JsonViewDemandDto;
-use FriendsOfTYPO3\Headless\Dto\JsonViewDemandDtoInterface;
+use FriendsOfTYPO3\Headless\Dto\JsonViewDemand;
+use FriendsOfTYPO3\Headless\Dto\JsonViewDemandInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Configuration\Loader\YamlFileLoader;
+use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class JsonViewConfigurationService implements JsonViewConfigurationServiceInterface
 {
     /**
-     * @param string $pluginNamespace
-     * @return JsonViewDemandDto
-     * @throws \TYPO3\CMS\Core\Exception\SiteNotFoundException
+     * @var array
      */
-    public function getDemandWithPluginNamespace(string $pluginNamespace)
-    {
-        return new JsonViewDemandDto($GLOBALS['TYPO3_REQUEST'], $pluginNamespace);
-    }
+    protected $settings = [];
 
     /**
-     * @return array
+     * @var JsonViewDemandInterface
      */
+    protected $demand;
+
+    public function __construct()
+    {
+        $this->settings = $this->getSettings();
+    }
+
     public function getSettings(): array
     {
+        if ($this->settings !== []) {
+            return $this->settings;
+        }
+
         $yamlFileLoader = GeneralUtility::makeInstance(YamlFileLoader::class);
         $configPath = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('headless', 'yamlPath');
 
         if (!file_exists(GeneralUtility::getFileAbsFileName($configPath))) {
-            $configPath = GeneralUtility::getFileAbsFileName('typo3conf/ext/headless/Configuration/Yaml/HeadlessModule.yml');
+            $configPath = GeneralUtility::getFileAbsFileName(
+                'typo3conf/ext/headless/Configuration/Yaml/HeadlessModule.yml'
+            );
         }
 
         return $yamlFileLoader->load($configPath);
     }
 
-    /**
-     * @param JsonViewDemandDtoInterface $demand
-     * @param array $settings
-     * @return bool
-     */
-    public function getBootContentFlagFromSettings(JsonViewDemandDtoInterface $demand, array $settings): bool
+    public function createDemandWithPluginNamespace(string $pluginNamespace): JsonViewDemand
     {
-        return (bool)$settings['pageTypeModes'][$demand->getPageTypeMode()]['bootContent'];
+        $demand = new JsonViewDemand($GLOBALS['TYPO3_REQUEST'], $pluginNamespace);
+        $this->setDemand($demand);
+        return $demand;
     }
 
-    /**
-     * @param array $settings
-     * @param JsonViewDemandDtoInterface $demand
-     * @return string
-     */
-    public function getCurrentPageType(array $settings, JsonViewDemandDtoInterface $demand): string
+    public function getBootContentFlagFromSettings(JsonViewDemandInterface $demand = null): bool
     {
-        return (string)$settings['pageTypeModes'][$demand->getPageTypeMode()]['pageType'] ?: '0';
+        return (bool)$this->getValueFromConfiguration('bootContent', false, $demand);
     }
 
-    /**
-     * @param array $settings
-     * @param JsonViewDemandDtoInterface $demand
-     * @return array
-     */
-    public function getPageTypeArguments(array $settings, JsonViewDemandDtoInterface $demand): array
+    public function getValueFromConfiguration(
+        string $settingsKey,
+        $defaultValue = null,
+        JsonViewDemandInterface $demand = null
+    ) {
+        $demand = $demand ?? $this->demand;
+
+        if ($demand !== null && isset($this->settings['pageTypeModes'][$demand->getPageTypeMode()][$settingsKey])) {
+            return $this->settings['pageTypeModes'][$demand->getPageTypeMode()][$settingsKey];
+        }
+
+        return $defaultValue;
+    }
+
+    public function getPageArgumentsForDemand(int $pageId = 0, JsonViewDemandInterface $demand = null): PageArguments
+    {
+        $demand = $demand ?? $this->demand;
+
+        if ($pageId > 0) {
+            return new PageArguments(
+                $pageId,
+                $this->getCurrentPageType($demand),
+                $this->getPageTypeArguments($demand)
+            );
+        }
+
+        return new PageArguments(
+            $demand->getPageId(),
+            $this->getCurrentPageType($demand),
+            $this->getPageTypeArguments($demand)
+        );
+    }
+
+    public function getCurrentPageType(JsonViewDemandInterface $demand = null): string
+    {
+        return (string)$this->getValueFromConfiguration('pageType', '0', $demand);
+    }
+
+    public function getPageTypeArguments(JsonViewDemandInterface $demand = null): array
     {
         if ($GLOBALS['BE_USER']->isAdmin()) {
-            return $settings['pageTypeModes'][$demand->getPageTypeMode()]['arguments'] ?: [];
+            return $this->getValueFromConfiguration('arguments', [], $demand);
         }
 
         return [];
     }
 
-    /**
-     * @param JsonViewDemandDtoInterface $demand
-     * @param array $settings
-     * @param int $pageId
-     * @return PageArguments
-     */
-    public function getPageArgumentsForDemand(JsonViewDemandDtoInterface $demand, array $settings, int $pageId = 0)
-    {
-        if ($pageId > 0) {
-            return new PageArguments($pageId, $this->getCurrentPageType($settings, $demand), $this->getPageTypeArguments($settings, $demand));
-        }
-
-        return new PageArguments($demand->getPageId(), $this->getCurrentPageType($settings, $demand), $this->getPageTypeArguments($settings, $demand));
-    }
-
-    /**
-     * @return string
-     */
     public function getDefaultModuleTranslationFile(): string
     {
         return 'LLL:EXT:headless/Resources/Private/Language/locallang_be.xlf:';
     }
 
-    /**
-     * @return string
-     */
     public function getContentTabName(): string
     {
         return 'content';
     }
 
-    /**
-     * @return string
-     */
     public function getRawTabName(): string
     {
         return 'raw';
     }
 
-    /**
-     * @return int[]
-     */
     public function getDisallowedDoktypes(): array
     {
-        return [3, 4, 7, 199, 254, 255];
+        return [
+            PageRepository::DOKTYPE_LINK,
+            PageRepository::DOKTYPE_SHORTCUT,
+            PageRepository::DOKTYPE_MOUNTPOINT,
+            PageRepository::DOKTYPE_SPACER,
+            PageRepository::DOKTYPE_SYSFOLDER,
+            PageRepository::DOKTYPE_RECYCLER,
+        ];
     }
 
-    /**
-     * @param array $data
-     * @return string
-     */
     public function getElementTitle(array $data): string
     {
         return $data['header'] ?: $data['title'] ?: '';
     }
 
-    /**
-     * @param array $data
-     * @return string
-     */
     public function getSectionId(array $data): string
     {
         return 'section-' . $data['uid'];
+    }
+
+    public function getPageDataFromApi(array $jsonArray = []): array
+    {
+        return $jsonArray['page'] ?? [];
+    }
+
+    public function getDemand(): JsonViewDemandInterface
+    {
+        return $this->demand;
+    }
+
+    public function setDemand(JsonViewDemandInterface $demand): void
+    {
+        $this->demand = $demand;
     }
 }

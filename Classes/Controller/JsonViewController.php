@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Controller;
 
-use FriendsOfTYPO3\Headless\Dto\JsonViewDemandDtoInterface;
+use FriendsOfTYPO3\Headless\Dto\JsonViewDemandInterface;
 use FriendsOfTYPO3\Headless\Service\BackendTsfeService;
 use FriendsOfTYPO3\Headless\Service\JsonViewConfigurationService;
 use FriendsOfTYPO3\Headless\Utility\JsonViewMenusUtility;
@@ -35,7 +35,7 @@ class JsonViewController extends ActionController
     public const MODULE_NAME = 'web_HeadlessJsonview';
 
     /**
-     * @var JsonViewDemandDtoInterface
+     * @var JsonViewDemandInterface
      */
     protected $demand;
 
@@ -75,133 +75,193 @@ class JsonViewController extends ActionController
     protected $backendTsfeService;
 
     /**
+     * @var ExtensionService
+     */
+    protected $extensionService;
+
+    /**
      * @param JsonViewMenusUtility $jsonViewMenusUtility
      * @param JsonViewConfigurationService $configurationService
      * @param BackendTsfeService $backendTsfeService
+     * @param ExtensionService $extensionService
      */
-    public function __construct(JsonViewMenusUtility $jsonViewMenusUtility, JsonViewConfigurationService $configurationService, BackendTsfeService $backendTsfeService)
-    {
+    public function __construct(
+        JsonViewMenusUtility $jsonViewMenusUtility,
+        JsonViewConfigurationService $configurationService,
+        BackendTsfeService $backendTsfeService,
+        ExtensionService $extensionService
+    ) {
         $this->jsonViewMenusUtility = $jsonViewMenusUtility;
         $this->configurationService = $configurationService;
         $this->backendTsfeService = $backendTsfeService;
+        $this->extensionService = $extensionService;
     }
 
     protected function initializeAction()
     {
-        $extensionService = GeneralUtility::makeInstance(ExtensionService::class);
-
         $this->moduleSettings = $this->configurationService->getSettings();
-        $this->demand = $this->configurationService->getDemandWithPluginNamespace(
-            $extensionService->getPluginNamespace('Headless', self::MODULE_NAME)
+        $this->demand = $this->configurationService->createDemandWithPluginNamespace(
+            $this->extensionService->getPluginNamespace('Headless', self::MODULE_NAME)
         );
-        $this->bootContent = $this->configurationService->getBootContentFlagFromSettings($this->demand, $this->moduleSettings);
+        $this->bootContent = $this->configurationService->getBootContentFlagFromSettings();
     }
 
-    /**
-     * @param ViewInterface $view
-     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
-     */
-    protected function initializeView(ViewInterface $view)
+    protected function initializeView(ViewInterface $view): void
     {
         /** @var BackendTemplateView $view */
         parent::initializeView($view);
         if ($view instanceof BackendTemplateView) {
-            $view->getModuleTemplate()->getPageRenderer()->loadRequireJsModule('TYPO3/CMS/Backend/Modal');
-            $view->getModuleTemplate()->getPageRenderer()->addCssFile('EXT:headless/Resources/Public/Css/prism.css');
-            $view->getModuleTemplate()->getPageRenderer()->addCssFile('EXT:headless/Resources/Public/Css/JsonView.css');
-            $view->getModuleTemplate()->getPageRenderer()->addJsFile('EXT:headless/Resources/Public/JavaScript/prism.js');
-            $view->getModuleTemplate()->getPageRenderer()->addJsFile('EXT:headless/Resources/Public/JavaScript/JsonView.js');
+            $pageRenderer = $view->getModuleTemplate()->getPageRenderer();
+            $pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/Modal');
+            $pageRenderer->addCssFile('EXT:headless/Resources/Public/Css/prism.css');
+            $pageRenderer->addCssFile('EXT:headless/Resources/Public/Css/JsonView.css');
+            $pageRenderer->addJsFile('EXT:headless/Resources/Public/JavaScript/prism.js');
+            $pageRenderer->addJsFile('EXT:headless/Resources/Public/JavaScript/JsonView.js');
 
-            if ($this->demand->isInitialized() === true) {
+            if ($this->demand->isInitialized()) {
                 $this->jsonViewMenusUtility->addLanguageMenu($view, $this->demand);
                 $this->jsonViewMenusUtility->addFrontendGroups($view, $this->demand);
                 $this->jsonViewMenusUtility->addPageTypeMenu($view, $this->demand, $this->moduleSettings);
                 $this->jsonViewMenusUtility->addShowHiddenContentOption($view, $this->demand);
             }
 
-            $this->view->assignMultiple([
-                'contentTabName' => $this->configurationService->getContentTabName(),
-                'rawTabName' => $this->configurationService->getRawTabName(),
-                'showContent' => (int)$this->demand->isHiddenContentVisible(),
-                'translationFile' => $this->configurationService->getDefaultModuleTranslationFile() . 'module.'
-            ]);
+            $this->view->assignMultiple(
+                [
+                    'contentTabName' => $this->configurationService->getContentTabName(),
+                    'rawTabName' => $this->configurationService->getRawTabName(),
+                    'showContent' => (int)$this->demand->isHiddenContentVisible(),
+                    'translationFile' => $this->configurationService->getDefaultModuleTranslationFile() . 'module.'
+                ]
+            );
         }
     }
 
-    public function mainAction()
+    public function mainAction(): void
     {
-        if ($this->getBackendUser() !== null) {
-            $pageRecord = $this->getPageRecord();
+        $tabs = [];
+        $pageContent = [];
 
-            if ($this->isPageValid($pageRecord)) {
-                $tabs = [];
-                $pageContent = [];
+        if ($this->getBackendUser() === null) {
+            $this->view->assign('error', $this->getModuleTranslation('module.error_header'));
+            return;
+        }
 
-                $this->backendTsfeService->bootFrontendControllerForPage((int)$pageRecord['uid'], $this->demand, $this->configurationService, $this->moduleSettings, $this->bootContent);
-                if ($GLOBALS['TSFE'] !== null
-                    && isset($GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'])
-                    && (bool)$GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'] === true
-                ) {
-                    /** @var PageLayoutContext $pageLayoutContext */
-                    $pageLayoutContext = GeneralUtility::makeInstance(
-                        PageLayoutContext::class,
-                        $pageRecord,
-                        GeneralUtility::makeInstance(BackendLayoutView::class)->getBackendLayoutForPage($pageRecord['uid'])
+        $pageRecord = $this->getPageRecord();
+        $this->view->assign('pageRecord', $pageRecord);
+
+        if ($this->isPageValid($pageRecord) === false) {
+            return;
+        }
+
+        $this->backendTsfeService->bootFrontendControllerForPage(
+            (int)$pageRecord['uid'],
+            $this->demand,
+            $this->configurationService,
+            $this->moduleSettings,
+            $this->bootContent
+        );
+
+        if (
+            $GLOBALS['TSFE'] === null ||
+            !isset($GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_headless.']['staticTemplate']) ||
+            (bool)$GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'] === false
+        ) {
+            $this->view->assign('error', $this->getModuleTranslation('module.error.headless_or_tsfe'));
+        }
+
+        /** @var PageLayoutContext $pageLayoutContext */
+        $pageLayoutContext = GeneralUtility::makeInstance(
+            PageLayoutContext::class,
+            $pageRecord,
+            GeneralUtility::makeInstance(BackendLayoutView::class)->getBackendLayoutForPage($pageRecord['uid'])
+        );
+        /** @var ContentFetcher $contentFetcher */
+        $contentFetcher = GeneralUtility::makeInstance(ContentFetcher::class, $pageLayoutContext);
+        $this->labels = $pageLayoutContext->getContentTypeLabels();
+
+        $pageJson = $this->backendTsfeService->getPageFromTsfe(
+            $this->demand,
+            $this->configurationService,
+            $this->moduleSettings
+        );
+        $jsonArray = json_decode($pageJson, true);
+
+        if (!is_array($jsonArray) || $jsonArray === []) {
+            return;
+        }
+
+        foreach ($jsonArray as $type => $typeContents) {
+            $tabs[] = $type;
+            $pageContent[$type] = [];
+
+            if ($type === $this->configurationService->getContentTabName()) {
+                foreach ($typeContents as $col => $colPosContents) {
+                    $colNumber = str_replace('colPos', '', $col);
+                    $records = $contentFetcher->getContentRecordsPerColumn(
+                        (int)$colNumber,
+                        $this->demand->getLanguageId()
                     );
 
-                    /** @var ContentFetcher $contentFetcher */
-                    $contentFetcher = GeneralUtility::makeInstance(ContentFetcher::class, $pageLayoutContext);
-                    $this->labels = $pageLayoutContext->getContentTypeLabels();
-
-                    $pageJson = $this->backendTsfeService->getPageFromTsfe($this->demand, $this->configurationService, $this->moduleSettings);
-                    $jsonArray = json_decode($pageJson, true);
-
-                    if (is_array($jsonArray) && $jsonArray !== []) {
-                        foreach ($jsonArray as $type => $typeContents) {
-                            $tabs[] = $type;
-                            $pageContent[$type] = [];
-
-                            if ($type === $this->configurationService->getContentTabName()) {
-                                foreach ($typeContents as $col => $colPosContents) {
-                                    $colNumber = str_replace('colPos', '', $col);
-                                    $records = $contentFetcher->getContentRecordsPerColumn((int)$colNumber, $this->demand->getLanguageId());
-
-                                    if ($records !== []) {
-                                        $records = $this->syncRecordsWithTranslation($records);
-
-                                        foreach ($colPosContents as $contentElement) {
-                                            $databaseRow = $records[$contentElement['id']];
-                                            $pageContent[$type][$colNumber][] = $this->getElementArray($contentElement, $databaseRow);
-                                        }
-                                    }
-                                }
-                            } else {
-                                $pageContent[$type] = json_encode($typeContents, JSON_PRETTY_PRINT);
-                            }
-                        }
-
-                        $tabs[] = $this->configurationService->getRawTabName();
-                        $pageContent[$this->configurationService->getRawTabName()] = json_encode($jsonArray, JSON_PRETTY_PRINT);
-
-                        $this->view->assignMultiple([
-                            'data' => $pageContent,
-                            'columns' => $this->getColumnLabels($pageLayoutContext),
-                            'tabs' => $tabs,
-                            'page' => $jsonArray['page']
-                        ]);
+                    if ($records === []) {
+                        continue;
                     }
-                } else {
-                    $this->view->assign('error', $this->getModuleTranslation('module.error.headless_or_tsfe'));
-                }
-            }
 
-            $this->view->assign('pageRecord', $pageRecord);
+                    $records = $this->syncRecordsWithTranslation($records);
+
+                    foreach ($colPosContents as $contentElement) {
+                        $databaseRow = $records[$contentElement['id']];
+                        $pageContent[$type][$colNumber][] = $this->getElementArray(
+                            $contentElement,
+                            $databaseRow
+                        );
+                    }
+                }
+            } else {
+                $pageContent[$type] = json_encode($typeContents, JSON_PRETTY_PRINT);
+            }
         }
+
+        $tabs[] = $this->configurationService->getRawTabName();
+        $pageContent[$this->configurationService->getRawTabName()] = json_encode($jsonArray, JSON_PRETTY_PRINT);
+
+        $this->view->assignMultiple(
+            [
+                'data' => $pageContent,
+                'columns' => $this->getColumnLabels($pageLayoutContext),
+                'tabs' => $tabs,
+                'page' => $this->configurationService->getPageDataFromApi($jsonArray)
+            ]
+        );
     }
 
-    protected function isPageValid($pageRecord)
+    protected function getBackendUser(): BackendUserAuthentication
     {
-        if ($pageRecord !== false && isset($pageRecord['uid'])) {
+        return $GLOBALS['BE_USER'];
+    }
+
+    protected function getModuleTranslation(string $key): string
+    {
+        return $this->getLanguageService()->sL($this->configurationService->getDefaultModuleTranslationFile() . $key);
+    }
+
+    protected function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
+    }
+
+    protected function getPageRecord(): array
+    {
+        $pageRecord = BackendUtility::readPageAccess(
+            $this->demand->getPageId(),
+            $this->getBackendUser()->getPagePermsClause(Permission::PAGE_SHOW)
+        );
+
+        return is_array($pageRecord) ? $pageRecord : [];
+    }
+
+    protected function isPageValid(array $pageRecord): bool
+    {
+        if (isset($pageRecord['uid'])) {
             if (!in_array((int)$pageRecord['doktype'], $this->configurationService->getDisallowedDoktypes())) {
                 return true;
             }
@@ -214,11 +274,7 @@ class JsonViewController extends ActionController
         return false;
     }
 
-    /**
-     * @param $records
-     * @return array|false
-     */
-    protected function syncRecordsWithTranslation($records)
+    protected function syncRecordsWithTranslation(array $records): array
     {
         if ($this->demand->getLanguageId() > 0) {
             $syncedRecords = [];
@@ -246,12 +302,6 @@ class JsonViewController extends ActionController
         return $recordKeys !== [] ? array_combine($recordKeys, $records) : [];
     }
 
-    /**
-     * @param array $arrayFromJson
-     * @param array $contentData
-     * @param bool $addJson
-     * @return array
-     */
     protected function getElementArray(array $arrayFromJson, array $contentData, bool $addJson = true): array
     {
         $contentElement = [
@@ -262,18 +312,14 @@ class JsonViewController extends ActionController
             'hidden' => $contentData['hidden']
         ];
 
-        if ($addJson === true) {
+        if ($addJson) {
             $contentElement['data'] = json_encode($arrayFromJson, JSON_PRETTY_PRINT);
         }
 
         return $contentElement;
     }
 
-    /**
-     * @param PageLayoutContext $context
-     * @return array
-     */
-    protected function getColumnLabels(PageLayoutContext $context)
+    protected function getColumnLabels(PageLayoutContext $context): array
     {
         $columns = [];
 
@@ -282,38 +328,5 @@ class JsonViewController extends ActionController
         }
 
         return $columns;
-    }
-
-    /**
-     * @param string $key
-     * @return string
-     */
-    protected function getModuleTranslation(string $key): string
-    {
-        return $this->getLanguageService()->sL($this->configurationService->getDefaultModuleTranslationFile() . $key);
-    }
-
-    /**
-     * @return BackendUserAuthentication
-     */
-    protected function getBackendUser(): BackendUserAuthentication
-    {
-        return $GLOBALS['BE_USER'];
-    }
-
-    /**
-     * @return LanguageService
-     */
-    protected function getLanguageService(): LanguageService
-    {
-        return $GLOBALS['LANG'];
-    }
-
-    /**
-     * @return array|false|string[]
-     */
-    protected function getPageRecord()
-    {
-        return BackendUtility::readPageAccess($this->demand->getPageId(), $this->getBackendUser()->getPagePermsClause(Permission::PAGE_SHOW));
     }
 }
