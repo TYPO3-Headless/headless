@@ -1,0 +1,20 @@
+tt_content.felogin_login =< lib.contentElementWithHeader
+tt_content.felogin_login {
+    fields {
+        content {
+            fields {
+                data = USER
+                data {
+                    userFunc = TYPO3\CMS\Extbase\Core\Bootstrap->run
+                    vendorName = TYPO3\CMS
+                    extensionName = Felogin
+                    pluginName = Login
+                    controller = Login
+                    persistence < plugin.tx_felogin_login.persistence
+                    settings < plugin.tx_felogin_login.settings
+                    stdWrap.trim = 1
+                }
+            }
+        }
+    }
+}

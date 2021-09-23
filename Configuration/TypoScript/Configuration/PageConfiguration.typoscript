@@ -16,9 +16,57 @@ page {
     10 = JSON
     10 {
         fields {
-            page =< lib.page
+            id = INT
+            id {
+                field = uid
+            }
+            type = CASE
+            type {
+                key.field = doktype
+
+                3 = TEXT
+                3.value = Link
+
+                4 = TEXT
+                4.value = Shortcut
+
+                6 = TEXT
+                6.value = Backend User Section
+
+                7 = TEXT
+                7.value = Mountpoint
+
+                199 = TEXT
+                199.value = Space
+
+                254 = TEXT
+                254.value = Folder
+
+                255 = TEXT
+                255.value = Recycler
+
+                default = TEXT
+                default.value = Standard
+            }
+            slug = TEXT
+            slug {
+                field = slug
+            }
+            media = TEXT
+            media {
+                dataProcessing {
+                    10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                    10 {
+                        as = media
+                        references.fieldName = media
+                    }
+                }
+            }
+            meta =< lib.meta
+            categories =< lib.categories
+            breadcrumbs =< lib.breadcrumbs
+            appearance =< lib.pageAppearance
             content =< lib.content
-            languages =< lib.languages
         }
     }
 }

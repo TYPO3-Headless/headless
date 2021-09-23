@@ -1,0 +1,42 @@
+tt_content.menu_section_pages =< lib.contentElementWithHeader
+tt_content.menu_section_pages {
+    fields {
+        content {
+            fields {
+                menu = TEXT
+                menu {
+                    dataProcessing {
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+                        10 {
+                            appendData = 1
+                            special = directory
+                            special.value.field = pages
+                            as = menu
+                            dataProcessing {
+                                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                                10 {
+                                    references.fieldName = media
+                                    as = media
+                                }
+                                20 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
+                                20 {
+                                    table = tt_content
+                                    pidInList.field = uid
+                                    orderBy = sorting
+                                    as = content
+                                    dataProcessing {
+                                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                                        10 {
+                                            references.fieldName = image
+                                            as = media
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
