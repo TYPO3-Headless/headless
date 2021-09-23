@@ -1,0 +1,12 @@
+plugin.tx_headless {
+    # Do not remove this!
+    # This will indicate, that the static typoscript for EXT:headless was loaded
+    staticTemplate = 1
+}
+
+## Include helpers
+<INCLUDE_TYPOSCRIPT: source="DIR:EXT:headless/Configuration/TypoScript/2.x/Helper/" extensions="typoscript">
+## Include content elements
+<INCLUDE_TYPOSCRIPT: source="DIR:EXT:headless/Configuration/TypoScript/2.x/ContentElement/" extensions="typoscript">
+## Include configuration
+<INCLUDE_TYPOSCRIPT: source="DIR:EXT:headless/Configuration/TypoScript/2.x/Configuration/" extensions="typoscript">
