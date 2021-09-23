@@ -6,7 +6,7 @@ lib.socialMedia {
             field = og_title
             stdWrap.ifEmpty.cObject = TEXT
             stdWrap.ifEmpty.cObject {
-              field = title
+                field = title
             }
         }
         ogDescription = TEXT
@@ -14,7 +14,7 @@ lib.socialMedia {
             field = og_description
             stdWrap.ifEmpty.cObject = TEXT
             stdWrap.ifEmpty.cObject {
-              field = description
+                field = description
             }
         }
         ogImage = TEXT
@@ -32,7 +32,7 @@ lib.socialMedia {
             field = twitter_title
             stdWrap.ifEmpty.cObject = TEXT
             stdWrap.ifEmpty.cObject {
-              field = title
+                field = title
             }
         }
         twitterDescription = TEXT
@@ -40,7 +40,7 @@ lib.socialMedia {
             field = twitter_description
             stdWrap.ifEmpty.cObject = TEXT
             stdWrap.ifEmpty.cObject {
-              field = description
+                field = description
             }
         }
         twitterCard = TEXT

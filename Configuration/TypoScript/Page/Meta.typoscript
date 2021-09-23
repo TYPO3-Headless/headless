@@ -6,7 +6,7 @@ lib.meta {
             field = seo_title
             stdWrap.ifEmpty.cObject = TEXT
             stdWrap.ifEmpty.cObject {
-              field = title
+                field = title
             }
         }
         subtitle = TEXT
