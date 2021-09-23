@@ -209,6 +209,60 @@ The definition of `fields` can be nested until various depth to reflect our desi
 `dataProcessing <https://docs.typo3.org/m/typo3/reference-coreapi/master/en-us/ApiOverview/ContentElements/AddingYourOwnContentElements.html#optional-use-data-processors>`__
 is possible the native way like in any other content elements (see content element definitions of this extension).
 
+.. _developer-custom-typoscript:
+
+Create custom TypoScript
+========================
+
+To add a default TypoScript object (such as `CONTENT`) to the fields of your page object you need to make sure to render it a valid JSON.
+
+Here's an example of how you can create a JSON array of multiple objects from a custom DB table:
+
+.. code-block:: typoscript
+
+  lib.page {
+    fields {
+      related = CONTENT
+      related {
+        table = tx_myextension_domain_model_things
+        select {
+          pidInList = this
+        }
+        renderObj = JSON
+        renderObj {
+          fields {
+            title = TEXT
+            title.field = title
+            link = TEXT
+            link.typolink.parameter.field = uid
+            link.typolink.returnLast = url
+          }
+          # Add recognizable token at the end of this item
+          stdWrap.wrap = |###BREAK###
+        }
+        stdWrap {
+          # Wrap items into square brackets
+          innerWrap = [|]
+
+          # Replace 'inner tokens' by comma, remove others
+          split {
+            token = ###BREAK###
+            cObjNum = 1 |*|2|*| 3
+            1 {
+              current = 1
+              stdWrap.wrap = |
+            }
+
+            2 < .1
+            2.stdWrap.wrap = ,|
+
+            3 < .1
+          }
+        }
+      }
+    }
+  }
+
 .. _developer-ext-form:
 
 EXT:form & form output decorators

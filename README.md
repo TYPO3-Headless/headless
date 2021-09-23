@@ -17,9 +17,9 @@ If you have any questions just drop a line in #initiative-pwa Slack channel.
 - JSON API for navigation, layouts
 - taking into account all language/translation configuration (e.g. fallback)
 - easily extensible with custom fields or custom CE's
-- basic support for EXT:form
+- support for EXT:form
+- support for EXT:felogin
 - [BETA] backend module for simulating page preview (with specific page type, lang, usergroup)
-- support for felogin (comming soon)
 
 ### Additional extensions and integrations
 
@@ -196,6 +196,33 @@ Enable new APIs/behaviors of ext:headless, but contains breaking changes & requi
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
 ```
 
+**headless.elementBodyResponse**
+
+Available since `2.6`
+
+Enable clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests.
+For getting clean for plugins on page, please enable this flag and send `responsePluginId` field with ID of plugin in body with plugin data.
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.elementBodyResponse'] = true;
+```
+Example POST request with plugin form. Please #ELEMENT_ID# replace with id of plugin from page response
+```
+POST https://example.tld/path-to-form-plugin
+Content-Type: application/x-www-form-urlencoded
+
+responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
+```
+
+**headless.simplifiedLinkTarget**
+
+Available since `2.6`
+
+Enable simplified target links' property
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.simplifiedLinkTarget'] = true;
+```
+Simplified output return only value i.e. `_blank` for target attribute instead of html string ` target="_blank"`
+
 **headless.jsonViewModule**
 
 Enable new [BETA] backend module for previewing page (page type, language, usergroup and custom arguments). It is also possible to define new pageType views (ex. detail news preview if page has target plugin). This module is compatible with TYPO3 10.4.
@@ -217,5 +244,3 @@ A special thanks goes to [macopedia.com](https://macopedia.com) company, which i
 - Łukasz Uznański (Macopedia)
 - Adam Marcinkowski (Macopedia)
 - Vaclav Janoch (ITplusX)
-
-

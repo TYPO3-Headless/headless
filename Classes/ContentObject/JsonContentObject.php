@@ -26,6 +26,8 @@ use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
+use function strpos;
+
 /**
  * Contains JSON class object
  */
@@ -128,7 +130,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ($theValue === 'BOOL') {
                     $content[$theKey] = (bool)$content[$theKey];
                 }
-                if ($theValue === 'USER_INT') {
+                if ($theValue === 'USER_INT' || strpos((string)$content[$theKey], '<!--INT_SCRIPT.') === 0) {
                     $content[$theKey]= $this->headlessUserInt->wrap($content[$theKey]);
                 }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
