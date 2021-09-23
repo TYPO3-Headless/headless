@@ -27,8 +27,6 @@ abstract class BasePageTypesTest extends BaseTest
      */
     protected function assertJsonSchema($jsonString, $jsonSchemaFile)
     {
-        $data = json_decode($jsonString);
-
         $retriever = new UriRetriever();
         $schema = $retriever->retrieve(
             'file://' . $jsonSchemaFile
@@ -57,6 +55,6 @@ abstract class BasePageTypesTest extends BaseTest
     public function getJsonSchemaPath(): string
     {
         $extensionPath = ExtensionManagementUtility::extPath('headless');
-        return $extensionPath . '/Tests/Functional/json-schema/';
+        return $extensionPath . 'Tests/Functional/json-schema/';
     }
 }

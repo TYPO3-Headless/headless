@@ -123,14 +123,13 @@ abstract class BaseTest extends FunctionalTestCase
         self::assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
     }
 
-    protected function checkHeaderFieldsLink($contentElement, $link, $type, $urlPrefix, $target)
+    protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target)
     {
         $contentElementHeaderFieldsLink = $contentElement['content']['headerLink'];
 
-        self::assertTrue(is_array($contentElementHeaderFieldsLink), 'headerLink not an array');
-        self::assertEquals($link, $contentElementHeaderFieldsLink['link'], 'link mismatch');
-        self::assertEquals($type, $contentElementHeaderFieldsLink['type'], 'type mismatch');
-        self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['url'], 'url mismatch');
+        self::assertIsArray($contentElementHeaderFieldsLink, 'headerLink not an array');
+        self::assertEquals($link, $contentElementHeaderFieldsLink['linkText'], 'link mismatch');
+        self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['href'], 'url mismatch');
         self::assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
     }
 }

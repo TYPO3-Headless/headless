@@ -29,15 +29,12 @@ class StructurePageTypesTest extends BasePageTypesTest
         self::assertEquals(200, $response->getStatusCode());
 
         $pageTree = json_decode((string)$response->getBody(), true);
-
         self::assertTrue(isset($pageTree['navigation']));
         self::assertCount(1, $pageTree['navigation']);
         self::assertTrue(isset($pageTree['navigation'][0]));
         self::assertCount(5, $pageTree['navigation'][0]['children']);
         self::assertCount(1, $pageTree['navigation'][0]['children'][0]['children']);
-        self::assertCount(0, $pageTree['navigation'][0]['children'][1]['children']);
         self::assertCount(1, $pageTree['navigation'][0]['children'][2]['children']);
-        self::assertCount(0, $pageTree['navigation'][0]['children'][3]['children']);
         self::assertCount(1, $pageTree['navigation'][0]['children'][4]['children']);
 
         self::assertEquals('/', $pageTree['navigation'][0]['link']);

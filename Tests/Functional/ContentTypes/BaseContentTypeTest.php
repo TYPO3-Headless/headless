@@ -30,7 +30,6 @@ abstract class BaseContentTypeTest extends BaseTest
     protected function checkDefaultContentFields($contentElement, $id, $pid, $type, $colPos = 0, $categories = '')
     {
         self::assertEquals($id, $contentElement['id'], 'id mismatch');
-        self::assertEquals($pid, $contentElement['pid'], 'pid mismatch');
         self::assertEquals($type, $contentElement['type'], 'type mismatch');
         self::assertEquals($colPos, $contentElement['colPos'], 'colPos mismatch');
         self::assertEquals($categories, $contentElement['categories'], 'categories mismatch');
@@ -57,14 +56,13 @@ abstract class BaseContentTypeTest extends BaseTest
         self::assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
     }
 
-    protected function checkHeaderFieldsLink($contentElement, $link, $type, $urlPrefix, $target)
+    protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target)
     {
         $contentElementHeaderFieldsLink = $contentElement['content']['headerLink'];
 
         self::assertIsArray($contentElementHeaderFieldsLink, 'headerLink not an array');
-        self::assertEquals($link, $contentElementHeaderFieldsLink['link'], 'link mismatch');
-        self::assertEquals($type, $contentElementHeaderFieldsLink['type'], 'type mismatch');
-        self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['url'], 'url mismatch');
+        self::assertEquals($link, $contentElementHeaderFieldsLink['linkText'], 'link mismatch');
+        self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['href'], 'url mismatch');
         self::assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
     }
 
