@@ -18,13 +18,5 @@ lib.pageAppearance {
                 replace =
             }
         }
-        backendLayoutNextLevel = TEXT
-        backendLayoutNextLevel {
-            field = backend_layout_next_level
-            replacement.10 {
-                search = pagets__
-                replace =
-            }
-        }
     }
 }
