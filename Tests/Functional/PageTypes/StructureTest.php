@@ -31,14 +31,14 @@ class StructurePageTypesTest extends BasePageTypesTest
         $pageTree = json_decode((string)$response->getBody(), true);
 
         self::assertTrue(isset($pageTree['navigation']));
-        self::assertEquals(1, count($pageTree['navigation']));
+        self::assertCount(1, $pageTree['navigation']);
         self::assertTrue(isset($pageTree['navigation'][0]));
-        self::assertEquals(5, count($pageTree['navigation'][0]['children']));
-        self::assertEquals(1, count($pageTree['navigation'][0]['children'][0]['children']));
-        self::assertEquals(0, count($pageTree['navigation'][0]['children'][1]['children']));
-        self::assertEquals(1, count($pageTree['navigation'][0]['children'][2]['children']));
-        self::assertEquals(0, count($pageTree['navigation'][0]['children'][3]['children']));
-        self::assertEquals(1, count($pageTree['navigation'][0]['children'][4]['children']));
+        self::assertCount(5, $pageTree['navigation'][0]['children']);
+        self::assertCount(1, $pageTree['navigation'][0]['children'][0]['children']);
+        self::assertCount(0, $pageTree['navigation'][0]['children'][1]['children']);
+        self::assertCount(1, $pageTree['navigation'][0]['children'][2]['children']);
+        self::assertCount(0, $pageTree['navigation'][0]['children'][3]['children']);
+        self::assertCount(1, $pageTree['navigation'][0]['children'][4]['children']);
 
         self::assertEquals('/', $pageTree['navigation'][0]['link']);
         self::assertEquals('/page1', $pageTree['navigation'][0]['children'][0]['link']);

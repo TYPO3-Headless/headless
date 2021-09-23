@@ -22,6 +22,10 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 abstract class BaseTest extends FunctionalTestCase
 {
+    protected $coreExtensionsToLoad = [
+        'install'
+    ];
+    
     protected $testExtensionsToLoad = [
         'typo3conf/ext/headless'
     ];

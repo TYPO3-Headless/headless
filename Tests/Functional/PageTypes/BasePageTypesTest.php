@@ -54,7 +54,7 @@ abstract class BasePageTypesTest extends BaseTest
      *
      * @return string
      */
-    public function getJsonSchemaPath()
+    public function getJsonSchemaPath(): string
     {
         $extensionPath = ExtensionManagementUtility::extPath('headless');
         return $extensionPath . '/Tests/Functional/json-schema/';
