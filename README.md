@@ -21,6 +21,7 @@ If you have any questions just drop a line in #initiative-pwa Slack channel.
 - easily extensible with custom fields or custom CE's
 - support for EXT:form
 - support for EXT:felogin
+- [BETA] backend module for simulating page preview (with specific page type, lang, usergroup)
 
 ### Additional extensions and integrations
 
@@ -223,6 +224,13 @@ Enable simplified target links' property
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.simplifiedLinkTarget'] = true;
 ```
 Simplified output return only value i.e. `_blank` for target attribute instead of html string ` target="_blank"`
+
+**headless.jsonViewModule**
+
+Enable new [BETA] backend module for previewing page (page type, language, usergroup and custom arguments). It is also possible to define new pageType views (ex. detail news preview if page has target plugin). This module is compatible with TYPO3 10.4.
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.jsonViewModule'] = true;
+```
 
 
 ## Development
