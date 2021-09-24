@@ -28,13 +28,12 @@ use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Redirects\Service\RedirectService;
 
 use function is_array;
 use function parse_url;
 use function strpos;
 
-final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\RedirectHandler
+final class RedirectHandler extends \TYPO3\CMS\FrontendLogin\Redirect\RedirectHandler
 {
     /**
      * @var SiteService

@@ -12,23 +12,11 @@
 namespace FriendsOfTYPO3\Headless\Service;
 
 use FriendsOfTYPO3\Headless\Dto\JsonViewDemandInterface;
+use TYPO3\CMS\Core\Http\ServerRequest;
 
 interface BackendTsfeServiceInterface
 {
-    /**
-     * @param int $pageId
-     * @param JsonViewDemandInterface $demand
-     * @param JsonViewConfigurationServiceInterface $configurationService
-     * @param array $settings
-     * @param bool $bootContent
-     */
     public function bootFrontendControllerForPage(int $pageId, JsonViewDemandInterface $demand, JsonViewConfigurationServiceInterface $configurationService, array $settings, bool $bootContent = false): void;
-
-    /**
-     * @param JsonViewDemandInterface $demand
-     * @param JsonViewConfigurationServiceInterface $configurationService
-     * @param array $settings
-     * @return string
-     */
     public function getPageFromTsfe(JsonViewDemandInterface $demand, JsonViewConfigurationServiceInterface $configurationService, array $settings): string;
+    public function getFrontendRequest(JsonViewDemandInterface $demand, JsonViewConfigurationServiceInterface $configurationService): ServerRequest;
 }

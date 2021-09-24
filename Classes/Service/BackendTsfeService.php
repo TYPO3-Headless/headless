@@ -26,17 +26,8 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 final class BackendTsfeService implements BackendTsfeServiceInterface
 {
-    /**
-     * @var array
-     */
-    private $backendExtensionConfiguration = [];
+    private array $backendExtensionConfiguration = [];
 
-    /**
-     * @param JsonViewDemandInterface $demand
-     * @param JsonViewConfigurationServiceInterface $configurationService
-     * @param array $settings
-     * @return string
-     */
     public function getPageFromTsfe(
         JsonViewDemandInterface $demand,
         JsonViewConfigurationServiceInterface $configurationService,
@@ -56,7 +47,7 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
 
         $backendRequest = $GLOBALS['TYPO3_REQUEST'];
         $this->useFrontendExtensionConfiguration();
-        $GLOBALS['TYPO3_REQUEST'] = $this->getFrontendRequest($demand, $configurationService, $settings);
+        $GLOBALS['TYPO3_REQUEST'] = $this->getFrontendRequest($demand, $configurationService);
 
         $pageContent = $controller->cObj->cObjGet($controller->pSetup) ?: '';
         if ($controller->pSetup['wrap'] ?? false) {
@@ -72,13 +63,6 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
         return $pageContent;
     }
 
-    /**
-     * @param int $pageId
-     * @param JsonViewDemandInterface $demand
-     * @param JsonViewConfigurationServiceInterface $configurationService
-     * @param array $settings
-     * @param bool $bootContent
-     */
     public function bootFrontendControllerForPage(
         int $pageId,
         JsonViewDemandInterface $demand,
@@ -135,16 +119,9 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
         }
     }
 
-    /**
-     * @param JsonViewDemandInterface $demand
-     * @param JsonViewConfigurationServiceInterface $configurationService
-     * @param array $settings
-     * @return ServerRequest
-     */
     public function getFrontendRequest(
         JsonViewDemandInterface $demand,
-        JsonViewConfigurationServiceInterface $configurationService,
-        array $settings
+        JsonViewConfigurationServiceInterface $configurationService
     ): ServerRequest {
         $feUser = GeneralUtility::makeInstance(FrontendUserAuthentication::class);
 

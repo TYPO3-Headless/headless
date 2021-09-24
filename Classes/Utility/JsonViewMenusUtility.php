@@ -27,10 +27,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class JsonViewMenusUtility
 {
-    /**
-     * @var UriBuilder
-     */
-    protected $uriBuilder;
+    protected UriBuilder $uriBuilder;
 
     /**
      * @param UriBuilder $uriBuilder

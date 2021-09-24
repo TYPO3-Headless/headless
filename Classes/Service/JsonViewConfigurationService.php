@@ -23,15 +23,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class JsonViewConfigurationService implements JsonViewConfigurationServiceInterface
 {
-    /**
-     * @var array
-     */
-    protected $settings = [];
-
-    /**
-     * @var JsonViewDemandInterface
-     */
-    protected $demand;
+    protected array $settings = [];
+    protected JsonViewDemandInterface $demand;
 
     public function __construct()
     {

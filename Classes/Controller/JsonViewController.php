@@ -34,57 +34,20 @@ class JsonViewController extends ActionController
 {
     public const MODULE_NAME = 'web_HeadlessJsonview';
 
-    /**
-     * @var JsonViewDemandInterface
-     */
-    protected $demand;
-
-    /**
-     * @var bool
-     */
-    protected $bootContent = false;
-
-    /**
-     * @var array
-     */
-    protected $labels = [];
-
-    /**
-     * @var array
-     */
-    protected $moduleSettings = [];
-
-    /**
-     * @var JsonViewMenusUtility
-     */
-    protected $jsonViewMenusUtility;
+    protected JsonViewDemandInterface $demand;
+    protected bool $bootContent = false;
+    protected array $labels = [];
+    protected array $moduleSettings = [];
+    protected JsonViewMenusUtility $jsonViewMenusUtility;
+    protected JsonViewConfigurationService $configurationService;
+    protected BackendTsfeService $backendTsfeService;
+    protected ExtensionService $extensionService;
 
     /**
      * @var string
      */
     protected $defaultViewObjectName = \TYPO3\CMS\Backend\View\BackendTemplateView::class;
 
-    /**
-     * @var JsonViewConfigurationService
-     */
-    protected $configurationService;
-
-    /**
-     * @var BackendTsfeService
-     */
-    protected $backendTsfeService;
-
-    /**
-     * @var ExtensionService
-     */
-    protected $extensionService;
-
-    /**
-     * @param JsonViewMenusUtility $jsonViewMenusUtility
-     * @param JsonViewConfigurationService $configurationService
-     * @param BackendTsfeService $backendTsfeService
-     * @param ExtensionService $extensionService
-     */
     public function __construct(
         JsonViewMenusUtility $jsonViewMenusUtility,
         JsonViewConfigurationService $configurationService,
