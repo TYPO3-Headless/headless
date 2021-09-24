@@ -172,6 +172,10 @@ class JsonViewController extends ActionController
                     $records = $this->syncRecordsWithTranslation($records);
 
                     foreach ($colPosContents as $contentElement) {
+                        if ($contentElement === null) {
+                            continue;
+                        }
+
                         $databaseRow = $records[$contentElement['id']];
                         $pageContent[$type][$colNumber][] = $this->getElementArray(
                             $contentElement,
