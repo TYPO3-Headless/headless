@@ -77,6 +77,7 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
             $demand->isHiddenContentVisible()
         );
         $feUser = GeneralUtility::makeInstance(FrontendUserAuthentication::class);
+        $feUser->initializeUserSessionManager();
         /** @var UserAspect $userAspect */
         $userAspect = GeneralUtility::makeInstance(UserAspect::class, $feUser);
 
