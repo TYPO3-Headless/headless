@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Test\Functional;
 
-use JsonSchema\RefResolver;
+use JsonSchema\SchemaStorage;
 use JsonSchema\Uri\UriRetriever;
 use JsonSchema\Validator;
 use TYPO3\CMS\Core\Core\Environment;
@@ -22,6 +22,9 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 abstract class BaseTest extends FunctionalTestCase
 {
+    protected $coreExtensionsToLoad = [
+        'install'
+    ];
     protected $testExtensionsToLoad = [
         'typo3conf/ext/headless'
     ];
@@ -62,8 +65,8 @@ abstract class BaseTest extends FunctionalTestCase
         $schema = $retriever->retrieve(
             'file://' . $jsonSchemaFile
         );
-        $refResolver = new RefResolver($retriever);
-        $refResolver->resolve(
+        $refResolver = new SchemaStorage($retriever);
+        $refResolver->resolveRef(
             $schema,
             'file://' . $jsonSchemaFile
         );
@@ -119,14 +122,13 @@ abstract class BaseTest extends FunctionalTestCase
         self::assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
     }
 
-    protected function checkHeaderFieldsLink($contentElement, $link, $type, $urlPrefix, $target)
+    protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target)
     {
         $contentElementHeaderFieldsLink = $contentElement['content']['headerLink'];
 
-        self::assertTrue(is_array($contentElementHeaderFieldsLink), 'headerLink not an array');
-        self::assertEquals($link, $contentElementHeaderFieldsLink['link'], 'link mismatch');
-        self::assertEquals($type, $contentElementHeaderFieldsLink['type'], 'type mismatch');
-        self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['url'], 'url mismatch');
+        self::assertIsArray($contentElementHeaderFieldsLink, 'headerLink not an array');
+        self::assertEquals($link, $contentElementHeaderFieldsLink['linkText'], 'link mismatch');
+        self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['href'], 'url mismatch');
         self::assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
     }
 }
