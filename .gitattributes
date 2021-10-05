@@ -7,5 +7,6 @@
 
 ## Folders
 /.github export-ignore
-/Tests export-ignore
+/Tests/ export-ignore
 /Documentation export-ignore
+/.Build/ export-ignore

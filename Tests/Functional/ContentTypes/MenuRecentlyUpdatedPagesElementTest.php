@@ -47,25 +47,25 @@ class MenuRecentlyUpdatedPagesElementTest extends BaseContentTypeTest
         $this->checkAppearanceFields($contentElement, 'default', 'default', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 0, 2);
 
-        self::assertTrue(is_array($contentElement['appearance']));
-        self::assertTrue(is_array($contentElement['content']));
-        self::assertTrue(is_array($contentElement['content']['menu']));
-        self::assertTrue(is_array($contentElement['content']['menu'][0]));
-        self::assertTrue(is_array($contentElement['content']['menu'][1]));
+        self::assertIsArray($contentElement['appearance']);
+        self::assertIsArray($contentElement['content']);
+        self::assertIsArray($contentElement['content']['menu']);
+        self::assertIsArray($contentElement['content']['menu'][0]);
+        self::assertIsArray($contentElement['content']['menu'][1]);
 
         self::assertEquals('Page 1', $contentElement['content']['menu'][0]['title']);
         self::assertEquals('/page1', $contentElement['content']['menu'][0]['link']);
         self::assertEquals('0', $contentElement['content']['menu'][0]['active']);
         self::assertEquals('0', $contentElement['content']['menu'][0]['current']);
         self::assertEquals('0', $contentElement['content']['menu'][0]['spacer']);
-        self::assertTrue(is_array($contentElement['content']['menu'][0]['media']));
+        self::assertIsArray($contentElement['content']['menu'][0]['media']);
 
         self::assertEquals('Page 1.1', $contentElement['content']['menu'][1]['title']);
         self::assertEquals('/page1/page1_1', $contentElement['content']['menu'][1]['link']);
         self::assertEquals('0', $contentElement['content']['menu'][1]['active']);
         self::assertEquals('0', $contentElement['content']['menu'][1]['current']);
         self::assertEquals('0', $contentElement['content']['menu'][1]['spacer']);
-        self::assertTrue(is_array($contentElement['content']['menu'][1]['media']));
+        self::assertIsArray($contentElement['content']['menu'][1]['media']);
 
         self::assertArrayNotHasKey(2, $contentElement['content']['menu']);
     }
