@@ -73,6 +73,6 @@ class XmlSitemapRenderer extends \TYPO3\CMS\Seo\XmlSitemap\XmlSitemapRenderer
             $variantKey = 'frontendBase';
         }
 
-        $this->view->assign('frontendBase', $this->getVariantValueByKey($variantKey));
+        $this->view->assign('frontendBase', trim($this->getVariantValueByKey($variantKey), '/'));
     }
 }
