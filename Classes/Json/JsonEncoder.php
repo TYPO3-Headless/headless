@@ -13,49 +13,30 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Json;
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use JsonException;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use function json_encode;
+use const JSON_THROW_ON_ERROR;
 
-/**
- * Backported from Symfony Serializer
- * @see https://github.com/symfony/symfony/blob/master/src/Symfony/Component/Serializer/Encoder/JsonEncode.php
- */
-final class JsonEncoder implements JsonEncoderInterface
+final class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
 {
-    /**
-     * @var JsonDecoderInterface
-     */
-    private $jsonDecoder;
+    use LoggerAwareTrait;
 
     /**
-     * @param JsonDecoderInterface $jsonDecoder
+     * @inheritDoc
      */
-    public function __construct(JsonDecoderInterface $jsonDecoder = null)
-    {
-        $this->jsonDecoder = $jsonDecoder ?? GeneralUtility::makeInstance(JsonDecoder::class);
-    }
-
-    /**
-     * @param array $data
-     * @param int $encodeOptions
-     * @throws JsonEncoderException
-     * @return string
-     */
-    public function encode(array $data, int $encodeOptions = 0): string
+    public function encode($data, int $options = 0): string
     {
         try {
-            $encodedJson = json_encode($this->jsonDecoder->decode($data), $encodeOptions);
-        } catch (\JsonException $e) {
-            throw new JsonEncoderException($e->getMessage(), $e->getCode(), $e);
-        }
+            if (!($options & JSON_THROW_ON_ERROR)) {
+                $options |= JSON_THROW_ON_ERROR;
+            }
 
-        if (\PHP_VERSION_ID >= 70300 && (\JSON_THROW_ON_ERROR & $encodeOptions)) {
-            return $encodedJson;
+            return json_encode($data, $options);
+        } catch (JsonException $e) {
+            $this->logger->critical($e->getMessage());
+            return json_encode('[]');
         }
-
-        if (json_last_error() !== JSON_ERROR_NONE && ($encodedJson === false || !($encodeOptions & \JSON_PARTIAL_OUTPUT_ON_ERROR))) {
-            throw new JsonEncoderException(json_last_error_msg(), json_last_error());
-        }
-
-        return $encodedJson;
     }
 }
