@@ -80,6 +80,9 @@ lib.meta {
                 10 {
                     as = media
                     references.fieldName = og_image
+                    processingConfiguration {
+                        returnFlattenObject = 1
+                    }
                 }
             }
         }
@@ -110,6 +113,9 @@ lib.meta {
                 10 {
                     as = media
                     references.fieldName = twitter_image
+                    processingConfiguration {
+                        returnFlattenObject = 1
+                    }
                 }
             }
         }

@@ -18,6 +18,7 @@ use FriendsOfTYPO3\Headless\Json\JsonDecoderInterface;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
+use Generator;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use RecursiveArrayIterator;
@@ -151,7 +152,7 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
 
     /**
      * @param array $dataProcessing
-     * @return array|null (null if flag is set)
+     * @return array|null
      */
     protected function processFieldWithDataProcessing(array $dataProcessing): ?array
     {
@@ -164,9 +165,7 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
             ]
         );
 
-        // @TODO remove flag and make it default in BC release
-        $dataProcessingData = isset($this->conf['returnNullIfDataProcessingEmpty'])
-        && (int)$this->conf['returnNullIfDataProcessingEmpty'] === 1 ? null : [];
+        $dataProcessingData = null;
 
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
             if (isset($data[$value])) {
@@ -177,11 +176,9 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
     }
 
     /**
-     * @param array $haystack
-     * @param $needle
-     * @return string
+     * @param array<string, mixed> $haystack
      */
-    protected function recursiveFind(array $haystack, $needle)
+    protected function recursiveFind(array $haystack, string $needle): Generator
     {
         $iterator = new RecursiveArrayIterator($haystack);
         $recursive = new RecursiveIteratorIterator(
