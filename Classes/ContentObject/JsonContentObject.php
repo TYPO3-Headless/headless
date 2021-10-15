@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
+use FriendsOfTYPO3\Headless\Json\JsonDecoder;
+use FriendsOfTYPO3\Headless\Json\JsonDecoderInterface;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
-use FriendsOfTYPO3\Headless\Json\JsonEncoderException;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
+use Generator;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use RecursiveArrayIterator;
@@ -28,40 +30,22 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 use function strpos;
 
-/**
- * Contains JSON class object
- */
-class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
+final class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    /**
-     * @var ContentDataProcessor
-     */
-    protected $contentDataProcessor;
+    private ContentDataProcessor $contentDataProcessor;
+    private HeadlessUserInt $headlessUserInt;
+    private JsonEncoderInterface $jsonEncoder;
+    private JsonDecoderInterface $jsonDecoder;
+    private array $conf;
 
-    /**
-     * @var JsonEncoderInterface
-     */
-    protected $jsonEncoder;
-
-    /**
-     * @var array
-     */
-    private $conf;
-    /**
-     * @var HeadlessUserInt
-     */
-    private $headlessUserInt;
-
-    /**
-     * @param ContentObjectRenderer $cObj
-     */
     public function __construct(ContentObjectRenderer $cObj)
     {
         parent::__construct($cObj);
         $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
         $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
+        $this->jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
         $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
     }
 
@@ -87,12 +71,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             $data = $this->processFieldWithDataProcessing($conf);
         }
 
-        try {
-            $json = $this->jsonEncoder->encode($data, \PHP_VERSION_ID >= 70300 ? \JSON_THROW_ON_ERROR : 0);
-        } catch (JsonEncoderException $e) {
-            $this->logger->critical('Error while encoding json', ['code' => $e->getCode(), 'message' => $e->getMessage()]);
-            return '[]';
-        }
+        $json = $this->jsonEncoder->encode($this->jsonDecoder->decode($data));
 
         if (isset($conf['stdWrap.'])) {
             $json = $this->cObj->stdWrap($json, $conf['stdWrap.']);
@@ -131,7 +110,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                     $content[$theKey] = (bool)$content[$theKey];
                 }
                 if ($theValue === 'USER_INT' || strpos((string)$content[$theKey], '<!--INT_SCRIPT.') === 0) {
-                    $content[$theKey]= $this->headlessUserInt->wrap($content[$theKey]);
+                    $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey]);
                 }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
                     $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
@@ -173,7 +152,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
 
     /**
      * @param array $dataProcessing
-     * @return array|null (null if flag is set)
+     * @return array|null
      */
     protected function processFieldWithDataProcessing(array $dataProcessing): ?array
     {
@@ -186,9 +165,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             ]
         );
 
-        // @TODO remove flag and make it default in BC release
-        $dataProcessingData = isset($this->conf['returnNullIfDataProcessingEmpty'])
-        && (int)$this->conf['returnNullIfDataProcessingEmpty'] === 1 ? null : [];
+        $dataProcessingData = null;
 
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
             if (isset($data[$value])) {
@@ -199,11 +176,9 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     }
 
     /**
-     * @param array $haystack
-     * @param $needle
-     * @return string
+     * @param array<string, mixed> $haystack
      */
-    protected function recursiveFind(array $haystack, $needle)
+    protected function recursiveFind(array $haystack, string $needle): Generator
     {
         $iterator = new RecursiveArrayIterator($haystack);
         $recursive = new RecursiveIteratorIterator(
