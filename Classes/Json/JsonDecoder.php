@@ -13,11 +13,17 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Json;
 
+use function is_array;
+use function is_numeric;
+use function is_object;
+use function is_string;
+use function json_decode;
+use function trim;
+
 final class JsonDecoder implements JsonDecoderInterface
 {
     /**
-     * @param array $data
-     * @return array
+     * @inheritDoc
      */
     public function decode(array $data): array
     {
@@ -41,7 +47,6 @@ final class JsonDecoder implements JsonDecoderInterface
 
     /**
      * @param mixed $possibleJson
-     * @return bool
      */
     public function isJson($possibleJson): bool
     {
@@ -55,7 +60,7 @@ final class JsonDecoder implements JsonDecoderInterface
             return false;
         }
 
-        $data = \json_decode($possibleJson);
+        $data = json_decode($possibleJson);
 
         if (!is_object($data) && !is_array($data)) {
             return false;
