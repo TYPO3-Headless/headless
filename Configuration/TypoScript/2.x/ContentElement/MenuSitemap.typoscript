@@ -1,0 +1,27 @@
+tt_content.menu_sitemap =< lib.contentElementWithHeader
+tt_content.menu_sitemap {
+    fields {
+        content {
+            fields {
+                menu = TEXT
+                menu {
+                    dataProcessing {
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+                        10 {
+                            appendData = 1
+                            as = sitemap
+                            levels = 7
+                            dataProcessing {
+                                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                                10 {
+                                    references.fieldName = media
+                                    as = images
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

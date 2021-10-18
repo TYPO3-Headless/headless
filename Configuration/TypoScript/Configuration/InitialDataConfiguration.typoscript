@@ -1,0 +1,46 @@
+initialData = PAGE
+initialData {
+    typeNum = 834
+    config {
+        no_cache = 0
+        sendCacheHeaders = 1
+        debug = 0
+        admPanel = 0
+        disableAllHeaderCode = 1
+        additionalHeaders.10 {
+            header = Content-Type: application/json; charset=utf-8
+            replace = 1
+        }
+    }
+
+    10 = JSON
+    10 {
+        fields {
+            navigation = JSON
+            navigation {
+                dataProcessing {
+                    10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+                    10 {
+                        special = rootline
+                        special.value = -8
+                        levels = 7
+                        expandAll = 1
+                        includeSpacer = 0
+                        titleField = nav_title // title
+                        as = primaryNavigation
+                    }
+                }
+            }
+            i18n = JSON
+            i18n {
+                dataProcessing {
+                    10 = TYPO3\CMS\Frontend\DataProcessing\LanguageMenuProcessor
+                    10 {
+                        languages = auto
+                        as = languages
+                    }
+                }
+            }
+        }
+    }
+}

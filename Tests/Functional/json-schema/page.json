@@ -3,16 +3,19 @@
   "required": true,
   "additionalProperties": false,
   "properties": {
-    "page": {
+    "meta": {
+      "type": "object",
+      "robots": {
+        "type": " object"
+      }
+    },
+    "breadcrumbs": {
+      "type": "object"
+    },
+    "appearance": {
       "type": "object"
     },
     "content": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "languages": {
       "type": "array",
       "items": {
         "type": "object"

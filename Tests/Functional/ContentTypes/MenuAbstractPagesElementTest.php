@@ -32,11 +32,11 @@ class MenuAbstractPagesElementTest extends BaseContentTypeTest
         $this->checkAppearanceFields($contentElement, 'default', 'default', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 0, 2);
 
-        self::assertTrue(is_array($contentElement['appearance']));
-        self::assertTrue(is_array($contentElement['content']));
-        self::assertTrue(is_array($contentElement['content']['menu']));
-        self::assertTrue(is_array($contentElement['content']['menu'][0]));
-        self::assertTrue(is_array($contentElement['content']['menu'][0]['media']));
+        self::assertIsArray($contentElement['appearance']);
+        self::assertIsArray($contentElement['content']);
+        self::assertIsArray($contentElement['content']['menu']);
+        self::assertIsArray($contentElement['content']['menu'][0]);
+        self::assertIsArray($contentElement['content']['menu'][0]['media']);
 
         self::assertEquals('Page 4', $contentElement['content']['menu'][0]['title']);
         self::assertEquals('/page4', $contentElement['content']['menu'][0]['link']);

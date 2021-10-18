@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Test\Functional\PageTypes;
 
 use FriendsOfTYPO3\Headless\Test\Functional\BaseTest;
-use JsonSchema\RefResolver;
+use JsonSchema\SchemaStorage;
 use JsonSchema\Uri\UriRetriever;
 use JsonSchema\Validator;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
@@ -27,14 +27,12 @@ abstract class BasePageTypesTest extends BaseTest
      */
     protected function assertJsonSchema($jsonString, $jsonSchemaFile)
     {
-        $data = json_decode($jsonString);
-
         $retriever = new UriRetriever();
         $schema = $retriever->retrieve(
             'file://' . $jsonSchemaFile
         );
-        $refResolver = new RefResolver($retriever);
-        $refResolver->resolve(
+        $refResolver = new SchemaStorage($retriever);
+        $refResolver->resolveRef(
             $schema,
             'file://' . $jsonSchemaFile
         );
@@ -54,9 +52,9 @@ abstract class BasePageTypesTest extends BaseTest
      *
      * @return string
      */
-    public function getJsonSchemaPath()
+    public function getJsonSchemaPath(): string
     {
         $extensionPath = ExtensionManagementUtility::extPath('headless');
-        return $extensionPath . '/Tests/Functional/json-schema/';
+        return $extensionPath . 'Tests/Functional/json-schema/';
     }
 }

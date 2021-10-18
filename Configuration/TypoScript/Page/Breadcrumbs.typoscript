@@ -1,0 +1,13 @@
+lib.breadcrumbs = JSON
+lib.breadcrumbs {
+    dataProcessing {
+        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+        10 {
+            special = rootline
+            expandAll = 0
+            includeSpacer = 1
+            titleField = nav_title // title
+            as = breadcrumbs
+        }
+    }
+}

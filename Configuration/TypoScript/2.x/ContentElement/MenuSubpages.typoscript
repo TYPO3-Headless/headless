@@ -1,0 +1,20 @@
+tt_content.menu_subpages =< lib.contentElementWithHeader
+tt_content.menu_subpages {
+    fields {
+        content {
+            fields {
+                menu = TEXT
+                menu {
+                    dataProcessing {
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+                        10 {
+                            special = directory
+                            special.value.field = pages
+                            as = menu
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

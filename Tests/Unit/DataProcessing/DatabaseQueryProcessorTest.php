@@ -15,6 +15,7 @@ namespace FriendsOfTYPO3\Headless\Test\Unit\DataProcessing;
 
 use FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -24,6 +25,8 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 final class DatabaseQueryProcessorTest extends UnitTestCase
 {
+    use ProphecyTrait;
+
     /**
      * @var ObjectProphecy|TypoScriptService
      */
