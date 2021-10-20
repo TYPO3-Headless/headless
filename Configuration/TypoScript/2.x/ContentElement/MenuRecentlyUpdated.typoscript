@@ -1,0 +1,32 @@
+tt_content.menu_recently_updated =< lib.contentElementWithHeader
+tt_content.menu_recently_updated {
+    fields {
+        content {
+            fields {
+                menu = TEXT
+                menu {
+                    dataProcessing {
+                        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+                        10 {
+                            appendData = 1
+                            special = updated
+                            special {
+                                value.field = pages
+                                maxAge = 3600*24*7
+                                excludeNoSearchPages = 1
+                            }
+                            as = menu
+                            dataProcessing {
+                                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                                10 {
+                                    references.fieldName = media
+                                    as = media
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

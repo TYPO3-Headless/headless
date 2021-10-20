@@ -33,14 +33,14 @@ class TableElementTest extends BaseContentTypeTest
         $this->checkDefaultContentFields($contentElement, 7, 1, 'table', 0);
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 1, 2);
-        $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 _blank LinkClass LinkTitle parameter=999', 'page', '/page1?parameter=999&cHash=', ' target="_blank"');
+        $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 _blank LinkClass LinkTitle parameter=999', '/page1?parameter=999&amp;cHash=', '_blank');
 
         self::assertEquals('TableCaption', $contentElement['content']['tableCaption']);
         self::assertEquals(1, $contentElement['content']['tableHeaderPosition']);
         self::assertEquals('striped', $contentElement['content']['tableClass']);
         self::assertEquals(1, $contentElement['content']['tableTfoot']);
         self::assertEquals(6, $contentElement['content']['cols']);
-        self::assertTrue(is_array($contentElement['content']['bodytext']));
+        self::assertIsArray($contentElement['content']['bodytext']);
         self::assertEquals($testTableContent, $contentElement['content']['bodytext']);
     }
 }

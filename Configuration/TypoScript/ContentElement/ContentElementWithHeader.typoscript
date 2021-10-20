@@ -1,0 +1,36 @@
+lib.contentElementWithHeader =< lib.contentElement
+lib.contentElementWithHeader {
+    fields {
+        content {
+            fields {
+                header = TEXT
+                header {
+                    field = header
+                }
+                subheader = TEXT
+                subheader {
+                    field = subheader
+                }
+                headerLayout = INT
+                headerLayout {
+                    field = header_layout
+                }
+                headerPosition = TEXT
+                headerPosition {
+                    field = header_position
+                }
+                headerLink = TEXT
+                headerLink {
+                    field = header_link
+                    htmlSpecialChars = 1
+                    typolink {
+                        parameter {
+                            field = header_link
+                        }
+                        returnLast = result
+                    }
+                }
+            }
+        }
+    }
+}

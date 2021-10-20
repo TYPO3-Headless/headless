@@ -11,7 +11,7 @@
 
 defined('TYPO3_MODE') || die();
 
-call_user_func(function () {
+call_user_func(static function () {
     /**
      * Default TypoScript for Headless
      */
@@ -19,5 +19,13 @@ call_user_func(function () {
         'headless',
         'Configuration/TypoScript',
         'Headless'
+    );
+    /**
+     * 2.x JSON response
+     */
+    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addStaticFile(
+        'headless',
+        'Configuration/TypoScript/2.x',
+        'Headless - 2.x JSON response'
     );
 });

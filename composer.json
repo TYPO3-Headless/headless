@@ -22,21 +22,41 @@
     },
     {
       "name": "TYPO3 PWA Initiative",
-      "role": "Developer",
-      "email": "extensions@macopedia.pl"
+      "email": "extensions@macopedia.pl",
+      "role": "Developer"
     }
   ],
   "require": {
-    "typo3/cms-core": "^10.4 || ^11",
-    "ext-json": "*"
+    "ext-json": "*",
+    "typo3/cms-core": "^11.4",
+    "typo3/cms-install": "^11.4"
   },
   "require-dev": {
+    "ergebnis/composer-normalize": "^2.15.0",
     "friendsofphp/php-cs-fixer": "^3.1",
-    "justinrainbow/json-schema": "1.5.*",
-    "php-parallel-lint/php-parallel-lint": "^0.4",
-    "typo3/testing-framework": "^4 || ^5",
     "helmich/typo3-typoscript-lint": "^2.1",
-    "seld/jsonlint": "^1.8"
+    "justinrainbow/json-schema": "^5.2",
+    "phpspec/prophecy-phpunit": "^2.0",
+    "phpstan/extension-installer": "^1.1",
+    "phpstan/phpstan": "^0.12.99",
+    "saschaegerer/phpstan-typo3": "^0.13.3",
+    "seld/jsonlint": "^1.8",
+    "symfony/yaml": "^5.3",
+    "typo3/testing-framework": "^6"
+  },
+  "config": {
+    "preferred-install": {
+      "*": "dist"
+    },
+    "sort-packages": true,
+    "vendor-dir": ".Build/vendor"
+  },
+  "extra": {
+    "typo3/cms": {
+      "app-dir": ".Build",
+      "extension-key": "headless",
+      "web-dir": ".Build/public"
+    }
   },
   "autoload": {
     "psr-4": {
@@ -48,42 +68,40 @@
       "TYPO3\\JsonResponse\\": ".Build/vendor/typo3/testing-framework/Resources/Core/Functional/Extensions/json_response/Classes"
     }
   },
-  "config": {
-    "vendor-dir": ".Build/vendor",
-    "bin-dir": ".Build/bin"
-  },
   "scripts": {
-    "test": [
-      "@test-php-lint",
-      "@test-php-cs-fixer",
-      "@test-unit",
-      "@test-functional"
-    ],
     "post-autoload-dump": [
       "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
     ],
-    "test-php-lint": [
-      ".Build/bin/parallel-lint ./Classes/",
-      ".Build/bin/parallel-lint ./Configuration/TCA/",
-      ".Build/bin/parallel-lint ./Tests/"
+    "ci:composer:normalize": "@composer normalize --dry-run",
+    "ci:json:lint": [
+      "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/vendor/bin/jsonlint -q"
     ],
-    "test-php-cs-fixer": [
+    "ci:php:cs-fixer": [
       "php-cs-fixer fix -v --dry-run --using-cache no --diff"
     ],
-    "test-php-cs-fixer-fix": [
+    "ci:php:lint": "find *.php Classes Configuration Tests -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l",
+    "ci:php:stan": "phpstan --no-progress",
+    "ci:test": [
+      "@ci:phplint",
+      "@ci:php:cs-fixer",
+      "@ci:test:unit",
+      "@ci:test:functional"
+    ],
+    "ci:test:functional": [
+      ".Build/vendor/bin/phpunit --configuration Tests/Functional/phpunit.xml"
+    ],
+    "ci:test:unit": [
+      ".Build/vendor/bin/phpunit --configuration Tests/Unit/phpunit.xml"
+    ],
+    "ci:ts:lint": [
+      ".Build/vendor/bin/typoscript-lint -c Configuration/TsLint.yml --ansi -n --fail-on-warnings -vvv Configuration/TypoScript"
+    ],
+    "ci:yaml:lint": "find . ! -path '*.Build/*' -name '*.yml' | xargs php ./.Build/vendor/bin/yaml-lint",
+    "docs:generate": [
+      "docker run --rm t3docs/render-documentation show-shell-commands > tempfile.sh; echo 'dockrun_t3rd makehtml' >> tempfile.sh; bash tempfile.sh; rm tempfile.sh"
+    ],
+    "fix:php:cs-fixer": [
       "php-cs-fixer fix -v --using-cache no"
-    ],
-    "typoscript-lint": [
-      ".Build/bin/typoscript-lint -c Configuration/TsLint.yml --ansi -n --fail-on-warnings -vvv Configuration/TypoScript"
-    ],
-    "test-unit": [
-      ".Build/bin/phpunit --configuration Tests/Unit/phpunit.xml"
-    ],
-    "test-functional": [
-      ".Build/bin/phpunit --configuration Tests/Functional/phpunit.xml"
-    ],
-    "json-lint": [
-      "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/bin/jsonlint -q"
     ],
     "prepare-release": [
       "rm .gitignore",
@@ -95,11 +113,5 @@
       "rm .php-cs-fixer.php",
       "rm CONTRIBUTING.rst"
     ]
-  },
-  "extra": {
-    "typo3/cms": {
-      "web-dir": ".Build",
-      "extension-key": "headless"
-    }
   }
 }
