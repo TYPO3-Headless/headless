@@ -39,6 +39,7 @@
     "phpspec/prophecy-phpunit": "^2.0",
     "phpstan/extension-installer": "^1.1",
     "phpstan/phpstan": "^0.12.99",
+    "phpunit/phpcov": "^8.2",
     "saschaegerer/phpstan-typo3": "^0.13.3",
     "seld/jsonlint": "^1.8",
     "symfony/yaml": "^5.3",
@@ -73,6 +74,13 @@
       "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
     ],
     "ci:composer:normalize": "@composer normalize --dry-run",
+    "ci:coverage" : [
+      "@ci:coverage:unit",
+      "@ci:coverage:functional"
+    ],
+    "ci:coverage:functional": ".Build/vendor/bin/phpunit -c Tests/Functional/phpunit.xml --whitelist Classes --coverage-php=coverage/functional.cov Tests/Functional",
+    "ci:coverage:merge": ".Build/vendor/bin/phpcov merge --clover=./coverage/clover.xml coverage/",
+    "ci:coverage:unit": ".Build/vendor/bin/phpunit -c Tests/Unit/phpunit.xml --whitelist Classes --coverage-php=coverage/unit.cov Tests/Unit",
     "ci:json:lint": [
       "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/vendor/bin/jsonlint -q"
     ],
@@ -88,10 +96,10 @@
       "@ci:test:functional"
     ],
     "ci:test:functional": [
-      ".Build/vendor/bin/phpunit --configuration Tests/Functional/phpunit.xml"
+      ".Build/vendor/bin/phpunit -c Tests/Functional/phpunit.xml"
     ],
     "ci:test:unit": [
-      ".Build/vendor/bin/phpunit --configuration Tests/Unit/phpunit.xml"
+      ".Build/vendor/bin/phpunit -c Tests/Unit/phpunit.xml"
     ],
     "ci:ts:lint": [
       ".Build/vendor/bin/typoscript-lint -c Configuration/TsLint.yml --ansi -n --fail-on-warnings -vvv Configuration/TypoScript"
