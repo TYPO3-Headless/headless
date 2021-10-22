@@ -23,6 +23,7 @@ call_user_func(
             'INT' => \FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject::class,
             'BOOL' => \FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject::class,
         ]);
+        $GLOBALS['TYPO3_CONF_VARS']['FE']['typolinkBuilder']['file'] = \FriendsOfTYPO3\Headless\Hooks\FileOrFolderLinkBuilder::class;
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['fluid']['namespaces']['headless'] = [
             'FriendsOfTYPO3\Headless\ViewHelpers'
         ];
