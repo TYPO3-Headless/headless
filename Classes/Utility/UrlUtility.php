@@ -126,7 +126,7 @@ final class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInter
         return $this->resolveWithVariants('', $this->variants, 'frontendApiProxy');
     }
 
-    public function getFileProxyUrl(): string
+    public function getStorageProxyUrl(): string
     {
         return $this->resolveWithVariants('', $this->variants, 'frontendFileApi');
     }

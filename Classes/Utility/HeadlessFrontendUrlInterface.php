@@ -25,7 +25,7 @@ interface HeadlessFrontendUrlInterface
 
     public function getProxyUrl(): string;
 
-    public function getFileProxyUrl(): string;
+    public function getStorageProxyUrl(): string;
 
     public function resolveKey(string $key): string;
 

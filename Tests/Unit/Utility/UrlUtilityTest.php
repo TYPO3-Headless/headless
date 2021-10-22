@@ -71,7 +71,7 @@ class UrlUtilityTest extends UnitTestCase
 
         self::assertSame('https://test-frontend.tld', $urlUtility->getFrontendUrl());
         self::assertSame('https://test-frontend-api.tld/headless', $urlUtility->getProxyUrl());
-        self::assertSame('https://test-frontend-api.tld/headless/fileadmin', $urlUtility->getFileProxyUrl());
+        self::assertSame('https://test-frontend-api.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
         self::assertSame('https://test-frontend.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
 
         $resolver = $this->prophesize(Resolver::class);
@@ -85,7 +85,7 @@ class UrlUtilityTest extends UnitTestCase
 
         self::assertSame('https://test-frontend2.tld', $urlUtility->getFrontendUrl());
         self::assertSame('https://test-frontend-api2.tld/headless', $urlUtility->getProxyUrl());
-        self::assertSame('https://test-frontend-api2.tld/headless/fileadmin', $urlUtility->getFileProxyUrl());
+        self::assertSame('https://test-frontend-api2.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
         self::assertSame('https://test-frontend2.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
 
         $resolver = $this->prophesize(Resolver::class);
@@ -100,7 +100,7 @@ class UrlUtilityTest extends UnitTestCase
 
         self::assertSame('https://test-frontend3.tld', $urlUtility->getFrontendUrl());
         self::assertSame('https://test-frontend-api3.tld/headless', $urlUtility->getProxyUrl());
-        self::assertSame('https://test-frontend-api3.tld/headless/fileadmin', $urlUtility->getFileProxyUrl());
+        self::assertSame('https://test-frontend-api3.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
         self::assertSame('https://test-frontend3.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
     }
 
