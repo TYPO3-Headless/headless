@@ -16,16 +16,13 @@ namespace FriendsOfTYPO3\Headless\Controller;
 use FriendsOfTYPO3\Headless\Dto\JsonViewDemandInterface;
 use FriendsOfTYPO3\Headless\Service\BackendTsfeService;
 use FriendsOfTYPO3\Headless\Service\JsonViewConfigurationService;
+use FriendsOfTYPO3\Headless\Service\Parser\PageJsonParser;
 use FriendsOfTYPO3\Headless\Utility\JsonViewMenusUtility;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Backend\View\BackendLayout\ContentFetcher;
-use TYPO3\CMS\Backend\View\BackendLayoutView;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
-use TYPO3\CMS\Backend\View\PageLayoutContext;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use TYPO3\CMS\Extbase\Service\ExtensionService;
@@ -90,8 +87,6 @@ class JsonViewController extends ActionController
 
             $this->view->assignMultiple(
                 [
-                    'contentTabName' => $this->configurationService->getContentTabName(),
-                    'rawTabName' => $this->configurationService->getRawTabName(),
                     'showContent' => (int)$this->demand->isHiddenContentVisible(),
                     'translationFile' => $this->configurationService->getDefaultModuleTranslationFile() . 'module.'
                 ]
@@ -101,9 +96,6 @@ class JsonViewController extends ActionController
 
     public function mainAction(): void
     {
-        $tabs = [];
-        $pageContent = [];
-
         if ($this->getBackendUser() === null) {
             $this->view->assign('error', $this->getModuleTranslation('module.error_header'));
             return;
@@ -132,16 +124,6 @@ class JsonViewController extends ActionController
             $this->view->assign('error', $this->getModuleTranslation('module.error.headless_or_tsfe'));
         }
 
-        /** @var PageLayoutContext $pageLayoutContext */
-        $pageLayoutContext = GeneralUtility::makeInstance(
-            PageLayoutContext::class,
-            $pageRecord,
-            GeneralUtility::makeInstance(BackendLayoutView::class)->getBackendLayoutForPage($pageRecord['uid'])
-        );
-        /** @var ContentFetcher $contentFetcher */
-        $contentFetcher = GeneralUtility::makeInstance(ContentFetcher::class, $pageLayoutContext);
-        $this->labels = $pageLayoutContext->getContentTypeLabels();
-
         $pageJson = $this->backendTsfeService->getPageFromTsfe(
             $this->demand,
             $this->configurationService,
@@ -154,52 +136,14 @@ class JsonViewController extends ActionController
             return;
         }
 
-        foreach ($jsonArray as $type => $typeContents) {
-            $tabs[] = $type;
-            $pageContent[$type] = [];
+        /** @var PageJsonParser $parser */
+        $parser = $this->configurationService->getParser($this->labels, $pageRecord, $this->view, $this->demand);
 
-            if (!empty($typeContents) && $type === $this->configurationService->getContentTabName()) {
-                foreach ($typeContents as $col => $colPosContents) {
-                    $colNumber = str_replace('colPos', '', $col);
-                    $records = $contentFetcher->getContentRecordsPerColumn(
-                        (int)$colNumber,
-                        $this->demand->getLanguageId()
-                    );
-
-                    if ($records === []) {
-                        continue;
-                    }
-
-                    $records = $this->syncRecordsWithTranslation($records);
-
-                    foreach ($colPosContents as $contentElement) {
-                        if ($contentElement === null) {
-                            continue;
-                        }
-
-                        $databaseRow = $records[$contentElement['id']];
-                        $pageContent[$type][$colNumber][] = $this->getElementArray(
-                            $contentElement,
-                            $databaseRow
-                        );
-                    }
-                }
-            } else {
-                $pageContent[$type] = json_encode($typeContents, JSON_PRETTY_PRINT);
-            }
+        if ($parser !== null) {
+            $parser->parseJson($jsonArray);
         }
 
-        $tabs[] = $this->configurationService->getRawTabName();
-        $pageContent[$this->configurationService->getRawTabName()] = json_encode($jsonArray, JSON_PRETTY_PRINT);
-
-        $this->view->assignMultiple(
-            [
-                'data' => $pageContent,
-                'columns' => $this->getColumnLabels($pageLayoutContext),
-                'tabs' => $tabs,
-                'page' => $this->configurationService->getPageDataFromApi($jsonArray)
-            ]
-        );
+        $this->view->assign('columns', $this->getColumnLabels());
     }
 
     protected function getBackendUser(): BackendUserAuthentication
@@ -242,57 +186,14 @@ class JsonViewController extends ActionController
         return false;
     }
 
-    protected function syncRecordsWithTranslation(array $records): array
-    {
-        if ($this->demand->getLanguageId() > 0) {
-            $syncedRecords = [];
-
-            foreach ($records as $record) {
-                switch ($this->demand->getSiteLanguage()->getFallbackType()) {
-                    case 'free':
-                        $syncedRecords[$record['uid']] = $record;
-                        break;
-                    case 'fallback':
-                    case 'strict':
-                        if ($record['l10n_source'] > 0) {
-                            $syncedRecords[$record['l10n_source']] = $record;
-                        } else {
-                            $syncedRecords[$record['uid']] = $record;
-                        }
-                        break;
-                }
-            }
-
-            return $syncedRecords;
-        }
-
-        $recordKeys = array_column($records, 'uid');
-        return $recordKeys !== [] ? array_combine($recordKeys, $records) : [];
-    }
-
-    protected function getElementArray(array $arrayFromJson, array $contentData, bool $addJson = true): array
-    {
-        $contentElement = [
-            'uid' => $contentData['uid'],
-            'sectionId' => $this->configurationService->getSectionId($contentData),
-            'CType' => $this->labels[$contentData['CType']] ?: $contentData['CType'],
-            'title' => $this->configurationService->getElementTitle($contentData),
-            'hidden' => $contentData['hidden']
-        ];
-
-        if ($addJson) {
-            $contentElement['data'] = json_encode($arrayFromJson, JSON_PRETTY_PRINT);
-        }
-
-        return $contentElement;
-    }
-
-    protected function getColumnLabels(PageLayoutContext $context): array
+    protected function getColumnLabels(): array
     {
         $columns = [];
 
-        foreach ($context->getBackendLayout()->getUsedColumns() as $columnPos => $columnLabel) {
-            $columns[$columnPos] = $GLOBALS['LANG']->sL($columnLabel);
+        if (isset($this->pageLayoutContext)) {
+            foreach ($this->pageLayoutContext->getBackendLayout()->getUsedColumns() as $columnPos => $columnLabel) {
+                $columns[$columnPos] = $GLOBALS['LANG']->sL($columnLabel);
+            }
         }
 
         return $columns;

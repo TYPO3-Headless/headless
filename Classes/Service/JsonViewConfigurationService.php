@@ -15,16 +15,19 @@ namespace FriendsOfTYPO3\Headless\Service;
 
 use FriendsOfTYPO3\Headless\Dto\JsonViewDemand;
 use FriendsOfTYPO3\Headless\Dto\JsonViewDemandInterface;
+use FriendsOfTYPO3\Headless\Service\Parser\JsonParserInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Configuration\Loader\YamlFileLoader;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 
 final class JsonViewConfigurationService implements JsonViewConfigurationServiceInterface
 {
     protected array $settings = [];
     protected JsonViewDemandInterface $demand;
+    protected string $defaultParser = 'FriendsOfTYPO3\Headless\Service\Parser\DefaultJsonParser';
 
     public function __construct()
     {
@@ -108,19 +111,22 @@ final class JsonViewConfigurationService implements JsonViewConfigurationService
         return [];
     }
 
-    public function getDefaultModuleTranslationFile(): string
-    {
-        return 'LLL:EXT:headless/Resources/Private/Language/locallang_be.xlf:';
-    }
+    public function getParser(
+        array $labels = [],
+        array $pageRecord = [],
+        ?ViewInterface $view = null,
+        ?JsonViewDemandInterface $demand = null
+    ): ?JsonParserInterface {
+        $classname = $this->getValueFromConfiguration('parserClassname');
+        if (empty($classname) || !class_exists($classname)) {
+            $classname = $this->defaultParser;
+        }
 
-    public function getContentTabName(): string
-    {
-        return 'content';
-    }
+        if (class_exists($classname)) {
+            return GeneralUtility::makeInstance($classname, $labels, $pageRecord, $view, $demand);
+        }
 
-    public function getRawTabName(): string
-    {
-        return 'raw';
+        return null;
     }
 
     public function getDisallowedDoktypes(): array
@@ -135,21 +141,6 @@ final class JsonViewConfigurationService implements JsonViewConfigurationService
         ];
     }
 
-    public function getElementTitle(array $data): string
-    {
-        return $data['header'] ?: $data['title'] ?: '';
-    }
-
-    public function getSectionId(array $data): string
-    {
-        return 'section-' . $data['uid'];
-    }
-
-    public function getPageDataFromApi(array $jsonArray = []): array
-    {
-        return $jsonArray['page'] ?? [];
-    }
-
     public function getDemand(): JsonViewDemandInterface
     {
         return $this->demand;
@@ -158,5 +149,10 @@ final class JsonViewConfigurationService implements JsonViewConfigurationService
     public function setDemand(JsonViewDemandInterface $demand): void
     {
         $this->demand = $demand;
+    }
+
+    public function getDefaultModuleTranslationFile(): string
+    {
+        return 'LLL:EXT:headless/Resources/Private/Language/locallang_be.xlf:';
     }
 }

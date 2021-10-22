@@ -3,10 +3,12 @@ pageTypeModes:
     title: Default page view
     pageType: 0
     bootContent: 1
+    parserClassname: FriendsOfTYPO3\Headless\Service\Parser\PageJsonParser
 
   initialData:
     title: Initial Data
     pageType: 834
+    parserClassname: FriendsOfTYPO3\Headless\Service\Parser\DefaultJsonParser
 
 #  Example of detail news preset
 #

@@ -18,15 +18,10 @@ interface JsonViewConfigurationServiceInterface
 {
     public function getSettings(): array;
     public function getDefaultModuleTranslationFile(): string;
-    public function getContentTabName(): string;
-    public function getRawTabName(): string;
     public function getDisallowedDoktypes(): array;
     public function createDemandWithPluginNamespace(string $pluginNamespace);
     public function getBootContentFlagFromSettings(JsonViewDemandInterface $demand = null): bool;
     public function getCurrentPageType(JsonViewDemandInterface $demand = null): string;
     public function getPageTypeArguments(JsonViewDemandInterface $demand = null): array;
     public function getPageArgumentsForDemand(int $pageId = 0, JsonViewDemandInterface $demand = null): PageArguments;
-    public function getElementTitle(array $data): string;
-    public function getSectionId(array $data): string;
-    public function getPageDataFromApi(array $jsonArray = []): array;
 }
