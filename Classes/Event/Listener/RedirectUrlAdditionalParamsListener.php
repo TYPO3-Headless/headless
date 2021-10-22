@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
-use FriendsOfTYPO3\Headless\Service\SiteService;
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\XClass\Routing\PageRouter;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -32,27 +32,18 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    /**
-     * @var TypoLinkCodecService
-     */
-    private $typoLinkCodecService;
-    /**
-     * @var LinkService
-     */
-    private $linkService;
-    /**
-     * @var SiteService
-     */
-    private $siteService;
+    private TypoLinkCodecService $typoLinkCodecService;
+    private LinkService $linkService;
+    private HeadlessFrontendUrlInterface $urlUtility;
 
     public function __construct(
         TypoLinkCodecService $typoLinkCodecService,
         LinkService $linkService,
-        SiteService $siteService
+        HeadlessFrontendUrlInterface $urlUtility
     ) {
         $this->typoLinkCodecService = $typoLinkCodecService;
         $this->linkService = $linkService;
-        $this->siteService = $siteService;
+        $this->urlUtility = $urlUtility;
     }
 
     public function __invoke(RedirectUrlEvent $event): void
@@ -84,7 +75,7 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
                     PageRouter::class,
                     $site
                 )->generateUri($linkDetails['pageuid'], $params);
-                $frontendUrl = $this->siteService->getFrontendUrl((string)$frontendUrl, (int)$linkDetails['pageuid']);
+                $frontendUrl = $this->urlUtility->getFrontendUrlForPage((string)$frontendUrl, (int)$linkDetails['pageuid']);
                 $event->setTargetUrl($frontendUrl);
             } catch (\Exception $exception) {
                 $this->logger->error(

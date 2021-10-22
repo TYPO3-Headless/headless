@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Hooks;
 
-use FriendsOfTYPO3\Headless\Service\SiteService;
+use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -33,9 +33,6 @@ class PreviewUrlHook
      */
     public function postProcess(string $previewUrl, int $pageUid, array $rootLine, string $anchorSection, string $viewScript, string $additionalGetVars, bool $switchFocus): string
     {
-        $siteService = GeneralUtility::makeInstance(SiteService::class);
-        $previewUrl = $siteService->getFrontendUrl($previewUrl, $pageUid);
-
-        return $previewUrl;
+        return GeneralUtility::makeInstance(UrlUtility::class)->getFrontendUrlForPage($previewUrl, $pageUid);
     }
 }
