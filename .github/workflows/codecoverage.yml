@@ -33,8 +33,6 @@ jobs:
         run: |
           composer require --no-progress typo3/minimal:"$TYPO3"
           composer show
-      - name: "Start MySQL"
-        run: "sudo /etc/init.d/mysql start"
       - name: "Run functional tests with coverage"
         run: composer ci:coverage:functional
       - name: "Run unit tests with coverage"
