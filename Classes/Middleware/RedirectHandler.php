@@ -24,7 +24,6 @@ use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Http\JsonResponse;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -36,41 +35,24 @@ use function strpos;
 
 final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\RedirectHandler
 {
-    /**
-     * @var SiteService
-     */
-    private $siteService;
-    /**
-     * @var LinkService
-     */
-    private $linkService;
-    /**
-     * @var EventDispatcherInterface|null
-     */
-    private $eventDispatcher;
-    /**
-     * @var ServerRequestInterface
-     */
-    private $request;
-    /**
-     * @var Features
-     */
-    private $features;
+    private SiteService $siteService;
+    private LinkService $linkService;
+    private EventDispatcherInterface $eventDispatcher;
+    private ServerRequestInterface $request;
+    private Features $features;
 
     public function __construct(
         RedirectService $redirectService,
-        SiteService $siteService = null,
-        LinkService $linkService = null,
-        EventDispatcher $eventDispatcher = null,
-        Features $features = null
+        SiteService $siteService,
+        LinkService $linkService,
+        EventDispatcher $eventDispatcher,
+        Features $features
     ) {
         parent::__construct($redirectService);
-        $this->siteService = $siteService ?? GeneralUtility::makeInstance(SiteService::class);
-        $this->linkService = $linkService ?? GeneralUtility::makeInstance(LinkService::class);
-        $this->features = $features ?? GeneralUtility::makeInstance(Features::class);
-        if ((new Typo3Version())->getMajorVersion() >= 10) {
-            $this->eventDispatcher = $eventDispatcher ?? GeneralUtility::makeInstance(EventDispatcher::class);
-        }
+        $this->siteService = $siteService;
+        $this->linkService = $linkService;
+        $this->features = $features;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -103,8 +85,16 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
         }
 
         $frontendDomainTrim = true;
-        $requestDomainUrl = $this->siteService->getFrontendUrl((string)$this->request->getUri(), $site->getRootPageId());
-        $resolvedTarget = $this->linkService->resolve($redirectRecord['target']);
+        $requestDomainUrl = $this->siteService->getFrontendUrl(
+            (string)$this->request->getUri(),
+            $site->getRootPageId()
+        );
+
+        if ($redirectRecord['target'] === '/') {
+            $resolvedTarget = ['type' => LinkService::TYPE_UNKNOWN, 'file' => '/'];
+        } else {
+            $resolvedTarget = $this->linkService->resolve($redirectRecord['target']);
+        }
 
         if ($resolvedTarget['type'] === LinkService::TYPE_FILE || $resolvedTarget['type'] === LinkService::TYPE_FOLDER) {
             $targetUrl = $this->handleFileTypes($resolvedTarget);
@@ -134,34 +124,12 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
             $redirectRecord
         );
 
-        if ($this->eventDispatcher) {
-            $redirectUrlEvent = $this->eventDispatcher->dispatch($redirectUrlEvent);
-        } else {
-            $redirectUrlEvent = $this->dispatchHooks($redirectUrlEvent);
-        }
+        $redirectUrlEvent = $this->eventDispatcher->dispatch($redirectUrlEvent);
 
         return new JsonResponse([
             'redirectUrl' => $redirectUrlEvent->getTargetUrl(),
             'statusCode' => $redirectUrlEvent->getTargetStatusCode()
         ]);
-    }
-
-    private function dispatchHooks(RedirectUrlEvent $redirectUrlEvent): RedirectUrlEvent
-    {
-        foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['headless']['hooks']['redirectUrl'] ?? [] as $hook) {
-            $_params = [
-                'pObj' => &$this,
-                'redirectUrlEvent' => $redirectUrlEvent,
-            ];
-
-            $parsedEventByHooks = GeneralUtility::callUserFunction($hook, $_params, $this);
-
-            if ($parsedEventByHooks instanceof RedirectUrlEvent) {
-                $redirectUrlEvent = $parsedEventByHooks;
-            }
-        }
-
-        return $redirectUrlEvent;
     }
 
     /**

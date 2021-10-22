@@ -1,0 +1,123 @@
+lib.meta = JSON
+lib.meta {
+    fields {
+        title = TEXT
+        title {
+            field = seo_title
+            stdWrap.ifEmpty.cObject = TEXT
+            stdWrap.ifEmpty.cObject {
+                field = title
+            }
+        }
+        subtitle = TEXT
+        subtitle {
+            field = subtitle
+        }
+        abstract = TEXT
+        abstract {
+            field = abstract
+        }
+        description = TEXT
+        description {
+            field = description
+        }
+        keywords = TEXT
+        keywords {
+            field = keywords
+        }
+        canonical = TEXT
+        canonical {
+            field = canonical_link
+            htmlSpecialChars = 1
+            typolink {
+                parameter {
+                    field = canonical_link
+                }
+                returnLast = result
+            }
+        }
+        robots {
+            fields {
+                noIndex = BOOL
+                noIndex {
+                    field = no_index
+                }
+
+                noFollow = BOOL
+                noFollow {
+                    field = no_follow
+                }
+            }
+        }
+        author = TEXT
+        author {
+            field = author
+        }
+        authorEmail = TEXT
+        authorEmail {
+            field = author_email
+        }
+        ogTitle = TEXT
+        ogTitle {
+            field = og_title
+            stdWrap.ifEmpty.cObject = TEXT
+            stdWrap.ifEmpty.cObject {
+                field = title
+            }
+        }
+        ogDescription = TEXT
+        ogDescription {
+            field = og_description
+            stdWrap.ifEmpty.cObject = TEXT
+            stdWrap.ifEmpty.cObject {
+                field = description
+            }
+        }
+        ogImage = TEXT
+        ogImage {
+            dataProcessing {
+                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                10 {
+                    as = media
+                    references.fieldName = og_image
+                    processingConfiguration {
+                        returnFlattenObject = 1
+                    }
+                }
+            }
+        }
+        twitterTitle = TEXT
+        twitterTitle {
+            field = twitter_title
+            stdWrap.ifEmpty.cObject = TEXT
+            stdWrap.ifEmpty.cObject {
+                field = title
+            }
+        }
+        twitterDescription = TEXT
+        twitterDescription {
+            field = twitter_description
+            stdWrap.ifEmpty.cObject = TEXT
+            stdWrap.ifEmpty.cObject {
+                field = description
+            }
+        }
+        twitterCard = TEXT
+        twitterCard {
+            field = twitter_card
+        }
+        twitterImage = TEXT
+        twitterImage {
+            dataProcessing {
+                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                10 {
+                    as = media
+                    references.fieldName = twitter_image
+                    processingConfiguration {
+                        returnFlattenObject = 1
+                    }
+                }
+            }
+        }
+    }
+}

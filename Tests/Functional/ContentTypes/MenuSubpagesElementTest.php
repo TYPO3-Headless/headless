@@ -16,7 +16,7 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
 class MenuSubpagesElementTest extends BaseContentTypeTest
 {
-    public function testTextContentElement()
+    public function testMenuSubpagesContentElement()
     {
         $response = $this->executeFrontendRequest(
             new InternalRequest('https://website.local/')
@@ -32,11 +32,11 @@ class MenuSubpagesElementTest extends BaseContentTypeTest
         $this->checkAppearanceFields($contentElement, 'default', 'default', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 0, 2);
 
-        self::assertTrue(is_array($contentElement['appearance']));
-        self::assertTrue(is_array($contentElement['content']));
-        self::assertTrue(is_array($contentElement['content']['menu']));
-        self::assertTrue(is_array($contentElement['content']['menu'][0]));
-        self::assertTrue(is_array($contentElement['content']['menu'][1]));
+        self::assertIsArray($contentElement['appearance']);
+        self::assertIsArray($contentElement['content']);
+        self::assertIsArray($contentElement['content']['menu']);
+        self::assertIsArray($contentElement['content']['menu'][0]);
+        self::assertIsArray($contentElement['content']['menu'][1]);
 
         self::assertEquals('Page 1', $contentElement['content']['menu'][0]['title']);
         self::assertEquals('/page1', $contentElement['content']['menu'][0]['link']);

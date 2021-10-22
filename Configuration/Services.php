@@ -25,7 +25,7 @@ return static function (ContainerConfigurator $configurator): void {
 
     $excludes = [];
 
-    if (!\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('form')) {
+    if (!class_exists(\TYPO3\CMS\Form\Controller\FormFrontendController::class, false)) {
         $excludes = [
             '../Classes/Form/*',
             '../Classes/XClass/Controller/FormFrontendController.php',

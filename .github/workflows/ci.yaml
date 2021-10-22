@@ -1,68 +1,76 @@
 ---
 name: CI
 
-on: [push, pull_request]
-
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  schedule:
+    - cron: '15 3 * * 1'
 jobs:
   php-lint:
     name: "PHP linter"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-versions: [7.2, 7.3, 7.4]
+    runs-on: ubuntu-20.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+      - name: "Checkout"
+        uses: actions/checkout@v2
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "${{ matrix.php-versions }}"
-      - name: "Cache composer dependencies"
-        uses: actions/cache@v1
-        with:
-          path: ~/.composer/cache
-          key: php-${{ matrix.php-versions }}
-               -composer-${{ hashFiles('composer.json') }}
-          restore-keys: |
-            php-${{ matrix.php-versions }}-composer-
-      - name: "Install composer dependencies"
-        run: composer install --no-progress
+          php-version: "${{ matrix.php-version }}"
+          coverage: none
+          tools: composer:v2
       - name: "Run PHP lint"
-        run: "composer run-script test-php-lint"
-  php-cs-fixer:
-    name: "PHP-CS-Fixer"
-    runs-on: ubuntu-latest
+        run: "composer ci:php:lint"
     strategy:
+      fail-fast: false
       matrix:
-        php-versions: [7.4]
+        php-version:
+          - 7.4
+          - 8.0
+  code-quality:
+    name: "Code quality checks"
+    runs-on: ubuntu-20.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+      - name: "Checkout"
+        uses: actions/checkout@v2
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "${{ matrix.php-versions }}"
-      - name: "Cache composer dependencies"
+          php-version: "${{ matrix.php-version }}"
+          coverage: none
+          tools: composer:v2
+      - name: "Show Composer version"
+        run: composer --version
+      - name: "Cache dependencies installed with composer"
         uses: actions/cache@v1
         with:
-          path: ~/.composer/cache
-          key: php-${{ matrix.php-versions }}
-               -composer-${{ hashFiles('composer.json') }}
-          restore-keys: |
-            php-${{ matrix.php-versions }}-composer-
-      - name: "Install composer dependencies"
-        run: composer install --no-progress
-      - name: "Run PHP-CS-Fixer"
-        run: "composer run-script test-php-cs-fixer"
+          key: "php${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
+          path: ~/.cache/composer
+          restore-keys: "php${{ matrix.php-version }}-composer-\n"
+      - name: "Install Composer dependencies"
+        run: "composer install --no-progress"
+      - name: "Run command"
+        run: "composer ci:${{ matrix.command }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        command:
+          - "json:lint"
+          - "yaml:lint"
+          - "ts:lint"
+          - "php:cs-fixer"
+        php-version:
+          - 7.4
   tests:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 2
       matrix:
-        php-versions: [7.2, 7.3, 7.4]
+        php-versions: [7.4, 8.0]
         typo3-versions:
-          - {typo3: 9, testing: 4}
-          - {typo3: 10, testing: 5}
+          - {typo3: 11, testing: 6}
 
     name: "Run tests with PHP ${{ matrix.php-versions }}
           using TYPO3 ${{ matrix.typo3-versions.typo3 }}
@@ -96,65 +104,7 @@ jobs:
              --prefer-dist --no-progress --no-suggest
 
       - name: "Run Unit tests"
-        run: composer run-script test-unit
+        run: composer ci:test:unit
 
       - name: "Functional tests"
-        run: composer run-script test-functional
-  typoscript-lint:
-    name: "Typoscript lint"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-versions: [7.4]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: "Install PHP"
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "${{ matrix.php-versions }}"
-      - name: "Cache composer dependencies"
-        uses: actions/cache@v1
-        with:
-          path: ~/.composer/cache
-          key: php-${{ matrix.php-versions }}
-               -composer-${{ hashFiles('composer.json') }}
-          restore-keys: |
-            php-${{ matrix.php-versions }}-composer-
-      - name: "Install composer dependencies"
-        run: composer install --no-progress
-      - name: "Run Typoscript lint"
-        run: "composer typoscript-lint"
-  yaml-lint:
-    name: "Yaml linter"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: "Yaml lint"
-        uses: ibiqlik/action-yamllint@v1
-  json-lint:
-    name: "JSON lint"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-versions: [7.4]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: "Install PHP"
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "${{ matrix.php-versions }}"
-      - name: "Cache composer dependencies"
-        uses: actions/cache@v1
-        with:
-          path: ~/.composer/cache
-          key: php-${{ matrix.php-versions }}
-            -composer-${{ hashFiles('composer.json') }}
-          restore-keys: |
-            php-${{ matrix.php-versions }}-composer-
-      - name: "Install composer dependencies"
-        run: composer install --no-progress
-      - name: "Run JSON lint"
-        run: "composer json-lint"
+        run: composer ci:test:functional

@@ -1,19 +1,26 @@
 <?php
+
+/*
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ *
+ * (c) 2021
+ */
+
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
-/***
- *
- * This file is part of the "headless" Extension for TYPO3 CMS.
- *
- * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
- *
- *  (c) 2019
- *
- ***/
-
+use FriendsOfTYPO3\Headless\Json\JsonDecoder;
+use FriendsOfTYPO3\Headless\Json\JsonDecoderInterface;
+use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
+use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
+use Generator;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -21,23 +28,25 @@ use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
-/**
- * Contains JSON class object
- */
-class JsonContentObject extends AbstractContentObject
-{
-    /**
-     * @var ContentDataProcessor
-     */
-    protected $contentDataProcessor;
+use function strpos;
 
-    /**
-     * @param ContentObjectRenderer $cObj
-     */
+final class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
+{
+    use LoggerAwareTrait;
+
+    private ContentDataProcessor $contentDataProcessor;
+    private HeadlessUserInt $headlessUserInt;
+    private JsonEncoderInterface $jsonEncoder;
+    private JsonDecoderInterface $jsonDecoder;
+    private array $conf;
+
     public function __construct(ContentObjectRenderer $cObj)
     {
         parent::__construct($cObj);
         $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
+        $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
+        $this->jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
+        $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
     }
 
     /**
@@ -53,6 +62,8 @@ class JsonContentObject extends AbstractContentObject
             $conf = [];
         }
 
+        $this->conf = $conf;
+
         if (isset($conf['fields.'])) {
             $data = $this->cObjGet($conf['fields.']);
         }
@@ -60,7 +71,7 @@ class JsonContentObject extends AbstractContentObject
             $data = $this->processFieldWithDataProcessing($conf);
         }
 
-        $json = json_encode($this->decodeFieldsIfRequired($data));
+        $json = $this->jsonEncoder->encode($this->jsonDecoder->decode($data));
 
         if (isset($conf['stdWrap.'])) {
             $json = $this->cObj->stdWrap($json, $conf['stdWrap.']);
@@ -85,25 +96,29 @@ class JsonContentObject extends AbstractContentObject
         }
         $content = [];
 
-        $sKeyArray = $this->filterAndSortByStringKeys($setup);
+        $sKeyArray = $this->filterByStringKeys($setup);
         foreach ($sKeyArray as $theKey) {
             $theValue = $setup[$theKey];
             if ((string)$theKey && strpos($theKey, '.') === false) {
                 $conf = $setup[$theKey . '.'];
-                $intVal = (isset($conf['intval']) && $conf['intval']) ? true : false;
-                $contentDataProcessing['dataProcessing.'] = isset($conf['dataProcessing.']) ? $conf['dataProcessing.'] : [];
-
+                $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
-                if ($intVal) {
+                if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
+                }
+                if ($theValue === 'BOOL') {
+                    $content[$theKey] = (bool)$content[$theKey];
+                }
+                if ($theValue === 'USER_INT' || strpos((string)$content[$theKey], '<!--INT_SCRIPT.') === 0) {
+                    $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey]);
                 }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
                     $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
                 }
             }
             if ((string)$theKey && strpos($theKey, '.') > 0 && !isset($setup[rtrim($theKey, '.')])) {
-                $contentFieldName = isset($theValue['source']) ? $theValue['source'] : rtrim($theKey, '.');
-                $contentFieldTypeProcessing['dataProcessing.'] = isset($theValue['dataProcessing.']) ? $theValue['dataProcessing.'] : [];
+                $contentFieldName = $theValue['source'] ?? rtrim($theKey, '.');
+                $contentFieldTypeProcessing['dataProcessing.'] = $theValue['dataProcessing.'] ?? [];
 
                 if (array_key_exists('fields.', $theValue)) {
                     $content[$contentFieldName] = $this->cObjGet($theValue['fields.']);
@@ -117,13 +132,13 @@ class JsonContentObject extends AbstractContentObject
     }
 
     /**
-     * Takes a TypoScript array as input and returns an array which contains all string properties found which had a value (not only properties). The output array will be sorted numerically.
+     * Takes a TypoScript array as input and returns an array which contains all string properties found which had a value (not only properties).
      *
      * @param array $setupArr TypoScript array with string array in
      * @param bool $acceptAnyKeys If set, then a value is not required - the properties alone will be enough.
-     * @return array An array with all string properties listed in alphabetical order.
+     * @return array An array with all string properties.
      */
-    protected function filterAndSortByStringKeys(array $setupArr, bool $acceptAnyKeys = false): array
+    protected function filterByStringKeys(array $setupArr, bool $acceptAnyKeys = false): array
     {
         $filteredKeys = [];
         $keys = array_keys($setupArr);
@@ -132,14 +147,40 @@ class JsonContentObject extends AbstractContentObject
                 $filteredKeys[] = (string)$key;
             }
         }
-        $filteredKeys = array_unique($filteredKeys);
-        sort($filteredKeys);
-        return $filteredKeys;
+        return array_unique($filteredKeys);
     }
 
-    function recursiveFind(array $haystack, $needle)
+    /**
+     * @param array $dataProcessing
+     * @return array|null
+     */
+    protected function processFieldWithDataProcessing(array $dataProcessing): ?array
     {
-        $iterator  = new RecursiveArrayIterator($haystack);
+        $data = $this->contentDataProcessor->process(
+            $this->cObj,
+            $dataProcessing,
+            [
+                'data' => $this->cObj->data,
+                'current' => $this->cObj->data[$this->cObj->currentValKey ?? null] ?? null
+            ]
+        );
+
+        $dataProcessingData = null;
+
+        foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
+            if (isset($data[$value])) {
+                $dataProcessingData = $data[$value];
+            }
+        }
+        return $dataProcessingData;
+    }
+
+    /**
+     * @param array<string, mixed> $haystack
+     */
+    protected function recursiveFind(array $haystack, string $needle): Generator
+    {
+        $iterator = new RecursiveArrayIterator($haystack);
         $recursive = new RecursiveIteratorIterator(
             $iterator,
             RecursiveIteratorIterator::SELF_FIRST
@@ -156,56 +197,5 @@ class JsonContentObject extends AbstractContentObject
                 yield $value;
             }
         }
-    }
-
-
-    /**
-     * @param array $data
-     * @return array
-     */
-    protected function decodeFieldsIfRequired(array $data) : array
-    {
-        $json = [];
-
-        foreach ($data as $key => $singleData) {
-            if (is_string($singleData)) {
-                if (json_decode($singleData) === null) {
-                    $json[$key] = $singleData;
-                } else {
-                    $json[$key] = json_decode($singleData);
-                }
-            } else if (is_array($singleData) || is_object(($singleData))) {
-                $json[$key] = $this->decodeFieldsIfRequired($singleData);
-            }
-            else {
-                $json[$key] = $singleData;
-            }
-        }
-        return $json;
-    }
-
-    /**
-     * @param array $dataProcessing
-     * @return array
-     */
-    protected function processFieldWithDataProcessing(array $dataProcessing): array
-    {
-        $data = $this->contentDataProcessor->process(
-            $this->cObj,
-            $dataProcessing,
-            [
-                'data' => $this->cObj->data,
-                'current' => $this->cObj->data[$this->cObj->currentValKey ?? null] ?? null
-            ]
-        );
-
-        $dataProcessingData = [];
-        foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
-            if (isset($data[$value])) {
-                $dataProcessingData = $data[$value];
-            }
-
-        }
-        return $dataProcessingData;
     }
 }
