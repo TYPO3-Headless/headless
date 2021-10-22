@@ -15,16 +15,16 @@ namespace FriendsOfTYPO3\Headless\XClass;
 
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-
-use const TYPO3_MODE;
 
 class ResourceLocalDriver extends \TYPO3\CMS\Core\Resource\Driver\LocalDriver
 {
     protected function determineBaseUrl(): void
     {
-        if (TYPO3_MODE === 'BE') {
+        if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
+            && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isBackend()) {
             parent::determineBaseUrl();
 
             return;

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass\Typolink;
 
-use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
+use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Routing\InvalidRouteArgumentsException;
@@ -81,9 +81,8 @@ class PageLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\PageLinkBuilder
             $uri = (new Uri())->withFragment($fragment);
         } else {
             try {
-                $frontendBase = GeneralUtility::makeInstance(FrontendBaseUtility::class);
-                $siteConf = $siteOfTargetPage->getConfiguration();
-                $frontendBaseUrl = $frontendBase->resolveWithVariants('', $siteConf['baseVariants'] ?? []);
+                $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withSite($siteOfTargetPage);
+                $frontendBaseUrl = $urlUtility->getFrontendUrl();
 
                 if ($frontendBaseUrl !== '') {
                     $parsedFrontendBase = parse_url($frontendBaseUrl);
