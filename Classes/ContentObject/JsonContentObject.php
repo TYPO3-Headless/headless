@@ -23,6 +23,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
@@ -166,6 +167,12 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
         );
 
         $dataProcessingData = null;
+        $features = GeneralUtility::makeInstance(Features::class);
+
+        if ($features->isFeatureEnabled('headless.supportOldPageOutput')) {
+            $dataProcessingData = isset($this->conf['returnNullIfDataProcessingEmpty'])
+            && (int)$this->conf['returnNullIfDataProcessingEmpty'] === 1 ? null : [];
+        }
 
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
             if (isset($data[$value])) {

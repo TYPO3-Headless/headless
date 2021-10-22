@@ -89,6 +89,19 @@ Enable simplified target links' property
 
 Simplified output return only value i.e. `_blank` for target attribute instead of html string ` target="_blank"`
 
+**headless.supportOldPageOutput**
+
+Available since `3.0`
+
+Enable support for 2.x version of json page output for frontend app.
+Restores default behavior of empty data processing (`[]` vs `null`)
+and change return object of typolink (property `url` vs `href`)
+
+.. code-block:: php
+
+   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.supportOldPageOutput'] = true;
+
+
 **Availability of feature toggles by version**
 
 .. t3-field-list-table::
@@ -125,6 +138,10 @@ Simplified output return only value i.e. `_blank` for target attribute instead o
    -  :Header1:   headless.simplifiedLinkTarget
       :Header2:   >= 2.6
       :Header3:   removed
+
+   -  :Header1:   headless.supportOldPageOutput
+      :Header2:   not available
+      :Header3:   >= 3.0
 
 .. _configuration-ext-form:
 
