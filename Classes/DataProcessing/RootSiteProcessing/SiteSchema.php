@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
-use FriendsOfTYPO3\Headless\Service\SiteService;
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -23,18 +24,14 @@ use function trim;
 
 final class SiteSchema implements SiteSchemaInterface
 {
-    /**
-     * @var SiteService
-     */
-    private $siteService;
-    /**
-     * @var ContentDataProcessor
-     */
-    private $contentDataProcessor;
+    private HeadlessFrontendUrlInterface $urlUtitlity;
+    private ContentDataProcessor $contentDataProcessor;
 
-    public function __construct(SiteService $service = null, ContentDataProcessor $contentObjectRenderer = null)
-    {
-        $this->siteService = $service ?? GeneralUtility::makeInstance(SiteService::class);
+    public function __construct(
+        HeadlessFrontendUrlInterface $urlUtitlity = null,
+        ContentDataProcessor $contentObjectRenderer = null
+    ) {
+        $this->urlUtitlity = $urlUtitlity ?? GeneralUtility::makeInstance(UrlUtility::class);
         $this->contentDataProcessor = $contentObjectRenderer ??
             GeneralUtility::makeInstance(ContentDataProcessor::class);
     }
@@ -62,7 +59,7 @@ final class SiteSchema implements SiteSchemaInterface
             $active = 0;
             $spacer = 0;
             $baseUrl = $site->getBase()->getScheme() . '://' . $site->getBase()->getHost();
-            $url = $this->siteService->getFrontendUrl($baseUrl, $site->getRootPageId());
+            $url = $this->urlUtitlity->getFrontendUrlForPage($baseUrl, $site->getRootPageId());
 
             if ($provider->getCurrentRootPage() === $site) {
                 $active = 1;
