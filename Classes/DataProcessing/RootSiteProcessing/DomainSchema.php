@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
-use FriendsOfTYPO3\Headless\Service\SiteService;
-use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -24,28 +24,16 @@ use function str_replace;
 
 final class DomainSchema implements SiteSchemaInterface
 {
-    /**
-     * @var SiteService
-     */
-    private $siteService;
-    /**
-     * @var ContentDataProcessor
-     */
-    private $contentDataProcessor;
-    /**
-     * @var FrontendBaseUtility
-     */
-    private $frontendBaseUtility;
+    private HeadlessFrontendUrlInterface $urlUtility;
+    private ContentDataProcessor $contentDataProcessor;
 
     public function __construct(
-        SiteService $service = null,
-        ContentDataProcessor $contentObjectRenderer = null,
-        FrontendBaseUtility $frontendBaseUtility = null
+        HeadlessFrontendUrlInterface $urlUtility = null,
+        ContentDataProcessor $contentObjectRenderer = null
     ) {
-        $this->siteService = $service ?? GeneralUtility::makeInstance(SiteService::class);
+        $this->urlUtility = $urlUtility ?? GeneralUtility::makeInstance(UrlUtility::class);
         $this->contentDataProcessor = $contentObjectRenderer ??
             GeneralUtility::makeInstance(ContentDataProcessor::class);
-        $this->frontendBaseUtility = $frontendBaseUtility ?? GeneralUtility::makeInstance(FrontendBaseUtility::class);
     }
 
     /**
@@ -62,7 +50,7 @@ final class DomainSchema implements SiteSchemaInterface
         foreach ($provider->getSites() as $site) {
             $protocol = $site->getBase()->getScheme() . '://';
             $baseUrl = $protocol . $site->getBase()->getHost();
-            $url = $this->siteService->getFrontendUrl($baseUrl, $site->getRootPageId());
+            $url = $this->urlUtility->getFrontendUrlForPage($baseUrl, $site->getRootPageId());
 
             $locales = [];
 
@@ -76,11 +64,7 @@ final class DomainSchema implements SiteSchemaInterface
                 'name' => str_replace($protocol, '', $url),
                 'baseURL' => $url,
                 'api' => [
-                    'baseURL' => $this->frontendBaseUtility->resolveWithVariants(
-                        $conf['frontendApiProxy'] ?? $baseUrl,
-                        $conf['baseVariants'] ?? null,
-                        'frontendApiProxy'
-                    )
+                    'baseURL' => $this->urlUtility->getProxyUrl(),
                 ],
                 'i18n' => [
                     'locales' => $locales,

@@ -22,6 +22,7 @@ use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -37,9 +38,9 @@ final class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInter
     private Features $features;
     private Resolver $resolver;
     private SiteFinder $siteFinder;
-    private Site $site;
-    private array $conf;
-    private array $variants;
+    private SiteInterface $site;
+    private array $conf = [];
+    private array $variants = [];
 
     public function __construct(
         ?Features $features = null,
