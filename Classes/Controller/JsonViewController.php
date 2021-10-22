@@ -147,6 +147,7 @@ class JsonViewController extends ActionController
             $this->configurationService,
             $this->moduleSettings
         );
+
         $jsonArray = json_decode($pageJson, true);
 
         if (!is_array($jsonArray) || $jsonArray === []) {
@@ -157,7 +158,7 @@ class JsonViewController extends ActionController
             $tabs[] = $type;
             $pageContent[$type] = [];
 
-            if ($type === $this->configurationService->getContentTabName()) {
+            if (!empty($typeContents) && $type === $this->configurationService->getContentTabName()) {
                 foreach ($typeContents as $col => $colPosContents) {
                     $colNumber = str_replace('colPos', '', $col);
                     $records = $contentFetcher->getContentRecordsPerColumn(

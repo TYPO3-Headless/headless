@@ -20,6 +20,7 @@ use TYPO3\CMS\Core\Context\VisibilityAspect;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
@@ -33,6 +34,10 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
         JsonViewConfigurationServiceInterface $configurationService,
         array $settings
     ): string {
+        $backendRequest = $GLOBALS['TYPO3_REQUEST'];
+        $this->useFrontendExtensionConfiguration();
+        $GLOBALS['TYPO3_REQUEST'] = $this->getFrontendRequest($demand, $configurationService);
+
         if ($GLOBALS['TSFE'] === null) {
             $this->bootFrontendControllerForPage(
                 $demand->getPageId(),
@@ -45,14 +50,11 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
 
         $controller = $GLOBALS['TSFE'];
 
-        $backendRequest = $GLOBALS['TYPO3_REQUEST'];
-        $this->useFrontendExtensionConfiguration();
-        $GLOBALS['TYPO3_REQUEST'] = $this->getFrontendRequest($demand, $configurationService);
-
         $pageContent = $controller->cObj->cObjGet($controller->pSetup) ?: '';
         if ($controller->pSetup['wrap'] ?? false) {
             $pageContent = $controller->cObj->wrap($pageContent, $controller->pSetup['wrap']);
         }
+
         if ($controller->pSetup['stdWrap.'] ?? false) {
             $pageContent = $controller->cObj->stdWrap($pageContent, $controller->pSetup['stdWrap.']);
         }
@@ -61,6 +63,48 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
         $GLOBALS['TYPO3_REQUEST'] = $backendRequest;
 
         return $pageContent;
+    }
+
+    /**
+     * Trick TYPO3 into using plugins configuration in backend environment
+     */
+    private function useFrontendExtensionConfiguration()
+    {
+        $frontendExtensionConfiguration = [];
+        $this->backendExtensionConfiguration = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'];
+
+        foreach ($this->backendExtensionConfiguration as $extension => $config) {
+            if (isset($config['plugins'])) {
+                $frontendExtensionConfiguration[$extension]['modules'] = $config['plugins'];
+            }
+        }
+
+        $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'] = $frontendExtensionConfiguration;
+    }
+
+    public function getFrontendRequest(
+        JsonViewDemandInterface $demand,
+        JsonViewConfigurationServiceInterface $configurationService
+    ): ServerRequest {
+        $feUser = GeneralUtility::makeInstance(FrontendUserAuthentication::class);
+
+        if ($demand->getFeGroup() > 0) {
+            $feUser->user = [
+                'usergroup' => $demand->getFeGroup()
+            ];
+        }
+
+        $frontendRequest = new ServerRequest();
+        $pageTypeArguments = $configurationService->getPageTypeArguments($demand);
+
+        return $frontendRequest
+            ->withQueryParams($pageTypeArguments)
+            ->withAttribute('routing', $pageTypeArguments)
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_FE)
+            ->withAttribute('site', $demand->getSite())
+            ->withAttribute('language', $demand->getSiteLanguage())
+            ->withAttribute('frontend.user', $feUser)
+            ->withAttribute('noCache', true);
     }
 
     public function bootFrontendControllerForPage(
@@ -99,71 +143,36 @@ final class BackendTsfeService implements BackendTsfeServiceInterface
             $configurationService->getPageArgumentsForDemand($pageId, $demand),
             $feUser
         );
+        $feRequest = $this->getFrontendRequest($demand, $configurationService, $settings);
+        $feRequest->withAttribute('frontend.controller', $controller);
+        $GLOBALS['TSFE'] = $controller;
 
-        $controller->fetch_the_id();
+        $controller->determineId($feRequest);
         $controller->getConfigArray();
-        $controller->settingLanguage();
         $controller->newCObj();
-
-        if (!$GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
-            $GLOBALS['TSFE'] = $controller;
-        }
+        $controller->no_cache = true;
 
         if (!$GLOBALS['TSFE']->sys_page instanceof PageRepository) {
             $GLOBALS['TSFE']->sys_page = GeneralUtility::makeInstance(PageRepository::class);
         }
 
         if ($bootContent) {
-            $controller->preparePageContentGeneration(
-                $this->getFrontendRequest($demand, $configurationService, $settings)
-            );
+            $controller->generatePage_preProcessing();
+            $controller->preparePageContentGeneration($feRequest);
+            $controller->generatePage_postProcessing();
         }
-    }
-
-    public function getFrontendRequest(
-        JsonViewDemandInterface $demand,
-        JsonViewConfigurationServiceInterface $configurationService
-    ): ServerRequest {
-        $feUser = GeneralUtility::makeInstance(FrontendUserAuthentication::class);
-
-        if ($demand->getFeGroup() > 0) {
-            $feUser->user = [
-                'usergroup' => $demand->getFeGroup()
-            ];
-        }
-
-        $frontendRequest = new ServerRequest();
-        $pageTypeArguments = $configurationService->getPageTypeArguments($demand);
-
-        return $frontendRequest
-            ->withQueryParams($pageTypeArguments)
-            ->withAttribute('routing', $pageTypeArguments)
-            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_FE)
-            ->withAttribute('site', $demand->getSite())
-            ->withAttribute('language', $demand->getSiteLanguage())
-            ->withAttribute('frontend.user', $feUser)
-            ->withAttribute('noCache', true);
-    }
-
-    /**
-     * Trick TYPO3 into using plugins configuration in backend environment
-     */
-    private function useFrontendExtensionConfiguration()
-    {
-        $frontendExtensionConfiguration = [];
-        $this->backendExtensionConfiguration = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'];
-
-        foreach ($this->backendExtensionConfiguration as $extension => $config) {
-            if (isset($config['plugins'])) {
-                $frontendExtensionConfiguration[$extension]['modules'] = $config['plugins'];
-            }
-        }
-
-        $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'] = $frontendExtensionConfiguration;
     }
 
     private function restoreBackendExtensionConfiguration()
     {
         $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['extbase']['extensions'] = $this->backendExtensionConfiguration;
+    }
+
+    /**
+     * @return PageRenderer
+     */
+    protected function getPageRenderer(): PageRenderer
+    {
+        return GeneralUtility::makeInstance(PageRenderer::class);
     }
 }

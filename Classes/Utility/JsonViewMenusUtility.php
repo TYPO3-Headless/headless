@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Utility;
 
 use FriendsOfTYPO3\Headless\Controller\JsonViewController;
-use FriendsOfTYPO3\Headless\Dto\JsonViewDemand;
+use FriendsOfTYPO3\Headless\Dto\JsonViewDemandInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
 use TYPO3\CMS\Core\Context\Context;
@@ -37,7 +37,7 @@ class JsonViewMenusUtility
         $this->uriBuilder = $uriBuilder;
     }
 
-    public function addLanguageMenu(BackendTemplateView $view, JsonViewDemand $demand): void
+    public function addLanguageMenu(BackendTemplateView $view, JsonViewDemandInterface $demand): void
     {
         $menu = [];
 
@@ -62,7 +62,7 @@ class JsonViewMenusUtility
         }
     }
 
-    public function getTranslatedPageRecord(int $languageId, JsonViewDemand $demand): array
+    public function getTranslatedPageRecord(int $languageId, JsonViewDemandInterface $demand): array
     {
         $targetSiteLanguage = $demand->getSite()->getLanguageById($languageId);
         $languageAspect = LanguageAspectFactory::createFromSiteLanguage($targetSiteLanguage);
@@ -79,7 +79,7 @@ class JsonViewMenusUtility
         return $pageRepository->getPage($demand->getPageId());
     }
 
-    public function getCurrentDemandWithOverride(JsonViewDemand $demand, array $override = []): array
+    public function getCurrentDemandWithOverride(JsonViewDemandInterface $demand, array $override = []): array
     {
         $demandArguments = $demand->toArray();
         ArrayUtility::mergeRecursiveWithOverrule($demandArguments, $override);
@@ -87,7 +87,7 @@ class JsonViewMenusUtility
         return $demandArguments;
     }
 
-    public function addPageTypeMenu(BackendTemplateView $view, JsonViewDemand $demand, array $yamlSettings = []): void
+    public function addPageTypeMenu(BackendTemplateView $view, JsonViewDemandInterface $demand, array $yamlSettings = []): void
     {
         $menu = [];
 
@@ -113,7 +113,7 @@ class JsonViewMenusUtility
         $view->assign('pageTypesMenu', $menu);
     }
 
-    public function addShowHiddenContentOption(BackendTemplateView $view, JsonViewDemand $demand): void
+    public function addShowHiddenContentOption(BackendTemplateView $view, JsonViewDemandInterface $demand): void
     {
         $menuItem = '';
         $contentOptions = [0, 1];
@@ -133,7 +133,7 @@ class JsonViewMenusUtility
         $view->assign('showHiddenContentOption', $menuItem);
     }
 
-    public function addFrontendGroups(BackendTemplateView $view, JsonViewDemand $demand): void
+    public function addFrontendGroups(BackendTemplateView $view, JsonViewDemandInterface $demand): void
     {
         $menu = [];
         $groups = $this->getDatabaseFrontendGroups();
@@ -179,7 +179,7 @@ class JsonViewMenusUtility
         return [];
     }
 
-    protected function getDefaultMenuItemForUserGroups(JsonViewDemand $demand): array
+    protected function getDefaultMenuItemForUserGroups(JsonViewDemandInterface $demand): array
     {
         return [
             'href' => (string)$this->uriBuilder->buildUriFromRoute(
