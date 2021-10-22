@@ -12,6 +12,8 @@
 declare(strict_types=1);
 
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $configurator): void {
@@ -36,4 +38,5 @@ return static function (ContainerConfigurator $configurator): void {
     $toLoad->exclude($excludes);
 
     $services->set(JsonEncoder::class)->public();
+    $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
 };
