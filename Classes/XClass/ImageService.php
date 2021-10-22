@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\XClass;
 
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -26,7 +28,8 @@ class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
      */
     protected function getImageFromSourceString(string $src, bool $treatIdAsReference): ?FileInterface
     {
-        if ($this->environmentService->isEnvironmentInFrontendMode()) {
+        if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
+            && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend()) {
             $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
             $baseUriForProxy = $urlUtility->getProxyUrl();
 
