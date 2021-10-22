@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Seo\XmlSitemap;
 
-use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
+use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -55,14 +55,7 @@ class XmlSitemapRenderer extends \TYPO3\CMS\Seo\XmlSitemap\XmlSitemapRenderer
 
     private function getVariantValueByKey(string $variantKey): string
     {
-        $conf = $GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getConfiguration();
-        $frontendBase = GeneralUtility::makeInstance(FrontendBaseUtility::class);
-
-        return $frontendBase->resolveWithVariants(
-            $conf[$variantKey] ?? '',
-            $conf['baseVariants'] ?? null,
-            $variantKey
-        );
+        return GeneralUtility::makeInstance(UrlUtility::class)->resolveKey($variantKey);
     }
 
     private function prepareBaseUrl(): void
@@ -73,6 +66,6 @@ class XmlSitemapRenderer extends \TYPO3\CMS\Seo\XmlSitemap\XmlSitemapRenderer
             $variantKey = 'frontendBase';
         }
 
-        $this->view->assign('frontendBase', trim($this->getVariantValueByKey($variantKey), '/'));
+        $this->view->assign('frontendBase', $this->getVariantValueByKey($variantKey));
     }
 }
