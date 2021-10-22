@@ -14,12 +14,15 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Test\Unit\Hooks;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
+use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\TypoScript\TemplateService;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class HeadlessUserIntTest extends UnitTestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */

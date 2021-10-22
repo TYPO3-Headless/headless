@@ -29,7 +29,7 @@ class DefaultContentsTest extends \FriendsOfTYPO3\Headless\Test\Functional\Conte
         self::assertTrue(isset($contentTree['colPos0']));
         self::assertTrue(count($contentTree['colPos0']) > 0);
         self::assertTrue(isset($contentTree['colPos0'][0]['appearance']));
-        self::assertTrue(is_array($contentTree['colPos0'][0]['appearance']));
+        self::assertIsArray($contentTree['colPos0'][0]['appearance']);
         self::assertTrue(isset($contentTree['colPos1']));
         self::assertTrue(count($contentTree['colPos1']) > 0);
     }

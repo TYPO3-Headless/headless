@@ -26,20 +26,24 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use function is_array;
 use function parse_url;
 
-class ShortcutAndMountPointRedirect implements MiddlewareInterface
+final class ShortcutAndMountPointRedirect implements MiddlewareInterface
 {
-    /**
-     * @var TypoScriptFrontendController
-     */
-    private $controller;
+    private TypoScriptFrontendController $controller;
 
-    public function __construct(TypoScriptFrontendController $controller = null)
+    public function __construct(TypoScriptFrontendController $controller)
     {
-        $this->controller = $controller ?: $GLOBALS['TSFE'];
+        $this->controller = $controller;
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        $queryParams = $request->getQueryParams();
+        $pageType = (int)($queryParams['type'] ?? 0);
+
+        if ($pageType === 834) {
+            return $handler->handle($request);
+        }
+
         $redirectToUri = $this->getRedirectUri($request);
         if ($redirectToUri !== null && $redirectToUri !== (string)$request->getUri()) {
             $this->releaseTypoScriptFrontendControllerLocks();

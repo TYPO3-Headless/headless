@@ -32,10 +32,10 @@ class MenuSitemapSelectedPagesTest extends BaseContentTypeTest
         $this->checkAppearanceFields($contentElement, 'default', 'default', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 0, 2);
 
-        self::assertTrue(is_array($contentElement['appearance']));
-        self::assertTrue(is_array($contentElement['content']));
-        self::assertTrue(is_array($contentElement['content']['menu']));
-        self::assertTrue(is_array($contentElement['content']['menu'][0]));
+        self::assertIsArray($contentElement['appearance']);
+        self::assertIsArray($contentElement['content']);
+        self::assertIsArray($contentElement['content']['menu']);
+        self::assertIsArray($contentElement['content']['menu'][0]);
 
         self::assertEquals('Page 4', $contentElement['content']['menu'][0]['title']);
         self::assertEquals('/page4', $contentElement['content']['menu'][0]['link']);
@@ -43,14 +43,14 @@ class MenuSitemapSelectedPagesTest extends BaseContentTypeTest
         self::assertEquals('0', $contentElement['content']['menu'][0]['current']);
         self::assertEquals('0', $contentElement['content']['menu'][0]['spacer']);
         self::assertArrayHasKey('children', $contentElement['content']['menu'][0]);
-        self::assertTrue(is_array($contentElement['content']['menu'][0]['children']));
-        self::assertTrue(is_array($contentElement['content']['menu'][0]['images']));
-        self::assertTrue(empty($contentElement['content']['menu'][0]['images']));
+        self::assertIsArray($contentElement['content']['menu'][0]['children']);
+        self::assertIsArray($contentElement['content']['menu'][0]['images']);
+        self::assertEmpty($contentElement['content']['menu'][0]['images']);
         self::assertEquals('Page 5', $contentElement['content']['menu'][0]['children'][0]['title']);
         self::assertEquals('/page5', $contentElement['content']['menu'][0]['children'][0]['link']);
         self::assertEquals('0', $contentElement['content']['menu'][0]['children'][0]['active']);
         self::assertEquals('0', $contentElement['content']['menu'][0]['children'][0]['current']);
         self::assertEquals('0', $contentElement['content']['menu'][0]['children'][0]['spacer']);
-        self::assertTrue(empty($contentElement['content']['menu'][0]['children'][0]['images']));
+        self::assertEmpty($contentElement['content']['menu'][0]['children'][0]['images']);
     }
 }

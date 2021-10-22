@@ -1,0 +1,60 @@
+---
+# This GitHub Actions workflow is calculating code coverage of extension and creates a badge for it.
+name: Code coverage
+on:
+  push:
+    branches:
+      - master
+jobs:
+  code-coverage:
+    name: "Calculate code coverage"
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "${{ matrix.php-version }}"
+          coverage: xdebug
+          extensions: xdebug, sqlite
+          tools: composer:v2
+      - name: "Show Composer version"
+        run: composer --version
+      - name: "Cache dependencies installed with composer"
+        uses: actions/cache@v1
+        with:
+          key: "php${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
+          path: ~/.cache/composer
+          restore-keys: "php${{ matrix.php-version }}-composer-\n"
+      - env:
+          TYPO3: "${{ matrix.typo3-version }}"
+        name: "Install TYPO3 Core"
+        run: |
+          composer require --no-progress typo3/minimal:"$TYPO3"
+          composer show
+      - name: "Run functional tests with coverage"
+        run: composer ci:coverage:functional
+      - name: "Run unit tests with coverage"
+        run: composer ci:coverage:unit
+      - name: "Merge coverage results"
+        run: composer ci:coverage:merge
+      - name: "Generate coverage badge"
+        uses: timkrase/phpunit-coverage-badge@v1.2.0
+        with:
+          report: './coverage/clover.xml'
+          coverage_badge_path: './coverage/badge.svg'
+      - name: "Commit PHPUnit coverage results"
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: code-coverage-badge
+          FOLDER: coverage
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - 8.0
+        typo3-version:
+          - ^11.5

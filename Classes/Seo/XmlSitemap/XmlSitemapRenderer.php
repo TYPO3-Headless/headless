@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Seo\XmlSitemap;
 
-use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
+use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Seo\XmlSitemap\Exception\InvalidConfigurationException;
 
 use function is_array;
 use function parse_url;
@@ -28,13 +28,12 @@ use function trim;
 class XmlSitemapRenderer extends \TYPO3\CMS\Seo\XmlSitemap\XmlSitemapRenderer
 {
     /**
-     * @return string
-     * @throws InvalidConfigurationException
+     * @inheritDoc
      */
-    public function render(string $_, array $typoScriptConfiguration): string
+    public function render(string $_, array $typoScriptConfiguration, ServerRequestInterface $request): string
     {
         $this->prepareBaseUrl();
-        return parent::render($_, $typoScriptConfiguration);
+        return parent::render($_, $typoScriptConfiguration, $request);
     }
 
     /**
@@ -56,14 +55,7 @@ class XmlSitemapRenderer extends \TYPO3\CMS\Seo\XmlSitemap\XmlSitemapRenderer
 
     private function getVariantValueByKey(string $variantKey): string
     {
-        $conf = $GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getConfiguration();
-        $frontendBase = GeneralUtility::makeInstance(FrontendBaseUtility::class);
-
-        return $frontendBase->resolveWithVariants(
-            $conf[$variantKey] ?? '',
-            $conf['baseVariants'] ?? null,
-            $variantKey
-        );
+        return GeneralUtility::makeInstance(UrlUtility::class)->resolveKey($variantKey);
     }
 
     private function prepareBaseUrl(): void

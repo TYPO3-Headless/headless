@@ -13,17 +13,15 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Form\Finisher;
 
-use FriendsOfTYPO3\Headless\Service\SiteService;
+use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use JsonException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Request;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
-use function is_array;
 use function is_string;
 use function json_encode;
 use function ltrim;
-use function parse_url;
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -90,27 +88,16 @@ class JsonRedirectFinisher extends AbstractFinisher
         ?string $message = null
     ): ?string {
         try {
+            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
             $targetUrl = $this->getTypoScriptFrontendController()->cObj->typoLink_URL([
                 'parameter' => $pageUid,
                 'additionalParams' => $additionalParameters,
                 'forceAbsoluteUrl' => 1,
             ]);
 
-            $site = $this->request->getServerRequest()->getAttribute('site');
-            $siteService = GeneralUtility::makeInstance(SiteService::class);
-            $requestDomainUrl = $siteService->getFrontendUrl((string)$this->request->getServerRequest()->getUri(), $site->getRootPageId());
-            $parsedTargetUrl = parse_url($targetUrl);
-            $parsedDomainUrl = parse_url($requestDomainUrl);
-
-            if (is_array($parsedTargetUrl) &&
-                is_array($parsedDomainUrl) &&
-                ($parsedTargetUrl['host'] ?? '') === ($parsedDomainUrl['host'] ?? '')) {
-                $targetUrl = $parsedTargetUrl['path'] ?? '';
-            }
-
             return json_encode(
                 [
-                    'redirectUrl' => $targetUrl,
+                    'redirectUrl' => $urlUtility->prepareRelativeUrlIfPossible($targetUrl),
                     'statusCode' => $statusCode,
                     'message' => $message,
                 ],
