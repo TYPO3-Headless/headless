@@ -13,18 +13,18 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass;
 
-use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
+use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-
-use const TYPO3_MODE;
 
 class ResourceLocalDriver extends \TYPO3\CMS\Core\Resource\Driver\LocalDriver
 {
     protected function determineBaseUrl(): void
     {
-        if (TYPO3_MODE === 'BE') {
+        if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
+            && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isBackend()) {
             parent::determineBaseUrl();
 
             return;
@@ -32,13 +32,8 @@ class ResourceLocalDriver extends \TYPO3\CMS\Core\Resource\Driver\LocalDriver
 
         if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface &&
             $this->hasCapability(ResourceStorage::CAPABILITY_PUBLIC)) {
-            $conf = $GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getConfiguration();
-            $frontendBase = GeneralUtility::makeInstance(FrontendBaseUtility::class);
-            $this->configuration['baseUri'] = $frontendBase->resolveWithVariants(
-                $conf['frontendFileApi'] ?? '',
-                $conf['baseVariants'] ?? null,
-                'frontendFileApi'
-            );
+            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
+            $this->configuration['baseUri'] = $urlUtility->getStorageProxyUrl();
         }
 
         parent::determineBaseUrl();

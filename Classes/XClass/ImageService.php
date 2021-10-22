@@ -13,11 +13,12 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass;
 
-use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
+use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-use function rtrim;
 use function str_replace;
 
 class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
@@ -27,14 +28,10 @@ class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
      */
     protected function getImageFromSourceString(string $src, bool $treatIdAsReference): ?FileInterface
     {
-        if ($this->environmentService->isEnvironmentInFrontendMode()) {
-            $conf = $GLOBALS['TYPO3_REQUEST']->getAttribute('site')->getConfiguration();
-            $frontendBase = GeneralUtility::makeInstance(FrontendBaseUtility::class);
-            $baseUriForProxy = rtrim($frontendBase->resolveWithVariants(
-                $conf['frontendApiProxy'] ?? '',
-                $conf['baseVariants'] ?? null,
-                'frontendApiProxy'
-            ), '/');
+        if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
+            && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend()) {
+            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
+            $baseUriForProxy = $urlUtility->getProxyUrl();
 
             if ($baseUriForProxy) {
                 $src = str_replace($baseUriForProxy . '/', '', $src);
