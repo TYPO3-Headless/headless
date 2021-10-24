@@ -11,23 +11,29 @@ Headless allows you to render JSON from TYPO3 content. You can customize output 
 
 This extension provides backend part (JSON API) for TYPO3 PWA solution. Second part is a JavaScript application [nuxt-typo3](https://github.com/TYPO3-Initiatives/nuxt-typo3) which consumes JSON API and renders the content using Vue.js and Nuxt. See frontend documentation here: https://typo3-initiatives.github.io/nuxt-typo3/
 
-If you have any questions just drop a line in #initiative-pwa Slack channel.
+If you want to check headless and nuxt-typo3 working together see [pwa demo]()
+
+If you have any questions just drop a line in #initiative-headless-pwa Slack channel.
 
 ## Features
 
 - JSON API for content elements
+- JSON API for page and meta data
 - JSON API for navigation, layouts
-- taking into account all language/translation configuration (e.g. fallback)
-- easily extensible with custom fields or custom CE's
+- taking into account all language and translation configuration (e.g. fallback)
+- easily extendable with custom fields or custom content elements
+- custom data processors directly for headless usage
 - support for EXT:form
 - support for EXT:felogin
+- support for EXT:redirects
+- support for EXT:seo
 
 ### Additional extensions and integrations
 
-- headless support for EXT:news https://github.com/TYPO3-Initiatives/headless_news
-- headless support for EXT:solr https://github.com/TYPO3-Initiatives/headless_solr
-- headless support for EXT:powermail https://github.com/TYPO3-Initiatives/headless_powermail
-- headless support for EXT:gridelements https://github.com/itplusx/headless_gridelements
+- headless support for EXT:news [headless_news](https://github.com/TYPO3-Initiatives/headless_news)
+- headless support for EXT:solr [headless_solr](https://github.com/TYPO3-Initiatives/headless_solr)
+- headless support for EXT:powermail [headless_powermail](https://github.com/TYPO3-Initiatives/headless_powermail)
+- headless support for EXT:gridelements [headless_gridelements](https://github.com/itplusx/headless_gridelements)
 
 ## Requirements
 Extension requires TYPO3 in version at least 9.5.
@@ -47,7 +53,7 @@ Then, you should include extension typoscript template, and you are ready to go.
 [Documentation](https://docs.typo3.org/p/friendsoftypo3/headless/master/en-us/Index.html)
 
 ## JSON  Content Object
-In headless extension we implemented new JSON Content Object, which allows you to specify what fields you want to output, and how they will look. First of all, let's take a look at simple example
+In headless extension we implemented new JSON Content Object, which allows you to specify what fields you want to output, and how they will look. First, let's take a look at simple example
 ```
 lib.page = JSON
 lib.page {
