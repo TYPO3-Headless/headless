@@ -15,6 +15,7 @@ $EM_CONF[$_EXTKEY] = [
     'state' => 'beta',
     'author' => 'Łukasz Uznański',
     'author_email' => 'extensions@macopedia.pl',
+    'author_company' => 'Macopedia Sp. z o.o.',
     'category' => 'fe',
     'internal' => '',
     'version' => '3.0.0',
