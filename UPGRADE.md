@@ -27,3 +27,4 @@ __Changed behavior:__
 Typoscript
 --
 * By default, json output is streamlined & optimized. If you do not want to rewrite frontend app, please use `Configuration/TypoScript/2.x/setup.typoscript` instead default one.
+* If you would like to use version `2.x` of page output and do not touch frontend app, please also enable `headless.supportOldPageOutput` (restores default behavior with dataprocessing & typolink) flag in LocalConfiguration.php or AdditionalConfiguration.php
