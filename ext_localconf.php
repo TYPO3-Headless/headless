@@ -57,6 +57,11 @@ call_user_func(
             ];
         }
 
+        if ($features->isFeatureEnabled('headless.supportOldPageOutput')) {
+            $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['typoLink_PostProc'][] =
+                \FriendsOfTYPO3\Headless\Hooks\TypolinkHook::class . '->handleLink';
+        }
+
         $rendererRegistry = \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry::getInstance();
         $rendererRegistry->registerRendererClass(\FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer::class);
         $rendererRegistry->registerRendererClass(\FriendsOfTYPO3\Headless\Resource\Rendering\VimeoRenderer::class);
