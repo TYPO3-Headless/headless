@@ -11,8 +11,6 @@ Headless allows you to render JSON from TYPO3 content. You can customize output 
 
 This extension provides backend part (JSON API) for TYPO3 PWA solution. Second part is a JavaScript application [nuxt-typo3](https://github.com/TYPO3-Initiatives/nuxt-typo3) which consumes JSON API and renders the content using Vue.js and Nuxt. See frontend documentation here: https://typo3-initiatives.github.io/nuxt-typo3/
 
-If you want to check headless and nuxt-typo3 working together see [pwa demo]()
-
 If you have any questions just drop a line in #initiative-headless-pwa Slack channel.
 
 ## Features
@@ -36,8 +34,21 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 - headless support for EXT:gridelements [headless_gridelements](https://github.com/itplusx/headless_gridelements)
 
 ## Requirements
-Extension requires TYPO3 in version at least 9.5.
+With the release of TYPO3 v11.5 LTS we have to move support for TYPO3 v9 and v10 to another branch as changes between those two versions are incompatible. Version 3.x and master branch will support TYPO3 v11, and headless version 2.x keep support for v9 and v10.
 
+#### Headless version 3.x
+|   	|  PHP 7.2	| PHP 7.3   |  PHP 7.4 	|  PHP 8.0  	|
+|---	|---	|---	|---	|---	|
+|  TYPO3 v9.5  	|   no 	|   no 	|   no	|   no	|
+|  TYPO3 v10.4	|   no	|   no	|   no	|   no	|
+|  TYPO3 v11.5 	|   no	|   no	|   yes	|   yes	|
+
+#### Headless version 2.x
+|   	|  PHP 7.2	| PHP 7.3   |  PHP 7.4 	|  PHP 8.0  	|
+|---	|---	|---	|---	|---	|
+|  TYPO3 v9.5  	|   yes 	|   yes 	|   yes	|   no	|
+|  TYPO3 v10.4	|   yes	|   yes	|   yes	|   no	|
+|  TYPO3 v11.5 	|   no	|   no	|   no	|   no	|
 ## Quickstart / Demo
 
 If you want to take a look at working demo including frontend, backend and demo data, use our DDEV based demo project here:
@@ -140,10 +151,19 @@ Output
     ]
 }
 ```
-### Customizing
+## Customizing
 You can override every field in output using typoscript. This extension allows you to use standard typoscript objects such as TEXT, COA, CASE.
 
-### DataProcessing
+## Page response
+n headless v3.0 we introduce a new, smaller, faster and more flat page response.
+If you want to keep compatibility with your frontend application, you can load a deprecated typoscript template for version 2.x and keep the old structure of the response running.
+#### New response (version 3.x) ⬇️
+![image](https://user-images.githubusercontent.com/15106746/136414744-88d54d44-2f3c-4d7d-9911-832ceefcfe16.png)
+
+#### Old response (version 2.x) ⬇️
+![image](https://user-images.githubusercontent.com/15106746/136414370-a4bec856-5a95-4965-b60b-5a37be5ce5c9.png)
+
+## DataProcessing
 You can use Data Processors just like in `FLUIDTEMPLATE` Content Object, e.g.
 
 ```
@@ -158,6 +178,22 @@ lib.languages {
   }
 }
 ```
+
+## Built in data processors
+We provide multiple data processorors for headless usage
+
+### FilesProcessor
+This processor should be used to process files (standard or media files).
+Also, it allows you to proccess images.
+### GalleryProcessor
+Should be used along with `FilesProcessor` (chained). Used for processing mutliple
+media files.
+### MenuProcessor
+Used for navigation. Works just like standard menu processor.
+### FlexFormProcessor
+Used for proecessing flexforms.
+### RootSitesProcessor
+Render your all headless sites configuration for your frontend application.
 
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
