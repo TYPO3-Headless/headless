@@ -11,7 +11,6 @@
 
 declare(strict_types=1);
 
-use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -25,18 +24,18 @@ return static function (ContainerConfigurator $configurator): void {
 
     $toLoad = $services->load('FriendsOfTYPO3\\Headless\\', '../Classes/*');
 
-    $excludes = [];
+    $excludes = ['../Classes/Seo/XmlSitemap/XmlSitemapRenderer.php'];
 
     if (!class_exists(\TYPO3\CMS\Form\Controller\FormFrontendController::class, false)) {
-        $excludes = [
+        $excludes = array_merge($excludes, [
             '../Classes/Form/*',
             '../Classes/XClass/Controller/FormFrontendController.php',
             '../Classes/XClass/FormRuntime.php',
-        ];
+        ]);
     }
 
     $toLoad->exclude($excludes);
 
-    $services->set(JsonEncoder::class)->public();
     $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
+    $services->set(FriendsOfTYPO3\Headless\Seo\XmlSitemap\XmlSitemapRenderer::class)->public()->share(false);
 };

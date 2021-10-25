@@ -27,13 +27,16 @@ use function trim;
  */
 class XmlSitemapRenderer extends \TYPO3\CMS\Seo\XmlSitemap\XmlSitemapRenderer
 {
-    /**
-     * @inheritDoc
-     */
-    public function render(string $_, array $typoScriptConfiguration, ServerRequestInterface $request): string
+    protected function renderSitemap(ServerRequestInterface $request, string $sitemap, string $sitemapType): string
     {
         $this->prepareBaseUrl();
-        return parent::render($_, $typoScriptConfiguration, $request);
+        return parent::renderSitemap($request, $sitemap, $sitemapType);
+    }
+
+    protected function renderIndex(ServerRequestInterface $request, string $sitemapType): string
+    {
+        $this->prepareBaseUrl();
+        return parent::renderIndex($request, $sitemapType);
     }
 
     /**
