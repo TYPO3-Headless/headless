@@ -101,6 +101,16 @@ and change return object of typolink (property `url` vs `href`)
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.supportOldPageOutput'] = true;
 
+**headless.jsonViewModule**
+
+Available since `3.0`
+
+Enable experimental JsonView backend module which allows preview in backend module of page json response
+when passing specific pageType, pageArguments, usergroups, language.
+
+.. code-block:: php
+
+   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.jsonViewModule'] = true;
 
 **Availability of feature toggles by version**
 
@@ -140,6 +150,10 @@ and change return object of typolink (property `url` vs `href`)
       :Header3:   removed
 
    -  :Header1:   headless.supportOldPageOutput
+      :Header2:   not available
+      :Header3:   >= 3.0
+
+   -  :Header1:   headless.jsonViewModule
       :Header2:   not available
       :Header3:   >= 3.0
 
@@ -337,3 +351,77 @@ To use JsonRedirect you have to define it in setup.yaml of your extension form's
              finishersDefinition:
                JsonRedirect:
                  implementationClassName: 'FriendsOfTYPO3\Headless\Form\Finisher\JsonRedirectFinisher'
+
+
+[BETA] JsonView backend module
+========================
+
+
+.. image:: ../Images/Configuration/JsonViewModule.png
+    :alt: JsonView Module icon with label
+
+|
+
+JsonView module is experimental approach for previewing json response
+of a page in different contexts like pagetype, page arguments,
+usergroup, langauge, show/hide hidden content.
+
+``!WARNING This is an experimental module, please don't use it on production environment at this time.``
+
+.. image:: ../Images/Configuration/JsonViewModule-settings.png
+  :alt: Root page for the API endpoint
+
+
+.. image:: ../Images/Configuration/JsonViewModule-example.png
+  :alt: Root page for the API endpoint
+
+|
+
+``PageTypeModes``
+
+You can set context in which you want to preview a page.
+
+By default there are 3 settings available:
+
+- *default* - standard response with page data and content
+- *initialData* - standard response from pageType=834
+- *detailNews* (commented out) - example of calling detail action of news extension for test purposes
+
+|
+
+.. code-block:: yaml
+
+    pageTypeModes:
+      default:
+        title: Default page view
+        pageType: 0
+        bootContent: 1
+        parserClassname: FriendsOfTYPO3\Headless\Service\Parser\PageJsonParser
+
+      initialData:
+        title: Initial Data
+        pageType: 834
+        parserClassname: FriendsOfTYPO3\Headless\Service\Parser\DefaultJsonParser
+
+    #  Example of detail news preset
+    #
+    #  detailNews:
+    #    title: Detail news
+    #    pageType: 0
+    #    bootContent: 1
+    #    arguments:
+    #      tx_news_pi1:
+    #        action: detail
+    #        controller: News
+    #        news: 1
+
+|
+
+
+``Custom YAML configuration``
+
+You can always create your own yaml configuration and set it in extension configuration.
+
+.. image:: ../Images/Configuration/JsonViewModule-extconf.png
+  :alt: Root page for the API endpoint
+

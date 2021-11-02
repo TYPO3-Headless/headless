@@ -25,6 +25,7 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 - support for EXT:felogin
 - support for EXT:redirects
 - support for EXT:seo
+- [BETA] backend module for simulating page preview (with specific page type, lang, usergroup)
 
 ### Additional extensions and integrations
 
