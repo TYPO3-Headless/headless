@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass\Typolink;
 
+/**
+ * @codeCoverageIgnore
+ */
 class LinkResult extends \TYPO3\CMS\Frontend\Typolink\LinkResult
 {
     public function jsonSerialize(): array

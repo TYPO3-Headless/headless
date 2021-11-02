@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass;
 
+/**
+ * @codeCoverageIgnore
+ */
 class FormRuntime extends \TYPO3\CMS\Form\Domain\Runtime\FormRuntime
 {
     /**
