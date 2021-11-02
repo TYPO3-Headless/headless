@@ -1,0 +1,61 @@
+div[class*="tab-"] {
+    display: none
+}
+
+div[class*="tab-"].active {
+    display: block
+}
+
+.ce-title {
+    margin-left: 0.8em;
+}
+
+.btn-default.active {
+    color: #333;
+    background-color: #d5d4d4;
+    border-color: #7b7b7b;
+}
+
+.ce-block {
+    margin-bottom: 1em;
+}
+
+.ce-block .code-toolbar {
+    display: none;
+}
+
+.ce-block.show-code .code-toolbar {
+    display: block;
+}
+
+.ce-block .fa {
+    cursor: pointer;
+}
+
+.ce-block.show-code .retract,
+.ce-block .expand {
+    display: inline;
+}
+
+.ce-block .retract,
+.ce-block.show-code .expand {
+    display: none;
+}
+
+a.ce-hidden,
+.ce-hidden .ce-title,
+.ce-hidden .language-json {
+    opacity: 0.65 !important;
+}
+
+.page-title h1 .t3-icon {
+    display: none;
+}
+
+.settings div:last-of-type{
+    margin-bottom: 1.2em;
+}
+
+.content-buttons {
+    margin-top: 1em;
+}
