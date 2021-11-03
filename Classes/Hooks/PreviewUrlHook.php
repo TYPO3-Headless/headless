@@ -18,7 +18,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * PreviewUrlHook
- * 
+ *
  * @codeCoverageIgnore
  **/
 class PreviewUrlHook
