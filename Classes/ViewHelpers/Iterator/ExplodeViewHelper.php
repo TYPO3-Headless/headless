@@ -16,6 +16,7 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 /**
  * Explode ViewHelper
  * Explodes a string by $glue
+ * @codeCoverageIgnore
  */
 class ExplodeViewHelper extends AbstractViewHelper
 {

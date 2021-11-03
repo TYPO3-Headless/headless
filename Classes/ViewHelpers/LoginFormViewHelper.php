@@ -48,8 +48,10 @@ use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
  *
  * This automatically inserts the value of ``{customer.name}`` inside the
  * textbox and adjusts the name of the textbox accordingly.
+ *
+ * @codeCoverageIgnore
  */
-class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
+class LoginFormViewHelper extends FormViewHelper
 {
     /**
      * @var array
@@ -155,8 +157,8 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
      */
     protected function renderAdditionalIdentityFields()
     {
-        if ($this->viewHelperVariableContainer->exists(\TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class, 'additionalIdentityProperties')) {
-            $additionalIdentityProperties = $this->viewHelperVariableContainer->get(\TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class, 'additionalIdentityProperties');
+        if ($this->viewHelperVariableContainer->exists(FormViewHelper::class, 'additionalIdentityProperties')) {
+            $additionalIdentityProperties = $this->viewHelperVariableContainer->get(FormViewHelper::class, 'additionalIdentityProperties');
             $output = '';
             foreach ($additionalIdentityProperties as $identity) {
                 $this->addHiddenField('identity', $identity);
@@ -209,7 +211,7 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
     protected function addFieldNamePrefixToViewHelperVariableContainer()
     {
         $fieldNamePrefix = $this->getFieldNamePrefix();
-        $this->viewHelperVariableContainer->add(\TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class, 'fieldNamePrefix', $fieldNamePrefix);
+        $this->viewHelperVariableContainer->add(FormViewHelper::class, 'fieldNamePrefix', $fieldNamePrefix);
     }
 
     /**
@@ -251,7 +253,7 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
     {
         $formFieldNames
             = $this->viewHelperVariableContainer->get(
-                \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class,
+                FormViewHelper::class,
                 'formFieldNames'
             );
         $requestHash

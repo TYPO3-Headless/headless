@@ -15,6 +15,7 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
  * Converts the JSON encoded argument into a PHP variable
+ * @codeCoverageIgnore
  */
 class DecodeViewHelper extends AbstractViewHelper
 {

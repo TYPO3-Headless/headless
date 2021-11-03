@@ -24,6 +24,8 @@ use function trim;
 /**
  * Class to render the XML Sitemap to be used as a UserFunction
  * @internal this class is not part of TYPO3's Core API.
+ *
+ * @codeCoverageIgnore
  */
 class XmlSitemapRenderer extends \TYPO3\CMS\Seo\XmlSitemap\XmlSitemapRenderer
 {
