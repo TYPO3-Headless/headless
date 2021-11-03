@@ -27,6 +27,9 @@ use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use TYPO3\CMS\Extbase\Service\ExtensionService;
 
+/**
+ * @codeCoverageIgnore
+ */
 class JsonViewController extends ActionController
 {
     public const MODULE_NAME = 'web_HeadlessJsonview';

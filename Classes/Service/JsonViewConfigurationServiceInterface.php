@@ -14,6 +14,9 @@ namespace FriendsOfTYPO3\Headless\Service;
 use FriendsOfTYPO3\Headless\Dto\JsonViewDemandInterface;
 use TYPO3\CMS\Core\Routing\PageArguments;
 
+/**
+ * @codeCoverageIgnore
+ */
 interface JsonViewConfigurationServiceInterface
 {
     public function getSettings(): array;

@@ -25,6 +25,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
+/**
+ * @codeCoverageIgnore
+ */
 final class BackendTsfeService implements BackendTsfeServiceInterface
 {
     private array $backendExtensionConfiguration = [];

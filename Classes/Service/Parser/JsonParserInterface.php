@@ -11,6 +11,9 @@
 
 namespace FriendsOfTYPO3\Headless\Service\Parser;
 
+/**
+ * @codeCoverageIgnore
+ */
 interface JsonParserInterface
 {
     public function parseJson($jsonArray): bool;

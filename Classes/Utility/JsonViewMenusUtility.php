@@ -25,6 +25,9 @@ use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * @codeCoverageIgnore
+ */
 class JsonViewMenusUtility
 {
     protected UriBuilder $uriBuilder;

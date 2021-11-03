@@ -14,6 +14,9 @@ namespace FriendsOfTYPO3\Headless\Service;
 use FriendsOfTYPO3\Headless\Dto\JsonViewDemandInterface;
 use TYPO3\CMS\Core\Http\ServerRequest;
 
+/**
+ * @codeCoverageIgnore
+ */
 interface BackendTsfeServiceInterface
 {
     public function bootFrontendControllerForPage(int $pageId, JsonViewDemandInterface $demand, JsonViewConfigurationServiceInterface $configurationService, array $settings, bool $bootContent = false): void;

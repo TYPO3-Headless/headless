@@ -22,6 +22,8 @@ use TYPO3\CMS\Frontend\Resource\FileCollector;
 
 /**
  * Class FilesProcessor
+ * 
+ * @codeCoverageIgnore
  */
 class FilesProcessor implements DataProcessorInterface
 {
