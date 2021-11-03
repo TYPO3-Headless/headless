@@ -51,7 +51,7 @@ use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
  *
  * @codeCoverageIgnore
  */
-class LoginFormViewHelper extends FormViewHelper
+class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
 {
     /**
      * @var array
@@ -157,8 +157,8 @@ class LoginFormViewHelper extends FormViewHelper
      */
     protected function renderAdditionalIdentityFields()
     {
-        if ($this->viewHelperVariableContainer->exists(FormViewHelper::class, 'additionalIdentityProperties')) {
-            $additionalIdentityProperties = $this->viewHelperVariableContainer->get(FormViewHelper::class, 'additionalIdentityProperties');
+        if ($this->viewHelperVariableContainer->exists(\TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class, 'additionalIdentityProperties')) {
+            $additionalIdentityProperties = $this->viewHelperVariableContainer->get(\TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class, 'additionalIdentityProperties');
             $output = '';
             foreach ($additionalIdentityProperties as $identity) {
                 $this->addHiddenField('identity', $identity);
@@ -211,7 +211,7 @@ class LoginFormViewHelper extends FormViewHelper
     protected function addFieldNamePrefixToViewHelperVariableContainer()
     {
         $fieldNamePrefix = $this->getFieldNamePrefix();
-        $this->viewHelperVariableContainer->add(FormViewHelper::class, 'fieldNamePrefix', $fieldNamePrefix);
+        $this->viewHelperVariableContainer->add(\TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class, 'fieldNamePrefix', $fieldNamePrefix);
     }
 
     /**
@@ -253,7 +253,7 @@ class LoginFormViewHelper extends FormViewHelper
     {
         $formFieldNames
             = $this->viewHelperVariableContainer->get(
-                FormViewHelper::class,
+                \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class,
                 'formFieldNames'
             );
         $requestHash
