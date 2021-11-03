@@ -19,6 +19,9 @@ use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * @codeCoverageIgnore
+ */
 class ResourceLocalDriver extends \TYPO3\CMS\Core\Resource\Driver\LocalDriver
 {
     protected function determineBaseUrl(): void

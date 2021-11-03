@@ -26,6 +26,9 @@ use TYPO3\CMS\Frontend\Typolink\UnableToLinkException;
 use function count;
 use function parse_url;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PageLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\PageLinkBuilder
 {
     /**

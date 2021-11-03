@@ -40,6 +40,7 @@ use function str_replace;
  *
  * Scope: frontend
  * @internal
+ * @codeCoverageIgnore
  */
 class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendController
 {
