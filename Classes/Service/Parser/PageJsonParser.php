@@ -20,6 +20,9 @@ use TYPO3\CMS\Backend\View\PageLayoutContext;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PageJsonParser implements JsonParserInterface
 {
     protected array $labels = [];

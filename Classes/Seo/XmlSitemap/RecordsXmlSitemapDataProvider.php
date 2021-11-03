@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Seo\XmlSitemap;
 
+/**
+ * @codeCoverageIgnore
+ */
 class RecordsXmlSitemapDataProvider extends \TYPO3\CMS\Seo\XmlSitemap\RecordsXmlSitemapDataProvider
 {
     protected function defineUrl(array $data): array

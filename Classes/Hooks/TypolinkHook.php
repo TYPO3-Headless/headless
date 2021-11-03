@@ -17,6 +17,9 @@ use FriendsOfTYPO3\Headless\XClass\Typolink\LinkResult;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
+/**
+ * @codeCoverageIgnore
+ */
 class TypolinkHook
 {
     public function handleLink(array $params, ContentObjectRenderer $ref): void

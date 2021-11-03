@@ -19,6 +19,9 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * @codeCoverageIgnore
+ */
 final class JsonViewDemand implements JsonViewDemandInterface
 {
     /**

@@ -48,6 +48,8 @@ use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
  *
  * This automatically inserts the value of ``{customer.name}`` inside the
  * textbox and adjusts the name of the textbox accordingly.
+ *
+ * @codeCoverageIgnore
  */
 class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
 {

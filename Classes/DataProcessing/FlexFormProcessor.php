@@ -32,6 +32,8 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *   fieldName = pi_flexform
  *   as = flexform
  * }
+ *
+ * @codeCoverageIgnore
  */
 class FlexFormProcessor implements DataProcessorInterface
 {

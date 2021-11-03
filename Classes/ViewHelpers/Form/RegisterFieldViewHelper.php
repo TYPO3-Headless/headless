@@ -15,6 +15,8 @@ namespace FriendsOfTYPO3\Headless\ViewHelpers\Form;
 
 /**
  * Registers field for generating hidden fields
+ *
+ * @codeCoverageIgnore
  */
 class RegisterFieldViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\AbstractFormFieldViewHelper
 {

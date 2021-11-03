@@ -23,6 +23,9 @@ use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 
+/**
+ * @codeCoverageIgnore
+ */
 final class JsonViewConfigurationService implements JsonViewConfigurationServiceInterface
 {
     protected array $settings = [];

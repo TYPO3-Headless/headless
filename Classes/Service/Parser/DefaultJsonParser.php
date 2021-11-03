@@ -18,6 +18,9 @@ use TYPO3\CMS\Backend\View\BackendLayout\ContentFetcher;
 use TYPO3\CMS\Backend\View\PageLayoutContext;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 
+/**
+ * @codeCoverageIgnore
+ */
 class DefaultJsonParser implements JsonParserInterface
 {
     protected array $labels = [];

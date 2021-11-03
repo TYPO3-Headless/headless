@@ -14,6 +14,9 @@ namespace FriendsOfTYPO3\Headless\Dto;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 
+/**
+ * @codeCoverageIgnore
+ */
 interface JsonViewDemandInterface
 {
     public function getPageId(): int;
