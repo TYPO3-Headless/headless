@@ -55,7 +55,7 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  * }
  *
  * where "as" means the variable to be containing the result-set from the DB query.
- * 
+ *
  * @codeCoverageIgnore
  */
 class DatabaseQueryProcessor implements DataProcessorInterface

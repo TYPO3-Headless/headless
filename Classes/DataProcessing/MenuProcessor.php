@@ -71,7 +71,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
  *     }
  *   }
  * }
- * 
+ *
  * @codeCoverageIgnore
  */
 class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
