@@ -1,6 +1,6 @@
 headless_domains = PAGE
 headless_domains {
-    typeNum = 1608564571
+    typeNum = 835
 
     config {
         no_cache = 0
