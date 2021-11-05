@@ -58,8 +58,6 @@ final class DomainSchema implements SiteSchemaInterface
                 $locales[] = $language->getTypo3Language();
             }
 
-            $conf = $site->getConfiguration();
-
             $domain = [
                 'name' => str_replace($protocol, '', $url),
                 'baseURL' => $url,

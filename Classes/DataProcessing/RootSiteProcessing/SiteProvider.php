@@ -20,6 +20,7 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+use function array_filter;
 use function array_map;
 use function array_values;
 use function count;
@@ -140,13 +141,16 @@ final class SiteProvider implements SiteProviderInterface
         $allSites = $this->siteFinder->getAllSites();
 
         if (count($allowedSites) === 0) {
-            return $allSites;
+            return array_filter($allSites, static function (Site $site) {
+                return $site->getConfiguration()['headless'] ?? false;
+            });
         }
 
         $sites = [];
 
         foreach ($allSites as $site) {
-            if (in_array($site->getRootPageId(), $allowedSites, true)) {
+            if (in_array($site->getRootPageId(), $allowedSites, true) &&
+                $site->getConfiguration()['headless'] ?? false) {
                 $sites[] = $site;
             }
         }
