@@ -17,6 +17,7 @@ use JsonException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use function json_encode;
+
 use const JSON_THROW_ON_ERROR;
 
 final class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
@@ -36,7 +37,7 @@ final class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
             return json_encode($data, $options);
         } catch (JsonException $e) {
             $this->logger->critical($e->getMessage());
-            return json_encode('[]');
+            return json_encode([]);
         }
     }
 }
