@@ -101,7 +101,7 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
         foreach ($sKeyArray as $theKey) {
             $theValue = $setup[$theKey];
             if ((string)$theKey && strpos($theKey, '.') === false) {
-                $conf = $setup[$theKey . '.'];
+                $conf = $setup[$theKey . '.'] ?? [];
                 $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
                 if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
