@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Utility;
 
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\Resource\AbstractFile;
@@ -35,19 +36,55 @@ class FileUtility
     public const LQIP_RATIO = 0.1;
 
     /**
+     * @var ContentObjectRenderer
+     */
+    protected $contentObjectRenderer;
+
+    /**
+     * @param RendererRegistry
+     */
+    protected $rendererRegistry;
+
+    /**
+     * @var ImageService
+     */
+    protected $imageService;
+
+    /**
+     * @var ServerRequestInterface
+     */
+    protected $serverRequest;
+
+    /**
+     * @param ContentObjectRenderer|null $contentObjectRenderer
+     * @param RendererRegistry|null $rendererRegistry
+     * @param ImageService|null $imageService
+     * @param ServerRequestInterface|null $serverRequest
+     */
+    public function __construct(
+        ?ContentObjectRenderer $contentObjectRenderer = null,
+        ?RendererRegistry $rendererRegistry = null,
+        ?ImageService $imageService = null,
+        ?ServerRequestInterface $serverRequest = null
+    ) {
+        $this->contentObjectRenderer = $contentObjectRenderer ?? GeneralUtility::makeInstance(ContentObjectRenderer::class);
+        $this->rendererRegistry = $rendererRegistry ?? GeneralUtility::makeInstance(RendererRegistry::class);
+        $this->imageService = $imageService ?? GeneralUtility::makeInstance(ImageService::class);
+        $this->serverRequest = $serverRequest ?? ($GLOBALS['TYPO3_REQUEST'] ?? null);
+    }
+
+    /**
      * @param FileReference|File $fileReference
-     * @param $dimensions
-     * @param $cropVariant
+     * @param array $dimensions
+     * @param string $cropVariant
      * @return array
      */
-    public function processFile($fileReference, array $dimensions = [], $cropVariant = 'default'): array
+    public function processFile($fileReference, array $dimensions = [], string $cropVariant = 'default'): array
     {
-        /** @var ContentObjectRenderer $cObj */
-        $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $fileReferenceUid = $fileReference->getUid();
         $uidLocal = $fileReference->getProperty('uid_local');
         $metaData = $fileReference->toArray();
-        $fileRenderer = RendererRegistry::getInstance()->getRenderer($fileReference);
+        $fileRenderer = $this->rendererRegistry->getRenderer($fileReference);
         $crop = $fileReference->getProperty('crop');
         $originalFileUrl = $fileReference->getPublicUrl();
 
@@ -55,7 +92,7 @@ class FileUtility
             if ($fileReference->getMimeType() !== 'image/svg+xml') {
                 $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
             }
-            $publicUrl = $this->getImageService()->getImageUri($fileReference, true);
+            $publicUrl = $this->imageService->getImageUri($fileReference, true);
         } elseif (isset($fileRenderer)) {
             $publicUrl = $fileRenderer->render($fileReference, '', '', ['returnUrl' => true]);
         } else {
@@ -75,9 +112,9 @@ class FileUtility
                 'uidLocal' => $uidLocal,
                 'fileReferenceUid' => $fileReferenceUid,
                 'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getSize()),
-                'link' => !empty($metaData['link']) ? $cObj->typoLink_URL([
-                    'parameter' => $metaData['link']
-                ]) : null,
+                'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL([
+                                                                                                     'parameter' => $metaData['link']
+                                                                                                 ]) : null,
                 'dimensions' => [
                     'width' => $fileReference->getProperty('width'),
                     'height' => $fileReference->getProperty('height'),
@@ -103,12 +140,11 @@ class FileUtility
     {
         try {
             $properties = $image->getProperties();
-            $imageService = GeneralUtility::makeInstance(ImageService::class);
             $cropString = $properties['crop'];
             if ($image->hasProperty('crop') && $image->getProperty('crop')) {
                 $cropString = $image->getProperty('crop');
             }
-            $cropVariantCollection = CropVariantCollection::create((string)$cropString);
+            $cropVariantCollection = $this->createCropVariant((string)$cropString);
             $cropVariant = $cropVariant ?: 'default';
             $cropArea = $cropVariantCollection->getCropArea($cropVariant);
             $processingInstructions = [
@@ -120,7 +156,7 @@ class FileUtility
                 'maxHeight' => $dimensions['maxHeight'] ?? $properties['maxHeight'],
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
             ];
-            return $imageService->applyProcessingInstructions($image, $processingInstructions);
+            return $this->imageService->applyProcessingInstructions($image, $processingInstructions);
         } catch (\UnexpectedValueException $e) {
         } catch (\RuntimeException $e) {
         } catch (\InvalidArgumentException $e) {
@@ -161,7 +197,7 @@ class FileUtility
         }
 
         $croppingConfiguration = $fileObject->getProperty('crop');
-        $cropVariantCollection = CropVariantCollection::create((string)$croppingConfiguration);
+        $cropVariantCollection = $this->createCropVariant($croppingConfiguration);
         return (int)$cropVariantCollection->getCropArea($cropVariant)->makeAbsoluteBasedOnFile($fileObject)->asArray()[$dimensionalProperty];
     }
 
@@ -171,7 +207,7 @@ class FileUtility
      */
     protected function calculateKilobytesToFileSize(int $value): string
     {
-        $units = LocalizationUtility::translate('viewhelper.format.bytes.units', 'fluid');
+        $units = $this->translate('viewhelper.format.bytes.units', 'fluid');
         $units = GeneralUtility::trimExplode(',', $units, true);
         $bytes = max($value, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
@@ -186,14 +222,16 @@ class FileUtility
      */
     protected function getNormalizedParams(): NormalizedParams
     {
-        return $GLOBALS['TYPO3_REQUEST']->getAttribute('normalizedParams');
+        return $this->serverRequest->getAttribute('normalizedParams');
     }
 
-    /**
-     * @return ImageService
-     */
-    protected function getImageService(): ImageService
+    protected function createCropVariant(string $cropString): CropVariantCollection
     {
-        return GeneralUtility::makeInstance(ImageService::class);
+        return CropVariantCollection::create($cropString);
+    }
+
+    protected function translate(string $key, string $extensionName): ?string
+    {
+        return LocalizationUtility::translate($key, $extensionName);
     }
 }
