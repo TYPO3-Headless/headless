@@ -56,6 +56,11 @@ class FileUtility
     protected $serverRequest;
 
     /**
+     * @var array
+     */
+    protected $errors = [];
+
+    /**
      * @param ContentObjectRenderer|null $contentObjectRenderer
      * @param RendererRegistry|null $rendererRegistry
      * @param ImageService|null $imageService
@@ -93,7 +98,7 @@ class FileUtility
                 $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
             }
             $publicUrl = $this->imageService->getImageUri($fileReference, true);
-        } elseif (isset($fileRenderer)) {
+        } elseif ($fileRenderer !== null) {
             $publicUrl = $fileRenderer->render($fileReference, '', '', ['returnUrl' => true]);
         } else {
             $publicUrl = $this->getAbsoluteUrl($fileReference->getPublicUrl());
@@ -112,9 +117,11 @@ class FileUtility
                 'uidLocal' => $uidLocal,
                 'fileReferenceUid' => $fileReferenceUid,
                 'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getSize()),
-                'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL([
-                                                                                                     'parameter' => $metaData['link']
-                                                                                                 ]) : null,
+                'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL(
+                    [
+                        'parameter' => $metaData['link']
+                    ]
+                ) : null,
                 'dimensions' => [
                     'width' => $fileReference->getProperty('width'),
                     'height' => $fileReference->getProperty('height'),
@@ -161,6 +168,10 @@ class FileUtility
         } catch (\RuntimeException $e) {
         } catch (\InvalidArgumentException $e) {
         }
+
+        $type = lcfirst(get_class($image));
+        $status = get_class($e);
+        $this->errors['processImageFile'][$type . '-' . $image->getUid()] = $status;
     }
 
     /**
@@ -180,6 +191,11 @@ class FileUtility
         return $fileUrl;
     }
 
+    public function getErrors()
+    {
+        return $this->errors;
+    }
+
     /**
      * When retrieving the height or width for a media file
      * a possible cropping needs to be taken into account.
@@ -190,15 +206,19 @@ class FileUtility
      * @param string $cropVariant defaults to 'default' variant
      * @return int
      */
-    protected function getCroppedDimensionalProperty(FileInterface $fileObject, string $dimensionalProperty, string $cropVariant = 'default'): int
-    {
+    protected function getCroppedDimensionalProperty(
+        FileInterface $fileObject,
+        string $dimensionalProperty,
+        string $cropVariant = 'default'
+    ): int {
         if (!$fileObject->hasProperty('crop') || empty($fileObject->getProperty('crop'))) {
             return (int)$fileObject->getProperty($dimensionalProperty);
         }
 
         $croppingConfiguration = $fileObject->getProperty('crop');
         $cropVariantCollection = $this->createCropVariant($croppingConfiguration);
-        return (int)$cropVariantCollection->getCropArea($cropVariant)->makeAbsoluteBasedOnFile($fileObject)->asArray()[$dimensionalProperty];
+        return (int)$cropVariantCollection->getCropArea($cropVariant)->makeAbsoluteBasedOnFile($fileObject)->asArray(
+        )[$dimensionalProperty];
     }
 
     /**
@@ -230,6 +250,9 @@ class FileUtility
         return CropVariantCollection::create($cropString);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     protected function translate(string $key, string $extensionName): ?string
     {
         return LocalizationUtility::translate($key, $extensionName);
