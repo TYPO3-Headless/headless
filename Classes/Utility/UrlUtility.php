@@ -111,7 +111,7 @@ final class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInter
                 $url
             );
         } catch (SiteNotFoundException $e) {
-            $this->logger->error($e->getMessage());
+            $this->logError($e->getMessage());
         }
 
         return $url;
@@ -147,6 +147,16 @@ final class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInter
         }
 
         return $targetUrl;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function logError(string $message): void
+    {
+        if ($this->logger) {
+            $this->logger->error($message);
+        }
     }
 
     /**
@@ -186,7 +196,7 @@ final class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInter
                     return rtrim($baseVariant[$returnField] ?? '', '/');
                 }
             } catch (SyntaxError $e) {
-                $this->logger->error($e->getMessage());
+                $this->logError($e->getMessage());
                 // silently fail and do not evaluate
                 // no logger here, as Site is currently cached and serialized
             }
