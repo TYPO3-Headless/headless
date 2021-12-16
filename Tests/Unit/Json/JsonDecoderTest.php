@@ -57,6 +57,17 @@ class JsonDecoderTest extends UnitTestCase
         $encoded = json_encode($value);
 
         self::assertEquals([json_decode($encoded)], $jsonDecoder->decode([$encoded]));
+
+        $value = ['test' => ['test' => 1]];
+        self::assertEquals($value, $jsonDecoder->decode($value));
+
+        $value = 123;
+        $encoded = json_encode($value);
+        self::assertEquals([json_decode($encoded)], $jsonDecoder->decode([$value]));
+
+        $value = ['teststring'];
+        $encoded = json_encode($value);
+        self::assertEquals(json_decode($encoded), $jsonDecoder->decode(['teststring']));
     }
 
     public function possibleJsonProvider(): array
