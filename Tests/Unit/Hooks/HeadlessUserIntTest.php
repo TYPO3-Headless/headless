@@ -252,15 +252,18 @@ class HeadlessUserIntTest extends UnitTestCase
         $headlessUserInt = new HeadlessUserInt();
 
         $genericUserIntScriptTag = '<!--INT_SCRIPT.d53df2a300e62171a7b4882c4b88a153-->';
-        $expectedOutput = 'HEADLESS_INT_START<<' . $genericUserIntScriptTag . '>>HEADLESS_INT_END';
+        $expectedOutput = HeadlessUserInt::STANDARD . '_START<<' . $genericUserIntScriptTag . '>>' . HeadlessUserInt::STANDARD . '_END';
         $this->assertSame($expectedOutput, $headlessUserInt->wrap($genericUserIntScriptTag));
 
         $testString = '12345test12345test12345test12345test12345test';
         $this->assertSame($testString, $headlessUserInt->wrap($testString));
 
-        $expectedOutput = 'NESTED_HEADLESS_INT_START<<' . $genericUserIntScriptTag . '>>NESTED_HEADLESS_INT_END';
+        $expectedOutput = HeadlessUserInt::NESTED . '_START<<' . $genericUserIntScriptTag . '>>' . HeadlessUserInt::NESTED . '_END';
         $this->assertSame($expectedOutput, $headlessUserInt->wrap($genericUserIntScriptTag, HeadlessUserInt::NESTED));
 
-        $this->assertSame(strtoupper($genericUserIntScriptTag), $headlessUserInt->wrap(strtoupper($genericUserIntScriptTag)));
+        $this->assertSame(
+            strtoupper($genericUserIntScriptTag),
+            $headlessUserInt->wrap(strtoupper($genericUserIntScriptTag))
+        );
     }
 }
