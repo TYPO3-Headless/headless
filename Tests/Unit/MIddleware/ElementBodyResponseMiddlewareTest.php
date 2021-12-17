@@ -32,15 +32,7 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
      */
     public function processTest()
     {
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
-        $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-        $middleware = new ElementBodyResponseMiddleware($tsfe->reveal(), new JsonEncoder());
+        $middleware = new ElementBodyResponseMiddleware($this->getTsfeProphecy()->reveal(), new JsonEncoder());
 
         $responseArray = ['content' => ['colPos1' => [['id' => 1]]]];
         $result = json_encode($responseArray['content']['colPos1'][0]);
@@ -115,15 +107,7 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             )
         );
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '0';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
-        $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-        $middleware = new ElementBodyResponseMiddleware($tsfe->reveal(), new JsonEncoder());
+        $middleware = new ElementBodyResponseMiddleware($this->getTsfeProphecy('0')->reveal(), new JsonEncoder());
 
         $this->assertEquals(
             $response,
@@ -153,5 +137,19 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
         }
 
         return $request;
+    }
+
+    protected function getTsfeProphecy(string $staticTemplate = '1')
+    {
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = $staticTemplate;
+
+        $tmpl = $this->prophesize(TemplateService::class);
+        $tmpl->setup = $setup;
+
+        $tsfe = $this->prophesize(TypoScriptFrontendController::class);
+        $tsfe->tmpl = $tmpl->reveal();
+
+        return $tsfe;
     }
 }
