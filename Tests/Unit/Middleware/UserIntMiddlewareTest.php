@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\ContentObject;
+namespace FriendsOfTYPO3\Headless\Test\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\UserIntMiddleware;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
