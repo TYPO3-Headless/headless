@@ -19,7 +19,7 @@ use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-final class IntegerContentObjectTest extends UnitTestCase
+class IntegerContentObjectTest extends UnitTestCase
 {
     use ProphecyTrait;
 

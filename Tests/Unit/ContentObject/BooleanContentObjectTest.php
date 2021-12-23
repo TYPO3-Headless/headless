@@ -18,7 +18,7 @@ use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-final class BooleanContentObjectTest extends UnitTestCase
+class BooleanContentObjectTest extends UnitTestCase
 {
     use ProphecyTrait;
 
