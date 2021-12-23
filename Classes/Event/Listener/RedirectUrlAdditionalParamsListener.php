@@ -22,6 +22,7 @@ use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Resource\Exception\InvalidPathException;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Folder;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Service\TypoLinkCodecService;
 
@@ -55,7 +56,9 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
             return;
         }
 
-        $linkParameterParts = $this->typoLinkCodecService->decode((string)($event->getRedirectRecord()['target'] ?? ''));
+        $linkParameterParts = $this->typoLinkCodecService->decode(
+            (string)($event->getRedirectRecord()['target'] ?? '')
+        );
         $redirectTarget = $linkParameterParts['url'] ?? '';
         $linkDetails = $this->resolveLinkDetailsFromLinkTarget($redirectTarget);
 
@@ -66,19 +69,23 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
                 $site = $request->getAttribute('site');
                 parse_str($linkParameterParts['url'], $typolinkData);
                 parse_str($linkParameterParts['additionalParams'], $params);
-                $languageId = $typolinkData['L'] ? (int)$typolinkData['L'] : 0;
+
+                $languageId = isset($typolinkData['L']) ? (int)$typolinkData['L'] : 0;
+
                 if ($languageId > 0) {
                     $language = $site->getLanguageById($languageId);
                     $params['_language'] = $language;
                 }
-                $frontendUrl = GeneralUtility::makeInstance(
-                    PageRouter::class,
-                    $site
-                )->generateUri($linkDetails['pageuid'], $params);
-                $frontendUrl = $this->urlUtility->getFrontendUrlForPage((string)$frontendUrl, (int)$linkDetails['pageuid']);
+
+                $frontendUrl = $this->getPageRouterForSite($site)->generateUri($linkDetails['pageuid'], $params);
+                $frontendUrl = $this->urlUtility->getFrontendUrlForPage(
+                    (string)$frontendUrl,
+                    (int)$linkDetails['pageuid']
+                );
+
                 $event->setTargetUrl($frontendUrl);
             } catch (\Exception $exception) {
-                $this->logger->error(
+                $this->logError(
                     'Error during action redirect',
                     ['record' => $event->getRedirectRecord(), 'uri' => $url]
                 );
@@ -87,6 +94,9 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
     }
 
     /**
+     * @todo this metod is not fully utilized, author should take a look at it
+     * @codeCoverageIgnore
+     *
      * @param string $redirectTarget
      * @return array
      */
@@ -119,5 +129,30 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
             return [];
         }
         return $linkDetails;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @param Site $site
+     * @return PageRouter
+     */
+    protected function getPageRouterForSite(Site $site): PageRouter
+    {
+        return GeneralUtility::makeInstance(PageRouter::class, $site);
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @param string $message
+     * @param array $context
+     * @return void
+     */
+    protected function logError(string $message, array $context): void
+    {
+        if ($this->logger) {
+            $this->logger->error($message, $context);
+        }
     }
 }
