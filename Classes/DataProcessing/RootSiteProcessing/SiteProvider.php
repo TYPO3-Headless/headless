@@ -50,10 +50,14 @@ final class SiteProvider implements SiteProviderInterface
      */
     private $currentRootPage;
 
-    public function __construct(ConnectionPool $connectionPool = null, SiteFinder $siteFinder = null)
+    public function __construct(ConnectionPool $connectionPool = null, SiteFinder $siteFinder = null, array $sites = [])
     {
         $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
         $this->siteFinder = $siteFinder ?? GeneralUtility::makeInstance(SiteFinder::class);
+
+        if ($this->sites !== []) {
+            $this->sites = $sites;
+        }
     }
 
     /**

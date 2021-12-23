@@ -27,6 +27,11 @@ final class DomainSchema implements SiteSchemaInterface
     private HeadlessFrontendUrlInterface $urlUtility;
     private ContentDataProcessor $contentDataProcessor;
 
+    /**
+     * @codeCoverageIgnore
+     * @param HeadlessFrontendUrlInterface|null $urlUtility
+     * @param ContentDataProcessor|null $contentObjectRenderer
+     */
     public function __construct(
         HeadlessFrontendUrlInterface $urlUtility = null,
         ContentDataProcessor $contentObjectRenderer = null
