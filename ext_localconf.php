@@ -16,6 +16,7 @@ call_user_func(
             'JSON' => \FriendsOfTYPO3\Headless\ContentObject\JsonContentObject::class,
             'CONTENT_JSON' => \FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject::class,
             'INT' => \FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject::class,
+            'FLOAT' => \FriendsOfTYPO3\Headless\ContentObject\FloatContentObject::class,
             'BOOL' => \FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject::class,
         ]);
         $GLOBALS['TYPO3_CONF_VARS']['FE']['typolinkBuilder']['file'] = \FriendsOfTYPO3\Headless\Hooks\FileOrFolderLinkBuilder::class;

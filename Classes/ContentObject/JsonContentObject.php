@@ -105,6 +105,9 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
                 if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
                 }
+                if ((isset($conf['floatval']) && $conf['floatval']) || $theValue === 'FLOAT') {
+                    $content[$theKey] = (float)$content[$theKey];
+                }
                 if ($theValue === 'BOOL') {
                     $content[$theKey] = (bool)$content[$theKey];
                 }
