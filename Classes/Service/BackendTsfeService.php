@@ -26,7 +26,7 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 /**
  * @codeCoverageIgnore
  */
-final class BackendTsfeService implements BackendTsfeServiceInterface
+class BackendTsfeService implements BackendTsfeServiceInterface
 {
     private array $backendExtensionConfiguration = [];
 

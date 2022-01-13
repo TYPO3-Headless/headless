@@ -20,7 +20,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use function is_array;
 use function trim;
 
-final class SiteSchema implements SiteSchemaInterface
+class SiteSchema implements SiteSchemaInterface
 {
     private HeadlessFrontendUrlInterface $urlUtitlity;
     private ContentDataProcessor $contentDataProcessor;

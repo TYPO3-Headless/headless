@@ -23,7 +23,7 @@ use function in_array;
 use function is_array;
 use function json_decode;
 
-final class ElementBodyResponseMiddleware implements MiddlewareInterface
+class ElementBodyResponseMiddleware implements MiddlewareInterface
 {
     private JsonEncoder $jsonEncoder;
 

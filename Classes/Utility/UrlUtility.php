@@ -29,7 +29,7 @@ use function rtrim;
 use function str_replace;
 use function strpos;
 
-final class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
+class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 {
     use LoggerAwareTrait;
 

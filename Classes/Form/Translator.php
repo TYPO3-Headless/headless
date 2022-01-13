@@ -18,7 +18,7 @@ use function array_merge;
 use function array_replace_recursive;
 use function is_array;
 
-final class Translator
+class Translator
 {
     protected static function getTranslationService(): FormTranslationService
     {
