@@ -17,7 +17,6 @@ use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileInterface;
-use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -77,19 +76,29 @@ class FileUtility
     }
 
     /**
-     * @param FileReference|File $fileReference
+     * @param FileInterface $fileReference
      * @param array $dimensions
      * @param string $cropVariant
      * @return array
      */
-    public function processFile($fileReference, array $dimensions = [], string $cropVariant = 'default'): array
+    public function processFile(FileInterface $fileReference, array $dimensions = [], string $cropVariant = 'default'): array
     {
         $fileReferenceUid = $fileReference->getUid();
         $uidLocal = $fileReference->getProperty('uid_local');
-        $metaData = $fileReference->toArray();
         $fileRenderer = $this->rendererRegistry->getRenderer($fileReference);
         $crop = $fileReference->getProperty('crop');
         $originalFileUrl = $fileReference->getPublicUrl();
+
+        $metaData = $fileReference->toArray();
+
+        $originalProperties = [
+            'title' => $fileReference->getProperty('title'),
+            'alternative' => $fileReference->getProperty('alternative'),
+            'description' => $fileReference->getProperty('description'),
+            'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL([
+                'parameter' => $metaData['link']
+            ]) : null,
+        ];
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
             if ($fileReference->getMimeType() !== 'image/svg+xml') {
@@ -102,46 +111,40 @@ class FileUtility
             $publicUrl = $this->getAbsoluteUrl($fileReference->getPublicUrl());
         }
 
+        $processedProperties = [
+            'mimeType' => $fileReference->getMimeType(),
+            'type' => explode('/', $fileReference->getMimeType())[0],
+            'filename' => $fileReference->getProperty('name'),
+            'originalUrl' => $originalFileUrl,
+            'uidLocal' => $uidLocal,
+            'fileReferenceUid' => $fileReferenceUid,
+            'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getSize()),
+            'dimensions' => [
+                'width' => $fileReference->getProperty('width'),
+                'height' => $fileReference->getProperty('height'),
+            ],
+            'cropDimensions' => [
+                'width' => $this->getCroppedDimensionalProperty($fileReference, 'width', $cropVariant),
+                'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant)
+            ],
+            'crop' => $crop,
+            'autoplay' => $fileReference->getProperty('autoplay'),
+            'extension' => $fileReference->getProperty('extension'),
+        ];
+
         return [
             'publicUrl' => $publicUrl,
-            'properties' => [
-                'title' => $metaData['title'] ?: $fileReference->getProperty('title'),
-                'alternative' => $metaData['alternative'] ?: $fileReference->getProperty('alternative'),
-                'description' => $metaData['description'] ?: $fileReference->getProperty('description'),
-                'mimeType' => $fileReference->getMimeType(),
-                'type' => explode('/', $fileReference->getMimeType())[0],
-                'filename' => $fileReference->getProperty('name'),
-                'originalUrl' => $originalFileUrl,
-                'uidLocal' => $uidLocal,
-                'fileReferenceUid' => $fileReferenceUid,
-                'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getSize()),
-                'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL(
-                    [
-                        'parameter' => $metaData['link']
-                    ]
-                ) : null,
-                'dimensions' => [
-                    'width' => $fileReference->getProperty('width'),
-                    'height' => $fileReference->getProperty('height'),
-                ],
-                'cropDimensions' => [
-                    'width' => $this->getCroppedDimensionalProperty($fileReference, 'width', $cropVariant),
-                    'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant)
-                ],
-                'crop' => $crop,
-                'autoplay' => $fileReference->getProperty('autoplay'),
-                'extension' => $metaData['extension']
-            ]
+            'properties' => array_merge($originalProperties, $processedProperties),
         ];
     }
 
     /**
-     * @param FileReference|File $image
+     * @param FileInterface $fileReference
      * @param array $dimensions
      * @param string $cropVariant
      * @return ProcessedFile
      */
-    public function processImageFile($image, array $dimensions = [], string $cropVariant = 'default'): ProcessedFile
+    public function processImageFile(FileInterface $image, array $dimensions = [], string $cropVariant = 'default'): ProcessedFile
     {
         try {
             $properties = $image->getProperties();

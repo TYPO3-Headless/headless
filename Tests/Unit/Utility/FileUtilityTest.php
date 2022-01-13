@@ -322,6 +322,7 @@ class FileUtilityTest extends UnitTestCase
                     'title' => null,
                     'alternative' => null,
                     'description' => null,
+                    'link' => null,
                     'mimeType' => 'image/jpeg',
                     'type' => 'image',
                     'filename' => 'test-file.jpg',
@@ -329,7 +330,6 @@ class FileUtilityTest extends UnitTestCase
                     'uidLocal' => null,
                     'fileReferenceUid' => 103,
                     'size' => '71 KB',
-                    'link' => null,
                     'dimensions' =>
                         [
                             'width' => 526,
@@ -356,6 +356,7 @@ class FileUtilityTest extends UnitTestCase
                     'title' => null,
                     'alternative' => null,
                     'description' => null,
+                    'link' => null,
                     'mimeType' => 'image/jpeg',
                     'type' => 'image',
                     'filename' => 'test-file.jpg',
@@ -363,7 +364,6 @@ class FileUtilityTest extends UnitTestCase
                     'uidLocal' => 103,
                     'fileReferenceUid' => 103,
                     'size' => '71 KB',
-                    'link' => null,
                     'dimensions' =>
                         [
                             'width' => 526,
@@ -390,6 +390,7 @@ class FileUtilityTest extends UnitTestCase
                     'title' => null,
                     'alternative' => null,
                     'description' => null,
+                    'link' => null,
                     'mimeType' => 'video/youtube',
                     'type' => 'video',
                     'filename' => 'test-file.jpg',
@@ -397,7 +398,6 @@ class FileUtilityTest extends UnitTestCase
                     'uidLocal' => 103,
                     'fileReferenceUid' => 103,
                     'size' => '71 KB',
-                    'link' => null,
                     'dimensions' =>
                         [
                             'width' => 526,
