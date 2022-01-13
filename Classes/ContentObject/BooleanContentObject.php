@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
-use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 
 /**
@@ -21,7 +20,6 @@ use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
  */
 class BooleanContentObject extends AbstractContentObject
 {
-    use LoggerAwareTrait;
 
     /**
      * Rendering the cObject, JSON
