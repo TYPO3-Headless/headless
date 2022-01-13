@@ -108,6 +108,9 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
                 if ($theValue === 'BOOL') {
                     $content[$theKey] = (bool)$content[$theKey];
                 }
+                if ($theValue === 'FLOAT') {
+                    $content[$theKey] = (float)$content[$theKey];
+                }
                 if ($theValue === 'USER_INT' || strpos((string)$content[$theKey], '<!--INT_SCRIPT.') === 0) {
                     $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey]);
                 }
