@@ -24,7 +24,7 @@ use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 /**
  * @codeCoverageIgnore
  */
-final class JsonViewConfigurationService implements JsonViewConfigurationServiceInterface
+class JsonViewConfigurationService implements JsonViewConfigurationServiceInterface
 {
     protected array $settings = [];
     protected JsonViewDemandInterface $demand;

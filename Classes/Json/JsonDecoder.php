@@ -18,7 +18,7 @@ use function is_string;
 use function json_decode;
 use function trim;
 
-final class JsonDecoder implements JsonDecoderInterface
+class JsonDecoder implements JsonDecoderInterface
 {
     /**
      * @inheritDoc
