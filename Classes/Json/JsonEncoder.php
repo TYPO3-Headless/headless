@@ -18,7 +18,7 @@ use function json_encode;
 
 use const JSON_THROW_ON_ERROR;
 
-final class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
+class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 

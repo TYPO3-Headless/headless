@@ -20,7 +20,7 @@ use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
-final class ElementBodyResponseMiddleware implements MiddlewareInterface
+class ElementBodyResponseMiddleware implements MiddlewareInterface
 {
     /**
      * @var TypoScriptFrontendController
