@@ -26,12 +26,7 @@ use function parse_url;
 
 final class ShortcutAndMountPointRedirect implements MiddlewareInterface
 {
-    private TypoScriptFrontendController $controller;
-
-    public function __construct(TypoScriptFrontendController $controller)
-    {
-        $this->controller = $controller;
-    }
+    private ?TypoScriptFrontendController $controller;
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -40,6 +35,11 @@ final class ShortcutAndMountPointRedirect implements MiddlewareInterface
 
         if ($pageType === 834) {
             return $handler->handle($request);
+        }
+
+        $this->controller = $request->getAttribute('frontend.controller');
+        if ($this->controller === null) {
+            $this->controller = $GLOBALS['TSFE'];
         }
 
         $redirectToUri = $this->getRedirectUri($request);

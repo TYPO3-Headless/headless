@@ -32,16 +32,16 @@ class UserIntMiddleware implements MiddlewareInterface
     private $headlessUserInt;
 
     public function __construct(
-        TypoScriptFrontendController $typoScriptFrontendController = null,
         HeadlessUserInt $headlessUserInt = null
     ) {
-        $this->tsfe = $typoScriptFrontendController ?? $GLOBALS['TSFE'];
         $this->headlessUserInt = $headlessUserInt ?? GeneralUtility::makeInstance(HeadlessUserInt::class);
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = $handler->handle($request);
+        
+        $this->tsfe = $request->getAttribute('frontend.controller', $GLOBALS['TSFE']);
 
         if (!isset($this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'])
             || (bool)$this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'] === false
