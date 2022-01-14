@@ -116,7 +116,7 @@ Output
     ]
 }
 ```
-## INT & BOOL Content Objects for use in JSON Content Object
+## INT, FLOAT & BOOL Content Objects for use in JSON Content Object
 
 We introduce new simple content objects to improve JSON API response for frontend developers.
 We can set correct property types, so frontend does not have to deal with string values for fields with numeric values or field that should be true/false.
