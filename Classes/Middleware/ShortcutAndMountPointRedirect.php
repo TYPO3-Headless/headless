@@ -38,6 +38,13 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        $queryParams = $request->getQueryParams();
+        $pageType = (int)($queryParams['type'] ?? 0);
+
+        if ($pageType === 834) {
+            return $handler->handle($request);
+        }
+
         $redirectToUri = $this->getRedirectUri($request);
         if ($redirectToUri !== null && $redirectToUri !== (string)$request->getUri()) {
             $this->releaseTypoScriptFrontendControllerLocks();
