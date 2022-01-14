@@ -40,7 +40,7 @@ class UserIntMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = $handler->handle($request);
-        
+
         $this->tsfe = $request->getAttribute('frontend.controller', $GLOBALS['TSFE']);
 
         if (!isset($this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'])
