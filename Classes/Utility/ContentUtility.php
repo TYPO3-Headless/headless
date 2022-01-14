@@ -14,9 +14,8 @@ namespace FriendsOfTYPO3\Headless\Utility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * ContentUtility
- *
  * This class group elements by column position, for easier frontend rendering.
+ * @deprecated please use CONTENT_JSON
  */
 class ContentUtility
 {
