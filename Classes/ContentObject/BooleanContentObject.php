@@ -20,7 +20,6 @@ use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
  */
 class BooleanContentObject extends AbstractContentObject
 {
-
     /**
      * Rendering the cObject, JSON
      * @param array $conf Array of TypoScript properties
