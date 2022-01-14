@@ -25,7 +25,7 @@ use function count;
 use function in_array;
 use function usort;
 
-final class SiteProvider implements SiteProviderInterface
+class SiteProvider implements SiteProviderInterface
 {
     /**
      * @var ConnectionPool

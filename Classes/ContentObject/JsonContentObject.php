@@ -29,7 +29,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 use function strpos;
 
-final class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
+class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -104,6 +104,9 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
                 if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
+                }
+                if ((isset($conf['floatval']) && $conf['floatval']) || $theValue === 'FLOAT') {
+                    $content[$theKey] = (float)$content[$theKey];
                 }
                 if ($theValue === 'BOOL') {
                     $content[$theKey] = (bool)$content[$theKey];

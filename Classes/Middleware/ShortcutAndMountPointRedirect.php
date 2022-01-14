@@ -24,7 +24,7 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use function is_array;
 use function parse_url;
 
-final class ShortcutAndMountPointRedirect implements MiddlewareInterface
+class ShortcutAndMountPointRedirect implements MiddlewareInterface
 {
     private ?TypoScriptFrontendController $controller;
 
