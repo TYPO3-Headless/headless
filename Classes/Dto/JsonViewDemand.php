@@ -20,7 +20,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 /**
  * @codeCoverageIgnore
  */
-final class JsonViewDemand implements JsonViewDemandInterface
+class JsonViewDemand implements JsonViewDemandInterface
 {
     /**
      * @var int

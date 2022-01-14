@@ -29,7 +29,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 use function strpos;
 
-final class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
+class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 

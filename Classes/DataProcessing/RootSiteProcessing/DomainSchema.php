@@ -20,7 +20,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use function is_array;
 use function str_replace;
 
-final class DomainSchema implements SiteSchemaInterface
+class DomainSchema implements SiteSchemaInterface
 {
     private HeadlessFrontendUrlInterface $urlUtility;
     private ContentDataProcessor $contentDataProcessor;

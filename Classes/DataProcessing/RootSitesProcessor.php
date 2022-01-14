@@ -62,7 +62,7 @@ use function sprintf;
     }
  */
 
-final class RootSitesProcessor implements DataProcessorInterface
+class RootSitesProcessor implements DataProcessorInterface
 {
     /**
      * @param ContentObjectRenderer $cObj
