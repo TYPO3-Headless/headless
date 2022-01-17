@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -38,22 +36,22 @@ class RedirectUrlEventTest extends UnitTestCase
 
         $request2 = (new ServerRequest())->withAttribute('test', 2);
         $redirectEvent->setRequest($request2);
-        $this->assertEquals($request2, $redirectEvent->getRequest());
+        self::assertEquals($request2, $redirectEvent->getRequest());
 
         $newStatusCode = 304;
         $redirectEvent->setTargetStatusCode($newStatusCode);
-        $this->assertEquals($newStatusCode, $redirectEvent->getTargetStatusCode());
+        self::assertEquals($newStatusCode, $redirectEvent->getTargetStatusCode());
 
         $newTargetUrl = 'https://test.domain4.tld';
         $redirectEvent->setTargetUrl($newTargetUrl);
-        $this->assertEquals($newTargetUrl, $redirectEvent->getTargetUrl());
+        self::assertEquals($newTargetUrl, $redirectEvent->getTargetUrl());
 
-        $this->assertFalse($redirectEvent->isPropagationStopped());
+        self::assertFalse($redirectEvent->isPropagationStopped());
 
         $redirectEvent->stopPropagation();
-        $this->assertTrue($redirectEvent->isPropagationStopped());
+        self::assertTrue($redirectEvent->isPropagationStopped());
 
-        $this->assertEquals($redirectRecord, $redirectEvent->getRedirectRecord());
-        $this->assertEquals($uri, $redirectEvent->getOriginalTargetUrl());
+        self::assertEquals($redirectRecord, $redirectEvent->getRedirectRecord());
+        self::assertEquals($uri, $redirectEvent->getOriginalTargetUrl());
     }
 }

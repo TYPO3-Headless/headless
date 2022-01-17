@@ -145,7 +145,6 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
      *
      * @param string $message
      * @param array $context
-     * @return void
      */
     protected function logError(string $message, array $context): void
     {

@@ -459,7 +459,7 @@ class FileUtilityTest extends UnitTestCase
             if (!empty($fileUtility->getErrors()['processImageFile'])) {
                 $errors = $fileUtility->getErrors()['processImageFile'];
                 if (reset($errors) !== get_class($exception)) {
-                    $this->fail('Different exception triggered: ' . $errors[0]);
+                    self::fail('Different exception triggered: ' . $errors[0]);
                 }
             }
         }

@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -55,14 +53,14 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
             $this->getMockHandlerWithResponse($genericResponse)
         );
         $linkRedirectJson = json_decode($linkRedirectResponse->getBody()->__toString(), true);
-        $this->assertEquals($correctRedirect, $linkRedirectJson);
+        self::assertEquals($correctRedirect, $linkRedirectJson);
 
         $initialDataResponse = $middleware->process(
             $this->getTestRequest(['type' => 834], 'https://test.domain.tld'),
             $this->getMockHandlerWithResponse($genericResponse)
         );
 
-        $this->assertEquals($genericHtml, $initialDataResponse->getBody()->__toString());
+        self::assertEquals($genericHtml, $initialDataResponse->getBody()->__toString());
 
         $middleware = new ShortcutAndMountPointRedirect(
             $this->getTsfeProphecy(
@@ -79,7 +77,7 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
             $this->getTestRequest(['type' => 0], 'https://test.domain.tld'),
             $this->getMockHandlerWithResponse($genericResponse)
         );
-        $this->assertEquals($shortcutJsonDecoded, json_decode($middlewareResponse->getBody()->__toString(), true));
+        self::assertEquals($shortcutJsonDecoded, json_decode($middlewareResponse->getBody()->__toString(), true));
 
         $middleware = new ShortcutAndMountPointRedirect(
             $this->getTsfeProphecy(
@@ -94,11 +92,11 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
             $this->getTestRequest(['type' => 0], 'https://test.domain.tld'),
             $this->getMockHandlerWithResponse($genericResponse)
         );
-        $this->assertEquals(
+        self::assertEquals(
             $testRedirectResponse->getHeader('location')[0],
             $middlewareResponse->getHeader('location')[0]
         );
-        $this->assertEquals($testRedirectResponse->getStatusCode(), $middlewareResponse->getStatusCode());
+        self::assertEquals($testRedirectResponse->getStatusCode(), $middlewareResponse->getStatusCode());
 
         $middleware = new ShortcutAndMountPointRedirect(
             $this->getTsfeProphecy(
@@ -112,9 +110,8 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
             $this->getMockHandlerWithResponse($genericResponse)
         );
 
-        $this->assertEquals($linkRedirect, $linkRedirectResponse->getHeader('location')[0]);
-        $this->assertEquals(303, $linkRedirectResponse->getStatusCode());
-
+        self::assertEquals($linkRedirect, $linkRedirectResponse->getHeader('location')[0]);
+        self::assertEquals(303, $linkRedirectResponse->getStatusCode());
 
         $middleware = new ShortcutAndMountPointRedirect(
             $this->getTsfeProphecy(
@@ -128,7 +125,7 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
             $this->getMockHandlerWithResponse($genericResponse)
         );
 
-        $this->assertEquals($genericHtml, $normalResponse->getBody()->__toString());
+        self::assertEquals($genericHtml, $normalResponse->getBody()->__toString());
     }
 
     public function redirectProvider(): array
@@ -145,7 +142,6 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
     /**
      * @param $url
      * @param $expectedValue
-     * @return void
      *
      * @test
      * @dataProvider redirectProvider
@@ -174,7 +170,7 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         ];
 
         $linkRedirectJson = json_decode($linkRedirectResponse->getBody()->__toString(), true);
-        $this->assertEquals($correctRedirect, $linkRedirectJson);
+        self::assertEquals($correctRedirect, $linkRedirectJson);
     }
 
     protected function getMockHandlerWithResponse($response)

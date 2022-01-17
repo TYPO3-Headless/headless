@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -72,8 +70,8 @@ class DomainSchemaTest extends UnitTestCase
             ],
         ];
 
-        $this->assertEquals($expectedResult, $domainSchema->process($siteProvider, ['cObj' => $cObj->reveal()]));
-        $this->assertEquals(
+        self::assertEquals($expectedResult, $domainSchema->process($siteProvider, ['cObj' => $cObj->reveal()]));
+        self::assertEquals(
             [$expectedValueOfAdditionalDataProcessor],
             $domainSchema->process(
                 $siteProvider,
@@ -145,7 +143,6 @@ class DomainSchemaTest extends UnitTestCase
 
         return new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), $dummyRequest);
     }
-
 
     protected function getSiteWithBase(UriInterface $uri, $withLanguage = null)
     {

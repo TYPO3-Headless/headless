@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -54,7 +52,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $redirectEvent = new RedirectUrlEvent($request, $uri, 'https://test.domain2.tld', 301, $redirectRecord);
         $newRedirectEvent = clone $redirectEvent;
         $listener->__invoke($newRedirectEvent);
-        $this->assertEquals($redirectEvent, $newRedirectEvent);
+        self::assertEquals($redirectEvent, $newRedirectEvent);
 
         $request = (new ServerRequest())->withAttribute('test', 1)->withUri(new Uri('https://test.domain3.tld'));
         $redirectRecord = [
@@ -71,7 +69,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         );
         $newRedirectEvent = clone $redirectEvent;
         $listener->__invoke($newRedirectEvent);
-        $this->assertEquals($redirectEvent, $newRedirectEvent);
+        self::assertEquals($redirectEvent, $newRedirectEvent);
 
         $requestUri = new Uri('https://test.domain3.tld/testtest');
         $request = (new ServerRequest())
@@ -124,7 +122,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         );
         $mockListener->__invoke($newRedirectEvent);
 
-        $this->assertSame((string)$expectedUri, $newRedirectEvent->getTargetUrl());
+        self::assertSame((string)$expectedUri, $newRedirectEvent->getTargetUrl());
     }
 
     /**
@@ -185,7 +183,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         );
         $mockListener->__invoke($newRedirectEvent);
 
-        $this->assertSame((string)$expectedUri, $newRedirectEvent->getTargetUrl());
+        self::assertSame((string)$expectedUri, $newRedirectEvent->getTargetUrl());
 
         $site = $this->createPartialMock(Site::class, ['getLanguageById']);
         $site->method('getLanguageById')->willThrowException(new \InvalidArgumentException('test'));

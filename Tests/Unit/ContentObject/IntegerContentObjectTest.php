@@ -5,15 +5,12 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Test\Unit\ContentObject;
 
-use FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
 use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -31,7 +28,7 @@ class IntegerContentObjectTest extends UnitTestCase
         $cObj = $this->createMock(ContentObjectRenderer::class);
 
         $booleanContentObject = new IntegerContentObject($cObj);
-        $this->assertEquals(0, $booleanContentObject->render());
+        self::assertEquals(0, $booleanContentObject->render());
     }
 
     /**
@@ -43,7 +40,7 @@ class IntegerContentObjectTest extends UnitTestCase
         $cObj = $this->createMock(ContentObjectRenderer::class);
 
         $booleanContentObject = new IntegerContentObject($cObj);
-        $this->assertEquals($result, $booleanContentObject->render($argument));
+        self::assertEquals($result, $booleanContentObject->render($argument));
     }
 
     public function dataProvider(): array

@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -30,7 +28,7 @@ class BooleanContentObjectTest extends UnitTestCase
         $cObj = $this->createMock(ContentObjectRenderer::class);
 
         $booleanContentObject = new BooleanContentObject($cObj);
-        $this->assertFalse($booleanContentObject->render());
+        self::assertFalse($booleanContentObject->render());
     }
 
     /**
@@ -42,7 +40,7 @@ class BooleanContentObjectTest extends UnitTestCase
         $cObj = $this->createMock(ContentObjectRenderer::class);
 
         $booleanContentObject = new BooleanContentObject($cObj);
-        $this->assertEquals($result, $booleanContentObject->render($argument));
+        self::assertEquals($result, $booleanContentObject->render($argument));
     }
 
     public function dataProvider(): array

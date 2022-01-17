@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -21,35 +19,30 @@ class DataProcessingTraitTest extends TestCase
     /**
      * @test
      * @dataProvider dataProvider
-     *
-     * @return void
      */
     public function removeDataIfnotAppendInConfigurationTest(
         $expected,
         array $processorConfiguration,
         array $processedData
     ) {
-        $trait = new class {
+        $trait = new class() {
             use DataProcessingTrait {
                 removeDataIfnotAppendInConfiguration as public;
             }
         };
 
-        $this->assertEquals(
+        self::assertEquals(
             $expected,
-
             $trait->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData)
         );
     }
 
     /**
      * @test
-     *
-     * @return void
      */
     public function removeDataIfnotAppendInConfigurationAsMenuProcessorTest()
     {
-        $trait = new class {
+        $trait = new class() {
             use DataProcessingTrait {
                 removeDataIfnotAppendInConfiguration as public;
                 isMenuProcessor as overwrittenMethod;
@@ -70,13 +63,13 @@ class DataProcessingTraitTest extends TestCase
                         ['uid' => 2],
                         ['uid' => 3],
                         ['uid' => 4],
-                        ['uid' => 7, 'children' => [['uid' => 1], ['uid' => 2], ['uid' => 3]],],
+                        ['uid' => 7, 'children' => [['uid' => 1], ['uid' => 2], ['uid' => 3]]],
                     ],
                 ],
             ],
         ];
 
-        $this->assertEquals($expectedResult, $trait->removeDataIfnotAppendInConfiguration(
+        self::assertEquals($expectedResult, $trait->removeDataIfnotAppendInConfiguration(
             ['appendData' => 0, 'as' => 'test'],
             [
                 'test' => [

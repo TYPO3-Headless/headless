@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -42,11 +40,11 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             $this->getTestRequest(['responseElementId' => 1], 'POST'),
             $this->getMockHandlerWithResponse($response)
         );
-        $this->assertSame($result, $testResponse->getBody()->__toString());
+        self::assertSame($result, $testResponse->getBody()->__toString());
 
         $response = new HtmlResponse(json_encode($responseArray));
 
-        $this->assertEquals(
+        self::assertEquals(
             $response,
             $middleware->process(
                 $this->getTestRequest(['responseElementId' => 0], 'POST'),
@@ -54,7 +52,7 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             )
         );
 
-        $this->assertEquals(
+        self::assertEquals(
             $response,
             $middleware->process(
                 $this->getTestRequest(['responseElementId' => 1], 'GET'),
@@ -62,7 +60,7 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             )
         );
 
-        $this->assertEquals(
+        self::assertEquals(
             $response,
             $middleware->process(
                 $this->getTestRequest(),
@@ -77,11 +75,11 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             $this->getTestRequest(['responseElementId' => 1], 'POST'),
             $this->getMockHandlerWithResponse($response)
         );
-        $this->assertSame(json_encode([]), $testResponse->getBody()->__toString());
+        self::assertSame(json_encode([]), $testResponse->getBody()->__toString());
 
         $response = new HtmlResponse(json_encode($responseArray));
 
-        $this->assertEquals(
+        self::assertEquals(
             $response,
             $middleware->process(
                 $this->getTestRequest(['responseElementId' => 0], 'POST'),
@@ -95,11 +93,11 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             $this->getTestRequest(['responseElementId' => 1], 'POST'),
             $this->getMockHandlerWithResponse($response)
         );
-        $this->assertSame($testStringResponse, $testResponse->getBody()->__toString());
+        self::assertSame($testStringResponse, $testResponse->getBody()->__toString());
 
         $response = new HtmlResponse(json_encode($responseArray));
 
-        $this->assertEquals(
+        self::assertEquals(
             $response,
             $middleware->process(
                 $this->getTestRequest(['responseElementId' => 0], 'POST'),
@@ -109,7 +107,7 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
 
         $middleware = new ElementBodyResponseMiddleware($this->getTsfeProphecy('0')->reveal(), new JsonEncoder());
 
-        $this->assertEquals(
+        self::assertEquals(
             $response,
             $middleware->process(
                 $this->getTestRequest(['responseElementId' => 1], 'POST'),

@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -38,7 +36,7 @@ class UserIntMiddlewareTest extends UnitTestCase
         $responseString = HeadlessUserInt::NESTED . '_START<<' . $intScript . '>>' . HeadlessUserInt::NESTED . '_END';
         $response = new HtmlResponse($responseString);
 
-        $this->assertEquals(
+        self::assertEquals(
             $intScript,
             $middleware->process(
                 new ServerRequest(),
@@ -48,7 +46,7 @@ class UserIntMiddlewareTest extends UnitTestCase
 
         $middleware = new UserIntMiddleware($this->getTsfeProphecy('0')->reveal(), new HeadlessUserInt());
 
-        $this->assertEquals(
+        self::assertEquals(
             $responseString,
             $middleware->process(
                 new ServerRequest(),
