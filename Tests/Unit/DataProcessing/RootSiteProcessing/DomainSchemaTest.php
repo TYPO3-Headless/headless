@@ -17,7 +17,6 @@ use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\UriInterface;
-use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
@@ -40,12 +39,12 @@ class DomainSchemaTest extends UnitTestCase
         $testUri = new Uri('https://test.domain.tld');
         $cObj = $this->prophesize(ContentObjectRenderer::class);
         $cObj->start(Argument::any());
-        $connectionPool = $this->prophesize(ConnectionPool::class);
-        $siteFinder = $this->prophesize(SiteFinder::class);
         $mainSite = $this->getSite($testUri, 1);
 
-        $sites = [$mainSite];
-        $siteProvider = new SiteProvider($connectionPool->reveal(), $siteFinder->reveal(), $sites);
+        $this->prophesize(SiteProvider::class);
+        $siteProvider = $this->prophesize(SiteProvider::class);
+        $siteProvider->getSites()->willReturn([$mainSite]);
+        $siteProvider = $siteProvider->reveal();
 
         $expectedValueOfAdditionalDataProcessor = ['test' => 1];
         $contentDataProcessor = $this->prophesize(ContentDataProcessor::class);
