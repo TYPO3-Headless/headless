@@ -5,7 +5,7 @@
                 title: '{f:translate(key:\'logout\')}',
                 action: '{f:uri.action(action:\'login\')}',
                 method: 'POST',
-                fields: '{f:render(partial: \'LogoutFields\', arguments: \'{_all}\') -> headless:format.json.decode()-> headless:loginForm(action:\'login\', name:\'field\') -> headless:format.json.decode()}'
+                elements: '{f:render(partial: \'LogoutFields\', arguments: \'{_all}\') -> headless:format.json.decode()-> headless:loginForm(action:\'login\', name:\'field\') -> headless:format.json.decode()}'
             },
             message: {
                 header: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'status_header\\\'}\')}',

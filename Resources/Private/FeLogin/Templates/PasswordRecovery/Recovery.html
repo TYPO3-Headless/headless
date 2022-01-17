@@ -14,7 +14,7 @@
                 title: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'reset_password\\\'}\')}',
                 action: '{f:uri.action(action:\'recovery\')}',
                 method: 'POST',
-                fields: '{f:render(section: \'fields\', arguments: \'{_all}\') -> headless:format.json.decode()}'
+                elements: '{f:render(section: \'fields\', arguments: \'{_all}\') -> headless:format.json.decode()}'
             },
             flashMessages: '{f:render(partial: \'FlashMessages\', arguments: \'{_all}\') -> headless:format.json.decode()}'
         }"/>
@@ -24,7 +24,7 @@
     <f:spaceless>
         <f:format.raw>
             [
-                <f:format.json value="{
+            <f:format.json value="{
                     type: 'text',
                     label: '{f:translate(key:\'input.username.recovery\', extensionName:\'headless\')}',
                     name: 'userIdentifier',
@@ -39,13 +39,13 @@
                         }
                     }
                 }"
-                />,
-                <f:format.json value="{
+            />,
+            <f:format.json value="{
                     type: 'submit',
                     name: 'submit',
                     value: '{f:translate(key:\'input.submit.recovery\', extensionName:\'headless\')}'
                     }"
-                />
+            />
             ]
         </f:format.raw>
     </f:spaceless>

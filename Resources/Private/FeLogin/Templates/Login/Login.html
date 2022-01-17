@@ -12,7 +12,7 @@
                 message: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'{messageKey}_message\\\'}\')}'
             },
             status: '{status}',
-            recovery: '{f:render(partial: \'Recovery\', arguments: \'{_all}\') -> headless:format.json.decode()}',
+            recovery: '{f:uri.action(action:\'recovery\', controller=\'PasswordRecovery\')}',
             flashMessages: '{f:render(partial: \'FlashMessages\', arguments: \'{_all}\') -> headless:format.json.decode()}'
         }"/>
     </f:format.raw>
