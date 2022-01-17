@@ -162,14 +162,11 @@ class FileUtility
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
             ];
             return $this->imageService->applyProcessingInstructions($image, $processingInstructions);
-        } catch (\UnexpectedValueException $e) {
-        } catch (\RuntimeException $e) {
-        } catch (\InvalidArgumentException $e) {
+        } catch (\UnexpectedValueException|\RuntimeException|\InvalidArgumentException $e) {
+            $type = lcfirst(get_class($image));
+            $status = get_class($e);
+            $this->errors['processImageFile'][$type . '-' . $image->getUid()] = $status;
         }
-
-        $type = lcfirst(get_class($image));
-        $status = get_class($e);
-        $this->errors['processImageFile'][$type . '-' . $image->getUid()] = $status;
     }
 
     /**
