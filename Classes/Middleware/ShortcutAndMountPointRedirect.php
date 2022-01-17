@@ -38,7 +38,7 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
         }
 
         $this->controller = $request->getAttribute('frontend.controller');
-        if ($this->controller === null) {
+        if ($this->controller === null && isset($GLOBALS['TSFE'])) {
             $this->controller = $GLOBALS['TSFE'];
         }
 

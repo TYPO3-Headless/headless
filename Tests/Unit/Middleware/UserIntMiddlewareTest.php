@@ -30,7 +30,10 @@ class UserIntMiddlewareTest extends UnitTestCase
      */
     public function processTest()
     {
-        $middleware = new UserIntMiddleware($this->getTsfeProphecy()->reveal(), new HeadlessUserInt());
+        $middleware = new UserIntMiddleware(new HeadlessUserInt());
+
+        $request = new ServerRequest();
+        $request = $request->withAttribute('frontend.controller', $this->getTsfeProphecy()->reveal());
 
         $intScript = '<!--INT_SCRIPT.d53df2a300e62171a7b4882c4b88a153-->';
         $responseString = HeadlessUserInt::NESTED . '_START<<' . $intScript . '>>' . HeadlessUserInt::NESTED . '_END';
@@ -39,12 +42,25 @@ class UserIntMiddlewareTest extends UnitTestCase
         self::assertEquals(
             $intScript,
             $middleware->process(
-                new ServerRequest(),
+                $request,
                 $this->getMockHandlerWithResponse($response)
             )->getBody()->__toString()
         );
 
-        $middleware = new UserIntMiddleware($this->getTsfeProphecy('0')->reveal(), new HeadlessUserInt());
+        $middleware = new UserIntMiddleware(new HeadlessUserInt());
+
+        $request = new ServerRequest();
+        $request = $request->withAttribute('frontend.controller', $this->getTsfeProphecy('0')->reveal());
+
+        self::assertEquals(
+            $responseString,
+            $middleware->process(
+                $request,
+                $this->getMockHandlerWithResponse($response)
+            )->getBody()->__toString()
+        );
+
+        $GLOBALS['TSFE'] = $this->getTsfeProphecy('0')->reveal();
 
         self::assertEquals(
             $responseString,

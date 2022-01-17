@@ -25,7 +25,7 @@ class DataProcessingTraitTest extends TestCase
         array $processorConfiguration,
         array $processedData
     ) {
-        $trait = new class() {
+        $trait = new class () {
             use DataProcessingTrait {
                 removeDataIfnotAppendInConfiguration as public;
             }
@@ -42,7 +42,7 @@ class DataProcessingTraitTest extends TestCase
      */
     public function removeDataIfnotAppendInConfigurationAsMenuProcessorTest()
     {
-        $trait = new class() {
+        $trait = new class () {
             use DataProcessingTrait {
                 removeDataIfnotAppendInConfiguration as public;
                 isMenuProcessor as overwrittenMethod;

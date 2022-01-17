@@ -36,12 +36,7 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         $genericHtml = '<body>test</body>';
         $linkRedirect = 'https://test.domain2.tld';
         $genericResponse = new HtmlResponse($genericHtml);
-        $middleware = new ShortcutAndMountPointRedirect(
-            $this->getTsfeProphecy(
-                '1',
-                ['id' => 1, 'doktype' => PageRepository::DOKTYPE_LINK, 'url' => $linkRedirect]
-            )->reveal()
-        );
+        $middleware = new ShortcutAndMountPointRedirect();
 
         $correctRedirect = [
             'redirectUrl' => $linkRedirect,
@@ -49,8 +44,15 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         ];
 
         $linkRedirectResponse = $middleware->process(
-            $this->getTestRequest(['type' => 0], 'https://test.domain.tld'),
-            $this->getMockHandlerWithResponse($genericResponse)
+            $this->getTestRequest(
+                ['type' => 0],
+                'https://test.domain.tld',
+                $this->getTsfeProphecy(
+                    '1',
+                    ['id' => 1, 'doktype' => PageRepository::DOKTYPE_LINK, 'url' => $linkRedirect]
+                )->reveal()
+            ),
+            $this->getMockHandlerWithResponse($genericResponse),
         );
         $linkRedirectJson = json_decode($linkRedirectResponse->getBody()->__toString(), true);
         self::assertEquals($correctRedirect, $linkRedirectJson);
@@ -62,34 +64,38 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
 
         self::assertEquals($genericHtml, $initialDataResponse->getBody()->__toString());
 
-        $middleware = new ShortcutAndMountPointRedirect(
-            $this->getTsfeProphecy(
-                '1',
-                ['id' => 1, 'doktype' => PageRepository::DOKTYPE_SHORTCUT, 'shortcut' => '5']
-            )->reveal()
-        );
+        $middleware = new ShortcutAndMountPointRedirect();
         $shortcutJsonDecoded = [
             'redirectUrl' => '/shortcut-target',
             'statusCode' => 307
         ];
 
         $middlewareResponse = $middleware->process(
-            $this->getTestRequest(['type' => 0], 'https://test.domain.tld'),
+            $this->getTestRequest(
+                ['type' => 0],
+                'https://test.domain.tld',
+                $this->getTsfeProphecy(
+                    '1',
+                    ['id' => 1, 'doktype' => PageRepository::DOKTYPE_SHORTCUT, 'shortcut' => '5']
+                )->reveal()
+            ),
             $this->getMockHandlerWithResponse($genericResponse)
         );
         self::assertEquals($shortcutJsonDecoded, json_decode($middlewareResponse->getBody()->__toString(), true));
 
-        $middleware = new ShortcutAndMountPointRedirect(
-            $this->getTsfeProphecy(
-                '0',
-                ['id' => 1, 'doktype' => PageRepository::DOKTYPE_SHORTCUT, 'shortcut' => '5']
-            )->reveal()
-        );
+        $middleware = new ShortcutAndMountPointRedirect();
 
         $testRedirectResponse = new RedirectResponse('https://test.domain.tld/shortcut-target', 307);
 
         $middlewareResponse = $middleware->process(
-            $this->getTestRequest(['type' => 0], 'https://test.domain.tld'),
+            $this->getTestRequest(
+                ['type' => 0],
+                'https://test.domain.tld',
+                $this->getTsfeProphecy(
+                    '0',
+                    ['id' => 1, 'doktype' => PageRepository::DOKTYPE_SHORTCUT, 'shortcut' => '5']
+                )->reveal()
+            ),
             $this->getMockHandlerWithResponse($genericResponse)
         );
         self::assertEquals(
@@ -98,30 +104,48 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         );
         self::assertEquals($testRedirectResponse->getStatusCode(), $middlewareResponse->getStatusCode());
 
-        $middleware = new ShortcutAndMountPointRedirect(
-            $this->getTsfeProphecy(
-                '0',
-                ['id' => 1, 'doktype' => PageRepository::DOKTYPE_LINK, 'url' => $linkRedirect]
-            )->reveal()
-        );
+        $middleware = new ShortcutAndMountPointRedirect();
 
         $linkRedirectResponse = $middleware->process(
-            $this->getTestRequest(['type' => 0], 'https://test.domain.tld'),
+            $this->getTestRequest(
+                ['type' => 0],
+                'https://test.domain.tld',
+                $this->getTsfeProphecy(
+                    '0',
+                    ['id' => 1, 'doktype' => PageRepository::DOKTYPE_LINK, 'url' => $linkRedirect]
+                )->reveal()
+            ),
             $this->getMockHandlerWithResponse($genericResponse)
         );
 
         self::assertEquals($linkRedirect, $linkRedirectResponse->getHeader('location')[0]);
         self::assertEquals(303, $linkRedirectResponse->getStatusCode());
 
-        $middleware = new ShortcutAndMountPointRedirect(
-            $this->getTsfeProphecy(
-                '0',
-                ['id' => 1, 'doktype' => PageRepository::DOKTYPE_DEFAULT, 'url' => $linkRedirect]
-            )->reveal()
-        );
+        $middleware = new ShortcutAndMountPointRedirect();
 
         $normalResponse = $middleware->process(
-            $this->getTestRequest(['type' => 0], 'https://test.domain.tld'),
+            $this->getTestRequest(
+                ['type' => 0],
+                'https://test.domain.tld',
+                $this->getTsfeProphecy(
+                    '0',
+                    ['id' => 1, 'doktype' => PageRepository::DOKTYPE_DEFAULT, 'url' => $linkRedirect]
+                )->reveal()
+            ),
+            $this->getMockHandlerWithResponse($genericResponse)
+        );
+
+        $middleware = new ShortcutAndMountPointRedirect();
+        $GLOBALS['TSFE'] = $this->getTsfeProphecy(
+            '0',
+            ['id' => 1, 'doktype' => PageRepository::DOKTYPE_DEFAULT, 'url' => $linkRedirect]
+        )->reveal();
+
+        $normalResponse = $middleware->process(
+            $this->getTestRequest(
+                ['type' => 0],
+                'https://test.domain.tld'
+            ),
             $this->getMockHandlerWithResponse($genericResponse)
         );
 
@@ -152,15 +176,17 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         $genericHtml = '<body>test</body>';
         $genericResponse = new HtmlResponse($genericHtml);
 
-        $middleware = new ShortcutAndMountPointRedirect(
-            $this->getTsfeProphecy(
-                '1',
-                ['id' => 1, 'doktype' => PageRepository::DOKTYPE_LINK, 'url' => $url]
-            )->reveal()
-        );
+        $middleware = new ShortcutAndMountPointRedirect();
 
         $linkRedirectResponse = $middleware->process(
-            $this->getTestRequest(['type' => 0], $domain),
+            $this->getTestRequest(
+                ['type' => 0],
+                $domain,
+                $this->getTsfeProphecy(
+                    '1',
+                    ['id' => 1, 'doktype' => PageRepository::DOKTYPE_LINK, 'url' => $url]
+                )->reveal()
+            ),
             $this->getMockHandlerWithResponse($genericResponse)
         );
 
@@ -180,8 +206,11 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         return $handler;
     }
 
-    protected function getTestRequest(array $withQueryParams = [], string $withNormalizedParamsUrl = '')
-    {
+    protected function getTestRequest(
+        array $withQueryParams = [],
+        string $withNormalizedParamsUrl = '',
+        $withTsfe = null
+    ) {
         $request = new ServerRequest();
         if ($withQueryParams !== []) {
             $request = $request->withQueryParams($withQueryParams);
@@ -191,6 +220,10 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
             $normalizedParams = $this->prophesize(NormalizedParams::class);
             $normalizedParams->getSiteUrl()->willReturn($withNormalizedParamsUrl);
             $request = $request->withAttribute('normalizedParams', $normalizedParams->reveal());
+        }
+
+        if ($withTsfe) {
+            $request = $request->withAttribute('frontend.controller', $withTsfe);
         }
 
         return $request;

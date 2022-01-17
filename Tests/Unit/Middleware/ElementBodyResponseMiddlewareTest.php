@@ -16,6 +16,7 @@ use FriendsOfTYPO3\Headless\Middleware\ElementBodyResponseMiddleware;
 use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\TypoScript\TemplateService;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Http\RequestHandler;
@@ -30,16 +31,24 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
      */
     public function processTest()
     {
-        $middleware = new ElementBodyResponseMiddleware($this->getTsfeProphecy()->reveal(), new JsonEncoder());
+        $middleware = new ElementBodyResponseMiddleware(new JsonEncoder());
 
         $responseArray = ['content' => ['colPos1' => [['id' => 1]]]];
         $result = json_encode($responseArray['content']['colPos1'][0]);
         $testJson = json_encode($responseArray);
         $response = new HtmlResponse($testJson);
         $testResponse = $middleware->process(
+            $this->getTestRequest(['responseElementId' => 1], 'POST', 0),
+            $this->getMockHandlerWithResponse($response)
+        );
+
+        self::assertSame(json_encode($responseArray), $testResponse->getBody()->__toString());
+
+        $testResponse = $middleware->process(
             $this->getTestRequest(['responseElementId' => 1], 'POST'),
             $this->getMockHandlerWithResponse($response)
         );
+
         self::assertSame($result, $testResponse->getBody()->__toString());
 
         $response = new HtmlResponse(json_encode($responseArray));
@@ -105,15 +114,36 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             )
         );
 
-        $middleware = new ElementBodyResponseMiddleware($this->getTsfeProphecy('0')->reveal(), new JsonEncoder());
-
         self::assertEquals(
             $response,
             $middleware->process(
-                $this->getTestRequest(['responseElementId' => 1], 'POST'),
+                $this->getTestRequest(['responseElementId' => 0], 'POST', 0, false),
                 $this->getMockHandlerWithResponse($response)
             )
         );
+
+        $middleware = new ElementBodyResponseMiddleware(new JsonEncoder());
+
+        $responseArray = ['content' => ['colPos2' => null, 'colPos1' => [['id' => 1]]]];
+        $result = json_encode($responseArray['content']['colPos1'][0]);
+        $testJson = json_encode($responseArray);
+        $response = new HtmlResponse($testJson);
+        $testResponse = $middleware->process(
+            $this->getTestRequest(['responseElementId' => 1], 'POST'),
+            $this->getMockHandlerWithResponse($response)
+        );
+
+        self::assertSame($result, $testResponse->getBody()->__toString());
+
+        $responseArray = ['content' => ['colPos1' => ['content' => ['colPos1' => ['test' => [['id' => 1]]]]]]];
+        $testJson = json_encode($responseArray);
+        $response = new HtmlResponse($testJson);
+        $testResponse = $middleware->process(
+            $this->getTestRequest(['responseElementId' => 1, 'responseElementRecursive' => 1], 'POST'),
+            $this->getMockHandlerWithResponse($response)
+        );
+
+        self::assertSame(json_encode(['id' => 1]), $testResponse->getBody()->__toString());
     }
 
     protected function getMockHandlerWithResponse($response)
@@ -123,8 +153,12 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
         return $handler;
     }
 
-    protected function getTestRequest(array $withParsedBody = [], string $withMethod = '')
-    {
+    protected function getTestRequest(
+        array $withParsedBody = [],
+        string $withMethod = '',
+        int $headless = 1,
+        bool $withSite = true
+    ) {
         $request = new ServerRequest();
         if ($withParsedBody !== []) {
             $request = $request->withParsedBody($withParsedBody);
@@ -132,6 +166,15 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
 
         if ($withMethod !== '') {
             $request = $request->withMethod($withMethod);
+        }
+
+        if ($withSite) {
+            $site = $this->prophesize(Site::class);
+            $site->getConfiguration()->willReturn([
+                'headless' => $headless
+            ]);
+
+            $request = $request->withAttribute('site', $site->reveal());
         }
 
         return $request;
