@@ -27,7 +27,10 @@ use TYPO3\CMS\Redirects\Service\RedirectService;
 
 use function strpos;
 
-class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\RedirectHandler
+/**
+ * @codeCoverageIgnore
+ */
+final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\RedirectHandler
 {
     private LinkService $linkService;
     private EventDispatcherInterface $eventDispatcher;

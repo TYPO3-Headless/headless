@@ -21,7 +21,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-final class DatabaseQueryProcessorTest extends UnitTestCase
+class DatabaseQueryProcessorTest extends UnitTestCase
 {
     use ProphecyTrait;
 

@@ -241,4 +241,27 @@ class HeadlessUserIntTest extends UnitTestCase
 
         self::assertEquals($finalOutput, $tsfe->content);
     }
+
+    /**
+     * @test
+     */
+    public function wrapTest()
+    {
+        $headlessUserInt = new HeadlessUserInt();
+
+        $genericUserIntScriptTag = '<!--INT_SCRIPT.d53df2a300e62171a7b4882c4b88a153-->';
+        $expectedOutput = HeadlessUserInt::STANDARD . '_START<<' . $genericUserIntScriptTag . '>>' . HeadlessUserInt::STANDARD . '_END';
+        self::assertSame($expectedOutput, $headlessUserInt->wrap($genericUserIntScriptTag));
+
+        $testString = '12345test12345test12345test12345test12345test';
+        self::assertSame($testString, $headlessUserInt->wrap($testString));
+
+        $expectedOutput = HeadlessUserInt::NESTED . '_START<<' . $genericUserIntScriptTag . '>>' . HeadlessUserInt::NESTED . '_END';
+        self::assertSame($expectedOutput, $headlessUserInt->wrap($genericUserIntScriptTag, HeadlessUserInt::NESTED));
+
+        self::assertSame(
+            strtoupper($genericUserIntScriptTag),
+            $headlessUserInt->wrap(strtoupper($genericUserIntScriptTag))
+        );
+    }
 }

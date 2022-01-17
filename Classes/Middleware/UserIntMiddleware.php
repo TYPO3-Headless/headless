@@ -41,7 +41,10 @@ class UserIntMiddleware implements MiddlewareInterface
     {
         $response = $handler->handle($request);
 
-        $this->tsfe = $request->getAttribute('frontend.controller', $GLOBALS['TSFE']);
+        $this->tsfe = $request->getAttribute('frontend.controller');
+        if ($this->tsfe === null && isset($GLOBALS['TSFE'])) {
+            $this->tsfe = $GLOBALS['TSFE'];
+        }
 
         if (!isset($this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'])
             || (bool)$this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'] === false

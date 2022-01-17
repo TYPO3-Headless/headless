@@ -14,7 +14,10 @@ namespace FriendsOfTYPO3\Headless\Test\Unit\Utility;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Component\ExpressionLanguage\SyntaxError;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -143,7 +146,9 @@ class UrlUtilityTest extends UnitTestCase
 
         self::assertSame(
             '/test-page?some_query_param=1&some_extra=2',
-            $urlUtility->prepareRelativeUrlIfPossible('https://test-frontend.tld/test-page?some_query_param=1&some_extra=2')
+            $urlUtility->prepareRelativeUrlIfPossible(
+                'https://test-frontend.tld/test-page?some_query_param=1&some_extra=2'
+            )
         );
 
         // different domain, so we need absolute url
@@ -170,13 +175,27 @@ class UrlUtilityTest extends UnitTestCase
 
         self::assertSame(
             '/test-page?some_query_param=1&some_extra=2',
-            $urlUtility->prepareRelativeUrlIfPossible('https://test-second-frontend.tld/test-page?some_query_param=1&some_extra=2')
+            $urlUtility->prepareRelativeUrlIfPossible(
+                'https://test-second-frontend.tld/test-page?some_query_param=1&some_extra=2'
+            )
         );
 
         // different domain, so we need absolute url
         self::assertSame(
             'https://test-frontend.tld/test-page',
             $urlUtility->prepareRelativeUrlIfPossible('https://test-frontend.tld/test-page')
+        );
+        $site = $this->createMockSite('https://test-backend-api.tld:8000');
+        $urlUtility = $urlUtility->withSite($site);
+
+        self::assertSame(
+            '/test-page',
+            $urlUtility->prepareRelativeUrlIfPossible('test-page')
+        );
+
+        self::assertSame(
+            'test.page',
+            $urlUtility->prepareRelativeUrlIfPossible('test.page')
         );
     }
 
@@ -310,5 +329,69 @@ class UrlUtilityTest extends UnitTestCase
             'https://test-frontend.tld:3000/test-page',
             $urlUtility->getFrontendUrlForPage('https://test-backend-api.tld:8000/test-page', 1)
         );
+    }
+
+    public function testEdgeCases()
+    {
+        $site = $this->createMockSite('https://test-backend-api.tld:8000');
+        $request = $this->createPartialMock(ServerRequest::class, ['getAttribute']);
+        $request->method('getAttribute')->willReturn($site);
+
+        $resolver = $this->prophesize(Resolver::class);
+        $resolver->evaluate(Argument::any())->willReturn(true);
+
+        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalledOnce()->willReturn($site);
+        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), $request);
+
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
+        self::assertSame(
+            'https://test-backend-api.tld:8000/test-page',
+            $urlUtility->getFrontendUrlForPage('https://test-backend-api.tld:8000/test-page', 1)
+        );
+
+        $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
+        $siteFinder->method('getSiteByPageId')->willThrowException(new SiteNotFoundException('test'));
+        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder, $request);
+
+        self::assertSame(
+            'https://test-backend-api.tld:8000/test-page',
+            $urlUtility->getFrontendUrlForPage('https://test-backend-api.tld:8000/test-page', 1)
+        );
+
+        $resolver = $this->createPartialMock(Resolver::class, ['evaluate']);
+        $resolver->method('evaluate')->willThrowException(new SyntaxError('test'));
+
+        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, $request);
+        self::assertSame('', $urlUtility->getFrontendUrl());
+
+        $urlUtility = $urlUtility->withSite($this->createMockSite('https://test-frontend.tld', '', []));
+        self::assertSame('', $urlUtility->getFrontendUrl());
+    }
+
+    protected function createMockSite(string $backendUrl, string $frontendUrl = '', ?array $variants = null)
+    {
+        $site = $this->prophesize(Site::class);
+
+        if ($variants === null) {
+            $variants = [
+                [
+                    'base' => $backendUrl,
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendBase' => $frontendUrl,
+                    'frontendApiProxy' => $frontendUrl . '/headless',
+                    'frontendFileApi' => $frontendUrl . '/headless/fileadmin'
+                ]
+            ];
+        }
+        $site->getConfiguration()->shouldBeCalled(2)->willReturn([
+            'base' => 'https://www.typo3.org',
+            'languages' => [],
+            'baseVariants' => $variants
+        ]);
+
+        $uri = new Uri($backendUrl);
+        $site->getBase()->willReturn($uri);
+        return $site->reveal();
     }
 }
