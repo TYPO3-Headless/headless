@@ -14,23 +14,21 @@ namespace FriendsOfTYPO3\Headless\ContentObject;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 
 /**
- * BOOL Content object only for use in JSON content object
+ * FLOAT Content Object only for use in JSON content object
  *
  * ** not working ** outside of JSON content object
  */
-class BooleanContentObject extends AbstractContentObject
+class FloatContentObject extends AbstractContentObject
 {
     /**
-     * Rendering the cObject, JSON
-     * @param array $conf Array of TypoScript properties
-     * @return bool
+     * @param array<string, mixed> $conf Array of TypoScript properties
      */
-    public function render($conf = []): bool
+    public function render($conf = []): float
     {
         if (!is_array($conf)) {
-            return false;
+            return 0.0;
         }
-        $content = false;
+        $content = 0.0;
         if (isset($conf['value'])) {
             $content = $conf['value'];
             unset($conf['value']);
@@ -42,6 +40,6 @@ class BooleanContentObject extends AbstractContentObject
         if (!empty($conf)) {
             $content = $this->cObj->stdWrap($content, $conf);
         }
-        return (bool)((int)$content);
+        return (float)$content;
     }
 }

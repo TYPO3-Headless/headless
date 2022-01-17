@@ -5,15 +5,12 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
-use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 
 /**
@@ -23,8 +20,6 @@ use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
  */
 class IntegerContentObject extends AbstractContentObject
 {
-    use LoggerAwareTrait;
-
     /**
      * Rendering the cObject, JSON
      * @param array $conf Array of TypoScript properties

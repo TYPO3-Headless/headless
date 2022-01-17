@@ -61,12 +61,21 @@ Enable new APIs/behaviors of ext:headless, but contains breaking changes & requi
 Available since `2.6`
 
 Enable clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests.
-For getting clean for plugins on page, please enable this flag and send `responseElementId` field with ID of plugin in body with plugin data.
+For getting clean for plugins on page, please enable this flag and add `headless` to the site configuration, then send `responseElementId` field with ID of plugin in body with plugin data.
+
+`LocalConfiguration.php`
 
 .. code-block:: php
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.elementBodyResponse'] = true;
 
+`site configuration`:
+
+Please also add to you site(s) configuration's yaml file following flag:
+
+.. code-block:: yaml
+
+   headless: true
 
 Example POST request with plugin form. Please #ELEMENT_ID# replace with id of plugin from page response
 
@@ -76,6 +85,16 @@ Example POST request with plugin form. Please #ELEMENT_ID# replace with id of pl
    Content-Type: application/x-www-form-urlencoded
 
    responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
+
+If you would like to find nested element please use new flag `responseElementRecursive`,
+where `responseElementId` is child (nested element) example request:
+
+.. code-block:: php
+
+   POST https://example.tld/path-to-form-plugin
+   Content-Type: application/x-www-form-urlencoded
+
+   responseElementId=#ELEMENT_ID#&responseElementRecursive=1&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
 
 **headless.simplifiedLinkTarget**
 
