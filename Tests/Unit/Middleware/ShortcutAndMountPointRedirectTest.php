@@ -122,20 +122,6 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         self::assertEquals(303, $linkRedirectResponse->getStatusCode());
 
         $middleware = new ShortcutAndMountPointRedirect();
-
-        $normalResponse = $middleware->process(
-            $this->getTestRequest(
-                ['type' => 0],
-                'https://test.domain.tld',
-                $this->getTsfeProphecy(
-                    '0',
-                    ['id' => 1, 'doktype' => PageRepository::DOKTYPE_DEFAULT, 'url' => $linkRedirect]
-                )->reveal()
-            ),
-            $this->getMockHandlerWithResponse($genericResponse)
-        );
-
-        $middleware = new ShortcutAndMountPointRedirect();
         $GLOBALS['TSFE'] = $this->getTsfeProphecy(
             '0',
             ['id' => 1, 'doktype' => PageRepository::DOKTYPE_DEFAULT, 'url' => $linkRedirect]

@@ -17,8 +17,6 @@ use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Site\Entity\Site;
-use TYPO3\CMS\Core\TypoScript\TemplateService;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Http\RequestHandler;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -178,19 +176,5 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
         }
 
         return $request;
-    }
-
-    protected function getTsfeProphecy(string $staticTemplate = '1')
-    {
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = $staticTemplate;
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
-        $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
-        return $tsfe;
     }
 }
