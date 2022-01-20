@@ -39,10 +39,10 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     private JsonDecoderInterface $jsonDecoder;
     private array $conf;
 
-    public function __construct(ContentObjectRenderer $cObj)
+    public function __construct(ContentObjectRenderer $cObj, ContentDataProcessor $contentDataProcessor = null)
     {
         parent::__construct($cObj);
-        $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
+        $this->contentDataProcessor = $contentDataProcessor ?? GeneralUtility::makeInstance(ContentDataProcessor::class);
         $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
         $this->jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
         $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
@@ -90,9 +90,6 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
      */
     public function cObjGet(array $setup, string $addKey = ''): array
     {
-        if (!is_array($setup)) {
-            return [];
-        }
         $content = [];
 
         $sKeyArray = $this->filterByStringKeys($setup);
