@@ -78,7 +78,7 @@ class RootSitesProcessor implements DataProcessorInterface
         array $processorConfiguration,
         array $processedData
     ): array {
-        $siteUid = $cObj->data['uid'];
+        $siteUid = $cObj->data['uid'] ?? null;
 
         if ($siteUid === null) {
             return $processedData;
