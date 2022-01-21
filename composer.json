@@ -43,7 +43,8 @@
     "saschaegerer/phpstan-typo3": "^0.13.3",
     "seld/jsonlint": "^1.8",
     "symfony/yaml": "^5.3",
-    "typo3/testing-framework": "^6"
+    "typo3/testing-framework": "^6",
+    "typo3/cms-form": "10.*.*@dev || 11.*.*@dev"
   },
   "config": {
     "preferred-install": {
