@@ -20,9 +20,11 @@ use function is_array;
 
 class Translator
 {
-    protected static function getTranslationService(): FormTranslationService
+    private FormTranslationService $translator;
+
+    public function __construct(FormTranslationService $service = null)
     {
-        return FormTranslationService::getInstance();
+        $this->translator = $service ?? FormTranslationService::getInstance();
     }
 
     /**
@@ -40,14 +42,14 @@ class Translator
 
         if (isset($formDefinition['i18n']['properties'])) {
             foreach ($formDefinition['i18n']['properties'] as $prop => $value) {
-                $formDefinition['i18n']['properties'][$prop] = self::getTranslationService()
+                $formDefinition['i18n']['properties'][$prop] = $this->translator
                     ->translateElementValue($formDefinition['i18n'], [$prop], $formRuntime);
             }
         }
 
         foreach ($formDefinition['renderables'] as $page) {
             $pageTranslation = [
-                'label' => self::getTranslationService()->translateElementValue($page, ['label'], $formRuntime),
+                'label' => $this->translator->translateElementValue($page, ['label'], $formRuntime),
             ];
 
             if (!isset($page['renderables']) || !is_array($page['renderables'])) {
@@ -83,7 +85,7 @@ class Translator
                         continue;
                     }
 
-                    $validator['errorMessage'] = self::getTranslationService()->translateElementError(
+                    $validator['errorMessage'] = $this->translator->translateElementError(
                         $element,
                         $validator['errorMessage'],
                         $formRuntime,
@@ -95,7 +97,7 @@ class Translator
             if (is_array($element['properties'])) {
                 foreach (array_keys($element['properties']) as $property
                 ) {
-                    $properties[$property] = self::getTranslationService()->translateElementValue(
+                    $properties[$property] = $this->translator->translateElementValue(
                         $element,
                         [$property],
                         $formRuntime
@@ -109,7 +111,7 @@ class Translator
                 foreach ($element['properties']['validationErrorMessages'] as $error) {
                     $properties['validationErrorMessages'][] = [
                         'code' => $error['code'],
-                        'message' => self::getTranslationService()->translateElementError(
+                        'message' => $this->translator->translateElementError(
                             $element,
                             $error['code'],
                             $formRuntime
@@ -118,13 +120,13 @@ class Translator
                 }
             }
 
-            $translatedDefaultValue = self::getTranslationService()->translateElementValue(
+            $translatedDefaultValue = $this->translator->translateElementValue(
                 $element,
                 ['defaultValue'],
                 $formRuntime
             );
 
-            $element['label'] = self::getTranslationService()->translateElementValue(
+            $element['label'] = $this->translator->translateElementValue(
                 $element,
                 ['label'],
                 $formRuntime
