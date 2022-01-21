@@ -1,5 +1,7 @@
-# TYPO3 Extension "headless" - JSON content API for TYPO3 PWA solution
+# TYPO3 Extension `headless` - JSON content API for TYPO3 PWA solution
 
+[![TYPO3 10](https://img.shields.io/badge/TYPO3-10-orange.svg)](https://get.typo3.org/version/10)
+[![TYPO3 11](https://img.shields.io/badge/TYPO3-11-orange.svg)](https://get.typo3.org/version/11)
 [![CI Status](https://github.com/TYPO3-Initiatives/headless/workflows/CI/badge.svg)](https://github.com/TYPO3-Initiatives/headless/actions)
 [![Latest Stable Version](https://poser.pugx.org/friendsoftypo3/headless/v)](//packagist.org/packages/friendsoftypo3/headless)
 [![Total Downloads](https://poser.pugx.org/friendsoftypo3/headless/downloads)](//packagist.org/packages/friendsoftypo3/headless)
