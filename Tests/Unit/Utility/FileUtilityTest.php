@@ -18,6 +18,7 @@ use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileReference;
@@ -27,6 +28,7 @@ use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
+use TYPO3\CMS\Frontend\Typolink\LinkResult;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class FileUtilityTest extends UnitTestCase
@@ -101,6 +103,7 @@ class FileUtilityTest extends UnitTestCase
         self::assertSame($this->getBaselineResultArrayForFileReference(), $fileUtility->processFile($fileReference));
 
         $link = 'https://test.domain.tld/resource';
+        $linkResult = new LinkResult(LinkService::TYPE_PAGE, 'https://test.domain.tld/resource');
         $file = $this->getMockFileForData($fileData, [
             'extension' => 'jpg',
             'title' => null,
@@ -111,10 +114,11 @@ class FileUtilityTest extends UnitTestCase
         $processedFile = $this->getMockProcessedFileForData($fileData);
         $imageService = $this->getImageServiceWithProcessedFile($file, $processedFile);
         $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
-        $contentObjectRenderer->typoLink_URL(Argument::any())->willReturn($link);
+        $contentObjectRenderer->typoLink(Argument::any(), Argument::any())->willReturn($linkResult);
         $fileUtility = $this->getFileUtility(null, $imageService, $contentObjectRenderer);
         $overwrittenBaseline = $this->getBaselineResultArrayForFile();
         $overwrittenBaseline['properties']['link'] = $link;
+        $overwrittenBaseline['properties']['linkData'] = $linkResult;
         self::assertSame($overwrittenBaseline, $fileUtility->processFile($file));
 
         $fileReference = $this->getMockFileReferenceForData($fileReferenceData, 'video');
@@ -323,6 +327,7 @@ class FileUtilityTest extends UnitTestCase
                     'alternative' => null,
                     'description' => null,
                     'link' => null,
+                    'linkData' => null,
                     'mimeType' => 'image/jpeg',
                     'type' => 'image',
                     'filename' => 'test-file.jpg',
@@ -357,6 +362,7 @@ class FileUtilityTest extends UnitTestCase
                     'alternative' => null,
                     'description' => null,
                     'link' => null,
+                    'linkData' => null,
                     'mimeType' => 'image/jpeg',
                     'type' => 'image',
                     'filename' => 'test-file.jpg',
@@ -391,6 +397,7 @@ class FileUtilityTest extends UnitTestCase
                     'alternative' => null,
                     'description' => null,
                     'link' => null,
+                    'linkData' => null,
                     'mimeType' => 'video/youtube',
                     'type' => 'video',
                     'filename' => 'test-file.jpg',

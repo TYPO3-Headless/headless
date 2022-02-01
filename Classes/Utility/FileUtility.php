@@ -15,7 +15,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\Resource\AbstractFile;
-use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
@@ -91,13 +90,20 @@ class FileUtility
 
         $metaData = $fileReference->toArray();
 
+        $link = null;
+        $linkData = null;
+
+        if (!empty($metaData['link'])) {
+            $linkData = $this->contentObjectRenderer->typoLink('', ['parameter' => $metaData['link'], 'returnLast' => 'result']);
+            $link = $linkData->getUrl();
+        }
+
         $originalProperties = [
             'title' => $fileReference->getProperty('title'),
             'alternative' => $fileReference->getProperty('alternative'),
             'description' => $fileReference->getProperty('description'),
-            'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL([
-                'parameter' => $metaData['link']
-            ]) : null,
+            'link' => $link ?? null,
+            'linkData' => $linkData ?? null,
         ];
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
