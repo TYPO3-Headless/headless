@@ -132,7 +132,17 @@ class JsonContentContentObject extends ContentContentObject
         }
 
         try {
-            return json_encode($theValue, JSON_THROW_ON_ERROR);
+            $theValue = json_encode($theValue, JSON_THROW_ON_ERROR);
+
+            $wrap = $this->cObj->stdWrapValue('wrap', $conf ?? []);
+            if ($wrap) {
+                $theValue = $this->cObj->wrap($theValue, $wrap);
+            }
+            if (isset($conf['stdWrap.'])) {
+                $theValue = $this->cObj->stdWrap($theValue, $conf['stdWrap.']);
+            }
+
+            return  $theValue;
         } catch (JsonException $e) {
             return '';
         }
