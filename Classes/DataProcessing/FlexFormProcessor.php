@@ -64,12 +64,12 @@ class FlexFormProcessor implements DataProcessorInterface
             $fieldName = 'pi_flexform';
         }
 
-        if (!$processedData['data'][$fieldName]) {
+        if (!$processedData['data'][$fieldName] && !$processedData[$fieldName]) {
             return $processedData;
         }
 
         // processing the flexform data
-        $originalValue = $processedData['data'][$fieldName];
+        $originalValue = $processedData['data'][$fieldName] ?? $processedData[$fieldName];
 
         if (\is_array($originalValue)) {
             $flexformData = $originalValue;
@@ -85,7 +85,11 @@ class FlexFormProcessor implements DataProcessorInterface
         if (!empty($targetVariableName)) {
             $processedData[$targetVariableName] = $flexformData;
         } else {
-            $processedData['data'][$fieldName] = $flexformData;
+            if ($processedData['data'][$fieldName]) {
+                $processedData['data'][$fieldName] = $flexformData;
+            } else {
+                $processedData[$fieldName] = $flexformData;
+            }
         }
 
         return $processedData;
