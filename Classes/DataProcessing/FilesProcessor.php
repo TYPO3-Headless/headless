@@ -217,7 +217,17 @@ class FilesProcessor implements DataProcessorInterface
 
                 $data[] = $file;
             } else {
-                $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+                $temporaryKey = $fileObject->getHashedIdentifier();
+                $data[$temporaryKey] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+
+                $availableCropVariants = json_decode($fileObject->getProperty('crop'), true);
+                foreach (array_keys($availableCropVariants) as $cropVariantName) {
+                    $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariantName);
+                    $data[$temporaryKey]['cropVariants'][$cropVariantName] = $file;
+                }
+
+                // reset array keys to int, starting with 0
+                $data = array_values($data);
             }
         }
 
