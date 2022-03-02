@@ -147,40 +147,29 @@ class JsonContentContentObject extends ContentContentObject
         $theValue = [];
         $originalRec = $frontendController->currentRecord;
         // If the currentRecord is set, we register, that this record has invoked this function.
-        // It's should not be allowed to do this again then!!
+        // It should not be allowed to do this again then!!
         if ($originalRec) {
-            ++$frontendController->recordRegister[$originalRec];
+            if (isset($frontendController->recordRegister[$originalRec])) {
+                ++$frontendController->recordRegister[$originalRec];
+            } else {
+                $frontendController->recordRegister[$originalRec] = 1;
+            }
         }
-        $conf['table'] = isset($conf['table.']) ? trim($this->cObj->stdWrap(
-            $conf['table'],
-            $conf['table.']
-        )) : trim($conf['table']);
+        $conf['table'] = trim((string)$this->cObj->stdWrapValue('table', $conf ?? []));
         $conf['select.'] = !empty($conf['select.']) ? $conf['select.'] : [];
-        $renderObjName = $conf['renderObj'] ?: '<' . $conf['table'];
-        $renderObjKey = $conf['renderObj'] ? 'renderObj' : '';
-        $renderObjConf = $conf['renderObj.'];
-        $slide = isset($conf['slide.']) ? (int)$this->cObj->stdWrap(
-            $conf['slide'],
-            $conf['slide.']
-        ) : (int)$conf['slide'];
+        $renderObjName = ($conf['renderObj'] ?? false) ? $conf['renderObj'] : '<' . $conf['table'];
+        $renderObjKey = ($conf['renderObj'] ?? false) ? 'renderObj' : '';
+        $renderObjConf = $conf['renderObj.'] ?? [];
+        $slide = (int)$this->cObj->stdWrapValue('slide', $conf ?? []);
         if (!$slide) {
             $slide = 0;
         }
-        $slideCollect = isset($conf['slide.']['collect.']) ? (int)$this->cObj->stdWrap(
-            $conf['slide.']['collect'],
-            $conf['slide.']['collect.']
-        ) : (int)$conf['slide.']['collect'];
+        $slideCollect = (int)$this->cObj->stdWrapValue('collect', $conf['slide.'] ?? []);
         if (!$slideCollect) {
             $slideCollect = 0;
         }
-        $slideCollectReverse = isset($conf['slide.']['collectReverse.']) ? (int)$this->cObj->stdWrap(
-            $conf['slide.']['collectReverse'],
-            $conf['slide.']['collectReverse.']
-        ) : (int)$conf['slide.']['collectReverse'];
-        $slideCollectReverse = (bool)$slideCollectReverse;
-        $slideCollectFuzzy = isset($conf['slide.']['collectFuzzy.'])
-            ? (bool)$this->cObj->stdWrap($conf['slide.']['collectFuzzy'], $conf['slide.']['collectFuzzy.'])
-            : (bool)$conf['slide.']['collectFuzzy'];
+        $slideCollectReverse = (bool)$this->cObj->stdWrapValue('collectReverse', $conf['slide.'] ?? []);
+        $slideCollectFuzzy = (bool)$this->cObj->stdWrapValue('collectFuzzy', $conf['slide.'] ?? []);
         if (!$slideCollect) {
             $slideCollectFuzzy = true;
         }
@@ -191,6 +180,7 @@ class JsonContentContentObject extends ContentContentObject
             $records = $this->cObj->getRecords($conf['table'], $conf['select.']);
             $cobjValue = [];
             if (!empty($records)) {
+                // @deprecated since v11, will be removed in v12. Drop together with ContentObjectRenderer->currentRecordTotal
                 $this->cObj->currentRecordTotal = count($records);
                 $this->getTimeTracker()->setTSlogMessage('NUMROWS: ' . count($records));
 
@@ -205,14 +195,14 @@ class JsonContentContentObject extends ContentContentObject
                         $_procObj = GeneralUtility::makeInstance($className);
                         $_procObj->modifyDBRow($row, $conf['table']);
                     }
-                    if (!$frontendController->recordRegister[$conf['table'] . ':' . $row['uid']]) {
+                    $registerField = $conf['table'] . ':' . $row['uid'];
+                    if (!($frontendController->recordRegister[$registerField] ?? false)) {
                         $this->cObj->currentRecordNumber++;
                         $cObj->parentRecordNumber = $this->cObj->currentRecordNumber;
-                        $frontendController->currentRecord = $conf['table'] . ':' . $row['uid'];
-                        $this->cObj->lastChanged($row['tstamp']);
-                        $cObj->start($row, $conf['table']);
+                        $frontendController->currentRecord = $registerField;
+                        $this->cObj->lastChanged($row['tstamp'] ?? 0);
+                        $cObj->start($row, $conf['table'], $this->request);
                         $tmpValue = $cObj->cObjGetSingle($renderObjName, $renderObjConf, $renderObjKey);
-
                         $cobjValue[] = $tmpValue;
                     }
                 }
@@ -230,15 +220,15 @@ class JsonContentContentObject extends ContentContentObject
                     $slide--;
                 }
                 $conf['select.']['pidInList'] = $this->cObj->getSlidePids(
-                    $conf['select.']['pidInList'],
-                    $conf['select.']['pidInList.']
+                    $conf['select.']['pidInList'] ?? '',
+                    $conf['select.']['pidInList.'] ?? [],
                 );
                 if (isset($conf['select.']['pidInList.'])) {
                     unset($conf['select.']['pidInList.']);
                 }
                 $again = (string)$conf['select.']['pidInList'] !== '';
             }
-        } while ($again && $slide && (((string)$tmpValue === '' && $slideCollectFuzzy) || $slideCollect));
+        } while ($again && $slide && ((string)$tmpValue === '' && $slideCollectFuzzy || $slideCollect));
 
         $theValue = $this->groupContentElementsByColPos($theValue, $conf);
         // Restore
