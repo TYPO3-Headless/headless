@@ -23,7 +23,6 @@ class DecodeViewHelper extends AbstractViewHelper
     public function initializeArguments(): void
     {
         $this->registerArgument('json', 'string', 'json to decode', false, '');
-        $this->registerArgument('exceptionOnFailure', 'boolean', 'Throw an exception when failing decoding the string', false, false);
     }
 
     /**
@@ -45,7 +44,7 @@ class DecodeViewHelper extends AbstractViewHelper
             return $object;
         }
 
-        if ($this->arguments['exceptionOnFailure'] === true) {
+        if ($GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] ?? false) {
             throw new \Exception(sprintf(
                 'Failure "%s" occured when running json_decode() for string: %s',
                 json_last_error_msg(),
