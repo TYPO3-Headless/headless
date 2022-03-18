@@ -12,18 +12,62 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
-use JsonException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 use function array_merge;
 use function count;
+use function is_array;
 use function json_decode;
 use function json_encode;
+use function json_last_error;
 use function strpos;
 use function trim;
 
+use const JSON_ERROR_NONE;
+
+/**
+ * CONTENT_JSON Content object behaves & has the same options as standard TYPO3' Content
+ * main difference is content is grouped by colPol field & encoded into JSON by default.
+ *
+ * CONTENT_JSON has the same options as CONTENT, also adds two new options for edge cases in json context
+ *
+ * ** merge ** option
+ * New option allows to generate another CONTENT_JSON call in one definition & then merge both results into one dataset
+ * (useful for handling slide feature of CONTENT cObject)
+ *
+ * for example:
+ *
+ * lib.content = CONTENT_JSON
+ * lib.content {
+ *    table = tt_content
+ *    select {
+ *        orderBy = sorting
+ *        where = {#colPos} != 1
+ *    }
+ *    merge {
+ *        table = tt_content
+ *        select {
+ *           orderBy = sorting
+ *           where = {#colPos} = 1
+ *       }
+ *       slide = -1
+ *    }
+ *  }
+ *
+ * ** doNotGroupByColPos = 0(default)|1 **
+ * Option allows return of flat array (without grouping by colPos) encoded into JSON
+ *
+ * lib.content = CONTENT_JSON
+ * lib.content {
+ *    table = tt_content
+ *    select {
+ *        orderBy = sorting
+ *        where = {#colPos} != 1
+ *    }
+ *    doNotGroupByColPos = 1
+ */
 class JsonContentContentObject extends ContentContentObject
 {
     /**
@@ -46,6 +90,35 @@ class JsonContentContentObject extends ContentContentObject
             return '';
         }
 
+        $theValue = $this->prepareValue($conf);
+
+        if (isset($conf['merge.']) && is_array($conf['merge.'])) {
+            $theValue = array_merge($theValue, $this->prepareValue($conf['merge.']));
+        }
+
+        $theValue = json_encode($theValue);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return '';
+        }
+
+        $wrap = $this->cObj->stdWrapValue('wrap', $conf ?? []);
+        if ($wrap) {
+            $theValue = $this->cObj->wrap($theValue, $wrap);
+        }
+        if (isset($conf['stdWrap.'])) {
+            $theValue = $this->cObj->stdWrap($theValue, $conf['stdWrap.']);
+        }
+
+        return $theValue;
+    }
+
+    /**
+     * @param array<string, mixed> $conf
+     * @return array<string, mixed>
+     */
+    private function prepareValue(array $conf): array
+    {
         $frontendController = $this->getFrontendController();
         $theValue = [];
         $originalRec = $frontendController->currentRecord;
@@ -103,7 +176,6 @@ class JsonContentContentObject extends ContentContentObject
                         $this->cObj->lastChanged($row['tstamp']);
                         $cObj->start($row, $conf['table']);
                         $tmpValue = $cObj->cObjGetSingle($renderObjName, $renderObjConf, $renderObjKey);
-
                         $cobjValue[] = $tmpValue;
                     }
                 }
@@ -113,6 +185,7 @@ class JsonContentContentObject extends ContentContentObject
             } else {
                 $theValue = array_merge($theValue, $cobjValue);
             }
+
             if ($slideCollect > 0) {
                 $slideCollect--;
             }
@@ -126,39 +199,39 @@ class JsonContentContentObject extends ContentContentObject
                 }
                 $again = (string)$conf['select.']['pidInList'] !== '';
             }
-        } while ($again && $slide && (((string)$tmpValue === '' && $slideCollectFuzzy) || $slideCollect));
+        } while ($again && $slide && ((string)$tmpValue === '' && $slideCollectFuzzy || $slideCollect));
 
-        $theValue = $this->groupContentElementsByColPos($theValue);
+        $theValue = $this->groupContentElementsByColPos($theValue, $conf);
         // Restore
         $frontendController->currentRecord = $originalRec;
         if ($originalRec) {
             --$frontendController->recordRegister[$originalRec];
         }
 
-        try {
-            return json_encode($theValue, \PHP_VERSION_ID >= 70300 ? \JSON_THROW_ON_ERROR : 0);
-        } catch (JsonException $e) {
-            return '';
-        }
+        return $theValue;
     }
 
     /**
      * @param array<string, mixed> $contentElements
+     * @param array<string, mixed> $conf
      * @return array<string,<array<int, mixed>>
      */
-    protected function groupContentElementsByColPos(array $contentElements): array
+    protected function groupContentElementsByColPos(array $contentElements, array $conf): array
     {
         $data = [];
 
-        foreach ($contentElements as $key => $element) {
+        foreach ($contentElements as $element) {
             if (strpos($element, '<!--INT_SCRIPT') !== false
                 && strpos($element, HeadlessUserInt::STANDARD) === false) {
                 $element = $this->headlessUserInt->wrap($element);
             }
 
             $element = json_decode($element);
-            if ($element->colPos >= 0) {
+
+            if ((!isset($conf['doNotGroupByColPos']) || (int)$conf['doNotGroupByColPos'] === 0) && $element->colPos >= 0) {
                 $data['colPos' . $element->colPos][] = $element;
+            } else {
+                $data[] = $element;
             }
         }
 
