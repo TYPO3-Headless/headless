@@ -139,6 +139,10 @@ class DatabaseQueryProcessor implements DataProcessorInterface
                     $processedRecordVariables[$key][$fieldName] = $overrideData;
                 }
             }
+
+            if ($processorConfiguration['renderOnlyOne'] ?? false) {
+                return array_shift($processedRecordVariables);
+            }
         }
 
         return $processedRecordVariables;

@@ -263,6 +263,40 @@ Here's an example of how you can create a JSON array of multiple objects from a 
     }
   }
 
+.. _developer-meta-override:
+
+Meta data override
+==================
+
+Here's an example of how to override the meta object by data from a DB record:
+
+.. code-block:: typoscript
+
+  lib.meta.stdWrap.override.cObject = JSON
+  lib.meta.stdWrap.override.cObject {
+    stdWrap.if.isTrue.data = GP:tx_news_pi1|news
+    dataProcessing.10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
+    dataProcessing.10 {
+      table = tx_news_domain_model_news
+      uidInList.data = GP:tx_news_pi1|news
+      uidInList.intval = 1
+      pidInList = 0
+      max = 1
+      as = records
+      fields < lib.meta.fields
+      fields {
+        title = TEXT
+        title.field = title
+        subtitle = TEXT
+        subtitle.field = teaser
+        description = TEXT
+        description.field = bodytext
+      }
+
+      renderOnlyOne = 1
+    }
+  }
+
 .. _developer-ext-form:
 
 EXT:form & form output decorators
