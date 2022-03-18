@@ -140,7 +140,7 @@ class DatabaseQueryProcessor implements DataProcessorInterface
                 }
             }
 
-            if ($processorConfiguration['renderOnlyOne'] ?? false) {
+            if ($processorConfiguration['returnFlattenObject'] ?? false) {
                 return array_shift($processedRecordVariables);
             }
         }

@@ -293,7 +293,7 @@ Here's an example of how to override the meta object by data from a DB record:
         description.field = bodytext
       }
 
-      renderOnlyOne = 1
+      returnFlattenObject = 1
     }
   }
 
