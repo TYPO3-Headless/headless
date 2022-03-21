@@ -94,7 +94,7 @@ class PageJsonParser implements JsonParserInterface
             [
                 'data' => $pageContent,
                 'tabs' => array_keys($pageContent),
-                'parsedJson' => $jsonArray[$this->getAggregatedName()],
+                'parsedJson' => $jsonArray[$this->getAggregatedName()] ?? [],
                 'contentTabName' => $this->getContentTabName(),
                 'rawTabName' => $this->getRawTabName(),
             ]
