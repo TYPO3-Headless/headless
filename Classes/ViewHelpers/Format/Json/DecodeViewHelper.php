@@ -38,6 +38,18 @@ class DecodeViewHelper extends AbstractViewHelper
             }
         }
 
-        return json_decode($json, true);
+        $object = json_decode($json, true);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $object;
+        }
+
+        if ($GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] ?? false) {
+            throw new \Exception(sprintf(
+                'Failure "%s" occured when running json_decode() for string: %s',
+                json_last_error_msg(),
+                $json
+            ));
+        }
     }
 }
