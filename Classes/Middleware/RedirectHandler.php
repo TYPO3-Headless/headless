@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -29,6 +27,9 @@ use TYPO3\CMS\Redirects\Service\RedirectService;
 
 use function strpos;
 
+/**
+ * @codeCoverageIgnore
+ */
 final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\RedirectHandler
 {
     private LinkService $linkService;

@@ -1,5 +1,7 @@
-# TYPO3 Extension "headless" - JSON content API for TYPO3 PWA solution
+# TYPO3 Extension `headless` - JSON content API for TYPO3 PWA solution
 
+[![TYPO3 10](https://img.shields.io/badge/TYPO3-10-orange.svg)](https://get.typo3.org/version/10)
+[![TYPO3 11](https://img.shields.io/badge/TYPO3-11-orange.svg)](https://get.typo3.org/version/11)
 [![CI Status](https://github.com/TYPO3-Initiatives/headless/workflows/CI/badge.svg)](https://github.com/TYPO3-Initiatives/headless/actions)
 [![Latest Stable Version](https://poser.pugx.org/friendsoftypo3/headless/v)](//packagist.org/packages/friendsoftypo3/headless)
 [![Total Downloads](https://poser.pugx.org/friendsoftypo3/headless/downloads)](//packagist.org/packages/friendsoftypo3/headless)
@@ -9,7 +11,7 @@
 
 Headless allows you to render JSON from TYPO3 content. You can customize output by changing types, names and nesting of fields.
 
-This extension provides backend part (JSON API) for TYPO3 PWA solution. Second part is a JavaScript application [nuxt-typo3](https://github.com/TYPO3-Initiatives/nuxt-typo3) which consumes JSON API and renders the content using Vue.js and Nuxt. See frontend documentation here: https://typo3-initiatives.github.io/nuxt-typo3/
+This extension provides backend part (JSON API) for TYPO3 PWA solution. Second part is a JavaScript application [nuxt-typo3](https://github.com/TYPO3-Headless/nuxt-typo3) which consumes JSON API and renders the content using Vue.js and Nuxt. See frontend documentation here: https://typo3-headless.github.io/nuxt-typo3/
 
 If you have any questions just drop a line in #initiative-headless-pwa Slack channel.
 
@@ -116,7 +118,7 @@ Output
     ]
 }
 ```
-## INT & BOOL Content Objects for use in JSON Content Object
+## INT, FLOAT & BOOL Content Objects for use in JSON Content Object
 
 We introduce new simple content objects to improve JSON API response for frontend developers.
 We can set correct property types, so frontend does not have to deal with string values for fields with numeric values or field that should be true/false.

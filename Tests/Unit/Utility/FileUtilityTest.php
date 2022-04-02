@@ -5,19 +5,20 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Test\Unit\Utility;
 
+use FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
+use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileReference;
@@ -27,6 +28,7 @@ use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
+use TYPO3\CMS\Frontend\Typolink\LinkResult;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class FileUtilityTest extends UnitTestCase
@@ -84,24 +86,7 @@ class FileUtilityTest extends UnitTestCase
             'height' => 526,
         ];
 
-        $fileReferenceData = [
-            'extension' => 'jpg',
-            'size' => 72392,
-            'title' => null,
-            'description' => null,
-            'alternative' => null,
-            'name' => 'test-file.jpg',
-            'link' => '',
-            'crop' => '{"default":{"cropArea":{"x":0,"y":0,"width":1,"height":1},"selectedRatio":"NaN","focusArea":null}}',
-            'autoplay' => 0,
-            'minWidth' => null,
-            'minHeight' => null,
-            'maxWidth' => null,
-            'maxHeight' => null,
-            'width' => 526,
-            'uid_local' => 103,
-            'height' => 526,
-        ];
+        $fileReferenceData = $this->getFileReferenceBaselineData();
 
         $file = $this->getMockFileForData($fileData);
         $processedFile = $this->getMockProcessedFileForData($fileData);
@@ -117,21 +102,72 @@ class FileUtilityTest extends UnitTestCase
 
         self::assertSame($this->getBaselineResultArrayForFileReference(), $fileUtility->processFile($fileReference));
 
+        $link = 'https://test.domain.tld/resource';
+        $linkResult = new LinkResult(LinkService::TYPE_PAGE, 'https://test.domain.tld/resource');
+        $file = $this->getMockFileForData($fileData, [
+            'extension' => 'jpg',
+            'title' => null,
+            'alternative' => null,
+            'description' => null,
+            'link' => 123
+        ]);
+        $processedFile = $this->getMockProcessedFileForData($fileData);
+        $imageService = $this->getImageServiceWithProcessedFile($file, $processedFile);
+        $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
+        $contentObjectRenderer->typoLink(Argument::any(), Argument::any())->willReturn($linkResult);
+        $fileUtility = $this->getFileUtility(null, $imageService, $contentObjectRenderer);
+        $overwrittenBaseline = $this->getBaselineResultArrayForFile();
+        $overwrittenBaseline['properties']['link'] = $link;
+        $overwrittenBaseline['properties']['linkData'] = $linkResult;
+        self::assertSame($overwrittenBaseline, $fileUtility->processFile($file));
+
         $fileReference = $this->getMockFileReferenceForData($fileReferenceData, 'video');
         $fileUtility = $this->getFileUtility();
 
-        self::assertSame($this->getBaselineResultArrayForVideoFileReference(), $fileUtility->processFile($fileReference));
+        self::assertSame(
+            $this->getBaselineResultArrayForVideoFileReference(),
+            $fileUtility->processFile($fileReference)
+        );
+        $rendererFileUrl = 'https://renderer.public.url.tld/youtube';
+        $fileReference = $this->getMockFileReferenceForData($fileReferenceData, 'video');
+        $rendererRegistry = $this->prophesize(RendererRegistry::class);
+        $fileRenderer = $this->prophesize(YouTubeRenderer::class);
+        $fileRenderer->render($fileReference, '', '', ['returnUrl' => true])->willReturn($rendererFileUrl);
+        $rendererRegistry->getRenderer($fileReference)->willReturn($fileRenderer->reveal());
+        $fileUtility = $this->getFileUtility(null, null, null, $rendererRegistry);
+
+        $overwrittenBaseline = $this->getBaselineResultArrayForVideoFileReference();
+        $overwrittenBaseline['publicUrl'] = $rendererFileUrl;
+        self::assertSame(
+            $overwrittenBaseline,
+            $fileUtility->processFile($fileReference)
+        );
+    }
+
+    public function testExceptionCatching(): void
+    {
+        $this->testProcessImageFileException(new \UnexpectedValueException('test'));
+        $this->testProcessImageFileException(new \RuntimeException('test'));
+        $this->testProcessImageFileException(new \InvalidArgumentException('test'));
     }
 
     protected function getFileUtility(
         ?ObjectProphecy $normalizedParams = null,
-        ?ObjectProphecy $imageService = null
+        $imageService = null,
+        ?ObjectProphecy $contentObjectRenderer = null,
+        ?ObjectProphecy $rendererRegistry = null
     ): FileUtility {
-        $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
+        if ($contentObjectRenderer === null) {
+            $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
+        }
+
         if ($imageService === null) {
             $imageService = $this->prophesize(ImageService::class);
         }
-        $rendererRegistry = $this->prophesize(RendererRegistry::class);
+
+        if ($rendererRegistry === null) {
+            $rendererRegistry = $this->prophesize(RendererRegistry::class);
+        }
 
         if ($normalizedParams === null) {
             $normalizedParams = $this->prophesize(NormalizedParams::class);
@@ -142,11 +178,15 @@ class FileUtilityTest extends UnitTestCase
         $serverRequest = $this->prophesize(ServerRequest::class);
         $serverRequest->getAttribute('normalizedParams')->willReturn($normalizedParams->reveal());
 
+        if ($imageService instanceof ObjectProphecy) {
+            $imageService = $imageService->reveal();
+        }
+
         $fileUtility = $this->createPartialMock(FileUtility::class, ['translate']);
         $fileUtility->__construct(
             $contentObjectRenderer->reveal(),
             $rendererRegistry->reveal(),
-            $imageService->reveal(),
+            $imageService,
             $serverRequest->reveal()
         );
 
@@ -163,7 +203,7 @@ class FileUtilityTest extends UnitTestCase
         return $fileUtility;
     }
 
-    protected function getMockFileForData($data)
+    protected function getMockFileForData($data, array $overrideToArray = [])
     {
         $file = $this->createPartialMock(
             File::class,
@@ -195,14 +235,18 @@ class FileUtilityTest extends UnitTestCase
         $file->method('getStorage')->willReturn($resourceStorage->reveal());
         $file->method('getUid')->willReturn($data['uid']);
         $file->method('getPublicUrl')->willReturn('/fileadmin/test-file.jpg');
-        $file->method('toArray')->willReturn(
-            [
-                'extension' => 'jpg',
-                'title' => null,
-                'alternative' => null,
-                'description' => null,
-            ]
-        );
+        if ($overrideToArray !== []) {
+            $file->method('toArray')->willReturn($overrideToArray);
+        } else {
+            $file->method('toArray')->willReturn(
+                [
+                    'extension' => 'jpg',
+                    'title' => null,
+                    'alternative' => null,
+                    'description' => null,
+                ]
+            );
+        }
         $file->__construct($data, $this->prophesize(ResourceStorage::class)->reveal());
         return $file;
     }
@@ -282,6 +326,8 @@ class FileUtilityTest extends UnitTestCase
                     'title' => null,
                     'alternative' => null,
                     'description' => null,
+                    'link' => null,
+                    'linkData' => null,
                     'mimeType' => 'image/jpeg',
                     'type' => 'image',
                     'filename' => 'test-file.jpg',
@@ -289,7 +335,6 @@ class FileUtilityTest extends UnitTestCase
                     'uidLocal' => null,
                     'fileReferenceUid' => 103,
                     'size' => '71 KB',
-                    'link' => null,
                     'dimensions' =>
                         [
                             'width' => 526,
@@ -316,6 +361,8 @@ class FileUtilityTest extends UnitTestCase
                     'title' => null,
                     'alternative' => null,
                     'description' => null,
+                    'link' => null,
+                    'linkData' => null,
                     'mimeType' => 'image/jpeg',
                     'type' => 'image',
                     'filename' => 'test-file.jpg',
@@ -323,7 +370,6 @@ class FileUtilityTest extends UnitTestCase
                     'uidLocal' => 103,
                     'fileReferenceUid' => 103,
                     'size' => '71 KB',
-                    'link' => null,
                     'dimensions' =>
                         [
                             'width' => 526,
@@ -350,6 +396,8 @@ class FileUtilityTest extends UnitTestCase
                     'title' => null,
                     'alternative' => null,
                     'description' => null,
+                    'link' => null,
+                    'linkData' => null,
                     'mimeType' => 'video/youtube',
                     'type' => 'video',
                     'filename' => 'test-file.jpg',
@@ -357,7 +405,6 @@ class FileUtilityTest extends UnitTestCase
                     'uidLocal' => 103,
                     'fileReferenceUid' => 103,
                     'size' => '71 KB',
-                    'link' => null,
                     'dimensions' =>
                         [
                             'width' => 526,
@@ -373,5 +420,55 @@ class FileUtilityTest extends UnitTestCase
                     'extension' => 'jpg',
                 ],
         ];
+    }
+
+    protected function getFileReferenceBaselineData(): array
+    {
+        return [
+            'extension' => 'jpg',
+            'size' => 72392,
+            'title' => null,
+            'description' => null,
+            'alternative' => null,
+            'name' => 'test-file.jpg',
+            'link' => '',
+            'crop' => '{"default":{"cropArea":{"x":0,"y":0,"width":1,"height":1},"selectedRatio":"NaN","focusArea":null}}',
+            'autoplay' => 0,
+            'minWidth' => null,
+            'minHeight' => null,
+            'maxWidth' => null,
+            'maxHeight' => null,
+            'width' => 526,
+            'uid_local' => 103,
+            'height' => 526,
+        ];
+    }
+
+    protected function testProcessImageFileException($exception): void
+    {
+        $fileReferenceData = $this->getFileReferenceBaselineData();
+        $fileReference = $this->getMockFileReferenceForData($fileReferenceData, 'video');
+        $imageService = $this->prophesize(ImageService::class);
+
+        $imageService->getImageUri(Argument::any())->willReturn(
+            'https://returnValue-frontend.tld/fileadmin/returnValue-file.jpg'
+        );
+
+        $imageService = $this->createPartialMock(ImageService::class, ['applyProcessingInstructions', 'getImageUri']);
+        $imageService->method('getImageUri')->willReturn('');
+        $imageService->method('applyProcessingInstructions')->willThrowException($exception);
+
+        $fileUtility = $this->getFileUtility(null, $imageService);
+
+        try {
+            $fileUtility->processImageFile($fileReference);
+        } catch (\Throwable $throwable) {
+            if (!empty($fileUtility->getErrors()['processImageFile'])) {
+                $errors = $fileUtility->getErrors()['processImageFile'];
+                if (reset($errors) !== get_class($exception)) {
+                    self::fail('Different exception triggered: ' . $errors[0]);
+                }
+            }
+        }
     }
 }

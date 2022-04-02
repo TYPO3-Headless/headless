@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -26,14 +24,9 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use function is_array;
 use function parse_url;
 
-final class ShortcutAndMountPointRedirect implements MiddlewareInterface
+class ShortcutAndMountPointRedirect implements MiddlewareInterface
 {
-    private TypoScriptFrontendController $controller;
-
-    public function __construct(TypoScriptFrontendController $controller)
-    {
-        $this->controller = $controller;
-    }
+    private ?TypoScriptFrontendController $controller;
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -42,6 +35,11 @@ final class ShortcutAndMountPointRedirect implements MiddlewareInterface
 
         if ($pageType === 834) {
             return $handler->handle($request);
+        }
+
+        $this->controller = $request->getAttribute('frontend.controller');
+        if ($this->controller === null && isset($GLOBALS['TSFE'])) {
+            $this->controller = $GLOBALS['TSFE'];
         }
 
         $redirectToUri = $this->getRedirectUri($request);

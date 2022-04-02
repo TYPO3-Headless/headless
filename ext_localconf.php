@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 defined('TYPO3_MODE') || die();
@@ -18,6 +16,7 @@ call_user_func(
             'JSON' => \FriendsOfTYPO3\Headless\ContentObject\JsonContentObject::class,
             'CONTENT_JSON' => \FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject::class,
             'INT' => \FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject::class,
+            'FLOAT' => \FriendsOfTYPO3\Headless\ContentObject\FloatContentObject::class,
             'BOOL' => \FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject::class,
         ]);
         $GLOBALS['TYPO3_CONF_VARS']['FE']['typolinkBuilder']['file'] = \FriendsOfTYPO3\Headless\Hooks\FileOrFolderLinkBuilder::class;
@@ -68,7 +67,7 @@ call_user_func(
                 \FriendsOfTYPO3\Headless\Hooks\TypolinkHook::class . '->handleLink';
         }
 
-        $rendererRegistry = \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry::getInstance();
+        $rendererRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\Rendering\RendererRegistry::class);
         $rendererRegistry->registerRendererClass(\FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer::class);
         $rendererRegistry->registerRendererClass(\FriendsOfTYPO3\Headless\Resource\Rendering\VimeoRenderer::class);
         $rendererRegistry->registerRendererClass(\FriendsOfTYPO3\Headless\Resource\Rendering\AudioTagRenderer::class);

@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -96,7 +94,7 @@ class PageJsonParser implements JsonParserInterface
             [
                 'data' => $pageContent,
                 'tabs' => array_keys($pageContent),
-                'parsedJson' => $jsonArray[$this->getAggregatedName()],
+                'parsedJson' => $jsonArray[$this->getAggregatedName()] ?? [],
                 'contentTabName' => $this->getContentTabName(),
                 'rawTabName' => $this->getRawTabName(),
             ]

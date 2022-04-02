@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -57,6 +55,17 @@ class JsonDecoderTest extends UnitTestCase
         $encoded = json_encode($value);
 
         self::assertEquals([json_decode($encoded)], $jsonDecoder->decode([$encoded]));
+
+        $value = ['test' => ['test' => 1]];
+        self::assertEquals($value, $jsonDecoder->decode($value));
+
+        $value = 123;
+        $encoded = json_encode($value);
+        self::assertEquals([json_decode($encoded)], $jsonDecoder->decode([$value]));
+
+        $value = ['teststring'];
+        $encoded = json_encode($value);
+        self::assertEquals(json_decode($encoded), $jsonDecoder->decode(['teststring']));
     }
 
     public function possibleJsonProvider(): array

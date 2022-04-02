@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -31,7 +29,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 use function strpos;
 
-final class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
+class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -41,10 +39,10 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
     private JsonDecoderInterface $jsonDecoder;
     private array $conf;
 
-    public function __construct(ContentObjectRenderer $cObj)
+    public function __construct(ContentObjectRenderer $cObj, ContentDataProcessor $contentDataProcessor = null)
     {
         parent::__construct($cObj);
-        $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
+        $this->contentDataProcessor = $contentDataProcessor ?? GeneralUtility::makeInstance(ContentDataProcessor::class);
         $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
         $this->jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
         $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
@@ -92,9 +90,6 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
      */
     public function cObjGet(array $setup, string $addKey = ''): array
     {
-        if (!is_array($setup)) {
-            return [];
-        }
         $content = [];
 
         $sKeyArray = $this->filterByStringKeys($setup);
@@ -106,6 +101,9 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
                 if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
+                }
+                if ((isset($conf['floatval']) && $conf['floatval']) || $theValue === 'FLOAT') {
+                    $content[$theKey] = (float)$content[$theKey];
                 }
                 if ($theValue === 'BOOL') {
                     $content[$theKey] = (bool)$content[$theKey];

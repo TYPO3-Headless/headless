@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -179,7 +177,7 @@ class FilesProcessor implements DataProcessorInterface
         $data = [];
         $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
 
-        foreach ($this->fileObjects as $fileObject) {
+        foreach ($this->fileObjects as $key => $fileObject) {
             if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
                 $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
                 $targetWidth = (int)($dimensions['width'] ?: $file['properties']['dimensions']['width']);
@@ -219,7 +217,16 @@ class FilesProcessor implements DataProcessorInterface
 
                 $data[] = $file;
             } else {
-                $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+                $data[$key] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+
+                $cropVariants = json_decode($fileObject->getProperty('crop'), true);
+
+                if (is_array($cropVariants) && count($cropVariants) > 1) {
+                    foreach (array_keys($cropVariants) as $cropVariantName) {
+                        $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariantName);
+                        $data[$key]['cropVariants'][$cropVariantName] = $file;
+                    }
+                }
             }
         }
 
