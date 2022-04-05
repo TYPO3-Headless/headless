@@ -42,7 +42,7 @@ jobs:
         run: composer ci:coverage:merge
       - name: "Upload coverage results to Coveralls"
         env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COREVALLS_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
           COVERALLS_PARALLEL: true
           COVERALLS_FLAG_NAME: php-${{ matrix.php-version }}
         run: .Build/vendor/bin/php-coveralls
