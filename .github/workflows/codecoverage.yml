@@ -16,7 +16,7 @@ jobs:
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "${{ matrix.php-version }}"
+          php: "${{ matrix.php }}"
           coverage: xdebug
           extensions: xdebug, sqlite
           tools: composer:v2
@@ -25,9 +25,9 @@ jobs:
       - name: "Cache dependencies installed with composer"
         uses: actions/cache@v1
         with:
-          key: "php${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
+          key: "php${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}"
           path: ~/.cache/composer
-          restore-keys: "php${{ matrix.php-version }}-composer-\n"
+          restore-keys: "php${{ matrix.php }}-composer-\n"
       - env:
           TYPO3: "${{ matrix.typo3 }}"
         name: "Install TYPO3 Core"
