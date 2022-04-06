@@ -41,7 +41,7 @@ jobs:
       - name: "Merge coverage results"
         run: composer ci:coverage:merge
       - name: "Upload coverage results to Coveralls"
-        if: ${{ matrix.php != '8.0'}
+        if: ${{ matrix.php != '8.0'}}
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
           COVERALLS_PARALLEL: true
