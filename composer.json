@@ -82,7 +82,7 @@
       "@ci:coverage:functional"
     ],
     "ci:coverage:functional": ".Build/vendor/bin/phpunit -c Tests/Functional/phpunit.xml --coverage-php=coverage/functional.cov Tests/Functional",
-    "ci:coverage:merge": ".Build/vendor/bin/phpcov merge --clover=build/logs/clover.xml coverage/",
+    "ci:coverage:merge": ".Build/vendor/bin/phpcov merge --clover=./build/logs/clover.xml coverage/",
     "ci:coverage:unit": ".Build/vendor/bin/phpunit -c Tests/Unit/phpunit.xml --coverage-php=coverage/unit.cov Tests/Unit",
     "ci:json:lint": [
       "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/vendor/bin/jsonlint -q"
