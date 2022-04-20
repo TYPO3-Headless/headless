@@ -48,7 +48,8 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
             $this->eventDispatcher->dispatch(new BeforeRedirectEvent($this->loginType, $this->redirectUrl));
             $data = [
                 'redirectUrl' => $this->redirectUrl,
-                'statusCode' => 301
+                'statusCode' => 301,
+                'status' => 'success',
             ];
             return $this->responseFactory->createResponse()->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withBody($this->streamFactory->createStream(json_encode($data)));
