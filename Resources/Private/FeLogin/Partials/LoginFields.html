@@ -7,18 +7,18 @@
         [
         <f:format.json value="{
             type: 'text',
-            label: '{f:translate(key:\'input.username\')}',
+            label: '{f:translate(key:\'username\', extensionName:\'felogin\')}',
             name: 'user',
-            placeholder: '{f:translate(key:\'input.username.placeholder\')}',
+            placeholder: '{f:translate(key:\'username.placeholder\', extensionName:\'headless\')}',
             validators: '{f:render(partial: \'Validators\') -> headless:format.json.decode()}'
 
         }"
         />,
         <f:format.json value="{
             type: 'password',
-            label: '{f:translate(key:\'input.password\', extensionName:\'headless\')}',
+            label: '{f:translate(key:\'password\', extensionName:\'felogin\')}',
             name: 'pass',
-            placeholder: '{f:translate(key:\'input.password.placeholder\', extensionName:\'headless\')}',
+            placeholder: '{f:translate(key:\'password.placeholder\', extensionName:\'headless\')}',
             validators: '{f:render(partial: \'Validators\') -> headless:format.json.decode()}'
         }"
         />,
@@ -82,7 +82,7 @@
         <f:format.json value="{
             type: 'submit',
             name: 'submit',
-            value: '{f:translate(key:\'input.submit\', extensionName:\'headless\')}'
+            value: '{f:translate(key:\'login\', extensionName:\'felogin\')}'
             }"
         />
         ]
