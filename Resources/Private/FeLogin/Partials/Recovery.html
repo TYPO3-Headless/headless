@@ -4,7 +4,7 @@
             <f:then>
                 <f:format.json value="{
                     link: '{f:uri.action(action:\'recovery\', controller:\'PasswordRecovery\')}',
-                    text: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'forgot_header\\\'}\')}'
+                    text: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'forgot_header\\\'}\') -> f:spaceless()}'
                 }"
                 />
             </f:then>

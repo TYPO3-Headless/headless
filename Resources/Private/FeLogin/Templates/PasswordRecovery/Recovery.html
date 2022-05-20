@@ -11,7 +11,7 @@
                 text: '{f:translate(key:\'forgot_header_backToLogin\')}'
             },
             form: {
-                title: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'reset_password\\\'}\')}',
+                title: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'reset_password\\\'}\') -> f:spaceless()}',
                 action: '{f:uri.action(action:\'recovery\')}',
                 method: 'POST',
                 elements: '{f:render(section: \'fields\', arguments: \'{_all}\') -> headless:format.json.decode()}'

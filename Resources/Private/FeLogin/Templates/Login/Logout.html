@@ -8,7 +8,7 @@
                 elements: '{f:render(partial: \'LogoutFields\', arguments: \'{_all}\') -> headless:format.json.decode()-> headless:loginForm(action:\'login\', name:\'field\') -> headless:format.json.decode()}'
             },
             message: {
-                header: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'status_header\\\'}\')}',
+                header: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'status_header\\\'}\') -> f:spaceless() -> f:spaceless()}',
                 message: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'status_message\\\'}\')}: {f:translate(key:\'username\')} {user.username}'
             },
             recovery: '{f:render(partial: \'Recovery\', arguments: \'{_all}\') -> headless:format.json.decode()}',
