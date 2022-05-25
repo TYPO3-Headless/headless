@@ -342,3 +342,21 @@ Snippets
 ========
 
 See issue `#136 <https://github.com/TYPO3-Initiatives/headless/issues/136>`__
+
+.. _developer-frontendbase-via-ts:
+
+Access frontendBase via TypoScript
+==================================
+
+You can access the site's `frontendBase`, `frontendApiProxy` and `frontendFileApi` for the current base variant via TypoScript:
+
+.. code-block::
+
+  lib.frontendBase = TEXT
+  lib.frontendBase.data = site:frontendBase
+
+  lib.frontendApiProxy = TEXT
+  lib.frontendApiProxy.data = site:frontendApiProxy
+
+  lib.frontendFileApi = TEXT
+  lib.frontendFileApi.data = site:frontendFileApi
