@@ -22,6 +22,12 @@ class ContentObjectRendererHook implements ContentObjectGetDataHookInterface
     private const SITE_FRONTEND_API_PROXY = 'site:frontendApiProxy';
     private const SITE_FRONTEND_FILE_API  = 'site:frontendFileApi';
 
+    private const SITE_FRONTEND_KEYS = [
+        self::SITE_FRONTEND_BASE,
+        self::SITE_FRONTEND_API_PROXY,
+        self::SITE_FRONTEND_FILE_API,
+    ];
+
     /**
      * Extends the getData()-Method of \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer to process more/other commands
      *
@@ -34,19 +40,23 @@ class ContentObjectRendererHook implements ContentObjectGetDataHookInterface
      */
     public function getDataExtension($getDataString, array $fields, $sectionValue, $returnValue, ContentObjectRenderer &$parentObject)
     {
-        if (strpos($sectionValue, self::SITE_FRONTEND_BASE) === 0) {
-            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
-            $returnValue = $urlUtility->getFrontendUrl();
-        }
+        if (in_array($sectionValue, self::SITE_FRONTEND_KEYS)) {
+            $url = (string)$parentObject->getRequest()->getAttribute('site')->getBase();
+            $pageId = $parentObject->getRequest()->getAttribute('site')->getRootPageId();
 
-        if (strpos($sectionValue, self::SITE_FRONTEND_API_PROXY) === 0) {
             $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
-            $returnValue = $urlUtility->getProxyUrl();
-        }
 
-        if (strpos($sectionValue, self::SITE_FRONTEND_FILE_API) === 0) {
-            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
-            $returnValue = $urlUtility->getStorageProxyUrl();
+            if ($sectionValue === self::SITE_FRONTEND_BASE) {
+                $returnValue = $urlUtility->getFrontendUrlForPage($url, $pageId, 'frontendBase');
+            }
+
+            if ($sectionValue === self::SITE_FRONTEND_API_PROXY) {
+                $returnValue = $urlUtility->getFrontendUrlForPage($url, $pageId, 'frontendApiProxy');
+            }
+
+            if ($sectionValue === self::SITE_FRONTEND_FILE_API) {
+                $returnValue = $urlUtility->getFrontendUrlForPage($url, $pageId, 'frontendFileApi');
+            }
         }
 
         return $returnValue;
