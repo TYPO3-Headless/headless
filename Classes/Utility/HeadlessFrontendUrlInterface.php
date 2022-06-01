@@ -23,7 +23,7 @@ interface HeadlessFrontendUrlInterface
 
     public function getProxyUrl(): string;
 
-    public function getStorageProxyUrl(): string;
+    public function getStorageProxyUrl(int $storageUid): string;
 
     public function resolveKey(string $key): string;
 

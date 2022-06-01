@@ -125,9 +125,10 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $this->resolveWithVariants($this->conf['frontendApiProxy'] ?? '', $this->variants, 'frontendApiProxy');
     }
 
-    public function getStorageProxyUrl(): string
+    public function getStorageProxyUrl(int $storageUid): string
     {
-        return $this->resolveWithVariants($this->conf['frontendFileApi'] ?? '', $this->variants, 'frontendFileApi');
+        $identifier = 'frontendFileApi.' . $storageUid;
+        return $this->resolveWithVariants($this->conf[$identifier] ?? '', $this->variants, $identifier);
     }
 
     public function resolveKey(string $key): string
@@ -191,7 +192,19 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         foreach ($variants as $baseVariant) {
             try {
                 if ($this->resolver->evaluate($baseVariant['condition'])) {
-                    return rtrim($baseVariant[$returnField] ?? '', '/');
+                    // Split returnField into actual returnField and index
+                    list($returnField, $index) = GeneralUtility::trimExplode('.', $returnField);
+                    $data = $baseVariant[$returnField];
+
+                    if (is_array($data) && $index) {
+                        if (isset($data[$index])) {
+                            $data = $data[$index];
+                        } else {
+                            $data = '__UNDEFINED__';
+                        }
+                    }
+
+                    return rtrim($data ?? '', '/');
                 }
             } catch (SyntaxError $e) {
                 $this->logError($e->getMessage());
