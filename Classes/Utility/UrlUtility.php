@@ -117,22 +117,22 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
     public function getFrontendUrl(): string
     {
-        return $this->resolveWithVariants('', $this->variants);
+        return $this->resolveWithVariants($this->conf['frontendBase'] ?? '', $this->variants);
     }
 
     public function getProxyUrl(): string
     {
-        return $this->resolveWithVariants('', $this->variants, 'frontendApiProxy');
+        return $this->resolveWithVariants($this->conf['frontendApiProxy'] ?? '', $this->variants, 'frontendApiProxy');
     }
 
     public function getStorageProxyUrl(): string
     {
-        return $this->resolveWithVariants('', $this->variants, 'frontendFileApi');
+        return $this->resolveWithVariants($this->conf['frontendFileApi'] ?? '', $this->variants, 'frontendFileApi');
     }
 
     public function resolveKey(string $key): string
     {
-        return $this->resolveWithVariants('', $this->variants, $key);
+        return $this->resolveWithVariants($this->conf[$key] ?? '', $this->variants, $key);
     }
 
     public function prepareRelativeUrlIfPossible(string $targetUrl): string
