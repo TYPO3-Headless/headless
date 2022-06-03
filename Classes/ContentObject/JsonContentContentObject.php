@@ -25,6 +25,7 @@ use function json_encode;
 use function strpos;
 use function trim;
 
+use const JSON_FORCE_OBJECT;
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -94,7 +95,13 @@ class JsonContentContentObject extends ContentContentObject
                 $theValue = array_merge($theValue, $this->prepareValue($conf['merge.']));
             }
 
-            $theValue = json_encode($theValue, JSON_THROW_ON_ERROR);
+            $encodeFlags = JSON_THROW_ON_ERROR;
+
+            if ($theValue === []) {
+                $encodeFlags |= JSON_FORCE_OBJECT;
+            }
+
+            $theValue = json_encode($theValue, $encodeFlags);
 
             $wrap = $this->cObj->stdWrapValue('wrap', $conf ?? []);
             if ($wrap) {
