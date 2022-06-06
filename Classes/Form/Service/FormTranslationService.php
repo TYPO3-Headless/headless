@@ -51,7 +51,7 @@ class FormTranslationService extends TranslationService
 
         if ($property === 'label') {
             $defaultValue = $element['label'] ?? '';
-        } elseif ($element['type'] !== 'Page') {
+        } elseif (($element['type'] ?? '') !== 'Page') {
             try {
                 $defaultValue = ArrayUtility::getValueByPath($element['properties'], $propertyParts, '.');
             } catch (MissingArrayPathException $exception) {
@@ -216,7 +216,7 @@ class FormTranslationService extends TranslationService
                 $translationKeyChain[] = sprintf(
                     '%s:element.%s.%s.%s',
                     $translationFile,
-                    $element['type'],
+                    $element['type'] ?? '',
                     $propertyType,
                     $property
                 );
@@ -248,7 +248,7 @@ class FormTranslationService extends TranslationService
             throw new InvalidArgumentException('The argument "code" is empty', 1489272978);
         }
 
-        $renderingOptions = $element['renderingOptions'];
+        $renderingOptions = $element['renderingOptions'] ?? [];
         $translationFiles = $renderingOptions['translation']['translationFiles'] ?? [];
         if (empty($translationFiles)) {
             $translationFiles = $formRuntime['renderingOptions']['translation']['translationFiles'];
