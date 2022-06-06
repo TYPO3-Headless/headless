@@ -24,7 +24,7 @@ class TypolinkHook
 {
     public function handleLink(array $params, ContentObjectRenderer $ref): void
     {
-        if (!($GLOBALS['TSFE'] instanceof TypoScriptFrontendController)) {
+        if (!(($GLOBALS['TSFE'] ?? null) instanceof TypoScriptFrontendController)) {
             return;
         }
 
