@@ -105,6 +105,55 @@ class UrlUtilityTest extends UnitTestCase
         self::assertSame('https://test-frontend3.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
     }
 
+    public function testFrontendUrlsWithBaseProductionAndLocalOverride(): void
+    {
+        $site = $this->prophesize(Site::class);
+        $site->getConfiguration()->shouldBeCalled(3)->willReturn([
+            'base' => 'https://api.typo3.org',
+            'frontendBase' => 'https://www.typo3.org',
+            'frontendApiProxy' => 'https://www.typo3.org/headless',
+            'frontendFileApi' => 'https://www.typo3.org/headless/fileadmin',
+            'SpecialSitemapKey' => 'https://www.typo3.org/custom-sitemap',
+            'languages' => [],
+            'baseVariants' => [
+                [
+                    'base' => 'https://test-backend-api.tld',
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendBase' => 'https://test-frontend.tld',
+                    'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                    'SpecialSitemapKey' => 'https://test-frontend.tld/sitemap',
+                ],
+            ]
+        ]);
+
+        $siteFinder = $this->prophesize(SiteFinder::class);
+
+        // local override
+        $resolver = $this->prophesize(Resolver::class);
+        $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);
+
+        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
+        $urlUtility = $urlUtility->withSite($site->reveal());
+
+        self::assertSame('https://test-frontend.tld', $urlUtility->getFrontendUrl());
+        self::assertSame('https://test-frontend-api.tld/headless', $urlUtility->getProxyUrl());
+        self::assertSame('https://test-frontend-api.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
+        self::assertSame('https://test-frontend.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
+
+        // production only in base
+        $resolver = $this->prophesize(Resolver::class);
+        $resolver->evaluate(Argument::containingString('Development'))->willReturn(false);
+
+        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
+        $urlUtility = $urlUtility->withSite($site->reveal());
+
+        self::assertSame('https://www.typo3.org', $urlUtility->getFrontendUrl());
+        self::assertSame('https://www.typo3.org/headless', $urlUtility->getProxyUrl());
+        self::assertSame('https://www.typo3.org/headless/fileadmin', $urlUtility->getStorageProxyUrl());
+        self::assertSame('https://www.typo3.org/custom-sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
+    }
+
     public function testOptimizedUrlsForFrontendApp(): void
     {
         $site = $this->prophesize(Site::class);
