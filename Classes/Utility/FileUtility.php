@@ -164,10 +164,10 @@ class FileUtility
             $processingInstructions = [
                 'width' => $dimensions['width'] ?? null,
                 'height' => $dimensions['height'] ?? null,
-                'minWidth' => $dimensions['minWidth'] ?? $properties['minWidth'],
-                'minHeight' => $dimensions['minHeight'] ?? $properties['minHeight'],
-                'maxWidth' => $dimensions['maxWidth'] ?? $properties['maxWidth'],
-                'maxHeight' => $dimensions['maxHeight'] ?? $properties['maxHeight'],
+                'minWidth' => $dimensions['minWidth'] ?? $properties['minWidth'] ?? 0,
+                'minHeight' => $dimensions['minHeight'] ?? $properties['minHeight'] ?? 0,
+                'maxWidth' => $dimensions['maxWidth'] ?? $properties['maxWidth'] ?? 0,
+                'maxHeight' => $dimensions['maxHeight'] ?? $properties['maxHeight'] ?? 0,
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
             ];
             return $this->imageService->applyProcessingInstructions($image, $processingInstructions);
