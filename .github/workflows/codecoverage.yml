@@ -1,5 +1,5 @@
 ---
-# This GitHub Actions workflow is calculating code coverage of extension and creates a badge for it.
+# This GitHub Actions workflow calculates the code coverage of the extension and uploads it to coveralls.io.
 name: Code coverage
 on:
   push:
@@ -9,57 +9,62 @@ on:
 jobs:
   code-coverage:
     name: "Calculate code coverage"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
-          php: "${{ matrix.php }}"
+          php-version: "${{ matrix.php-version }}"
+          tools: composer:v2.3
+          extensions: xdebug, mysqli
           coverage: xdebug
-          extensions: xdebug, sqlite
-          tools: composer:v2
       - name: "Show Composer version"
         run: composer --version
       - name: "Cache dependencies installed with composer"
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
-          key: "php${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}"
+          key: "php${{ matrix.php-version }}-typo3${{ matrix.typo3-version }}-${{ matrix.composer-dependencies }}-composer-${{ hashFiles('**/composer.json') }}"
           path: ~/.cache/composer
-          restore-keys: "php${{ matrix.php }}-composer-\n"
-      - env:
-          TYPO3: "${{ matrix.typo3 }}"
-        name: "Install TYPO3 Core"
+          restore-keys: "php${{ matrix.php-version }}-typo3${{ matrix.typo3-version }}-${{ matrix.composer-dependencies }}-composer-\n"
+      - name: "Install TYPO3 Core"
+        env:
+          TYPO3: "${{ matrix.typo3-version }}"
         run: |
-          composer require --no-progress typo3/minimal:"$TYPO3"
+          composer require --no-ansi --no-interaction --no-progress --no-install typo3/minimal:"$TYPO3"
           composer show
-      - name: "Run functional tests with coverage"
-        run: composer ci:coverage:functional
+      - name: "Install lowest dependencies with composer"
+        if: "matrix.composer-dependencies == 'lowest'"
+        run: |
+          composer update --no-ansi --no-interaction --no-progress --with-dependencies --prefer-lowest
+          composer show
+      - name: "Install highest dependencies with composer"
+        if: "matrix.composer-dependencies == 'highest'"
+        run: |
+          composer update --no-ansi --no-interaction --no-progress --with-dependencies
+          composer show
+      - name: "Start MySQL"
+        run: "sudo /etc/init.d/mysql start"
       - name: "Run unit tests with coverage"
         run: composer ci:coverage:unit
+      - name: "Run functional tests with coverage"
+        run: |
+          export typo3DatabaseName="typo3";
+          export typo3DatabaseHost="127.0.0.1";
+          export typo3DatabaseUsername="root";
+          export typo3DatabasePassword="root";
+          composer ci:coverage:functional
       - name: "Merge coverage results"
         run: composer ci:coverage:merge
       - name: "Upload coverage results to Coveralls"
         env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-          COVERALLS_PARALLEL: true
-          COVERALLS_FLAG_NAME: php-${{ matrix.php }}
-        run: .Build/vendor/bin/php-coveralls
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./.Build/vendor/bin/php-coveralls --coverage_clover=build/logs/clover.xml -v
     strategy:
       fail-fast: false
       matrix:
-        php:
-          - 7.4
-          - 8.0
-        typo3:
-          - ^11.5
-  finish:
-    needs: code-coverage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.COREVALLS_TOKEN }}
-          parallel-finished: true
+        include:
+          - typo3-version: "^11.5"
+            php-version: "7.4"
+            composer-dependencies: highest

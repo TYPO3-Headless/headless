@@ -36,7 +36,7 @@
     "friendsofphp/php-cs-fixer": "^3.1",
     "helmich/typo3-typoscript-lint": "^2.1",
     "justinrainbow/json-schema": "^5.2",
-    "php-coveralls/php-coveralls": "^2.5",
+    "php-coveralls/php-coveralls": "^2.5.2",
     "phpspec/prophecy-phpunit": "^2.0",
     "phpstan/extension-installer": "^1.1",
     "phpstan/phpstan": "^0.12.99",
