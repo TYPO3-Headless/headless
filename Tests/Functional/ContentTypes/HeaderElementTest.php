@@ -29,6 +29,6 @@ class HeaderElementTest extends BaseContentTypeTest
         $this->checkDefaultContentFields($contentElement, 3, 1, 'header', 0);
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 1, 2);
-        $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 _blank LinkClass LinkTitle parameter=999', '/page1?parameter=999&amp;cHash=', '_blank');
+        $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 _blank LinkClass LinkTitle', '/page1', '_blank');
     }
 }
