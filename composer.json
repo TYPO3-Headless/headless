@@ -77,13 +77,23 @@
       "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
     ],
     "ci:composer:normalize": "@composer normalize --dry-run",
-    "ci:coverage" : [
-      "@ci:coverage:unit",
-      "@ci:coverage:functional"
+    "ci:coverage": [
+    "@ci:coverage:unit",
+    "@ci:coverage:functional"
+  ],
+    "ci:coverage:functional": [
+      "@coverage:create-directories",
+      ".Build/vendor/bin/phpunit -c Tests/Functional/phpunit.xml --whitelist Classes --coverage-php=.Build/coverage/functional.cov Tests/Functional"
     ],
-    "ci:coverage:functional": ".Build/vendor/bin/phpunit -c Tests/Functional/phpunit.xml --coverage-php=coverage/functional.cov Tests/Functional",
-    "ci:coverage:merge": ".Build/vendor/bin/phpcov merge --clover=./build/logs/clover.xml coverage/",
-    "ci:coverage:unit": ".Build/vendor/bin/phpunit -c Tests/Unit/phpunit.xml --coverage-php=coverage/unit.cov Tests/Unit",
+    "ci:coverage:merge": [
+      "@coverage:create-directories",
+      "@php .Build/vendor/bin/phpcov merge --clover=./build/logs/clover.xml ./.Build/coverage/"
+    ],
+    "ci:coverage:unit": [
+      "@coverage:create-directories",
+      ".Build/vendor/bin/phpunit -c Tests/Unit/phpunit.xml --whitelist Classes --coverage-php=.Build/coverage/unit.cov Tests/Unit"
+    ],
+    "coverage:create-directories": "mkdir -p build/logs .Build/coverage",
     "ci:json:lint": [
       "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/vendor/bin/jsonlint -q"
     ],
