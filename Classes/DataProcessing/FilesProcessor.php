@@ -219,7 +219,7 @@ class FilesProcessor implements DataProcessorInterface
             } else {
                 $data[$key] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
 
-                $cropVariants = json_decode($fileObject->getProperty('crop'), true);
+                $cropVariants = json_decode((string)$fileObject->getProperty('crop'), true);
 
                 if (is_array($cropVariants) && count($cropVariants) > 1) {
                     foreach (array_keys($cropVariants) as $cropVariantName) {
