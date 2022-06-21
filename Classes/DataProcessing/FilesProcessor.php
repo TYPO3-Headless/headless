@@ -79,12 +79,12 @@ class FilesProcessor implements DataProcessorInterface
 
         if (isset($processorConfiguration['processingConfiguration.'])) {
             $dimensions = [
-                'width' => $processorConfiguration['processingConfiguration.']['width'] ?? null,
-                'height' => $processorConfiguration['processingConfiguration.']['height'] ?? null,
-                'minWidth' => $processorConfiguration['processingConfiguration.']['minWidth'] ?? null,
-                'minHeight' => $processorConfiguration['processingConfiguration.']['minHeight'] ?? null,
-                'maxWidth' => $processorConfiguration['processingConfiguration.']['maxWidth'] ?? null,
-                'maxHeight' => $processorConfiguration['processingConfiguration.']['maxHeight'] ?? null,
+                'width' => $cObj->stdWrapValue('width', $processorConfiguration['processingConfiguration.'] ?? [], null),
+                'height' => $cObj->stdWrapValue('height', $processorConfiguration['processingConfiguration.'] ?? [], null),
+                'minWidth' => $cObj->stdWrapValue('minWidth', $processorConfiguration['processingConfiguration.'] ?? [], null),
+                'minHeight' => $cObj->stdWrapValue('minHeight', $processorConfiguration['processingConfiguration.'] ?? [], null),
+                'maxWidth' => $cObj->stdWrapValue('maxWidth', $processorConfiguration['processingConfiguration.'] ?? [], null),
+                'maxHeight' => $cObj->stdWrapValue('maxHeight', $processorConfiguration['processingConfiguration.'] ?? [], null),
             ];
         }
 

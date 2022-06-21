@@ -89,7 +89,7 @@ class Translator
                         $element,
                         $validator['errorMessage'],
                         $formRuntime,
-                        is_array($validator['options']) ? $validator['options'] : []
+                        is_array($validator['options'] ?? null) ? $validator['options'] : []
                     );
                 }
             }
@@ -132,7 +132,7 @@ class Translator
                 $formRuntime
             );
 
-            $element['defaultValue'] = $translatedDefaultValue ?: $element['defaultValue'];
+            $element['defaultValue'] = $translatedDefaultValue ?: ($element['defaultValue'] ?? '');
             $element['properties'] = $properties;
         }
 
