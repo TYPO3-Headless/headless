@@ -32,6 +32,6 @@ class TextElementTest extends BaseContentTypeTest
         $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 _blank LinkClass LinkTitle', '/page1', '_blank');
 
         // typolink parser was called on bodytext
-        self::assertStringContainsString('<a href="/page1?parameter=999&amp;cHash=', $contentElement['content']['bodytext']);
+        self::assertStringContainsString('<a href="/page1', $contentElement['content']['bodytext']);
     }
 }

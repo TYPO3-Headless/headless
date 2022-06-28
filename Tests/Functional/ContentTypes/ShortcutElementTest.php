@@ -45,6 +45,6 @@ class ShortcutElementTest extends BaseContentTypeTest
         $this->checkAppearanceFields($contentElement['content']['shortcut'][1], 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement['content']['shortcut'][1], 'Header', 'SubHeader', 1, 2);
         $this->checkHeaderFieldsLink($contentElement['content']['shortcut'][1], 't3://page?uid=2 _blank LinkClass LinkTitle', '/page1', '_blank');
-        self::assertStringContainsString('<a href="/page1?parameter=999&amp;cHash=', $contentElement['content']['shortcut'][1]['content']['bodytext']);
+        self::assertStringContainsString('<a href="/page1', $contentElement['content']['shortcut'][1]['content']['bodytext']);
     }
 }
