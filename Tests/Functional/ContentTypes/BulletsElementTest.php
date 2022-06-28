@@ -31,7 +31,7 @@ class BulletsElementTest extends BaseContentTypeTest
         $this->checkDefaultContentFields($contentElement, 8, 1, 'bullets', 0);
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 1, 2);
-        $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 _blank LinkClass LinkTitle', '/page1', '_blank');
+        $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 LinkClass LinkTitle', '/page1');
 
         self::assertEquals(1, $contentElement['content']['bulletsType']);
         self::assertIsArray($contentElement['content']['bodytext']);

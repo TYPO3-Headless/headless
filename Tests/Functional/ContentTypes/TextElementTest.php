@@ -29,7 +29,7 @@ class TextElementTest extends BaseContentTypeTest
         $this->checkDefaultContentFields($contentElement, 1, 1, 'text', 0, 'SysCategory1Title,SysCategory2Title');
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 1, 2);
-        $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 _blank LinkClass LinkTitle', '/page1', '_blank');
+        $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 LinkClass LinkTitle', '/page1');
 
         // typolink parser was called on bodytext
         self::assertStringContainsString('<a href="/page1', $contentElement['content']['bodytext']);

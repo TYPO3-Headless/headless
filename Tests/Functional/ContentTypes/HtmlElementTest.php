@@ -31,6 +31,6 @@ class HtmlElementTest extends BaseContentTypeTest
         self::assertFalse(isset($contentElement['content']['subheader']));
 
         // typolink parser was NOT called on bodytext
-        self::assertEquals('<a href="t3://page?uid=2 _blank LinkClass LinkTitle">Link</a>', $contentElement['content']['bodytext']);
+        self::assertEquals('<a href="t3://page?uid=2 LinkClass LinkTitle">Link</a>', $contentElement['content']['bodytext']);
     }
 }
