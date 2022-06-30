@@ -134,8 +134,10 @@ class FileUtility
                 'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant)
             ],
             'crop' => $crop,
-            'autoplay' => $fileReference->getProperty('autoplay'),
-            'extension' => $fileReference->getProperty('extension'),
+            'autoplay' => $fileReference->hasProperty('autoplay')
+                ? $fileReference->getProperty('autoplay') : 0,
+            'extension' => $fileReference->hasProperty('extension')
+                ? $fileReference->getProperty('extension') : 0,
         ];
 
         return [
