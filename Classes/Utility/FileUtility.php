@@ -63,11 +63,12 @@ class FileUtility
      * @param ServerRequestInterface|null $serverRequest
      */
     public function __construct(
-        ?ContentObjectRenderer $contentObjectRenderer = null,
-        ?RendererRegistry $rendererRegistry = null,
-        ?ImageService $imageService = null,
+        ?ContentObjectRenderer  $contentObjectRenderer = null,
+        ?RendererRegistry       $rendererRegistry = null,
+        ?ImageService           $imageService = null,
         ?ServerRequestInterface $serverRequest = null
-    ) {
+    )
+    {
         $this->contentObjectRenderer = $contentObjectRenderer ?? GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $this->rendererRegistry = $rendererRegistry ?? GeneralUtility::makeInstance(RendererRegistry::class);
         $this->imageService = $imageService ?? GeneralUtility::makeInstance(ImageService::class);
@@ -137,7 +138,7 @@ class FileUtility
             'autoplay' => $fileReference->hasProperty('autoplay')
                 ? $fileReference->getProperty('autoplay') : 0,
             'extension' => $fileReference->hasProperty('extension')
-                ? $fileReference->getProperty('extension') : 0,
+                ? $fileReference->getProperty('extension') : null,
         ];
 
         return [
@@ -163,6 +164,7 @@ class FileUtility
             $cropVariantCollection = $this->createCropVariant((string)$cropString);
             $cropVariant = $cropVariant ?: 'default';
             $cropArea = $cropVariantCollection->getCropArea($cropVariant);
+
             $processingInstructions = [
                 'width' => $dimensions['width'] ?? null,
                 'height' => $dimensions['height'] ?? null,
@@ -173,7 +175,7 @@ class FileUtility
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
             ];
             return $this->imageService->applyProcessingInstructions($image, $processingInstructions);
-        } catch (\UnexpectedValueException|\RuntimeException|\InvalidArgumentException $e) {
+        } catch (\UnexpectedValueException | \RuntimeException | \InvalidArgumentException $e) {
             $type = lcfirst(get_class($image));
             $status = get_class($e);
             $this->errors['processImageFile'][$type . '-' . $image->getUid()] = $status;
@@ -214,17 +216,17 @@ class FileUtility
      */
     protected function getCroppedDimensionalProperty(
         FileInterface $fileObject,
-        string $dimensionalProperty,
-        string $cropVariant = 'default'
-    ): int {
+        string        $dimensionalProperty,
+        string        $cropVariant = 'default'
+    ): int
+    {
         if (!$fileObject->hasProperty('crop') || empty($fileObject->getProperty('crop'))) {
             return (int)$fileObject->getProperty($dimensionalProperty);
         }
 
         $croppingConfiguration = $fileObject->getProperty('crop');
         $cropVariantCollection = $this->createCropVariant($croppingConfiguration);
-        return (int)$cropVariantCollection->getCropArea($cropVariant)->makeAbsoluteBasedOnFile($fileObject)->asArray(
-        )[$dimensionalProperty];
+        return (int)$cropVariantCollection->getCropArea($cropVariant)->makeAbsoluteBasedOnFile($fileObject)->asArray()[$dimensionalProperty];
     }
 
     /**
