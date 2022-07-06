@@ -15,9 +15,9 @@
         <subheader>SubHeader</subheader>
         <header_layout>1</header_layout>
         <header_position>2</header_position>
-        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
+        <header_link>t3://page?uid=2 LinkClass LinkTitle</header_link>
         <bodytext><![CDATA[
-<p><a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a></p>
+<p><a href="t3://page?uid=2 LinkClass LinkTitle">Link</a></p>
         ]]></bodytext>
     </tt_content>
     <tt_content>
@@ -35,7 +35,7 @@
         <subheader>SubHeader</subheader>
         <header_layout>1</header_layout>
         <header_position>2</header_position>
-        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
+        <header_link>t3://page?uid=2 LinkClass LinkTitle</header_link>
     </tt_content>
     <tt_content>
         <uid>4</uid>
@@ -52,8 +52,8 @@
         <subheader>SubHeader</subheader>
         <header_layout>1</header_layout>
         <header_position>2</header_position>
-        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
-        <bodytext><![CDATA[<a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a>]]></bodytext>
+        <header_link>t3://page?uid=2 LinkClass LinkTitle</header_link>
+        <bodytext><![CDATA[<a href="t3://page?uid=2 LinkClass LinkTitle">Link</a>]]></bodytext>
     </tt_content>
     <tt_content>
         <uid>5</uid>
@@ -70,8 +70,8 @@
         <subheader>SubHeader</subheader>
         <header_layout>1</header_layout>
         <header_position>2</header_position>
-        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
-        <bodytext><![CDATA[<a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a>]]></bodytext>
+        <header_link>t3://page?uid=2 LinkClass LinkTitle</header_link>
+        <bodytext><![CDATA[<a href="t3://page?uid=2 LinkClass LinkTitle">Link</a>]]></bodytext>
     </tt_content>
     <tt_content>
         <uid>6</uid>
@@ -89,8 +89,8 @@
         <subheader>SubHeader</subheader>
         <header_layout>1</header_layout>
         <header_position>2</header_position>
-        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
-        <bodytext><![CDATA[<a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a>]]></bodytext>
+        <header_link>t3://page?uid=2 LinkClass LinkTitle</header_link>
+        <bodytext><![CDATA[<a href="t3://page?uid=2 LinkClass LinkTitle">Link</a>]]></bodytext>
     </tt_content>
     <tt_content>
         <uid>7</uid>
@@ -107,7 +107,7 @@
         <subheader>SubHeader</subheader>
         <header_layout>1</header_layout>
         <header_position>2</header_position>
-        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
+        <header_link>t3://page?uid=2 LinkClass LinkTitle</header_link>
         <table_caption>TableCaption</table_caption>
         <table_delimiter>59</table_delimiter>
         <table_enclosure>34</table_enclosure>
@@ -135,7 +135,7 @@
         <subheader>SubHeader</subheader>
         <header_layout>1</header_layout>
         <header_position>2</header_position>
-        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
+        <header_link>t3://page?uid=2 LinkClass LinkTitle</header_link>
         <bullets_type>1</bullets_type>
         <bodytext><![CDATA[Top1
 Top2
@@ -156,7 +156,7 @@ Top3]]></bodytext>
         <subheader>SubHeader</subheader>
         <header_layout>1</header_layout>
         <header_position>2</header_position>
-        <header_link>t3://page?uid=2 _blank LinkClass LinkTitle parameter=999</header_link>
+        <header_link>t3://page?uid=2 LinkClass LinkTitle</header_link>
         <records>pages_1,tt_content_2,tt_content_1</records>
     </tt_content>
     <tt_content>
@@ -166,7 +166,7 @@ Top3]]></bodytext>
         <colPos>1</colPos>
         <CType>textmedia</CType>
         <image>1</image>
-        <bodytext><![CDATA[<a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a>]]></bodytext>
+        <bodytext><![CDATA[<a href="t3://page?uid=2 LinkClass LinkTitle">Link</a>]]></bodytext>
     </tt_content>
     <tt_content>
         <uid>10</uid>
@@ -183,7 +183,7 @@ Top3]]></bodytext>
         <colPos>1</colPos>
         <CType>textpic</CType>
         <image>1</image>
-        <bodytext><![CDATA[<a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a>]]></bodytext>
+        <bodytext><![CDATA[<a href="t3://page?uid=2 LinkClass LinkTitle">Link</a>]]></bodytext>
     </tt_content>
     <tt_content>
         <uid>12</uid>
