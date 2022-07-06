@@ -18,6 +18,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
@@ -46,7 +47,7 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
         if ($redirectToUri !== null && $redirectToUri !== (string)$request->getUri()) {
             $this->releaseTypoScriptFrontendControllerLocks();
 
-            if ($this->isHeadlessEnabled()) {
+            if ($this->isHeadlessEnabled($request)) {
                 $parsed = parse_url($redirectToUri);
                 if (is_array($parsed)) {
                     $path = $parsed['path'] ?? '/';
@@ -69,7 +70,7 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
 
             if ($externalUrl !== '') {
                 $this->releaseTypoScriptFrontendControllerLocks();
-                if ($this->isHeadlessEnabled()) {
+                if ($this->isHeadlessEnabled($request)) {
                     return new JsonResponse(['redirectUrl' => $externalUrl, 'statusCode' => 303]);
                 }
 
@@ -118,11 +119,19 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
         return $redirectTo;
     }
 
-    private function isHeadlessEnabled(): bool
+    private function isHeadlessEnabled(ServerRequestInterface $request): bool
     {
-        $setup = $this->controller->tmpl->setup;
+        /**
+         * @var Site
+         */
+        $site = $request->getAttribute('site');
 
-        return !(!isset($setup['plugin.']['tx_headless.']['staticTemplate'])
-            || (bool)$setup['plugin.']['tx_headless.']['staticTemplate'] === false);
+        if (!($site instanceof Site)) {
+            return false;
+        }
+
+        $siteConf = $request->getAttribute('site')->getConfiguration();
+
+        return $siteConf['headless'] ?? false;
     }
 }
