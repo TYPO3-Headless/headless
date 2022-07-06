@@ -67,6 +67,7 @@ page {
             breadcrumbs =< lib.breadcrumbs
             appearance =< lib.pageAppearance
             content =< lib.content
+            i18n =< lib.i18n
         }
     }
 }

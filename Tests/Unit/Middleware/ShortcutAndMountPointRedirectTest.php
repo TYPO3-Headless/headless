@@ -19,6 +19,7 @@ use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\TypoScript\TemplateService;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Http\RequestHandler;
@@ -94,10 +95,12 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
                 $this->getTsfeProphecy(
                     '0',
                     ['id' => 1, 'doktype' => PageRepository::DOKTYPE_SHORTCUT, 'shortcut' => '5']
-                )->reveal()
+                )->reveal(),
+                false
             ),
             $this->getMockHandlerWithResponse($genericResponse)
         );
+
         self::assertEquals(
             $testRedirectResponse->getHeader('location')[0],
             $middlewareResponse->getHeader('location')[0]
@@ -113,7 +116,8 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
                 $this->getTsfeProphecy(
                     '0',
                     ['id' => 1, 'doktype' => PageRepository::DOKTYPE_LINK, 'url' => $linkRedirect]
-                )->reveal()
+                )->reveal(),
+                false
             ),
             $this->getMockHandlerWithResponse($genericResponse)
         );
@@ -195,7 +199,8 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
     protected function getTestRequest(
         array $withQueryParams = [],
         string $withNormalizedParamsUrl = '',
-        $withTsfe = null
+        $withTsfe = null,
+        bool $withEnabledHeadless = true
     ) {
         $request = new ServerRequest();
         if ($withQueryParams !== []) {
@@ -210,6 +215,10 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
 
         if ($withTsfe) {
             $request = $request->withAttribute('frontend.controller', $withTsfe);
+        }
+
+        if ($withEnabledHeadless) {
+            return $request->withAttribute('site', new Site('test_site', 1, ['headless' => true]));
         }
 
         return $request;
