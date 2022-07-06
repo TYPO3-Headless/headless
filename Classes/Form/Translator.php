@@ -94,7 +94,7 @@ class Translator
                 }
             }
 
-            if (is_array($element['properties'])) {
+            if (isset($element['properties']) && is_array($element['properties'])) {
                 foreach (array_keys($element['properties']) as $property
                 ) {
                     $properties[$property] = $this->translator->translateElementValue(
