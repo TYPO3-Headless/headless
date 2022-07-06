@@ -51,7 +51,13 @@
       "*": "dist"
     },
     "sort-packages": true,
-    "vendor-dir": ".Build/vendor"
+    "vendor-dir": ".Build/vendor",
+    "allow-plugins": {
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true,
+      "ergebnis/composer-normalize": true,
+      "phpstan/extension-installer": true
+    }
   },
   "extra": {
     "typo3/cms": {
