@@ -97,7 +97,7 @@ class JsonContentContentObject extends ContentContentObject
 
             $encodeFlags = JSON_THROW_ON_ERROR;
 
-            if ($theValue === []) {
+            if ($theValue === [] && $this->isColPolsGroupingEnabled($conf)) {
                 $encodeFlags |= JSON_FORCE_OBJECT;
             }
 
@@ -134,7 +134,7 @@ class JsonContentContentObject extends ContentContentObject
 
             $element = json_decode($element);
 
-            if ((!isset($conf['doNotGroupByColPos']) || (int)$conf['doNotGroupByColPos'] === 0) && $element->colPos >= 0) {
+            if ($this->isColPolsGroupingEnabled($conf) && $element->colPos >= 0) {
                 $data['colPos' . $element->colPos][] = $element;
             } else {
                 $data[] = $element;
@@ -202,7 +202,7 @@ class JsonContentContentObject extends ContentContentObject
                         $_procObj = GeneralUtility::makeInstance($className);
                         $_procObj->modifyDBRow($row, $conf['table']);
                     }
-                    $registerField = $conf['table'] . ':' . $row['uid'];
+                    $registerField = $conf['table'] . ':' . ($row['uid'] ?? 0);
                     if (!($frontendController->recordRegister[$registerField] ?? false)) {
                         $this->cObj->currentRecordNumber++;
                         $cObj->parentRecordNumber = $this->cObj->currentRecordNumber;
@@ -245,5 +245,10 @@ class JsonContentContentObject extends ContentContentObject
         }
 
         return $theValue;
+    }
+
+    private function isColPolsGroupingEnabled(array $conf): bool
+    {
+        return !isset($conf['doNotGroupByColPos']) || (int)$conf['doNotGroupByColPos'] === 0;
     }
 }
