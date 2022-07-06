@@ -135,7 +135,7 @@ class FileUtility
             ],
             'crop' => $crop,
             'autoplay' => $fileReference->hasProperty('autoplay')
-                ? $fileReference->getProperty('autoplay') : 0,
+                ? $fileReference->getProperty('autoplay') : null,
             'extension' => $fileReference->hasProperty('extension')
                 ? $fileReference->getProperty('extension') : null,
         ];
