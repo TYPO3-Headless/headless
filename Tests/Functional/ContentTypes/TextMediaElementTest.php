@@ -31,7 +31,7 @@ class TextMediaElementTest extends BaseContentTypeTest
         $this->checkHeaderFields($contentElement);
 
         // typolink parser was called on bodytext
-        self::assertStringContainsString('<a href="/page1', $contentElement['content']['bodytext']);
+        self::assertStringContainsString('<a href="/page1?parameter=999&amp;cHash=', $contentElement['content']['bodytext']);
 
         $this->checkGalleryContentFields($contentElement);
     }
