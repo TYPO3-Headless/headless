@@ -14,6 +14,7 @@ namespace FriendsOfTYPO3\Headless\Json;
 use JsonException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+
 use function json_encode;
 
 use const JSON_THROW_ON_ERROR;
