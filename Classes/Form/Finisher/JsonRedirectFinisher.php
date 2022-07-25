@@ -17,9 +17,11 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Request;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
+
 use function is_string;
 use function json_encode;
 use function ltrim;
+
 use const JSON_THROW_ON_ERROR;
 
 /**
