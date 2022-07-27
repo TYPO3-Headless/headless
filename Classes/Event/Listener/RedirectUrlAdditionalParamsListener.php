@@ -120,8 +120,8 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
                     }
                     break;
                 default:
-                    // we have to return the link details without having a "URL" parameter
-            }
+                // we have to return the link details without having a "URL" parameter
+                }
         } catch (InvalidPathException $e) {
             return [];
         }

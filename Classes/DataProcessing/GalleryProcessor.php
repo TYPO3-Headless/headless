@@ -186,7 +186,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                         $fileObj = $this->getFileUtility()->processFile($image, $this->mediaDimensions[$fileKey] ?? []);
 
                         if (isset($this->processorConfiguration['autogenerate.']['retina2x'],
-                                $fileObj['properties']['dimensions']['width']) &&
+                            $fileObj['properties']['dimensions']['width']) &&
                             (int)$this->processorConfiguration['autogenerate.']['retina2x'] === 1) {
                             $fileObj['urlRetina'] = $this->getFileUtility()->processFile(
                                 $image,
@@ -198,7 +198,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                         }
 
                         if (isset($this->processorConfiguration['autogenerate.']['lqip'],
-                                    $fileObj['properties']['dimensions']['width']) &&
+                            $fileObj['properties']['dimensions']['width']) &&
                                 (int)$this->processorConfiguration['autogenerate.']['lqip'] === 1) {
                             $fileObj['urlLqip'] = $this->getFileUtility()->processFile(
                                 $image,
