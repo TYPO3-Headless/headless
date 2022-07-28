@@ -102,7 +102,7 @@ class AbstractFormDefinitionDecoratorTest extends UnitTestCase
                     'type' => 'input',
                     'identifier' => 'testfield',
                     'label' => 'test field',
-                    'name' => 'tx_form_formframework[testfield]',
+                    'name' => 'tx_form_formframework[test-123][testfield]',
                 ],
                 [
                     'type' => 'Fieldset',
@@ -113,7 +113,7 @@ class AbstractFormDefinitionDecoratorTest extends UnitTestCase
                             'type' => 'input',
                             'identifier' => 'nested',
                             'label' => 'nested',
-                            'name' => 'tx_form_formframework[nested]',
+                            'name' => 'tx_form_formframework[test-123][nested]',
                         ],
                     ],
                 ],
@@ -127,21 +127,21 @@ class AbstractFormDefinitionDecoratorTest extends UnitTestCase
                             'options' => ['regularExpression' => '/a-z/'],
                         ]
                     ],
-                    'name' => 'tx_form_formframework[validators]',
+                    'name' => 'tx_form_formframework[test-123][validators]',
                 ],
                 [
                     'type' => 'select',
                     'identifier' => 'overridden',
                     'label' => 'overridden field',
                     'renderingOptions' => [],
-                    'name' => 'tx_form_formframework[overridden]',
+                    'name' => 'tx_form_formframework[test-123][overridden]',
                 ],
                 [
                     'type' => 'ImageUpload',
                     'identifier' => 'image',
                     'label' => 'Upload image',
                     'properties' => [],
-                    'name' => 'tx_form_formframework[image]',
+                    'name' => 'tx_form_formframework[test-123][image]',
                 ]
             ],
         ], $test);
