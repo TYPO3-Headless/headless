@@ -33,7 +33,7 @@ class PreviewUrlHook
      */
     public function postProcess(string $previewUrl, int $pageUid, ?array $rootLine, string $anchorSection, string $viewScript, string $additionalGetVars, bool $switchFocus): string
     {
-        if ($GLOBALS['BE_USER']->workspace !== 0) {
+        if (isset($GLOBALS['BE_USER']) && $GLOBALS['BE_USER']->workspace !== 0) {
             return $previewUrl;
         }
         return GeneralUtility::makeInstance(UrlUtility::class)->getFrontendUrlForPage($previewUrl, $pageUid);

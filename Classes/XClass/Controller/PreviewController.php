@@ -25,6 +25,8 @@ use TYPO3\CMS\Workspaces\Service\WorkspaceService;
 
 /**
  * This XClass allows you to render frontend URLs for workspaces
+ *
+ * @codeCoverageIgnore
  */
 class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewController
 {
