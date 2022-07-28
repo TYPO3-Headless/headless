@@ -56,6 +56,12 @@ call_user_func(
             ];
         }
 
+        if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('workspaces') && $features->isFeatureEnabled('headless.workspaces')) {
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Workspaces\Controller\PreviewController::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Controller\PreviewController::class
+            ];
+        }
+
         if ($features->isFeatureEnabled('headless.supportOldPageOutput')) {
             $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['typoLink_PostProc'][] =
                 \FriendsOfTYPO3\Headless\Hooks\TypolinkHook::class . '->handleLink';
