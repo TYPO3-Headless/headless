@@ -15,6 +15,13 @@ This extension provides backend part (JSON API) for TYPO3 PWA solution. Second p
 
 If you have any questions just drop a line in #initiative-headless-pwa Slack channel.
 
+|                  | URL                                                               |
+|------------------|-------------------------------------------------------------------|
+| **Repository:**  | https://github.com/TYPO3-Headless/headless                        |
+| **Read online:** | https://docs.typo3.org/p/friendsoftypo3/headless/main/en-us/      |
+| **TER:**         | https://extensions.typo3.org/extension/headless/                  |
+| **Slack:**       | https://typo3.slack.com/channels/initiative-headless-pwa          |
+
 ## Features
 
 - JSON API for content elements
@@ -36,7 +43,7 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 - headless support for EXT:powermail [headless_powermail](https://github.com/TYPO3-Initiatives/headless_powermail)
 - headless support for EXT:gridelements [headless_gridelements](https://github.com/itplusx/headless_gridelements)
 
-## Requirements
+## Requirements and compatibility
 With the release of TYPO3 v11.5 LTS we have to move support for TYPO3 v9 and v10 to another branch as changes between those two versions are incompatible. Version 3.x and master branch will support TYPO3 v11, and headless version 2.x keep support for v9 and v10.
 
 #### Headless version 3.x
@@ -64,7 +71,7 @@ Install extension using composer\
 Then, you should include extension typoscript template, and you are ready to go. Also, please remember to don't use fluid styled content on the same page tree together with ext:headless.
 
 ## Documentation
-[Documentation](https://docs.typo3.org/p/friendsoftypo3/headless/master/en-us/Index.html)
+[Extension documentation](https://docs.typo3.org/p/friendsoftypo3/headless/master/en-us/Index.html)
 
 ## JSON  Content Object
 In headless extension we implemented new JSON Content Object, which allows you to specify what fields you want to output, and how they will look. First, let's take a look at simple example
