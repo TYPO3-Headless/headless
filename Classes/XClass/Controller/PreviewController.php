@@ -20,9 +20,9 @@ use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Information\Typo3Information;
 use TYPO3\CMS\Core\Routing\InvalidRouteArgumentsException;
 use TYPO3\CMS\Core\Routing\UnableToLinkToPageException;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Workspaces\Service\WorkspaceService;
-use TYPO3\CMS\Core\Site\SiteFinder;
 
 /**
  * This XClass allows you to render frontend URLs for workspaces
