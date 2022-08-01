@@ -67,6 +67,12 @@ call_user_func(
             }
         }
 
+        if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('workspaces') && $features->isFeatureEnabled('headless.workspaces')) {
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Workspaces\Controller\PreviewController::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Controller\PreviewController::class
+            ];
+        }
+
         /** @var \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry $rendererRegistry */
         $rendererRegistry = \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry::getInstance();
         $rendererRegistry->registerRendererClass(\FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer::class);
