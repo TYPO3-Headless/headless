@@ -148,6 +148,18 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
             $formFieldsNames[] = 'tx_form_formframework[' . $formDefinition['identifier'] . '][' . $honeyPot->getIdentifier() . ']';
         }
 
+        // ONLY assign `__session` if form is performing (POST request)
+        if ($formRuntime->canProcessFormSubmission() && $formRuntime->getFormSession() !== null) {
+            $formFields[] = [
+                'properties' => [],
+                'type' => 'Hidden',
+                'identifier' => '__session',
+                'defaultValue' => $formRuntime->getFormSession()->getAuthenticatedIdentifier(),
+            ];
+
+            $formFieldsNames[] = 'tx_form_formframework[' . $formDefinition['identifier'] . '][__session]';
+        }
+
         $formFields[] = [
             'properties' => [],
             'type' => 'Hidden',
