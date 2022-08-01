@@ -71,6 +71,9 @@ call_user_func(
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Workspaces\Controller\PreviewController::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\Controller\PreviewController::class
             ];
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Preview\PreviewUriBuilder::class
+            ];
         }
 
         /** @var \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry $rendererRegistry */
