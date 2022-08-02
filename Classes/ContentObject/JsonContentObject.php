@@ -27,6 +27,7 @@ use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
+use function is_array;
 use function strpos;
 
 class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
@@ -70,7 +71,11 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             $data = $this->processFieldWithDataProcessing($conf);
         }
 
-        $json = $this->jsonEncoder->encode($this->jsonDecoder->decode($data));
+        $json = '';
+
+        if (is_array($data)) {
+            $json = $this->jsonEncoder->encode($this->jsonDecoder->decode($data));
+        }
 
         if (isset($conf['stdWrap.'])) {
             $json = $this->cObj->stdWrap($json, $conf['stdWrap.']);
