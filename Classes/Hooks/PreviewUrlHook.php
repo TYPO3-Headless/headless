@@ -29,7 +29,7 @@ class PreviewUrlHook
      * @param bool $switchFocus
      * @return string The processed preview URL
      */
-    public function postProcess(string $previewUrl, int $pageUid, array $rootLine = null, string $anchorSection, string $viewScript, string $additionalGetVars, bool $switchFocus): string
+    public function postProcess(string $previewUrl, int $pageUid, ?array $rootLine, string $anchorSection, string $viewScript, string $additionalGetVars, bool $switchFocus): string
     {
         // Only rewrite $previewUrl if we're not in a workspace, because
         // for workspaces that preview URL is a BE URL and looks like this:
