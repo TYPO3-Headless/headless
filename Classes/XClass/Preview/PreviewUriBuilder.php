@@ -19,9 +19,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * Create links to pages when in a workspace for previewing purposes
- *
- * @internal
+ * @codeCoverageIgnore
  */
 class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
 {
