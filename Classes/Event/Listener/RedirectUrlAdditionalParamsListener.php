@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -122,8 +120,8 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
                     }
                     break;
                 default:
-                    // we have to return the link details without having a "URL" parameter
-            }
+                // we have to return the link details without having a "URL" parameter
+                }
         } catch (InvalidPathException $e) {
             return [];
         }

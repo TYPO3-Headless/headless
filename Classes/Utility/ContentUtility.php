@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -16,9 +14,8 @@ namespace FriendsOfTYPO3\Headless\Utility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * ContentUtility
- *
  * This class group elements by column position, for easier frontend rendering.
+ * @deprecated please use CONTENT_JSON
  */
 class ContentUtility
 {

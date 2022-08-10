@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -20,6 +18,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
@@ -29,22 +28,30 @@ use function parse_url;
 class ShortcutAndMountPointRedirect implements MiddlewareInterface
 {
     /**
-     * @var TypoScriptFrontendController
+     * @var TypoScriptFrontendController|null
      */
     private $controller;
 
-    public function __construct(TypoScriptFrontendController $controller = null)
-    {
-        $this->controller = $controller ?: $GLOBALS['TSFE'];
-    }
-
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        $queryParams = $request->getQueryParams();
+        $pageType = (int)($queryParams['type'] ?? 0);
+
+        if ($pageType === 834) {
+            return $handler->handle($request);
+        }
+
+        $this->controller = $GLOBALS['TSFE'] ?? null;
+
+        if (!$this->controller) {
+            return $handler->handle($request);
+        }
+
         $redirectToUri = $this->getRedirectUri($request);
         if ($redirectToUri !== null && $redirectToUri !== (string)$request->getUri()) {
             $this->releaseTypoScriptFrontendControllerLocks();
 
-            if ($this->isHeadlessEnabled()) {
+            if ($this->isHeadlessEnabled($request)) {
                 $parsed = parse_url($redirectToUri);
                 if (is_array($parsed)) {
                     $path = $parsed['path'] ?? '/';
@@ -67,7 +74,7 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
 
             if ($externalUrl !== '') {
                 $this->releaseTypoScriptFrontendControllerLocks();
-                if ($this->isHeadlessEnabled()) {
+                if ($this->isHeadlessEnabled($request)) {
                     return new JsonResponse(['redirectUrl' => $externalUrl, 'statusCode' => 303]);
                 }
 
@@ -116,11 +123,23 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
         return $redirectTo;
     }
 
-    private function isHeadlessEnabled(): bool
+    private function isHeadlessEnabled(ServerRequestInterface $request): bool
     {
-        $setup = $this->controller->tmpl->setup;
+        /**
+         * @var Site
+         */
+        $site = $request->getAttribute('site');
 
-        return !(!isset($setup['plugin.']['tx_headless.']['staticTemplate'])
-            || (bool)$setup['plugin.']['tx_headless.']['staticTemplate'] === false);
+        if (!($site instanceof Site)) {
+            return false;
+        }
+
+        $siteConf = $request->getAttribute('site')->getConfiguration();
+
+        if (!($siteConf['headless'] ?? false)) {
+            return false;
+        }
+
+        return true;
     }
 }

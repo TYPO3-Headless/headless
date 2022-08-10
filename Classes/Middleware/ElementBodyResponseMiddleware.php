@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -19,25 +17,23 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\Stream;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+
+use function in_array;
+use function is_array;
+use function json_decode;
 
 final class ElementBodyResponseMiddleware implements MiddlewareInterface
 {
-    /**
-     * @var TypoScriptFrontendController
-     */
-    private $tsfe;
     /**
      * @var JsonEncoder
      */
     private $jsonEncoder;
 
     public function __construct(
-        TypoScriptFrontendController $typoScriptFrontendController = null,
         JsonEncoder $jsonEncoder = null
     ) {
-        $this->tsfe = $typoScriptFrontendController ?? $GLOBALS['TSFE'];
         $this->jsonEncoder = $jsonEncoder ?? GeneralUtility::makeInstance(JsonEncoder::class);
     }
 
@@ -45,9 +41,18 @@ final class ElementBodyResponseMiddleware implements MiddlewareInterface
     {
         $response = $handler->handle($request);
 
-        if (!isset($this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'])
-            || (bool)$this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'] === false
-        ) {
+        /**
+         * @var Site
+         */
+        $site = $request->getAttribute('site');
+
+        if (!($site instanceof Site)) {
+            return $response;
+        }
+
+        $siteConf = $request->getAttribute('site')->getConfiguration();
+
+        if (!($siteConf['headless'] ?? false)) {
             return $response;
         }
 
@@ -57,6 +62,7 @@ final class ElementBodyResponseMiddleware implements MiddlewareInterface
             return $response;
         }
 
+        $recursiveElement = (bool)(int)($request->getParsedBody()['responseElementRecursive'] ?? 0);
         $responseJson = json_decode($response->getBody()->__toString(), true);
 
         if ($responseJson === null) {
@@ -64,7 +70,11 @@ final class ElementBodyResponseMiddleware implements MiddlewareInterface
         }
 
         $stream = new Stream('php://temp', 'r+');
-        $stream->write($this->jsonEncoder->encode($this->extractElement($responseJson['content'] ?? [], $elementId)));
+        $stream->write($this->jsonEncoder->encode($this->extractElement(
+            $responseJson['content'] ?? [],
+            $elementId,
+            $recursiveElement
+        )));
 
         return $response->withBody($stream);
     }
@@ -74,14 +84,30 @@ final class ElementBodyResponseMiddleware implements MiddlewareInterface
      * @param int $elementId
      * @return array<string, mixed>
      */
-    private function extractElement(array $content, int $elementId): array
+    private function extractElement(array $content, int $elementId, bool $recursiveElement = false): array
     {
         $body = [];
 
-        foreach ($content as $colPos => $items) {
+        foreach ($content as $items) {
+            if (!is_array($items)) {
+                continue;
+            }
+
             foreach ($items as $item) {
-                if ((int)$item['id'] === $elementId) {
+                if ((int)($item['id'] ?? 0) === $elementId) {
                     return $item;
+                }
+
+                if ($recursiveElement && is_array($item)) {
+                    foreach ($item as $prop) {
+                        if (is_array($prop)) {
+                            $result = $this->extractElement($prop, $elementId, true);
+
+                            if (!empty($result)) {
+                                return $result;
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -15,23 +13,19 @@ namespace FriendsOfTYPO3\Headless\Middleware;
 
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
 use FriendsOfTYPO3\Headless\Service\SiteService;
-use FriendsOfTYPO3\Headless\Utility\FrontendBaseUtility;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Http\JsonResponse;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Information\Typo3Version;
-use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Redirects\Service\RedirectService;
 
-use function is_array;
-use function parse_url;
 use function strpos;
 
 final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\RedirectHandler
@@ -41,10 +35,6 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
      */
     private $siteService;
     /**
-     * @var LinkService
-     */
-    private $linkService;
-    /**
      * @var EventDispatcherInterface|null
      */
     private $eventDispatcher;
@@ -52,22 +42,14 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
      * @var ServerRequestInterface
      */
     private $request;
-    /**
-     * @var Features
-     */
-    private $features;
 
     public function __construct(
         RedirectService $redirectService,
         SiteService $siteService = null,
-        LinkService $linkService = null,
-        EventDispatcher $eventDispatcher = null,
-        Features $features = null
+        EventDispatcher $eventDispatcher = null
     ) {
         parent::__construct($redirectService);
         $this->siteService = $siteService ?? GeneralUtility::makeInstance(SiteService::class);
-        $this->linkService = $linkService ?? GeneralUtility::makeInstance(LinkService::class);
-        $this->features = $features ?? GeneralUtility::makeInstance(Features::class);
         if ((new Typo3Version())->getMajorVersion() >= 10) {
             $this->eventDispatcher = $eventDispatcher ?? GeneralUtility::makeInstance(EventDispatcher::class);
         }
@@ -102,44 +84,22 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
             return parent::buildRedirectResponse($uri, $redirectRecord);
         }
 
-        $frontendDomainTrim = true;
         $requestDomainUrl = $this->siteService->getFrontendUrl((string)$this->request->getUri(), $site->getRootPageId());
 
-        if ($redirectRecord['target'] === '/') {
-            $resolvedTarget = ['type' => LinkService::TYPE_UNKNOWN, 'file' => '/'];
-        } else {
-            $resolvedTarget = $this->linkService->resolve($redirectRecord['target']);
+        if ($uri->getHost() === '') {
+            $uri = $uri->withHost((new Uri($requestDomainUrl))->getHost());
         }
 
-        if ($resolvedTarget['type'] === LinkService::TYPE_FILE || $resolvedTarget['type'] === LinkService::TYPE_FOLDER) {
-            $targetUrl = $this->handleFileTypes($resolvedTarget);
-        } elseif ($resolvedTarget['type'] === LinkService::TYPE_UNKNOWN && strpos($resolvedTarget['file'], '/') === 0) {
-            $frontendDomainTrim = false;
-            $targetUrl = $resolvedTarget['file'];
-        } else {
-            if (substr($uri->getPath(), 0, 3) === '%7B') {
-                $path = rawurldecode($uri->getPath());
-                $path = json_decode($path, true);
-                $uri = new \TYPO3\CMS\Core\Http\Uri($path['url']);
-            }
-            $targetUrl = $this->siteService->getFrontendUrl((string)$uri, (int)$resolvedTarget['pageuid']);
-        }
-
-        if ($frontendDomainTrim) {
-            $parsedTargetUrl = parse_url($targetUrl);
-            $parsedDomainUrl = parse_url($requestDomainUrl);
-
-            if (is_array($parsedTargetUrl) &&
-                is_array($parsedDomainUrl) &&
-                ($parsedTargetUrl['host'] ?? '') === ($parsedDomainUrl['host'] ?? '')) {
-                $targetUrl = $parsedTargetUrl['path'] ?? '';
-            }
+        if (substr($uri->getPath(), 0, 3) === '%7B') {
+            $path = rawurldecode($uri->getPath());
+            $path = json_decode($path, true);
+            $uri = $uri->withPath($path['url']);
         }
 
         $redirectUrlEvent = new RedirectUrlEvent(
             $this->request,
             $uri,
-            $targetUrl,
+            $this->prepareRelativeUrlIfPossible((string)$uri, $requestDomainUrl),
             (int)$redirectRecord['target_statuscode'],
             $redirectRecord
         );
@@ -174,25 +134,37 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
         return $redirectUrlEvent;
     }
 
-    /**
-     * @param array<string,mixed> $resolvedTarget
-     */
-    private function handleFileTypes(array $resolvedTarget): string
+    public function prepareRelativeUrlIfPossible(string $targetUrl, $requestDomainUrl): string
     {
-        $port = $this->request->getUri()->getPort();
-        $siteConf = $this->request->getAttribute('site')->getConfiguration();
-        $baseFileUrl = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . ($port ? ':' . $port : '');
+        $parsedTargetUrl = new Uri($this->sanitizeBaseUrl($targetUrl));
+        $parsedProjectFrontendUrl = new Uri($this->sanitizeBaseUrl($requestDomainUrl));
 
-        if ($this->features->isFeatureEnabled('headless.storageProxy')) {
-            $frontendBase = GeneralUtility::makeInstance(FrontendBaseUtility::class);
-            // we have to get frontendApiProxy, because getPublicUrl() returns storage folder already
-            $baseFileUrl = $frontendBase->resolveWithVariants(
-                $siteConf['frontendApiProxy'] ?? $baseFileUrl,
-                $siteConf['baseVariants'] ?? null,
-                'frontendApiProxy'
-            );
+        if ($parsedTargetUrl->getHost() === $parsedProjectFrontendUrl->getHost()) {
+            return $parsedTargetUrl->getPath() . ($parsedTargetUrl->getQuery() ? '?' . $parsedTargetUrl->getQuery() : '');
         }
 
-        return $baseFileUrl . '/' . $resolvedTarget[$resolvedTarget['type']]->getPublicUrl();
+        return $targetUrl;
+    }
+
+    /**
+     * If a site base contains "/" or "www.domain.com", it is ensured that
+     * parse_url() can handle this kind of configuration properly.
+     */
+    private function sanitizeBaseUrl(string $base): string
+    {
+        // no protocol ("//") and the first part is no "/" (path), means that this is a domain like
+        // "www.domain.com/blabla", and we want to ensure that this one then gets a "no-scheme agnostic" part
+        if (!empty($base) && strpos($base, '//') === false && $base[0] !== '/') {
+            // either a scheme is added, or no scheme but with domain, or a path which is not absolute
+            // make the base prefixed with a slash, so it is recognized as path, not as domain
+            // treat as path
+            if (strpos($base, '.') === false) {
+                $base = '/' . $base;
+            } else {
+                // treat as domain name
+                $base = '//' . $base;
+            }
+        }
+        return $base;
     }
 }

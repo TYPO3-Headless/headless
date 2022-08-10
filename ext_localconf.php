@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 defined('TYPO3_MODE') || die();
@@ -20,9 +18,11 @@ call_user_func(
         $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'headless/Configuration/TypoScript/';
         $GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] = array_merge($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'], [
             'JSON' => \FriendsOfTYPO3\Headless\ContentObject\JsonContentObject::class,
+            'CONTENT_JSON' => \FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject::class,
             'INT' => \FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject::class,
             'BOOL' => \FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject::class,
         ]);
+        $GLOBALS['TYPO3_CONF_VARS']['FE']['typolinkBuilder']['file'] = \FriendsOfTYPO3\Headless\Hooks\FileOrFolderLinkBuilder::class;
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['fluid']['namespaces']['headless'] = [
             'FriendsOfTYPO3\Headless\ViewHelpers'
         ];
@@ -65,6 +65,15 @@ call_user_func(
                     'className' => \FriendsOfTYPO3\Headless\XClass\Domain\Model\FormDefinition::class
                 ];
             }
+        }
+
+        if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('workspaces') && $features->isFeatureEnabled('headless.workspaces')) {
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Workspaces\Controller\PreviewController::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Controller\PreviewController::class
+            ];
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Preview\PreviewUriBuilder::class
+            ];
         }
 
         /** @var \TYPO3\CMS\Core\Resource\Rendering\RendererRegistry $rendererRegistry */

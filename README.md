@@ -222,6 +222,15 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.simplifiedLinkTarget'] 
 ```
 Simplified output return only value i.e. `_blank` for target attribute instead of html string ` target="_blank"`
 
+**headless.workspaces**
+
+Enable EXT:workspaces preview support.
+```
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.workspaces'] = true;
+```
+To enable headless support for `EXT:workspaces` please also add to you site(s) configuration's yaml file following flag:
+
+`headless: true`
 
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
