@@ -11,8 +11,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
+use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
-use JsonException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -21,12 +22,10 @@ use function array_merge;
 use function count;
 use function is_array;
 use function json_decode;
-use function json_encode;
 use function strpos;
 use function trim;
 
 use const JSON_FORCE_OBJECT;
-use const JSON_THROW_ON_ERROR;
 
 /**
  * CONTENT_JSON Content object behaves & has the same options as standard TYPO3' Content
@@ -72,11 +71,13 @@ use const JSON_THROW_ON_ERROR;
 class JsonContentContentObject extends ContentContentObject
 {
     private HeadlessUserInt $headlessUserInt;
+    private JsonEncoderInterface $jsonEncoder;
 
     public function __construct(ContentObjectRenderer $cObj)
     {
         parent::__construct($cObj);
         $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
+        $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
     }
 
     /**
@@ -90,31 +91,27 @@ class JsonContentContentObject extends ContentContentObject
 
         $theValue = $this->prepareValue($conf);
 
-        try {
-            if (isset($conf['merge.']) && is_array($conf['merge.'])) {
-                $theValue = array_merge($theValue, $this->prepareValue($conf['merge.']));
-            }
-
-            $encodeFlags = JSON_THROW_ON_ERROR;
-
-            if ($theValue === [] && $this->isColPolsGroupingEnabled($conf)) {
-                $encodeFlags |= JSON_FORCE_OBJECT;
-            }
-
-            $theValue = json_encode($theValue, $encodeFlags);
-
-            $wrap = $this->cObj->stdWrapValue('wrap', $conf ?? []);
-            if ($wrap) {
-                $theValue = $this->cObj->wrap($theValue, $wrap);
-            }
-            if (isset($conf['stdWrap.'])) {
-                $theValue = $this->cObj->stdWrap($theValue, $conf['stdWrap.']);
-            }
-
-            return $theValue;
-        } catch (JsonException $e) {
-            return '';
+        if (isset($conf['merge.']) && is_array($conf['merge.'])) {
+            $theValue = array_merge($theValue, $this->prepareValue($conf['merge.']));
         }
+
+        $encodeFlags = 0;
+
+        if ($theValue === [] && $this->isColPolsGroupingEnabled($conf)) {
+            $encodeFlags |= JSON_FORCE_OBJECT;
+        }
+
+        $theValue = $this->jsonEncoder->encode($theValue, $encodeFlags);
+
+        $wrap = $this->cObj->stdWrapValue('wrap', $conf ?? []);
+        if ($wrap) {
+            $theValue = $this->cObj->wrap($theValue, $wrap);
+        }
+        if (isset($conf['stdWrap.'])) {
+            $theValue = $this->cObj->stdWrap($theValue, $conf['stdWrap.']);
+        }
+
+        return $theValue;
     }
 
     /**
