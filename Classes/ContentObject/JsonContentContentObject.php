@@ -147,7 +147,7 @@ class JsonContentContentObject extends ContentContentObject
      */
     private function prepareValue(array $conf): array
     {
-        $frontendController = $this->getFrontendController();
+        $frontendController = $this->getTypoScriptFrontendController();
         $theValue = [];
         $originalRec = $frontendController->currentRecord;
         // If the currentRecord is set, we register, that this record has invoked this function.
