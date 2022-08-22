@@ -44,7 +44,6 @@ class AudioTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\AudioTagRender
     public function render(FileInterface $file, $width, $height, array $options = [], $usedPathsRelativeToCurrentScript = false): string
     {
         if ($options['returnUrl'] === true) {
-
             // If autoplay isn't set manually check if $file is a FileReference take autoplay from there
             if (!isset($options['autoplay']) && $file instanceof FileReference) {
                 $autoplay = $file->getProperty('autoplay');
