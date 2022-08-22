@@ -250,14 +250,14 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
     {
         $formFieldNames
             = $this->viewHelperVariableContainer->get(
-            \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class,
-            'formFieldNames'
-        );
+                \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class,
+                'formFieldNames'
+            );
         $requestHash
             = $this->mvcPropertyMappingConfigurationService->generateTrustedPropertiesToken(
-            $formFieldNames,
-            $this->getFieldNamePrefix()
-        );
+                $formFieldNames,
+                $this->getFieldNamePrefix()
+            );
         $this->addHiddenField('__trustedProperties', $requestHash);
     }
 

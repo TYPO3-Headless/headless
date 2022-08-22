@@ -1,5 +1,12 @@
 <?php
 
+/*
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 /*
@@ -22,7 +29,7 @@ use TYPO3\CMS\FrontendLogin\Event\LogoutConfirmedEvent;
 use TYPO3\CMS\FrontendLogin\Event\ModifyLoginFormViewEvent;
 
 /**
- * Used for plugin login
+ * @codeCoverageIgnore
  */
 class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginController
 {
@@ -63,7 +70,7 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
                 'storagePid' => implode(',', $this->getStorageFolders()),
                 'permaloginStatus' => $this->getPermaloginStatus(),
                 'redirectURL' => $this->redirectHandler->getLoginFormRedirectUrl($this->configuration, $this->isRedirectDisabled()),
-                'redirectReferrer' => $this->request->hasArgument('redirectReferrer') ? (string)$this->request->getArgument('redirectReferrer'): '',
+                'redirectReferrer' => $this->request->hasArgument('redirectReferrer') ? (string)$this->request->getArgument('redirectReferrer') : '',
                 'referer' => $this->requestHandler->getPropertyFromGetAndPost('referer'),
                 'noRedirect' => $this->isRedirectDisabled(),
             ]
