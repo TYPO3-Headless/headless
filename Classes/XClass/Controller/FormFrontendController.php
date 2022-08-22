@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -148,6 +146,18 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
                 'identifier' => $honeyPot->getIdentifier(),
             ];
             $formFieldsNames[] = 'tx_form_formframework[' . $formDefinition['identifier'] . '][' . $honeyPot->getIdentifier() . ']';
+        }
+
+        // ONLY assign `__session` if form is performing (POST request)
+        if ($formRuntime->canProcessFormSubmission() && $formRuntime->getFormSession() !== null) {
+            $formFields[] = [
+                'properties' => [],
+                'type' => 'Hidden',
+                'identifier' => '__session',
+                'defaultValue' => $formRuntime->getFormSession()->getAuthenticatedIdentifier(),
+            ];
+
+            $formFieldsNames[] = 'tx_form_formframework[' . $formDefinition['identifier'] . '][__session]';
         }
 
         $formFields[] = [

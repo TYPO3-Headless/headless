@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -27,7 +25,7 @@ use function count;
 use function in_array;
 use function usort;
 
-final class SiteProvider implements SiteProviderInterface
+class SiteProvider implements SiteProviderInterface
 {
     /**
      * @var ConnectionPool

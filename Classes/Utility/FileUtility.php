@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -17,9 +15,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\Resource\AbstractFile;
-use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileInterface;
-use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -56,6 +52,11 @@ class FileUtility
     protected $serverRequest;
 
     /**
+     * @var array
+     */
+    protected $errors = [];
+
+    /**
      * @param ContentObjectRenderer|null $contentObjectRenderer
      * @param RendererRegistry|null $rendererRegistry
      * @param ImageService|null $imageService
@@ -74,69 +75,84 @@ class FileUtility
     }
 
     /**
-     * @param FileReference|File $fileReference
+     * @param FileInterface $fileReference
      * @param array $dimensions
      * @param string $cropVariant
      * @return array
      */
-    public function processFile($fileReference, array $dimensions = [], string $cropVariant = 'default'): array
+    public function processFile(FileInterface $fileReference, array $dimensions = [], string $cropVariant = 'default'): array
     {
         $fileReferenceUid = $fileReference->getUid();
         $uidLocal = $fileReference->getProperty('uid_local');
-        $metaData = $fileReference->toArray();
         $fileRenderer = $this->rendererRegistry->getRenderer($fileReference);
         $crop = $fileReference->getProperty('crop');
         $originalFileUrl = $fileReference->getPublicUrl();
+
+        $metaData = $fileReference->toArray();
+
+        $link = null;
+        $linkData = null;
+
+        if (!empty($metaData['link'])) {
+            $linkData = $this->contentObjectRenderer->typoLink('', ['parameter' => $metaData['link'], 'returnLast' => 'result']);
+            $link = $linkData->getUrl();
+        }
+
+        $originalProperties = [
+            'title' => $fileReference->getProperty('title'),
+            'alternative' => $fileReference->getProperty('alternative'),
+            'description' => $fileReference->getProperty('description'),
+            'link' => $link ?? null,
+            'linkData' => $linkData ?? null,
+        ];
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
             if ($fileReference->getMimeType() !== 'image/svg+xml') {
                 $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
             }
             $publicUrl = $this->imageService->getImageUri($fileReference, true);
-        } elseif (isset($fileRenderer)) {
+        } elseif ($fileRenderer !== null) {
             $publicUrl = $fileRenderer->render($fileReference, '', '', ['returnUrl' => true]);
         } else {
             $publicUrl = $this->getAbsoluteUrl($fileReference->getPublicUrl());
         }
 
+        $processedProperties = [
+            'mimeType' => $fileReference->getMimeType(),
+            'type' => explode('/', $fileReference->getMimeType())[0],
+            'filename' => $fileReference->getProperty('name'),
+            'originalUrl' => $originalFileUrl,
+            'uidLocal' => $uidLocal,
+            'fileReferenceUid' => $fileReferenceUid,
+            'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getSize()),
+            'dimensions' => [
+                'width' => $fileReference->getProperty('width'),
+                'height' => $fileReference->getProperty('height'),
+            ],
+            'cropDimensions' => [
+                'width' => $this->getCroppedDimensionalProperty($fileReference, 'width', $cropVariant),
+                'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant)
+            ],
+            'crop' => $crop,
+            'autoplay' => $fileReference->hasProperty('autoplay')
+                ? $fileReference->getProperty('autoplay') : null,
+            'extension' => $fileReference->hasProperty('extension')
+                ? $fileReference->getProperty('extension') : null,
+        ];
+
         return [
             'publicUrl' => $publicUrl,
-            'properties' => [
-                'title' => $metaData['title'] ?: $fileReference->getProperty('title'),
-                'alternative' => $metaData['alternative'] ?: $fileReference->getProperty('alternative'),
-                'description' => $metaData['description'] ?: $fileReference->getProperty('description'),
-                'mimeType' => $fileReference->getMimeType(),
-                'type' => explode('/', $fileReference->getMimeType())[0],
-                'filename' => $fileReference->getProperty('name'),
-                'originalUrl' => $originalFileUrl,
-                'uidLocal' => $uidLocal,
-                'fileReferenceUid' => $fileReferenceUid,
-                'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getSize()),
-                'link' => !empty($metaData['link']) ? $this->contentObjectRenderer->typoLink_URL([
-                                                                                                     'parameter' => $metaData['link']
-                                                                                                 ]) : null,
-                'dimensions' => [
-                    'width' => $fileReference->getProperty('width'),
-                    'height' => $fileReference->getProperty('height'),
-                ],
-                'cropDimensions' => [
-                    'width' => $this->getCroppedDimensionalProperty($fileReference, 'width', $cropVariant),
-                    'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant)
-                ],
-                'crop' => $crop,
-                'autoplay' => $fileReference->getProperty('autoplay'),
-                'extension' => $metaData['extension']
-            ]
+            'properties' => array_merge($originalProperties, $processedProperties),
         ];
     }
 
     /**
-     * @param FileReference|File $image
+     * @param FileInterface $fileReference
      * @param array $dimensions
      * @param string $cropVariant
      * @return ProcessedFile
      */
-    public function processImageFile($image, array $dimensions = [], string $cropVariant = 'default'): ProcessedFile
+    public function processImageFile(FileInterface $image, array $dimensions = [], string $cropVariant = 'default'): ProcessedFile
     {
         try {
             $properties = $image->getProperties();
@@ -150,16 +166,17 @@ class FileUtility
             $processingInstructions = [
                 'width' => $dimensions['width'] ?? null,
                 'height' => $dimensions['height'] ?? null,
-                'minWidth' => $dimensions['minWidth'] ?? $properties['minWidth'],
-                'minHeight' => $dimensions['minHeight'] ?? $properties['minHeight'],
-                'maxWidth' => $dimensions['maxWidth'] ?? $properties['maxWidth'],
-                'maxHeight' => $dimensions['maxHeight'] ?? $properties['maxHeight'],
+                'minWidth' => $dimensions['minWidth'] ?? $properties['minWidth'] ?? 0,
+                'minHeight' => $dimensions['minHeight'] ?? $properties['minHeight'] ?? 0,
+                'maxWidth' => $dimensions['maxWidth'] ?? $properties['maxWidth'] ?? 0,
+                'maxHeight' => $dimensions['maxHeight'] ?? $properties['maxHeight'] ?? 0,
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
             ];
             return $this->imageService->applyProcessingInstructions($image, $processingInstructions);
-        } catch (\UnexpectedValueException $e) {
-        } catch (\RuntimeException $e) {
-        } catch (\InvalidArgumentException $e) {
+        } catch (\UnexpectedValueException|\RuntimeException|\InvalidArgumentException $e) {
+            $type = lcfirst(get_class($image));
+            $status = get_class($e);
+            $this->errors['processImageFile'][$type . '-' . $image->getUid()] = $status;
         }
     }
 
@@ -180,6 +197,11 @@ class FileUtility
         return $fileUrl;
     }
 
+    public function getErrors()
+    {
+        return $this->errors;
+    }
+
     /**
      * When retrieving the height or width for a media file
      * a possible cropping needs to be taken into account.
@@ -190,15 +212,19 @@ class FileUtility
      * @param string $cropVariant defaults to 'default' variant
      * @return int
      */
-    protected function getCroppedDimensionalProperty(FileInterface $fileObject, string $dimensionalProperty, string $cropVariant = 'default'): int
-    {
+    protected function getCroppedDimensionalProperty(
+        FileInterface $fileObject,
+        string $dimensionalProperty,
+        string $cropVariant = 'default'
+    ): int {
         if (!$fileObject->hasProperty('crop') || empty($fileObject->getProperty('crop'))) {
             return (int)$fileObject->getProperty($dimensionalProperty);
         }
 
         $croppingConfiguration = $fileObject->getProperty('crop');
         $cropVariantCollection = $this->createCropVariant($croppingConfiguration);
-        return (int)$cropVariantCollection->getCropArea($cropVariant)->makeAbsoluteBasedOnFile($fileObject)->asArray()[$dimensionalProperty];
+        return (int)$cropVariantCollection->getCropArea($cropVariant)->makeAbsoluteBasedOnFile($fileObject)->asArray(
+        )[$dimensionalProperty];
     }
 
     /**
@@ -230,6 +256,9 @@ class FileUtility
         return CropVariantCollection::create($cropString);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     protected function translate(string $key, string $extensionName): ?string
     {
         return LocalizationUtility::translate($key, $extensionName);

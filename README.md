@@ -1,17 +1,26 @@
-# TYPO3 Extension "headless" - JSON content API for TYPO3 PWA solution
+# TYPO3 Extension `headless` - JSON content API for TYPO3 PWA solution
 
+[![TYPO3 10](https://img.shields.io/badge/TYPO3-10-orange.svg)](https://get.typo3.org/version/10)
+[![TYPO3 11](https://img.shields.io/badge/TYPO3-11-orange.svg)](https://get.typo3.org/version/11)
 [![CI Status](https://github.com/TYPO3-Initiatives/headless/workflows/CI/badge.svg)](https://github.com/TYPO3-Initiatives/headless/actions)
 [![Latest Stable Version](https://poser.pugx.org/friendsoftypo3/headless/v)](//packagist.org/packages/friendsoftypo3/headless)
 [![Total Downloads](https://poser.pugx.org/friendsoftypo3/headless/downloads)](//packagist.org/packages/friendsoftypo3/headless)
 [![License](https://poser.pugx.org/friendsoftypo3/headless/license)](//packagist.org/packages/friendsoftypo3/headless)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](CODE_OF_CONDUCT.md)
-[![Code Coverage Badge](https://github.com/TYPO3-Initiatives/headless/blob/code-coverage-badge/badge.svg)](https://github.com/TYPO3-Initiatives/headless/blob/code-coverage-badge/clover.xml)
+[![Coverage Status](https://coveralls.io/repos/github/TYPO3-Headless/headless/badge.svg?branch=master)](https://coveralls.io/github/TYPO3-Headless/headless/badge.svg?branch=master)
 
 Headless allows you to render JSON from TYPO3 content. You can customize output by changing types, names and nesting of fields.
 
-This extension provides backend part (JSON API) for TYPO3 PWA solution. Second part is a JavaScript application [nuxt-typo3](https://github.com/TYPO3-Initiatives/nuxt-typo3) which consumes JSON API and renders the content using Vue.js and Nuxt. See frontend documentation here: https://typo3-initiatives.github.io/nuxt-typo3/
+This extension provides backend part (JSON API) for TYPO3 PWA solution. Second part is a JavaScript application [nuxt-typo3](https://github.com/TYPO3-Headless/nuxt-typo3) which consumes JSON API and renders the content using Vue.js and Nuxt. See frontend documentation here: https://typo3-headless.github.io/nuxt-typo3/
 
 If you have any questions just drop a line in #initiative-headless-pwa Slack channel.
+
+|                  | URL                                                               |
+|------------------|-------------------------------------------------------------------|
+| **Repository:**  | https://github.com/TYPO3-Headless/headless                        |
+| **Read online:** | https://docs.typo3.org/p/friendsoftypo3/headless/main/en-us/      |
+| **TER:**         | https://extensions.typo3.org/extension/headless/                  |
+| **Slack:**       | https://typo3.slack.com/channels/initiative-headless-pwa          |
 
 ## Features
 
@@ -34,7 +43,7 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 - headless support for EXT:powermail [headless_powermail](https://github.com/TYPO3-Initiatives/headless_powermail)
 - headless support for EXT:gridelements [headless_gridelements](https://github.com/itplusx/headless_gridelements)
 
-## Requirements
+## Requirements and compatibility
 With the release of TYPO3 v11.5 LTS we have to move support for TYPO3 v9 and v10 to another branch as changes between those two versions are incompatible. Version 3.x and master branch will support TYPO3 v11, and headless version 2.x keep support for v9 and v10.
 
 #### Headless version 3.x
@@ -62,7 +71,7 @@ Install extension using composer\
 Then, you should include extension typoscript template, and you are ready to go. Also, please remember to don't use fluid styled content on the same page tree together with ext:headless.
 
 ## Documentation
-[Documentation](https://docs.typo3.org/p/friendsoftypo3/headless/master/en-us/Index.html)
+[Extension documentation](https://docs.typo3.org/p/friendsoftypo3/headless/master/en-us/Index.html)
 
 ## JSON  Content Object
 In headless extension we implemented new JSON Content Object, which allows you to specify what fields you want to output, and how they will look. First, let's take a look at simple example
@@ -116,7 +125,7 @@ Output
     ]
 }
 ```
-## INT & BOOL Content Objects for use in JSON Content Object
+## INT, FLOAT & BOOL Content Objects for use in JSON Content Object
 
 We introduce new simple content objects to improve JSON API response for frontend developers.
 We can set correct property types, so frontend does not have to deal with string values for fields with numeric values or field that should be true/false.

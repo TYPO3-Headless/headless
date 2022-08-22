@@ -71,6 +71,7 @@ or `report a problem <https://github.com/TYPO3-Initiatives/headless/issues/new>`
    Introduction/Index
    Installation/Index
    Configuration/Index
+   Configuration/Preview
    Developer/Index
    FAQ/Index
    Sitemap

@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -41,6 +39,7 @@ class PageLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\PageLinkBuilder
         string $fragment,
         array $conf
     ): UriInterface {
+        $tsfe = $this->getTypoScriptFrontendController();
         $currentSite = $this->getCurrentSite();
         $currentSiteLanguage = $this->getCurrentSiteLanguage();
         // Happens when currently on a pseudo-site configuration
@@ -69,16 +68,12 @@ class PageLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\PageLinkBuilder
         $targetPageId = (int)($page['l10n_parent'] > 0 ? $page['l10n_parent'] : $page['uid']);
         $queryParameters['_language'] = $siteLanguageOfTargetPage;
 
-        if ($conf['no_cache']) {
-            $queryParameters['no_cache'] = 1;
-        }
-
         if ($fragment
             && $useAbsoluteUrl === false
             && $currentSiteLanguage === $siteLanguageOfTargetPage
-            && $targetPageId === (int)$GLOBALS['TSFE']->id
+            && $targetPageId === (int)$tsfe->id
             && (empty($conf['addQueryString']) || !isset($conf['addQueryString.']))
-            && !$GLOBALS['TSFE']->config['config']['baseURL']
+            && !($tsfe->config['config']['baseURL'] ?? false)
             && count($queryParameters) === 1 // _language is always set
         ) {
             $uri = (new Uri())->withFragment($fragment);
@@ -104,9 +99,12 @@ class PageLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\PageLinkBuilder
                     1535472406
                 );
             }
-            // Override scheme, but only if the site does not define a scheme yet AND the site defines a domain/host
-            if ($useAbsoluteUrl && !$uri->getScheme() && $uri->getHost()) {
-                $scheme = $conf['forceAbsoluteUrl.']['scheme'] ?? 'https';
+            // Override scheme if absoluteUrl is set, but only if the site defines a domain/host. Fall back to site scheme and else https.
+            if ($useAbsoluteUrl && $uri->getHost()) {
+                $scheme = $conf['forceAbsoluteUrl.']['scheme'] ?? false;
+                if (!$scheme) {
+                    $scheme = $uri->getScheme() ?: 'https';
+                }
                 $uri = $uri->withScheme($scheme);
             }
         }

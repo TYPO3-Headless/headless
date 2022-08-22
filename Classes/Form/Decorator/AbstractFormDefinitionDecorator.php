@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -21,7 +19,8 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
     /**
      * @var array<string, mixed>
      */
-    protected $formStatus;
+    protected array $formStatus;
+    protected string $formId = '';
 
     public function __construct(array $formStatus = [])
     {
@@ -29,7 +28,7 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
     }
 
     /**
-     * @param array<mixed> $definition
+     * @param array<string, mixed> $definition
      * @return array<string,array<mixed>>
      */
     public function __invoke(array $definition, int $currentPage): array
@@ -38,7 +37,9 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
 
         $pageElements = $definition['renderables'][$currentPage]['renderables'] ?? [];
 
-        $decorated['id'] = $definition['identifier'];
+        $this->formId = $definition['identifier'];
+
+        $decorated['id'] = $this->formId;
         $decorated['api'] = $this->formStatus;
         $decorated['i18n'] = $definition['i18n']['properties'] ?? [];
         $decorated['elements'] = $this->handleRenderables($pageElements);
@@ -72,7 +73,7 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
      */
     protected function prepareElement(array $element): array
     {
-        $element['name'] = 'tx_form_formframework[' . $element['identifier'] . ']';
+        $element['name'] = 'tx_form_formframework[' . $this->formId . '][' . $element['identifier'] . ']';
 
         $element = $this->overrideElement($element);
 

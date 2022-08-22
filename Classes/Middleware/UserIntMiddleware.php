@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -34,16 +32,19 @@ class UserIntMiddleware implements MiddlewareInterface
     private $headlessUserInt;
 
     public function __construct(
-        TypoScriptFrontendController $typoScriptFrontendController = null,
         HeadlessUserInt $headlessUserInt = null
     ) {
-        $this->tsfe = $typoScriptFrontendController ?? $GLOBALS['TSFE'];
         $this->headlessUserInt = $headlessUserInt ?? GeneralUtility::makeInstance(HeadlessUserInt::class);
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = $handler->handle($request);
+
+        $this->tsfe = $request->getAttribute('frontend.controller');
+        if ($this->tsfe === null && isset($GLOBALS['TSFE'])) {
+            $this->tsfe = $GLOBALS['TSFE'];
+        }
 
         if (!isset($this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'])
             || (bool)$this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'] === false

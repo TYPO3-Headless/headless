@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -56,7 +54,7 @@ abstract class BaseContentTypeTest extends BaseTest
         self::assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
     }
 
-    protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target)
+    protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target = null)
     {
         $contentElementHeaderFieldsLink = $contentElement['content']['headerLink'];
 

@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -33,7 +31,7 @@ class TextpicElementTest extends BaseContentTypeTest
         $this->checkHeaderFields($contentElement);
 
         // typolink parser was called on bodytext
-        self::assertStringContainsString('<a href="/page1?parameter=999&amp;cHash=', $contentElement['content']['bodytext']);
+        self::assertStringContainsString('<a href="/page1', $contentElement['content']['bodytext']);
 
         $this->checkGalleryContentFields($contentElement);
     }

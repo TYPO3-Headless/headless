@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -26,7 +24,7 @@ use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 /**
  * @codeCoverageIgnore
  */
-final class JsonViewConfigurationService implements JsonViewConfigurationServiceInterface
+class JsonViewConfigurationService implements JsonViewConfigurationServiceInterface
 {
     protected array $settings = [];
     protected JsonViewDemandInterface $demand;

@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -33,6 +31,6 @@ class HtmlElementTest extends BaseContentTypeTest
         self::assertFalse(isset($contentElement['content']['subheader']));
 
         // typolink parser was NOT called on bodytext
-        self::assertEquals('<a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a>', $contentElement['content']['bodytext']);
+        self::assertEquals('<a href="t3://page?uid=2 LinkClass LinkTitle">Link</a>', $contentElement['content']['bodytext']);
     }
 }

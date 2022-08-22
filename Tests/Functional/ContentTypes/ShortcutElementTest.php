@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -46,7 +44,7 @@ class ShortcutElementTest extends BaseContentTypeTest
         $this->checkDefaultContentFields($contentElement['content']['shortcut'][1], 1, 1, 'text', 0, 'SysCategory1Title,SysCategory2Title');
         $this->checkAppearanceFields($contentElement['content']['shortcut'][1], 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement['content']['shortcut'][1], 'Header', 'SubHeader', 1, 2);
-        $this->checkHeaderFieldsLink($contentElement['content']['shortcut'][1], 't3://page?uid=2 _blank LinkClass LinkTitle parameter=999', '/page1?parameter=999&amp;cHash=', '_blank');
-        self::assertStringContainsString('<a href="/page1?parameter=999&amp;cHash=', $contentElement['content']['shortcut'][1]['content']['bodytext']);
+        $this->checkHeaderFieldsLink($contentElement['content']['shortcut'][1], 't3://page?uid=2 LinkClass LinkTitle', '/page1');
+        self::assertStringContainsString('<a href="/page1', $contentElement['content']['shortcut'][1]['content']['bodytext']);
     }
 }

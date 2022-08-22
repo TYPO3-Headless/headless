@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -27,14 +25,12 @@ trait DataProcessingTrait
             unset($processedData['data']);
             if (isset($processedData[$processorConfiguration['as']])
                 && is_array($processedData[$processorConfiguration['as']])) {
-                $isMenuProcessor = __CLASS__ === MenuProcessor::class;
-
                 foreach ($processedData[$processorConfiguration['as']] as &$item) {
                     if (isset($item['data'])) {
                         unset($item['data']);
                     }
 
-                    if ($isMenuProcessor && isset($item['children']) && is_array($item['children'])) {
+                    if ($this->isMenuProcessor() && isset($item['children']) && is_array($item['children'])) {
                         $this->removeDataInChildrenNodes($item['children']);
                     }
                 }
@@ -42,6 +38,11 @@ trait DataProcessingTrait
         }
 
         return $processedData;
+    }
+
+    protected function isMenuProcessor(): bool
+    {
+        return __CLASS__ === MenuProcessor::class;
     }
 
     /**

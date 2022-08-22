@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -20,11 +18,13 @@ use function array_merge;
 use function array_replace_recursive;
 use function is_array;
 
-final class Translator
+class Translator
 {
-    protected static function getTranslationService(): FormTranslationService
+    private FormTranslationService $translator;
+
+    public function __construct(FormTranslationService $service = null)
     {
-        return FormTranslationService::getInstance();
+        $this->translator = $service ?? FormTranslationService::getInstance();
     }
 
     /**
@@ -42,14 +42,14 @@ final class Translator
 
         if (isset($formDefinition['i18n']['properties'])) {
             foreach ($formDefinition['i18n']['properties'] as $prop => $value) {
-                $formDefinition['i18n']['properties'][$prop] = self::getTranslationService()
+                $formDefinition['i18n']['properties'][$prop] = $this->translator
                     ->translateElementValue($formDefinition['i18n'], [$prop], $formRuntime);
             }
         }
 
         foreach ($formDefinition['renderables'] as $page) {
             $pageTranslation = [
-                'label' => self::getTranslationService()->translateElementValue($page, ['label'], $formRuntime),
+                'label' => $this->translator->translateElementValue($page, ['label'], $formRuntime),
             ];
 
             if (!isset($page['renderables']) || !is_array($page['renderables'])) {
@@ -85,19 +85,19 @@ final class Translator
                         continue;
                     }
 
-                    $validator['errorMessage'] = self::getTranslationService()->translateElementError(
+                    $validator['errorMessage'] = $this->translator->translateElementError(
                         $element,
                         $validator['errorMessage'],
                         $formRuntime,
-                        is_array($validator['options']) ? $validator['options'] : []
+                        is_array($validator['options'] ?? null) ? $validator['options'] : []
                     );
                 }
             }
 
-            if (is_array($element['properties'])) {
+            if (isset($element['properties']) && is_array($element['properties'])) {
                 foreach (array_keys($element['properties']) as $property
                 ) {
-                    $properties[$property] = self::getTranslationService()->translateElementValue(
+                    $properties[$property] = $this->translator->translateElementValue(
                         $element,
                         [$property],
                         $formRuntime
@@ -111,7 +111,7 @@ final class Translator
                 foreach ($element['properties']['validationErrorMessages'] as $error) {
                     $properties['validationErrorMessages'][] = [
                         'code' => $error['code'],
-                        'message' => self::getTranslationService()->translateElementError(
+                        'message' => $this->translator->translateElementError(
                             $element,
                             $error['code'],
                             $formRuntime
@@ -120,19 +120,19 @@ final class Translator
                 }
             }
 
-            $translatedDefaultValue = self::getTranslationService()->translateElementValue(
+            $translatedDefaultValue = $this->translator->translateElementValue(
                 $element,
                 ['defaultValue'],
                 $formRuntime
             );
 
-            $element['label'] = self::getTranslationService()->translateElementValue(
+            $element['label'] = $this->translator->translateElementValue(
                 $element,
                 ['label'],
                 $formRuntime
             );
 
-            $element['defaultValue'] = $translatedDefaultValue ?: $element['defaultValue'];
+            $element['defaultValue'] = $translatedDefaultValue ?: ($element['defaultValue'] ?? '');
             $element['properties'] = $properties;
         }
 

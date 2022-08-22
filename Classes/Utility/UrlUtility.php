@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -31,7 +29,7 @@ use function rtrim;
 use function str_replace;
 use function strpos;
 
-final class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
+class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 {
     use LoggerAwareTrait;
 
@@ -111,7 +109,7 @@ final class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInter
                 $url
             );
         } catch (SiteNotFoundException $e) {
-            $this->logger->error($e->getMessage());
+            $this->logError($e->getMessage());
         }
 
         return $url;
@@ -119,22 +117,22 @@ final class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInter
 
     public function getFrontendUrl(): string
     {
-        return $this->resolveWithVariants('', $this->variants);
+        return $this->resolveWithVariants($this->conf['frontendBase'] ?? '', $this->variants);
     }
 
     public function getProxyUrl(): string
     {
-        return $this->resolveWithVariants('', $this->variants, 'frontendApiProxy');
+        return $this->resolveWithVariants($this->conf['frontendApiProxy'] ?? '', $this->variants, 'frontendApiProxy');
     }
 
     public function getStorageProxyUrl(): string
     {
-        return $this->resolveWithVariants('', $this->variants, 'frontendFileApi');
+        return $this->resolveWithVariants($this->conf['frontendFileApi'] ?? '', $this->variants, 'frontendFileApi');
     }
 
     public function resolveKey(string $key): string
     {
-        return $this->resolveWithVariants('', $this->variants, $key);
+        return $this->resolveWithVariants($this->conf[$key] ?? '', $this->variants, $key);
     }
 
     public function prepareRelativeUrlIfPossible(string $targetUrl): string
@@ -147,6 +145,16 @@ final class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInter
         }
 
         return $targetUrl;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    protected function logError(string $message): void
+    {
+        if ($this->logger) {
+            $this->logger->error($message);
+        }
     }
 
     /**
@@ -186,7 +194,7 @@ final class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInter
                     return rtrim($baseVariant[$returnField] ?? '', '/');
                 }
             } catch (SyntaxError $e) {
-                $this->logger->error($e->getMessage());
+                $this->logError($e->getMessage());
                 // silently fail and do not evaluate
                 // no logger here, as Site is currently cached and serialized
             }

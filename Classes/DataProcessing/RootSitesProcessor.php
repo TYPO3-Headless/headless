@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -64,7 +62,7 @@ use function sprintf;
     }
  */
 
-final class RootSitesProcessor implements DataProcessorInterface
+class RootSitesProcessor implements DataProcessorInterface
 {
     /**
      * @param ContentObjectRenderer $cObj
@@ -80,7 +78,7 @@ final class RootSitesProcessor implements DataProcessorInterface
         array $processorConfiguration,
         array $processedData
     ): array {
-        $siteUid = $cObj->data['uid'];
+        $siteUid = $cObj->data['uid'] ?? null;
 
         if ($siteUid === null) {
             return $processedData;
