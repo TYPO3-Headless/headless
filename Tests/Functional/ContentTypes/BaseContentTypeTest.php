@@ -54,7 +54,7 @@ abstract class BaseContentTypeTest extends BaseTest
         self::assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
     }
 
-    protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target = null)
+    protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target)
     {
         $contentElementHeaderFieldsLink = $contentElement['content']['headerLink'];
 
