@@ -32,6 +32,12 @@ return static function (ContainerConfigurator $configurator): void {
         ]);
     }
 
+    if (!class_exists(\TYPO3\CMS\FrontendLogin\Controller\LoginController::class, false)) {
+        $excludes = array_merge($excludes, [
+            '../Classes/XClass/Controller/LoginController.php',
+        ]);
+    }
+
     $toLoad->exclude($excludes);
 
     $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);

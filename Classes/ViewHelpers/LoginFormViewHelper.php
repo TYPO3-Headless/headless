@@ -80,7 +80,7 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
         $this->addFormObjectToViewHelperVariableContainer();
         $this->addFieldNamePrefixToViewHelperVariableContainer();
         $this->addFormFieldNamesToViewHelperVariableContainer();
-        $this->data['pages'] = $this->renderChildren();
+        $this->data = $this->renderChildren();
 
         $this->renderHiddenIdentityField($this->arguments['object'] ?? null, $this->getFormObjectName());
         $this->renderAdditionalIdentityFields();
@@ -144,7 +144,6 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
             );
             $this->formActionUriArguments = $uriBuilder->getArguments();
         }
-        $this->data['action'] = $formActionUri;
     }
 
     /**
@@ -268,6 +267,6 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
         $tmp['name'] = $name;
         $tmp['type'] = 'hidden';
         $tmp['value'] = $value;
-        $this->data['pages'][] = $tmp;
+        $this->data[] = $tmp;
     }
 }
