@@ -51,6 +51,19 @@ if ($features->isFeatureEnabled('headless.frontendUrls')) {
         $replaceShowItem .= 'frontendApiProxy, frontendFileApi,';
     }
 
+    if ($features->isFeatureEnabled('headless.cookieDomainPerSite')) {
+        $tempColumns['cookieDomain'] = [
+            'label' => 'Cookie Domain',
+            'config' => [
+                'type' => 'input',
+                'eval' => 'trim',
+                'placeholder' => '.ddev.site',
+            ],
+        ];
+
+        $replaceShowItem .= 'cookieDomain,';
+    }
+
     $GLOBALS['SiteConfiguration']['site_base_variant']['columns'] = array_merge(
         $GLOBALS['SiteConfiguration']['site_base_variant']['columns'],
         $tempColumns
