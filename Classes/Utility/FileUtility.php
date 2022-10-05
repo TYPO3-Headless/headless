@@ -78,9 +78,10 @@ class FileUtility
      * @param FileInterface $fileReference
      * @param array $dimensions
      * @param string $cropVariant
+     * @param ?string $fileExtension
      * @return array
      */
-    public function processFile(FileInterface $fileReference, array $dimensions = [], string $cropVariant = 'default'): array
+    public function processFile(FileInterface $fileReference, array $dimensions = [], string $cropVariant = 'default', ?string $fileExtension = null): array
     {
         $fileReferenceUid = $fileReference->getUid();
         $uidLocal = $fileReference->getProperty('uid_local');
@@ -108,7 +109,7 @@ class FileUtility
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
             if ($fileReference->getMimeType() !== 'image/svg+xml') {
-                $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
+                $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant, $fileExtension);
             }
             $publicUrl = $this->imageService->getImageUri($fileReference, true);
         } elseif ($fileRenderer !== null) {
@@ -150,9 +151,10 @@ class FileUtility
      * @param FileInterface $fileReference
      * @param array $dimensions
      * @param string $cropVariant
+     * @param ?string $fileExtension
      * @return ProcessedFile
      */
-    public function processImageFile(FileInterface $image, array $dimensions = [], string $cropVariant = 'default'): ProcessedFile
+    public function processImageFile(FileInterface $image, array $dimensions = [], string $cropVariant = 'default', ?string $fileExtension = null): ProcessedFile
     {
         try {
             $properties = $image->getProperties();
@@ -171,6 +173,7 @@ class FileUtility
                 'maxWidth' => $dimensions['maxWidth'] ?? $properties['maxWidth'] ?? 0,
                 'maxHeight' => $dimensions['maxHeight'] ?? $properties['maxHeight'] ?? 0,
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
+                'fileExtension' => $fileExtension,
             ];
             return $this->imageService->applyProcessingInstructions($image, $processingInstructions);
         } catch (\UnexpectedValueException|\RuntimeException|\InvalidArgumentException $e) {

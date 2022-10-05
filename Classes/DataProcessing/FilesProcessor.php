@@ -19,7 +19,22 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 use TYPO3\CMS\Frontend\Resource\FileCollector;
 
 /**
- * Class FilesProcessor
+    # Example usage:
+    10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+    10 {
+        references.fieldName = image
+        as = images
+        if.isTrue = 1
+        processingConfiguration {
+            width = <int>
+            height = <int>
+            minWidth = <int>
+            minHeight = <int>
+            maxWidth = <int>
+            maxHeight = <int>
+            fileExtension = <string>
+        }
+    }
  *
  * @codeCoverageIgnore
  */
@@ -176,10 +191,11 @@ class FilesProcessor implements DataProcessorInterface
     {
         $data = [];
         $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
+        $fileExtension = $this->processorConfiguration['processingConfiguration.']['fileExtension'] ?? null;
 
         foreach ($this->fileObjects as $key => $fileObject) {
             if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
-                $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+                $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant, $fileExtension);
                 $targetWidth = (int)($dimensions['width'] ?: $file['properties']['dimensions']['width']);
                 $targetHeight = (int)($dimensions['height'] ?: $file['properties']['dimensions']['height']);
 
@@ -195,7 +211,8 @@ class FilesProcessor implements DataProcessorInterface
                                 'height' => $targetHeight * FileUtility::RETINA_RATIO,
                             ]
                         ),
-                        $cropVariant
+                        $cropVariant,
+                        $fileExtension
                     )['publicUrl'];
                 }
 
@@ -211,13 +228,14 @@ class FilesProcessor implements DataProcessorInterface
                                 'height' => $targetHeight * FileUtility::LQIP_RATIO,
                             ]
                         ),
-                        $cropVariant
+                        $cropVariant,
+                        $fileExtension
                     )['publicUrl'];
                 }
 
                 $data[] = $file;
             } else {
-                $data[$key] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+                $data[$key] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant, $fileExtension);
 
                 $crop = $fileObject->getProperty('crop');
 
@@ -226,7 +244,7 @@ class FilesProcessor implements DataProcessorInterface
 
                     if (is_array($cropVariants) && count($cropVariants) > 1) {
                         foreach (array_keys($cropVariants) as $cropVariantName) {
-                            $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariantName);
+                            $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariantName, $fileExtension);
                             $data[$key]['cropVariants'][$cropVariantName] = $file;
                         }
                     }
