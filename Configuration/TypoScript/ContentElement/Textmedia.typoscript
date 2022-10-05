@@ -16,6 +16,9 @@ tt_content.textmedia {
                         10 {
                             references.fieldName = assets
                             as = files
+                            processingConfiguration {
+                                #fileExtension = webp
+                            }
                         }
                         20 = FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor
                         20 {

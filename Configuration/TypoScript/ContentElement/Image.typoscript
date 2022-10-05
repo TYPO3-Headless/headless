@@ -11,6 +11,9 @@ tt_content.image {
                         10 {
                             references.fieldName = image
                             as = files
+                            processingConfiguration {
+                                #fileExtension = webp
+                            }
                         }
                         20 = FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor
                         20 {

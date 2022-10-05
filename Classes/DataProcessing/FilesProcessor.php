@@ -84,6 +84,7 @@ class FilesProcessor implements DataProcessorInterface
                 'maxWidth' => $processorConfiguration['processingConfiguration.']['maxWidth'] ?? null,
                 'maxHeight' => $processorConfiguration['processingConfiguration.']['maxHeight'] ?? null,
             ];
+            $fileExtension = $processorConfiguration['processingConfiguration.']['fileExtension'] ?? null;
         }
 
         $this->contentObjectRenderer = $cObj;
@@ -96,7 +97,7 @@ class FilesProcessor implements DataProcessorInterface
         );
 
         $this->fileObjects = $this->fetchData();
-        $processedData[$targetFieldName] = $this->processFiles($dimensions);
+        $processedData[$targetFieldName] = $this->processFiles($dimensions, $fileExtension);
 
         return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
     }
@@ -168,16 +169,17 @@ class FilesProcessor implements DataProcessorInterface
 
     /**
      * @param array $dimensions
+     * @param string $fileExtension
      * @return array|null
      */
-    protected function processFiles(array $dimensions = []): ?array
+    protected function processFiles(array $dimensions = [], string $fileExtension = null): ?array
     {
         $data = [];
         $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
 
         foreach ($this->fileObjects as $fileObject) {
             if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
-                $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+                $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant, $fileExtension);
                 $targetWidth = (int)($dimensions['width'] ?: $file['properties']['dimensions']['width']);
                 $targetHeight = (int)($dimensions['height'] ?: $file['properties']['dimensions']['height']);
 
@@ -193,7 +195,8 @@ class FilesProcessor implements DataProcessorInterface
                                 'height' => $targetHeight * FileUtility::RETINA_RATIO,
                             ]
                         ),
-                        $cropVariant
+                        $cropVariant,
+                        $fileExtension
                     )['publicUrl'];
                 }
 
@@ -209,13 +212,14 @@ class FilesProcessor implements DataProcessorInterface
                                 'height' => $targetHeight * FileUtility::LQIP_RATIO,
                             ]
                         ),
-                        $cropVariant
+                        $cropVariant,
+                        $fileExtension
                     )['publicUrl'];
                 }
 
                 $data[] = $file;
             } else {
-                $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+                $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant, $fileExtension);
             }
         }
 

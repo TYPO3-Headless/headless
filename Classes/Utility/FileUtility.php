@@ -36,9 +36,10 @@ class FileUtility
      * @param FileReference|File $fileReference
      * @param $dimensions
      * @param $cropVariant
+     * @param $fileExtension
      * @return array
      */
-    public function processFile($fileReference, array $dimensions = [], $cropVariant = 'default'): array
+    public function processFile($fileReference, array $dimensions = [], $cropVariant = 'default', string $fileExtension = null): array
     {
         /** @var ContentObjectRenderer $cObj */
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
@@ -51,7 +52,7 @@ class FileUtility
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
             if ($fileReference->getMimeType() !== 'image/svg+xml') {
-                $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
+                $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant, $fileExtension);
             }
             $publicUrl = $this->getImageService()->getImageUri($fileReference, true);
         } elseif (isset($fileRenderer)) {
@@ -95,9 +96,10 @@ class FileUtility
      * @param FileReference|File $image
      * @param array $dimensions
      * @param string $cropVariant
+     * @param string $fileExtension
      * @return ProcessedFile
      */
-    public function processImageFile($image, array $dimensions = [], string $cropVariant = 'default'): ProcessedFile
+    public function processImageFile($image, array $dimensions = [], string $cropVariant = 'default', string $fileExtension = null): ProcessedFile
     {
         try {
             $properties = $image->getProperties();
@@ -117,6 +119,7 @@ class FileUtility
                 'maxWidth' => $dimensions['maxWidth'] ?? $properties['maxWidth'],
                 'maxHeight' => $dimensions['maxHeight'] ?? $properties['maxHeight'],
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
+                'fileExtension' => $fileExtension,
             ];
             return $imageService->applyProcessingInstructions($image, $processingInstructions);
         } catch (\UnexpectedValueException $e) {
