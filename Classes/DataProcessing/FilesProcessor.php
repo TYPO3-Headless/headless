@@ -84,7 +84,6 @@ class FilesProcessor implements DataProcessorInterface
                 'maxWidth' => $processorConfiguration['processingConfiguration.']['maxWidth'] ?? null,
                 'maxHeight' => $processorConfiguration['processingConfiguration.']['maxHeight'] ?? null,
             ];
-            $fileExtension = $processorConfiguration['processingConfiguration.']['fileExtension'] ?? null;
         }
 
         $this->contentObjectRenderer = $cObj;
@@ -97,7 +96,7 @@ class FilesProcessor implements DataProcessorInterface
         );
 
         $this->fileObjects = $this->fetchData();
-        $processedData[$targetFieldName] = $this->processFiles($dimensions, $fileExtension);
+        $processedData[$targetFieldName] = $this->processFiles($dimensions);
 
         return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
     }
@@ -169,13 +168,13 @@ class FilesProcessor implements DataProcessorInterface
 
     /**
      * @param array $dimensions
-     * @param string $fileExtension
      * @return array|null
      */
-    protected function processFiles(array $dimensions = [], string $fileExtension = null): ?array
+    protected function processFiles(array $dimensions = []): ?array
     {
         $data = [];
         $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
+        $fileExtension = $this->processorConfiguration['processingConfiguration.']['fileExtension'] ?? null;
 
         foreach ($this->fileObjects as $fileObject) {
             if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
