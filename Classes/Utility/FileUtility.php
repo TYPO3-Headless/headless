@@ -34,12 +34,12 @@ class FileUtility
 
     /**
      * @param FileReference|File $fileReference
-     * @param $dimensions
-     * @param $cropVariant
-     * @param $fileExtension
+     * @param array $dimensions
+     * @param string $cropVariant
+     * @param ?string $fileExtension
      * @return array
      */
-    public function processFile($fileReference, array $dimensions = [], $cropVariant = 'default', string $fileExtension = null): array
+    public function processFile($fileReference, array $dimensions = [], $cropVariant = 'default', ?string $fileExtension = null): array
     {
         /** @var ContentObjectRenderer $cObj */
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
@@ -99,7 +99,7 @@ class FileUtility
      * @param string $fileExtension
      * @return ProcessedFile
      */
-    public function processImageFile($image, array $dimensions = [], string $cropVariant = 'default', string $fileExtension = null): ProcessedFile
+    public function processImageFile($image, array $dimensions = [], string $cropVariant = 'default', ?string $fileExtension = null): ProcessedFile
     {
         try {
             $properties = $image->getProperties();
