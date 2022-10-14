@@ -96,7 +96,7 @@ class FileUtility
      * @param FileReference|File $image
      * @param array $dimensions
      * @param string $cropVariant
-     * @param string $fileExtension
+     * @param ?string $fileExtension
      * @return ProcessedFile
      */
     public function processImageFile($image, array $dimensions = [], string $cropVariant = 'default', ?string $fileExtension = null): ProcessedFile
