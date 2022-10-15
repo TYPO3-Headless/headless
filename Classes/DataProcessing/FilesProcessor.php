@@ -19,7 +19,22 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 use TYPO3\CMS\Frontend\Resource\FileCollector;
 
 /**
- * Class FilesProcessor
+    # Example usage:
+    10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+    10 {
+        references.fieldName = image
+        as = images
+        if.isTrue = 1
+        processingConfiguration {
+            width = <int>
+            height = <int>
+            minWidth = <int>
+            minHeight = <int>
+            maxWidth = <int>
+            maxHeight = <int>
+            fileExtension = <string>
+        }
+    }
  */
 class FilesProcessor implements DataProcessorInterface
 {
