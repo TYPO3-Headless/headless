@@ -29,7 +29,7 @@ class PaginationService
     ];
 
     /**
-     * @var \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @var QueryResultInterface
      */
     protected $objects;
 

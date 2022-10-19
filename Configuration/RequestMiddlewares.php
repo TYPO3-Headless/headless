@@ -7,8 +7,15 @@
  * LICENSE.md file that was distributed with this source code.
  */
 
+use FriendsOfTYPO3\Headless\Middleware\ElementBodyResponseMiddleware;
+use FriendsOfTYPO3\Headless\Middleware\RedirectHandler;
+use FriendsOfTYPO3\Headless\Middleware\ShortcutAndMountPointRedirect;
+use FriendsOfTYPO3\Headless\Middleware\UserIntMiddleware;
+use TYPO3\CMS\Core\Configuration\Features;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 return (static function (): array {
-    $features = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class);
+    $features = GeneralUtility::makeInstance(Features::class);
 
     $middlewares = [
         'frontend' => [
@@ -16,7 +23,7 @@ return (static function (): array {
                 'after' => [
                     'typo3/cms-frontend/content-length-headers',
                 ],
-                'target' => \FriendsOfTYPO3\Headless\Middleware\UserIntMiddleware::class
+                'target' => UserIntMiddleware::class
             ],
         ],
     ];
@@ -26,7 +33,7 @@ return (static function (): array {
             'after' => [
                 'typo3/cms-adminpanel/data-persister',
             ],
-            'target' => \FriendsOfTYPO3\Headless\Middleware\ElementBodyResponseMiddleware::class
+            'target' => ElementBodyResponseMiddleware::class
         ];
     }
 
@@ -45,7 +52,7 @@ return (static function (): array {
                 'disabled' => true
             ],
             'headless/cms-redirects/redirecthandler' => [
-                'target' => \FriendsOfTYPO3\Headless\Middleware\RedirectHandler::class,
+                'target' => RedirectHandler::class,
                 'before' => [
                     $rearrangedMiddlewares ? 'typo3/cms-frontend/base-redirect-resolver' : 'typo3/cms-frontend/page-resolver',
                 ],
@@ -54,7 +61,7 @@ return (static function (): array {
                 ],
             ],
             'headless/cms-frontend/shortcut-and-mountpoint-redirect' => [
-                'target' => \FriendsOfTYPO3\Headless\Middleware\ShortcutAndMountPointRedirect::class,
+                'target' => ShortcutAndMountPointRedirect::class,
                 'after' => [
                     'typo3/cms-frontend/prepare-tsfe-rendering',
                 ],

@@ -7,25 +7,30 @@
  * LICENSE.md file that was distributed with this source code.
  */
 
-defined('TYPO3_MODE') || die();
+use FriendsOfTYPO3\Headless\Controller\JsonViewController;
+use FriendsOfTYPO3\Headless\Hooks\PreviewUrlHook;
+use TYPO3\CMS\Core\Configuration\Features;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
+
+defined('TYPO3') || die();
 
 call_user_func(
     static function () {
-        $features = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class);
-        $typo3Version = new TYPO3\CMS\Core\Information\Typo3Version();
+        $features = GeneralUtility::makeInstance(Features::class);
 
         if ($features->isFeatureEnabled('headless.frontendUrls')) {
-            $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_befunc.php']['viewOnClickClass'][] = \FriendsOfTYPO3\Headless\Hooks\PreviewUrlHook::class;
+            $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_befunc.php']['viewOnClickClass'][] = PreviewUrlHook::class;
         }
 
         if ($features->isFeatureEnabled('headless.jsonViewModule')) {
-            \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
+            ExtensionUtility::registerModule(
                 'Headless',
                 'web',
                 'jsonview',
                 'bottom',
                 [
-                    \FriendsOfTYPO3\Headless\Controller\JsonViewController::class => 'main'
+                    JsonViewController::class => 'main'
                 ],
                 [
                     'access' => 'admin',

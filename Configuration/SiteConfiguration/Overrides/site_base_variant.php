@@ -7,7 +7,10 @@
  * LICENSE.md file that was distributed with this source code.
  */
 
-$features = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class);
+use TYPO3\CMS\Core\Configuration\Features;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
+$features = GeneralUtility::makeInstance(Features::class);
 
 if ($features->isFeatureEnabled('headless.frontendUrls')) {
     $tempColumns = [

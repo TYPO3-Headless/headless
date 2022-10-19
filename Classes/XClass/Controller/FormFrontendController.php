@@ -19,6 +19,7 @@ use FriendsOfTYPO3\Headless\XClass\FormRuntime;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Error\Error;
 use TYPO3\CMS\Extbase\Security\Cryptography\HashService;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
@@ -209,7 +210,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
             $this->getControllerContext()->getRequest()->getMethod() === 'POST') {
             $result = $formRuntime->getRequest()->getOriginalRequestMappingResults();
             /**
-             * @var array<string,\TYPO3\CMS\Extbase\Error\Error[]>
+             * @var array<string, Error[]>
              */
             $errors = $result->getFlattenedErrors();
             $formStatus['status'] = $result->hasErrors() ? 'failure' : 'success';
@@ -231,7 +232,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
     }
 
     /**
-     * @param array<string,\TYPO3\CMS\Extbase\Error\Error[]> $errors
+     * @param array<string, Error[]> $errors
      * @param string $formIdentifier
      * @return array<string, string>|null
      */
