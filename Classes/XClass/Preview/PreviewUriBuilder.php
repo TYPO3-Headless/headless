@@ -45,8 +45,8 @@ class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
             } catch (\InvalidArgumentException $e) {
                 $language = $site->getDefaultLanguage();
             }
-            $uri = $this->prepareHeadlessUrl((string)$site->getRouter()->generateUri($uid, ['ADMCMD_prev' => $previewKeyword, '_language' => $language], ''), $uid, $site->getConfiguration()['headless'] ?? false);
-            return (string)$uri;
+
+            return $this->prepareHeadlessUrl((string)$site->getRouter()->generateUri($uid, ['ADMCMD_prev' => $previewKeyword, '_language' => $language], ''), $uid, $site->getConfiguration()['headless'] ?? false);
         } catch (SiteNotFoundException | InvalidRouteArgumentsException $e) {
             throw new UnableToLinkToPageException('The page ' . $uid . ' had no proper connection to a site, no link could be built.', 1559794916);
         }
