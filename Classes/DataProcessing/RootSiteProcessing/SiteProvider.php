@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
+use Doctrine\DBAL\Driver\Exception;
 use Doctrine\DBAL\Driver\Result;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -159,7 +160,7 @@ class SiteProvider implements SiteProviderInterface
     /**
      * @param int $pid
      * @return array<int>
-     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws Exception
      */
     private function fetchAvailableRootSitesByPid(int $pid): array
     {
@@ -191,7 +192,7 @@ class SiteProvider implements SiteProviderInterface
      * @param array<Site> $sites
      * @param array<string, mixed> $config
      * @return array<int, array>
-     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws Exception
      */
     private function fetchPageData(array $sites, array $config = []): array
     {
