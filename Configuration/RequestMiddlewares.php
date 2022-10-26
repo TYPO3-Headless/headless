@@ -37,6 +37,17 @@ return (static function (): array {
         ];
     }
 
+    if ($features->isFeatureEnabled('headless.cookieDomainPerSite')) {
+        $middlewares['backend'] = [
+            'headless/cms-backend/cookie-domain-middleware' => [
+                'before' => [
+                    'typo3/cms-backend/authentication'
+                ],
+                'target' => \FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite::class
+            ]
+        ];
+    }
+
     if (!$features->isFeatureEnabled('headless.redirectMiddlewares')) {
         return $middlewares;
     }
