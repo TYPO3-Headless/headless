@@ -36,6 +36,7 @@
     "friendsofphp/php-cs-fixer": "^3.1",
     "helmich/typo3-typoscript-lint": "^2.1",
     "justinrainbow/json-schema": "^5.2",
+    "php-coveralls/php-coveralls": "^2.5.2",
     "phpspec/prophecy-phpunit": "^2.0",
     "phpstan/extension-installer": "^1.1",
     "phpstan/phpstan": "^0.12.99",
@@ -43,14 +44,24 @@
     "saschaegerer/phpstan-typo3": "^0.13.3",
     "seld/jsonlint": "^1.8",
     "symfony/yaml": "^5.3",
+    "typo3/cms-form": "10.*.*@dev || 11.*.*@dev",
     "typo3/testing-framework": "^6"
+  },
+  "conflict": {
+    "typo3/cms-core": "<11.5.15"
   },
   "config": {
     "preferred-install": {
       "*": "dist"
     },
     "sort-packages": true,
-    "vendor-dir": ".Build/vendor"
+    "vendor-dir": ".Build/vendor",
+    "allow-plugins": {
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true,
+      "ergebnis/composer-normalize": true,
+      "phpstan/extension-installer": true
+    }
   },
   "extra": {
     "typo3/cms": {
@@ -66,7 +77,8 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "TYPO3\\JsonResponse\\": ".Build/vendor/typo3/testing-framework/Resources/Core/Functional/Extensions/json_response/Classes"
+      "TYPO3\\JsonResponse\\": ".Build/vendor/typo3/testing-framework/Resources/Core/Functional/Extensions/json_response/Classes",
+      "FriendsOfTYPO3\\Headless\\Tests\\": "Tests"
     }
   },
   "scripts": {
@@ -74,13 +86,23 @@
       "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
     ],
     "ci:composer:normalize": "@composer normalize --dry-run",
-    "ci:coverage" : [
-      "@ci:coverage:unit",
-      "@ci:coverage:functional"
+    "ci:coverage": [
+    "@ci:coverage:unit",
+    "@ci:coverage:functional"
+  ],
+    "ci:coverage:functional": [
+      "@coverage:create-directories",
+      ".Build/vendor/bin/phpunit -c Tests/Functional/phpunit.xml --whitelist Classes --coverage-php=.Build/coverage/functional.cov Tests/Functional"
     ],
-    "ci:coverage:functional": ".Build/vendor/bin/phpunit -c Tests/Functional/phpunit.xml --whitelist Classes --coverage-php=coverage/functional.cov Tests/Functional",
-    "ci:coverage:merge": ".Build/vendor/bin/phpcov merge --clover=./coverage/clover.xml coverage/",
-    "ci:coverage:unit": ".Build/vendor/bin/phpunit -c Tests/Unit/phpunit.xml --whitelist Classes --coverage-php=coverage/unit.cov Tests/Unit",
+    "ci:coverage:merge": [
+      "@coverage:create-directories",
+      "@php .Build/vendor/bin/phpcov merge --clover=./build/logs/clover.xml ./.Build/coverage/"
+    ],
+    "ci:coverage:unit": [
+      "@coverage:create-directories",
+      ".Build/vendor/bin/phpunit -c Tests/Unit/phpunit.xml --whitelist Classes --coverage-php=.Build/coverage/unit.cov Tests/Unit"
+    ],
+    "coverage:create-directories": "mkdir -p build/logs .Build/coverage",
     "ci:json:lint": [
       "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/vendor/bin/jsonlint -q"
     ],

@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -14,7 +12,7 @@ declare(strict_types=1);
 use FriendsOfTYPO3\Headless\Test\Functional\ContentTypes\BaseContentTypeTest;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class MenuSitemapSelectedPagesTest extends BaseContentTypeTest
+class MenuSitemapSelectedPagesElementTest extends BaseContentTypeTest
 {
     public function testMenuContentElement()
     {

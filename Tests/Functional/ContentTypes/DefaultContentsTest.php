@@ -5,15 +5,14 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
+use FriendsOfTYPO3\Headless\Test\Functional\ContentTypes\BaseContentTypeTest;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class DefaultContentsTest extends \FriendsOfTYPO3\Headless\Test\Functional\ContentTypes\BaseContentTypeTest
+class DefaultContentsTest extends BaseContentTypeTest
 {
     public function testContentStructure()
     {

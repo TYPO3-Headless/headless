@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -21,6 +19,7 @@ use FriendsOfTYPO3\Headless\XClass\FormRuntime;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Error\Error;
 use TYPO3\CMS\Extbase\Security\Cryptography\HashService;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
@@ -40,6 +39,7 @@ use function str_replace;
  *
  * Scope: frontend
  * @internal
+ * @codeCoverageIgnore
  */
 class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendController
 {
@@ -138,7 +138,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         $formFields = $formDefinition['renderables'][$currentPageIndex]['renderables'];
 
         // provides support for custom options providers (dynamic selects/radio/checkboxes)
-        $formFieldsNames = $this->generateFieldNamesAndReplaceCustomOptions($formFields, $formDefinition['identifier']);
+        $formFieldsNames = $this->generateFieldNamesAndReplaceCustomOptions($formFields, $formDefinition['identifier'], $formRuntime->getFormDefinition());
 
         if ($honeyPot) {
             $formFields[] = [
@@ -147,6 +147,18 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
                 'identifier' => $honeyPot->getIdentifier(),
             ];
             $formFieldsNames[] = 'tx_form_formframework[' . $formDefinition['identifier'] . '][' . $honeyPot->getIdentifier() . ']';
+        }
+
+        // ONLY assign `__session` if form is performing (POST request)
+        if ($formRuntime->canProcessFormSubmission() && $formRuntime->getFormSession() !== null) {
+            $formFields[] = [
+                'properties' => [],
+                'type' => 'Hidden',
+                'identifier' => '__session',
+                'defaultValue' => $formRuntime->getFormSession()->getAuthenticatedIdentifier(),
+            ];
+
+            $formFieldsNames[] = 'tx_form_formframework[' . $formDefinition['identifier'] . '][__session]';
         }
 
         $formFields[] = [
@@ -198,7 +210,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
             $this->getControllerContext()->getRequest()->getMethod() === 'POST') {
             $result = $formRuntime->getRequest()->getOriginalRequestMappingResults();
             /**
-             * @var array<string,\TYPO3\CMS\Extbase\Error\Error[]>
+             * @var array<string, Error[]>
              */
             $errors = $result->getFlattenedErrors();
             $formStatus['status'] = $result->hasErrors() ? 'failure' : 'success';
@@ -220,7 +232,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
     }
 
     /**
-     * @param array<string,\TYPO3\CMS\Extbase\Error\Error[]> $errors
+     * @param array<string, Error[]> $errors
      * @param string $formIdentifier
      * @return array<string, string>|null
      */
@@ -246,11 +258,9 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
     /**
      * @param array<mixed> $formFields
-     * @param string $identifier
-     * @param array<mixed> $formFieldsNames
      * @return array<int, string>
      */
-    private function generateFieldNamesAndReplaceCustomOptions(array &$formFields, string $identifier): array
+    private function generateFieldNamesAndReplaceCustomOptions(array &$formFields, string $identifier, FormDefinition $definition): array
     {
         $formFieldsNames = [];
 
@@ -260,7 +270,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
                 is_array($field['renderables'])) {
                 $formFieldsNames = array_merge(
                     $formFieldsNames,
-                    $this->generateFieldNamesAndReplaceCustomOptions($field['renderables'], $identifier)
+                    $this->generateFieldNamesAndReplaceCustomOptions($field['renderables'], $identifier, $definition)
                 );
             } else {
                 if (!empty($field['properties']['customOptions'])) {
@@ -273,7 +283,12 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
                     unset($field['properties']['customOptions']);
                 }
 
-                // phpcs:ignore Generic.Files.LineLength
+                $defaultValue = $definition->getElementDefaultValueByIdentifier($field['identifier']);
+
+                if ($defaultValue) {
+                    $field['properties']['defaultValue'] = $defaultValue;
+                }
+
                 $formFieldsNames[] = 'tx_form_formframework[' . $identifier . '][' . $field['identifier'] . ']';
             }
         }

@@ -5,23 +5,26 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ViewHelpers\Form;
 
+use TYPO3\CMS\Fluid\ViewHelpers\Form\AbstractFormFieldViewHelper;
+use TYPO3Fluid\Fluid\Core\ViewHelper\Exception;
+
 /**
  * Registers field for generating hidden fields
+ *
+ * @codeCoverageIgnore
  */
-class RegisterFieldViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\AbstractFormFieldViewHelper
+class RegisterFieldViewHelper extends AbstractFormFieldViewHelper
 {
     /**
      * Initialize the arguments.
      *
-     * @throws \TYPO3Fluid\Fluid\Core\ViewHelper\Exception
+     * @throws Exception
      */
     public function initializeArguments()
     {

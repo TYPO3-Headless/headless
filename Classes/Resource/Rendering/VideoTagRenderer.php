@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -20,6 +18,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Video tag renderer class
+ *
+ * @codeCoverageIgnore
  */
 class VideoTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VideoTagRenderer
 {
@@ -44,7 +44,6 @@ class VideoTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VideoTagRender
     public function render(FileInterface $file, $width, $height, array $options = [], $usedPathsRelativeToCurrentScript = false): string
     {
         if ($options['returnUrl'] === true) {
-
             // If autoplay isn't set manually check if $file is a FileReference take autoplay from there
             if (!isset($options['autoplay']) && $file instanceof FileReference) {
                 $autoplay = $file->getProperty('autoplay');

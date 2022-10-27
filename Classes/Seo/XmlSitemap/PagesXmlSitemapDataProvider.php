@@ -5,14 +5,15 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Seo\XmlSitemap;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PagesXmlSitemapDataProvider extends \TYPO3\CMS\Seo\XmlSitemap\PagesXmlSitemapDataProvider
 {
     protected function defineUrl(array $data): array

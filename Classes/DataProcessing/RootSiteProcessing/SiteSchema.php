@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -22,7 +20,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use function is_array;
 use function trim;
 
-final class SiteSchema implements SiteSchemaInterface
+class SiteSchema implements SiteSchemaInterface
 {
     private HeadlessFrontendUrlInterface $urlUtitlity;
     private ContentDataProcessor $contentDataProcessor;

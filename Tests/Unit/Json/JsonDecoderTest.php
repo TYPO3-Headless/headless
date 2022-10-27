@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -17,8 +15,17 @@ use FriendsOfTYPO3\Headless\Json\JsonDecoder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
+use function array_fill;
+use function json_decode;
+use function json_encode;
+
 class JsonDecoderTest extends UnitTestCase
 {
+    protected function setUp(): void
+    {
+        $this->resetSingletonInstances = true;
+    }
+
     /**
      * @param $testValue
      * @param $expectedValue
@@ -31,6 +38,34 @@ class JsonDecoderTest extends UnitTestCase
         $jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
 
         self::assertSame($expectedValue, $jsonDecoder->isJson($testValue));
+    }
+
+    public function testDecoding(): void
+    {
+        $jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
+
+        $class = new \stdClass();
+        $class->test = 1;
+        $class->testProp = true;
+
+        $array = array_fill(0, 10, '1');
+
+        $value = ['test' => $class, 'array' => $array];
+
+        $encoded = json_encode($value);
+
+        self::assertEquals([json_decode($encoded)], $jsonDecoder->decode([$encoded]));
+
+        $value = ['test' => ['test' => 1]];
+        self::assertEquals($value, $jsonDecoder->decode($value));
+
+        $value = 123;
+        $encoded = json_encode($value);
+        self::assertEquals([json_decode($encoded)], $jsonDecoder->decode([$value]));
+
+        $value = ['teststring'];
+        $encoded = json_encode($value);
+        self::assertEquals(json_decode($encoded), $jsonDecoder->decode(['teststring']));
     }
 
     public function possibleJsonProvider(): array

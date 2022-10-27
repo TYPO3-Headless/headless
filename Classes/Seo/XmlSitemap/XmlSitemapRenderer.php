@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -24,16 +22,21 @@ use function trim;
 /**
  * Class to render the XML Sitemap to be used as a UserFunction
  * @internal this class is not part of TYPO3's Core API.
+ *
+ * @codeCoverageIgnore
  */
 class XmlSitemapRenderer extends \TYPO3\CMS\Seo\XmlSitemap\XmlSitemapRenderer
 {
-    /**
-     * @inheritDoc
-     */
-    public function render(string $_, array $typoScriptConfiguration, ServerRequestInterface $request): string
+    protected function renderSitemap(ServerRequestInterface $request, string $sitemap, string $sitemapType): string
     {
         $this->prepareBaseUrl();
-        return parent::render($_, $typoScriptConfiguration, $request);
+        return parent::renderSitemap($request, $sitemap, $sitemapType);
+    }
+
+    protected function renderIndex(ServerRequestInterface $request, string $sitemapType): string
+    {
+        $this->prepareBaseUrl();
+        return parent::renderIndex($request, $sitemapType);
     }
 
     /**

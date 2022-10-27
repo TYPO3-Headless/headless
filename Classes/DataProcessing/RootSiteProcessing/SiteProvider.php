@@ -5,14 +5,13 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
+use Doctrine\DBAL\Driver\Exception;
 use Doctrine\DBAL\Driver\Result;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -20,13 +19,14 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+use function array_filter;
 use function array_map;
 use function array_values;
 use function count;
 use function in_array;
 use function usort;
 
-final class SiteProvider implements SiteProviderInterface
+class SiteProvider implements SiteProviderInterface
 {
     /**
      * @var ConnectionPool
@@ -140,13 +140,16 @@ final class SiteProvider implements SiteProviderInterface
         $allSites = $this->siteFinder->getAllSites();
 
         if (count($allowedSites) === 0) {
-            return $allSites;
+            return array_filter($allSites, static function (Site $site) {
+                return $site->getConfiguration()['headless'] ?? false;
+            });
         }
 
         $sites = [];
 
         foreach ($allSites as $site) {
-            if (in_array($site->getRootPageId(), $allowedSites, true)) {
+            if (in_array($site->getRootPageId(), $allowedSites, true) &&
+                $site->getConfiguration()['headless'] ?? false) {
                 $sites[] = $site;
             }
         }
@@ -157,7 +160,7 @@ final class SiteProvider implements SiteProviderInterface
     /**
      * @param int $pid
      * @return array<int>
-     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws Exception
      */
     private function fetchAvailableRootSitesByPid(int $pid): array
     {
@@ -189,7 +192,7 @@ final class SiteProvider implements SiteProviderInterface
      * @param array<Site> $sites
      * @param array<string, mixed> $config
      * @return array<int, array>
-     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws Exception
      */
     private function fetchPageData(array $sites, array $config = []): array
     {

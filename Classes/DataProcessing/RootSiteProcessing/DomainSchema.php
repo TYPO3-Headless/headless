@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -22,11 +20,16 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use function is_array;
 use function str_replace;
 
-final class DomainSchema implements SiteSchemaInterface
+class DomainSchema implements SiteSchemaInterface
 {
     private HeadlessFrontendUrlInterface $urlUtility;
     private ContentDataProcessor $contentDataProcessor;
 
+    /**
+     * @codeCoverageIgnore
+     * @param HeadlessFrontendUrlInterface|null $urlUtility
+     * @param ContentDataProcessor|null $contentObjectRenderer
+     */
     public function __construct(
         HeadlessFrontendUrlInterface $urlUtility = null,
         ContentDataProcessor $contentObjectRenderer = null
@@ -57,8 +60,6 @@ final class DomainSchema implements SiteSchemaInterface
             foreach ($site->getLanguages() as $language) {
                 $locales[] = $language->getTypo3Language();
             }
-
-            $conf = $site->getConfiguration();
 
             $domain = [
                 'name' => str_replace($protocol, '', $url),

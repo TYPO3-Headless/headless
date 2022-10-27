@@ -1,6 +1,7 @@
 # Creates persistent ParseFunc setup for non-HTML content.
 lib {
     parseFunc {
+        htmlSanitize = 1
         makelinks = 1
         makelinks {
             http {
@@ -115,6 +116,7 @@ lib {
         }
     }
     parseFunc_links {
+        htmlSanitize = 1
         tags {
             link = TEXT
             link {

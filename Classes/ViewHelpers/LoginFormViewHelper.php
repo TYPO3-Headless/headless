@@ -5,15 +5,16 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ViewHelpers;
 
+use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
+use TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy;
+use TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper;
 
 /**
  * Form ViewHelper. Generates a :html:`<form>` Tag.
@@ -48,8 +49,10 @@ use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
  *
  * This automatically inserts the value of ``{customer.name}`` inside the
  * textbox and adjusts the name of the textbox accordingly.
+ *
+ * @codeCoverageIgnore
  */
-class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
+class LoginFormViewHelper extends FormViewHelper
 {
     /**
      * @var array
@@ -80,7 +83,7 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
         $this->addFormObjectToViewHelperVariableContainer();
         $this->addFieldNamePrefixToViewHelperVariableContainer();
         $this->addFormFieldNamesToViewHelperVariableContainer();
-        $this->data['pages'] = $this->renderChildren();
+        $this->data = $this->renderChildren();
 
         $this->renderHiddenIdentityField($this->arguments['object'] ?? null, $this->getFormObjectName());
         $this->renderAdditionalIdentityFields();
@@ -125,11 +128,6 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
                 ->setArgumentsToBeExcludedFromQueryString(isset($this->arguments['argumentsToBeExcludedFromQueryString']) ? (array)$this->arguments['argumentsToBeExcludedFromQueryString'] : [])
                 ->setFormat($this->arguments['format'] ?? '');
 
-            $addQueryStringMethod = $this->arguments['addQueryStringMethod'] ?? null;
-            if (is_string($addQueryStringMethod)) {
-                $uriBuilder->setAddQueryStringMethod($addQueryStringMethod);
-            }
-
             $pageUid = (int)($this->arguments['pageUid'] ?? 0);
             if ($pageUid > 0) {
                 $uriBuilder->setTargetPageUid($pageUid);
@@ -144,7 +142,6 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
             );
             $this->formActionUriArguments = $uriBuilder->getArguments();
         }
-        $this->data['action'] = $formActionUri;
     }
 
     /**
@@ -155,8 +152,8 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
      */
     protected function renderAdditionalIdentityFields()
     {
-        if ($this->viewHelperVariableContainer->exists(\TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class, 'additionalIdentityProperties')) {
-            $additionalIdentityProperties = $this->viewHelperVariableContainer->get(\TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class, 'additionalIdentityProperties');
+        if ($this->viewHelperVariableContainer->exists(FormViewHelper::class, 'additionalIdentityProperties')) {
+            $additionalIdentityProperties = $this->viewHelperVariableContainer->get(FormViewHelper::class, 'additionalIdentityProperties');
             $output = '';
             foreach ($additionalIdentityProperties as $identity) {
                 $this->addHiddenField('identity', $identity);
@@ -209,7 +206,7 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
     protected function addFieldNamePrefixToViewHelperVariableContainer()
     {
         $fieldNamePrefix = $this->getFieldNamePrefix();
-        $this->viewHelperVariableContainer->add(\TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class, 'fieldNamePrefix', $fieldNamePrefix);
+        $this->viewHelperVariableContainer->add(FormViewHelper::class, 'fieldNamePrefix', $fieldNamePrefix);
     }
 
     /**
@@ -223,11 +220,11 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
      */
     protected function renderHiddenIdentityField($object, $name)
     {
-        if ($object instanceof \TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy) {
+        if ($object instanceof LazyLoadingProxy) {
             $object = $object->_loadRealInstance();
         }
         if (!is_object($object)
-            || !($object instanceof \TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject)
+            || !($object instanceof AbstractDomainObject)
             || ($object->_isNew() && !$object->_isClone())
         ) {
             return '';
@@ -251,7 +248,7 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
     {
         $formFieldNames
             = $this->viewHelperVariableContainer->get(
-                \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper::class,
+                FormViewHelper::class,
                 'formFieldNames'
             );
         $requestHash
@@ -268,6 +265,6 @@ class LoginFormViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper
         $tmp['name'] = $name;
         $tmp['type'] = 'hidden';
         $tmp['value'] = $value;
-        $this->data['pages'][] = $tmp;
+        $this->data[] = $tmp;
     }
 }

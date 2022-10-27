@@ -5,13 +5,14 @@
                 title: '{f:translate(key:\'form.login.title\')}',
                 action: '{f:uri.action(action:\'login\')}',
                 method: 'POST',
-                fields: '{f:render(partial: \'LoginFields\', arguments: \'{_all}\') -> headless:format.json.decode()-> headless:loginForm(action:\'login\', name:\'field\') -> headless:format.json.decode()}'
+                elements: '{f:render(partial: \'LoginFields\', arguments: \'{_all}\') -> headless:format.json.decode()-> headless:loginForm(action:\'login\', name:\'field\') -> headless:format.json.decode()}'
             },
             message: {
                 header: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'{messageKey}_header\\\'}\')}',
                 message: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'{messageKey}_message\\\'}\')}'
             },
-            recovery: '{f:render(partial: \'Recovery\', arguments: \'{_all}\') -> headless:format.json.decode()}',
+            status: '{status}',
+            recovery: '{f:uri.action(action:\'recovery\', controller=\'PasswordRecovery\')}',
             flashMessages: '{f:render(partial: \'FlashMessages\', arguments: \'{_all}\') -> headless:format.json.decode()}'
         }"/>
     </f:format.raw>

@@ -19,7 +19,7 @@
 >
     <coverage>
         <include>
-            <directory suffix=".php">../Classes</directory>
+            <directory suffix=".php">../../Classes</directory>
         </include>
     </coverage>
     <testsuites>

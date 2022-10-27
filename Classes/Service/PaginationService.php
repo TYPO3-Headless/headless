@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -15,19 +13,8 @@ namespace FriendsOfTYPO3\Headless\Service;
 
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
-/***
- *
- * This file is part of the "headless" Extension for TYPO3 CMS.
- *
- * For the full copyright and license information, please read the
- * LICENSE.md file that was distributed with this source code.
- *
- *  (c) 2019
- *
- ***/
-
 /**
- * Pagination service
+ * @codeCoverageIgnore
  */
 class PaginationService
 {
@@ -42,7 +29,7 @@ class PaginationService
     ];
 
     /**
-     * @var \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @var QueryResultInterface
      */
     protected $objects;
 
@@ -62,7 +49,7 @@ class PaginationService
     protected $maximumNumberOfLinks = 99;
 
     /**
-     * @var int \
+     * @var int
      */
     protected $initialOffset = 0;
 
@@ -94,8 +81,13 @@ class PaginationService
      * @param bool $insertAbove
      * @param bool $insertBelow
      */
-    public function __construct(QueryResultInterface $objects, int $itemsPerPage = 10, int $maximumNumberOfLinks = 99, bool $insertAbove = false, bool $insertBelow = true)
-    {
+    public function __construct(
+        QueryResultInterface $objects,
+        int $itemsPerPage = 10,
+        int $maximumNumberOfLinks = 99,
+        bool $insertAbove = false,
+        bool $insertBelow = true
+    ) {
         $this->objects = $objects;
         $this->configuration = [
             'itemsPerPage' => $itemsPerPage,
@@ -106,14 +98,10 @@ class PaginationService
         $this->numberOfPages = (int)ceil(count($this->objects) / $itemsPerPage);
     }
 
-    /**
-     * @param int $currentPage
-     * @return array
-     */
     public function paginate(int $currentPage = 1): array
     {
         // set current page
-        $this->currentPage = (int)$currentPage;
+        $this->currentPage = $currentPage;
         if ($this->currentPage < 1) {
             $this->currentPage = 1;
         }
@@ -147,21 +135,25 @@ class PaginationService
             $modifiedObjects = $query->execute();
         }
 
-        $data = [
+        return [
             'objects' => $modifiedObjects,
             'configuration' => $this->configuration,
             'recordId' => $this->recordId,
             'pageId' => $this->getCurrentPageId(),
             'pagination' => $this->buildPagination()
         ];
+    }
 
-        return $data;
+    protected function getCurrentPageId(): int
+    {
+        if (is_object($GLOBALS['TSFE'])) {
+            return (int)$GLOBALS['TSFE']->id;
+        }
+        return 0;
     }
 
     /**
      * Returns an array with the keys "pages", "current", "numberOfPages", "nextPage" & "previousPage"
-     *
-     * @return array
      */
     protected function buildPagination(): array
     {
@@ -209,16 +201,5 @@ class PaginationService
         }
         $this->displayRangeStart = (int)max($this->displayRangeStart, 1);
         $this->displayRangeEnd = (int)min($this->displayRangeEnd, $this->numberOfPages);
-    }
-
-    /**
-     * @return int
-     */
-    protected function getCurrentPageId(): int
-    {
-        if (is_object($GLOBALS['TSFE'])) {
-            return (int)$GLOBALS['TSFE']->id;
-        }
-        return 0;
     }
 }

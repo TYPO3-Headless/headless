@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -20,7 +18,7 @@ use function is_string;
 use function json_decode;
 use function trim;
 
-final class JsonDecoder implements JsonDecoderInterface
+class JsonDecoder implements JsonDecoderInterface
 {
     /**
      * @inheritDoc

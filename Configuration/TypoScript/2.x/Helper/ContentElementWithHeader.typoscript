@@ -28,7 +28,7 @@ lib.contentElementWithHeader {
                         parameter {
                             field = header_link
                         }
-                        returnLast = result
+                        returnLast = url
                     }
                 }
             }

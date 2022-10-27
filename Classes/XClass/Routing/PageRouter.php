@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -19,6 +17,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 /**
  * Override of generateUri method to check if there is frontendHost set and replace host with frontendHost
  * in order to correctly generate cross-domain headless links
+ * @codeCoverageIgnore
  */
 class PageRouter extends \TYPO3\CMS\Core\Routing\PageRouter
 {

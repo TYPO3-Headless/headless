@@ -5,11 +5,12 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
-$features = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\Features::class);
+use TYPO3\CMS\Core\Configuration\Features;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
+$features = GeneralUtility::makeInstance(Features::class);
 
 if ($features->isFeatureEnabled('headless.frontendUrls')) {
     $tempColumns = [
@@ -48,6 +49,19 @@ if ($features->isFeatureEnabled('headless.frontendUrls')) {
         ];
 
         $replaceShowItem .= 'frontendApiProxy, frontendFileApi,';
+    }
+
+    if ($features->isFeatureEnabled('headless.cookieDomainPerSite')) {
+        $tempColumns['cookieDomain'] = [
+            'label' => 'Cookie Domain',
+            'config' => [
+                'type' => 'input',
+                'eval' => 'trim',
+                'placeholder' => '.ddev.site',
+            ],
+        ];
+
+        $replaceShowItem .= 'cookieDomain,';
     }
 
     $GLOBALS['SiteConfiguration']['site_base_variant']['columns'] = array_merge(

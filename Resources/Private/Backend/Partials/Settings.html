@@ -1,0 +1,41 @@
+<div class="settings row col-sm-6">
+    <div class="col-sm-12">
+        <h3>
+            <f:translate key="{translationFile}settings.info"/>
+        </h3>
+    </div>
+
+    <f:render partial="Settings/Menu" arguments="{menu: pageTypesMenu, key: 'settings.page_type_mode', data: _all}"/>
+    <f:render partial="Settings/Menu" arguments="{menu: usergroupsMenu, key: 'settings.usergroup', data: _all}"/>
+    <f:render partial="Settings/Menu" arguments="{menu: languageMenu, key: 'settings.language', data: _all}"/>
+
+    <f:if condition="{showHiddenContentOption}">
+        <div class="col-sm-12 col-xs-12">
+            <f:variable name="iconButton">
+                <f:if condition="{showContent} == 1">
+                    <f:then>
+                        <a class="btn btn-default"
+                           href="{showHiddenContentOption.href}">
+                            <core:icon identifier="actions-edit-unhide"/>
+                        </a>
+                    </f:then>
+                    <f:else>
+                        <a class="btn btn-default"
+                           href="{showHiddenContentOption.href}">
+                            <core:icon identifier="actions-edit-hide"/>
+                        </a>
+                    </f:else>
+                </f:if>
+            </f:variable>
+            <strong>
+                <f:translate key="{translationFile}settings.hidden.info"/>
+            </strong>
+            <div>
+                <a href="{showHiddenContentOption.href}">
+                    {iconButton -> f:format.raw()}
+                    <f:translate key="{translationFile}settings.hidden.{showContent}"/>
+                </a>
+            </div>
+        </div>
+    </f:if>
+</div>

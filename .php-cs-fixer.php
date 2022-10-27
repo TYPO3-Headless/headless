@@ -4,14 +4,11 @@ if (PHP_SAPI !== 'cli') {
     die('This script supports command line usage only. Please check your command.');
 }
 
-$year = date('Y');
 $header = <<<EOF
 This file is part of the "headless" Extension for TYPO3 CMS.
 
 For the full copyright and license information, please read the
 LICENSE.md file that was distributed with this source code.
-
-(c) $year
 EOF;
 
 return (new PhpCsFixer\Config())
@@ -46,7 +43,7 @@ return (new PhpCsFixer\Config())
             'no_short_bool_cast' => true,
             'no_singleline_whitespace_before_semicolons' => true,
             'no_superfluous_elseif' => true,
-            'no_trailing_comma_in_singleline_array' => true,
+            'no_trailing_comma_in_singleline' => true,
             'no_unneeded_control_parentheses' => true,
             'no_unused_imports' => true,
             'no_useless_else' => true,

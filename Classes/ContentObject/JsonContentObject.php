@@ -5,8 +5,6 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
@@ -23,14 +21,16 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
+use function is_array;
 use function strpos;
 
-final class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
+class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -40,10 +40,10 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
     private JsonDecoderInterface $jsonDecoder;
     private array $conf;
 
-    public function __construct(ContentObjectRenderer $cObj)
+    public function __construct(ContentObjectRenderer $cObj, ContentDataProcessor $contentDataProcessor = null)
     {
         parent::__construct($cObj);
-        $this->contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class);
+        $this->contentDataProcessor = $contentDataProcessor ?? GeneralUtility::makeInstance(ContentDataProcessor::class);
         $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
         $this->jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
         $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
@@ -71,7 +71,11 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
             $data = $this->processFieldWithDataProcessing($conf);
         }
 
-        $json = $this->jsonEncoder->encode($this->jsonDecoder->decode($data));
+        $json = '';
+
+        if (is_array($data)) {
+            $json = $this->jsonEncoder->encode($this->jsonDecoder->decode($data));
+        }
 
         if (isset($conf['stdWrap.'])) {
             $json = $this->cObj->stdWrap($json, $conf['stdWrap.']);
@@ -91,20 +95,20 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
      */
     public function cObjGet(array $setup, string $addKey = ''): array
     {
-        if (!is_array($setup)) {
-            return [];
-        }
         $content = [];
 
         $sKeyArray = $this->filterByStringKeys($setup);
         foreach ($sKeyArray as $theKey) {
             $theValue = $setup[$theKey];
             if ((string)$theKey && strpos($theKey, '.') === false) {
-                $conf = $setup[$theKey . '.'];
+                $conf = $setup[$theKey . '.'] ?? [];
                 $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
                 if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
+                }
+                if ((isset($conf['floatval']) && $conf['floatval']) || $theValue === 'FLOAT') {
+                    $content[$theKey] = (float)$content[$theKey];
                 }
                 if ($theValue === 'BOOL') {
                     $content[$theKey] = (bool)$content[$theKey];
@@ -166,6 +170,12 @@ final class JsonContentObject extends AbstractContentObject implements LoggerAwa
         );
 
         $dataProcessingData = null;
+        $features = GeneralUtility::makeInstance(Features::class);
+
+        if ($features->isFeatureEnabled('headless.supportOldPageOutput')) {
+            $dataProcessingData = isset($this->conf['returnNullIfDataProcessingEmpty'])
+            && (int)$this->conf['returnNullIfDataProcessingEmpty'] === 1 ? null : [];
+        }
 
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
             if (isset($data[$value])) {

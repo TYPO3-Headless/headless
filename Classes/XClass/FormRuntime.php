@@ -5,14 +5,15 @@
  *
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
- *
- * (c) 2021
  */
 
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass;
 
+/**
+ * @codeCoverageIgnore
+ */
 class FormRuntime extends \TYPO3\CMS\Form\Domain\Runtime\FormRuntime
 {
     /**
