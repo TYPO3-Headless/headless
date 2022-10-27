@@ -75,17 +75,12 @@ class FilesProcessor implements DataProcessorInterface
             return $processedData;
         }
 
-        $dimensions = [];
+        $properties = [];
 
         if (isset($processorConfiguration['processingConfiguration.'])) {
-            $dimensions = [
-                'width' => $cObj->stdWrapValue('width', $processorConfiguration['processingConfiguration.'] ?? [], null),
-                'height' => $cObj->stdWrapValue('height', $processorConfiguration['processingConfiguration.'] ?? [], null),
-                'minWidth' => $cObj->stdWrapValue('minWidth', $processorConfiguration['processingConfiguration.'] ?? [], null),
-                'minHeight' => $cObj->stdWrapValue('minHeight', $processorConfiguration['processingConfiguration.'] ?? [], null),
-                'maxWidth' => $cObj->stdWrapValue('maxWidth', $processorConfiguration['processingConfiguration.'] ?? [], null),
-                'maxHeight' => $cObj->stdWrapValue('maxHeight', $processorConfiguration['processingConfiguration.'] ?? [], null),
-            ];
+            foreach (array_keys((array)$processorConfiguration['processingConfiguration.']) as $key) {
+                $properties[$key] = $cObj->stdWrapValue($key, $processorConfiguration['processingConfiguration.'], null);
+            }
         }
 
         $this->contentObjectRenderer = $cObj;
@@ -98,7 +93,7 @@ class FilesProcessor implements DataProcessorInterface
         );
 
         $this->fileObjects = $this->fetchData();
-        $processedData[$targetFieldName] = $this->processFiles($dimensions);
+        $processedData[$targetFieldName] = $this->processFiles($properties);
 
         return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
     }
@@ -169,19 +164,19 @@ class FilesProcessor implements DataProcessorInterface
     }
 
     /**
-     * @param array $dimensions
+     * @param array $properties
      * @return array|null
      */
-    protected function processFiles(array $dimensions = []): ?array
+    protected function processFiles(array $properties = []): ?array
     {
         $data = [];
         $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
 
         foreach ($this->fileObjects as $key => $fileObject) {
             if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
-                $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
-                $targetWidth = (int)($dimensions['width'] ?: $file['properties']['dimensions']['width']);
-                $targetHeight = (int)($dimensions['height'] ?: $file['properties']['dimensions']['height']);
+                $file = $this->getFileUtility()->processFile($fileObject, $properties, $cropVariant);
+                $targetWidth = (int)($properties['width'] ?: $file['properties']['dimensions']['width']);
+                $targetHeight = (int)($properties['height'] ?: $file['properties']['dimensions']['height']);
 
                 if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x']) &&
                     (int)$this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x'] === 1 &&
@@ -189,7 +184,7 @@ class FilesProcessor implements DataProcessorInterface
                     $file['urlRetina'] = $this->getFileUtility()->processFile(
                         $fileObject,
                         array_merge(
-                            $dimensions,
+                            $properties,
                             [
                                 'width' => $targetWidth * FileUtility::RETINA_RATIO,
                                 'height' => $targetHeight * FileUtility::RETINA_RATIO,
@@ -205,7 +200,7 @@ class FilesProcessor implements DataProcessorInterface
                     $file['urlLqip'] = $this->getFileUtility()->processFile(
                         $fileObject,
                         array_merge(
-                            $dimensions,
+                            $properties,
                             [
                                 'width' => $targetWidth * FileUtility::LQIP_RATIO,
                                 'height' => $targetHeight * FileUtility::LQIP_RATIO,
@@ -217,14 +212,18 @@ class FilesProcessor implements DataProcessorInterface
 
                 $data[] = $file;
             } else {
-                $data[$key] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+                $data[$key] = $this->getFileUtility()->processFile($fileObject, $properties, $cropVariant);
 
-                $cropVariants = json_decode($fileObject->getProperty('crop'), true);
+                $crop = $fileObject->getProperty('crop');
 
-                if (is_array($cropVariants) && count($cropVariants) > 1) {
-                    foreach (array_keys($cropVariants) as $cropVariantName) {
-                        $file = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariantName);
-                        $data[$key]['cropVariants'][$cropVariantName] = $file;
+                if ($crop !== null) {
+                    $cropVariants = json_decode($fileObject->getProperty('crop'), true);
+
+                    if (is_array($cropVariants) && count($cropVariants) > 1) {
+                        foreach (array_keys($cropVariants) as $cropVariantName) {
+                            $file = $this->getFileUtility()->processFile($fileObject, $properties, $cropVariantName);
+                            $data[$key]['cropVariants'][$cropVariantName] = $file;
+                        }
                     }
                 }
             }

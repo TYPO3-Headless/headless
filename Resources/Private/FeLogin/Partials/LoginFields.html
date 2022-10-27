@@ -9,30 +9,17 @@
             type: 'text',
             label: '{f:translate(key:\'input.username\')}',
             name: 'user',
-            validate: {
-                required: 1,
-                email: 1
-            },
-            options: {
-                attr: {
-                    placeholder: '{f:translate(key:\'input.username.placeholder\')}'
-                }
-            }
+            placeholder: '{f:translate(key:\'input.username.placeholder\')}',
+            validators: '{f:render(partial: \'Validators\') -> headless:format.json.decode()}'
+
         }"
         />,
         <f:format.json value="{
             type: 'password',
             label: '{f:translate(key:\'input.password\', extensionName:\'headless\')}',
             name: 'pass',
-            validate: {
-                required: 1,
-                password: 1
-            },
-            options: {
-                attr: {
-                    placeholder: '{f:translate(key:\'input.password.placeholder\', extensionName:\'headless\')}'
-                }
-            }
+            placeholder: '{f:translate(key:\'input.password.placeholder\', extensionName:\'headless\')}',
+            validators: '{f:render(partial: \'Validators\') -> headless:format.json.decode()}'
         }"
         />,
         <f:if condition="{permaloginStatus} > -1">

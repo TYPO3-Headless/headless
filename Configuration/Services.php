@@ -8,10 +8,12 @@
  */
 
 declare(strict_types=1);
-
+use FriendsOfTYPO3\Headless\Seo\XmlSitemap\XmlSitemapRenderer;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use TYPO3\CMS\Form\Controller\FormFrontendController;
+use TYPO3\CMS\FrontendLogin\Controller\LoginController;
 
 return static function (ContainerConfigurator $configurator): void {
     $services = $configurator->services()
@@ -24,7 +26,7 @@ return static function (ContainerConfigurator $configurator): void {
 
     $excludes = ['../Classes/Seo/XmlSitemap/XmlSitemapRenderer.php'];
 
-    if (!class_exists(\TYPO3\CMS\Form\Controller\FormFrontendController::class, false)) {
+    if (!class_exists(FormFrontendController::class, false)) {
         $excludes = array_merge($excludes, [
             '../Classes/Form/*',
             '../Classes/XClass/Controller/FormFrontendController.php',
@@ -32,8 +34,14 @@ return static function (ContainerConfigurator $configurator): void {
         ]);
     }
 
+    if (!class_exists(LoginController::class, false)) {
+        $excludes = array_merge($excludes, [
+            '../Classes/XClass/Controller/LoginController.php',
+        ]);
+    }
+
     $toLoad->exclude($excludes);
 
     $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
-    $services->set(FriendsOfTYPO3\Headless\Seo\XmlSitemap\XmlSitemapRenderer::class)->public()->share(false);
+    $services->set(XmlSitemapRenderer::class)->public()->share(false);
 };

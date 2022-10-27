@@ -131,6 +131,20 @@ when passing specific pageType, pageArguments, usergroups, language.
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.jsonViewModule'] = true;
 
+**headless.workspaces**
+
+Enable EXT:workspaces preview support.
+
+.. code-block:: php
+
+   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.workspaces'] = true;
+
+To enable headless support for `EXT:workspaces` please also add to you site(s) configuration's yaml file following flag:
+
+.. code-block:: yaml
+
+   headless: true
+
 **Availability of feature toggles by version**
 
 .. t3-field-list-table::
@@ -175,6 +189,10 @@ when passing specific pageType, pageArguments, usergroups, language.
    -  :Header1:   headless.jsonViewModule
       :Header2:   not available
       :Header3:   >= 3.0
+
+   -  :Header1:   headless.workspaces
+      :Header2:   not available
+      :Header3:   >= 3.1
 
 .. _configuration-ext-form:
 

@@ -255,7 +255,7 @@ class FileUtilityTest extends UnitTestCase
     {
         $fileReference = $this->createPartialMock(
             FileReference::class,
-            ['getPublicUrl', 'getUid', 'getProperty', 'toArray', 'getType', 'getMimeType', 'getProperties', 'getSize']
+            ['getPublicUrl', 'getUid', 'getProperty', 'hasProperty', 'toArray', 'getType', 'getMimeType', 'getProperties', 'getSize']
         );
         $fileReference->method('getUid')->willReturn(103);
         if ($type === 'video') {
@@ -272,6 +272,10 @@ class FileUtilityTest extends UnitTestCase
             return $data[$key] ?? null;
         });
 
+        $fileReference->method('hasProperty')->willReturnCallback(static function ($key) use ($data) {
+            return array_key_exists($key, $data);
+        });
+
         $fileReference->method('toArray')->willReturn($data);
         $fileReference->method('getProperties')->willReturn($data);
         $fileReference->method('getSize')->willReturn($data['size']);
@@ -286,9 +290,12 @@ class FileUtilityTest extends UnitTestCase
         );
         $processedFile->method('getMimeType')->willReturn('image/jpeg');
         $processedFile->method('getSize')->willReturn($data['size']);
-        $processedFile->method('hasProperty')->willReturn(false);
         $processedFile->method('getProperty')->willReturnCallback(static function ($key) use ($data) {
             return $data[$key] ?? null;
+        });
+
+        $processedFile->method('hasProperty')->willReturnCallback(static function ($key) use ($data) {
+            return array_key_exists($key, $data);
         });
 
         return $processedFile;
