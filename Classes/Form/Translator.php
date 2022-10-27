@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Form;
 
 use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_keys;
 use function array_merge;
@@ -24,7 +25,7 @@ class Translator
 
     public function __construct(FormTranslationService $service = null)
     {
-        $this->translator = $service ?? FormTranslationService::getInstance();
+        $this->translator = $service ?? GeneralUtility::makeInstance(FormTranslationService::class);
     }
 
     /**
@@ -89,12 +90,12 @@ class Translator
                         $element,
                         $validator['errorMessage'],
                         $formRuntime,
-                        is_array($validator['options']) ? $validator['options'] : []
+                        is_array($validator['options'] ?? null) ? $validator['options'] : []
                     );
                 }
             }
 
-            if (is_array($element['properties'])) {
+            if (isset($element['properties']) && is_array($element['properties'])) {
                 foreach (array_keys($element['properties']) as $property
                 ) {
                     $properties[$property] = $this->translator->translateElementValue(
@@ -132,7 +133,7 @@ class Translator
                 $formRuntime
             );
 
-            $element['defaultValue'] = $translatedDefaultValue ?: $element['defaultValue'];
+            $element['defaultValue'] = $translatedDefaultValue ?: ($element['defaultValue'] ?? '');
             $element['properties'] = $properties;
         }
 

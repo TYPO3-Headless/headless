@@ -11,8 +11,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
+use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
-use JsonException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -21,11 +22,10 @@ use function array_merge;
 use function count;
 use function is_array;
 use function json_decode;
-use function json_encode;
 use function strpos;
 use function trim;
 
-use const JSON_THROW_ON_ERROR;
+use const JSON_FORCE_OBJECT;
 
 /**
  * CONTENT_JSON Content object behaves & has the same options as standard TYPO3' Content
@@ -71,11 +71,13 @@ use const JSON_THROW_ON_ERROR;
 class JsonContentContentObject extends ContentContentObject
 {
     private HeadlessUserInt $headlessUserInt;
+    private JsonEncoderInterface $jsonEncoder;
 
     public function __construct(ContentObjectRenderer $cObj)
     {
         parent::__construct($cObj);
         $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
+        $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
     }
 
     /**
@@ -89,25 +91,27 @@ class JsonContentContentObject extends ContentContentObject
 
         $theValue = $this->prepareValue($conf);
 
-        try {
-            if (isset($conf['merge.']) && is_array($conf['merge.'])) {
-                $theValue = array_merge($theValue, $this->prepareValue($conf['merge.']));
-            }
-
-            $theValue = json_encode($theValue, JSON_THROW_ON_ERROR);
-
-            $wrap = $this->cObj->stdWrapValue('wrap', $conf ?? []);
-            if ($wrap) {
-                $theValue = $this->cObj->wrap($theValue, $wrap);
-            }
-            if (isset($conf['stdWrap.'])) {
-                $theValue = $this->cObj->stdWrap($theValue, $conf['stdWrap.']);
-            }
-
-            return $theValue;
-        } catch (JsonException $e) {
-            return '';
+        if (isset($conf['merge.']) && is_array($conf['merge.'])) {
+            $theValue = array_merge($theValue, $this->prepareValue($conf['merge.']));
         }
+
+        $encodeFlags = 0;
+
+        if ($theValue === [] && $this->isColPolsGroupingEnabled($conf)) {
+            $encodeFlags |= JSON_FORCE_OBJECT;
+        }
+
+        $theValue = $this->jsonEncoder->encode($theValue, $encodeFlags);
+
+        $wrap = $this->cObj->stdWrapValue('wrap', $conf ?? []);
+        if ($wrap) {
+            $theValue = $this->cObj->wrap($theValue, $wrap);
+        }
+        if (isset($conf['stdWrap.'])) {
+            $theValue = $this->cObj->stdWrap($theValue, $conf['stdWrap.']);
+        }
+
+        return $theValue;
     }
 
     /**
@@ -127,7 +131,7 @@ class JsonContentContentObject extends ContentContentObject
 
             $element = json_decode($element);
 
-            if ((!isset($conf['doNotGroupByColPos']) || (int)$conf['doNotGroupByColPos'] === 0) && $element->colPos >= 0) {
+            if ($this->isColPolsGroupingEnabled($conf) && $element->colPos >= 0) {
                 $data['colPos' . $element->colPos][] = $element;
             } else {
                 $data[] = $element;
@@ -143,7 +147,7 @@ class JsonContentContentObject extends ContentContentObject
      */
     private function prepareValue(array $conf): array
     {
-        $frontendController = $this->getFrontendController();
+        $frontendController = $this->getTypoScriptFrontendController();
         $theValue = [];
         $originalRec = $frontendController->currentRecord;
         // If the currentRecord is set, we register, that this record has invoked this function.
@@ -195,7 +199,7 @@ class JsonContentContentObject extends ContentContentObject
                         $_procObj = GeneralUtility::makeInstance($className);
                         $_procObj->modifyDBRow($row, $conf['table']);
                     }
-                    $registerField = $conf['table'] . ':' . $row['uid'];
+                    $registerField = $conf['table'] . ':' . ($row['uid'] ?? 0);
                     if (!($frontendController->recordRegister[$registerField] ?? false)) {
                         $this->cObj->currentRecordNumber++;
                         $cObj->parentRecordNumber = $this->cObj->currentRecordNumber;
@@ -238,5 +242,10 @@ class JsonContentContentObject extends ContentContentObject
         }
 
         return $theValue;
+    }
+
+    private function isColPolsGroupingEnabled(array $conf): bool
+    {
+        return !isset($conf['doNotGroupByColPos']) || (int)$conf['doNotGroupByColPos'] === 0;
     }
 }

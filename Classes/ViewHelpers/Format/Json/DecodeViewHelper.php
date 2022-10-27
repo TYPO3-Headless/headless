@@ -22,28 +22,25 @@ class DecodeViewHelper extends AbstractViewHelper
      */
     public function initializeArguments(): void
     {
-        $this->registerArgument('json', 'string', 'json to decode', false, '');
+        $this->registerArgument('json', 'string', 'json to decode', false);
     }
 
     /**
-     * @param string $json
      * @return mixed
      */
-    public function render($json = null)
+    public function render()
     {
+        $json = $this->arguments['json'];
         if ($json === null) {
             $json = $this->renderChildren();
             if (empty($json)) {
                 return null;
             }
         }
-
         $object = json_decode($json, true);
-
         if (json_last_error() === JSON_ERROR_NONE) {
             return $object;
         }
-
         if ($GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] ?? false) {
             throw new \Exception(sprintf(
                 'Failure "%s" occured when running json_decode() for string: %s',

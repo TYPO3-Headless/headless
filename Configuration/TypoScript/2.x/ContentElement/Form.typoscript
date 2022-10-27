@@ -12,7 +12,7 @@ tt_content.form_formframework {
                             field = pid
                         }
                         additionalParams = &tx_form_formframework[action]=perform&tx_form_formframework[controller]=FormFrontend
-                        returnLast = result
+                        returnLast = url
                     }
                 }
 
