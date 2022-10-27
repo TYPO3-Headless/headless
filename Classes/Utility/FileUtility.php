@@ -148,11 +148,11 @@ class FileUtility
 
     /**
      * @param FileInterface $fileReference
-     * @param array $dimensions
+     * @param array $arguments
      * @param string $cropVariant
      * @return ProcessedFile
      */
-    public function processImageFile(FileInterface $image, array $dimensions = [], string $cropVariant = 'default'): ProcessedFile
+    public function processImageFile(FileInterface $image, array $arguments = [], string $cropVariant = 'default'): ProcessedFile
     {
         try {
             $properties = $image->getProperties();
@@ -164,14 +164,17 @@ class FileUtility
             $cropVariant = $cropVariant ?: 'default';
             $cropArea = $cropVariantCollection->getCropArea($cropVariant);
             $processingInstructions = [
-                'width' => $dimensions['width'] ?? null,
-                'height' => $dimensions['height'] ?? null,
-                'minWidth' => $dimensions['minWidth'] ?? $properties['minWidth'] ?? 0,
-                'minHeight' => $dimensions['minHeight'] ?? $properties['minHeight'] ?? 0,
-                'maxWidth' => $dimensions['maxWidth'] ?? $properties['maxWidth'] ?? 0,
-                'maxHeight' => $dimensions['maxHeight'] ?? $properties['maxHeight'] ?? 0,
+                'width' => $arguments['width'] ?? null,
+                'height' => $arguments['height'] ?? null,
+                'minWidth' => $arguments['minWidth'] ?? $properties['minWidth'] ?? 0,
+                'minHeight' => $arguments['minHeight'] ?? $properties['minHeight'] ?? 0,
+                'maxWidth' => $arguments['maxWidth'] ?? $properties['maxWidth'] ?? 0,
+                'maxHeight' => $arguments['maxHeight'] ?? $properties['maxHeight'] ?? 0,
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
             ];
+            if (!empty($arguments['fileExtension'])) {
+                $processingInstructions['fileExtension'] = $arguments['fileExtension'];
+            }
             return $this->imageService->applyProcessingInstructions($image, $processingInstructions);
         } catch (\UnexpectedValueException|\RuntimeException|\InvalidArgumentException $e) {
             $type = lcfirst(get_class($image));
