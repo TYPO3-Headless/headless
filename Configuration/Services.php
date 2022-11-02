@@ -15,17 +15,12 @@ use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
 use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
-use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
 use FriendsOfTYPO3\Headless\Seo\XmlSitemap\XmlSitemapRenderer;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
-use TYPO3\CMS\Core\Configuration\Features;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Controller\FormFrontendController;
 use TYPO3\CMS\FrontendLogin\Controller\LoginController;
-
-use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $configurator): void {
     $services = $configurator->services()
@@ -64,11 +59,4 @@ return static function (ContainerConfigurator $configurator): void {
 
     $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
     $services->set(XmlSitemapRenderer::class)->public()->share(false);
-    $services->set(FormTranslationService::class)->arg('$runtimeCache', service('cache.runtime'))->public();
-
-    $features = GeneralUtility::makeInstance(Features::class);
-
-    if ($features->isFeatureEnabled('headless.overrideFluidTemplates')) {
-        $services->alias(\TYPO3\CMS\Fluid\View\TemplateView::class, \FriendsOfTYPO3\Headless\XClass\TemplateView::class);
-    }
 };

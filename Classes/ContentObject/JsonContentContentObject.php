@@ -74,8 +74,10 @@ class JsonContentContentObject extends ContentContentObject
     private HeadlessUserInt $headlessUserInt;
     private JsonEncoderInterface $jsonEncoder;
 
-    public function __construct()
+    public function __construct(ContentObjectRenderer $cObj)
     {
+        parent::__construct($cObj);
+
         $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
         $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
     }

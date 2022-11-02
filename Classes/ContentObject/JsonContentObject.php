@@ -25,6 +25,7 @@ use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 use function is_array;
 use function strpos;
@@ -39,8 +40,10 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     private JsonDecoderInterface $jsonDecoder;
     private array $conf;
 
-    public function __construct(ContentDataProcessor $contentDataProcessor = null)
+    public function __construct(ContentObjectRenderer $cObj, ContentDataProcessor $contentDataProcessor = null)
     {
+        parent::__construct($cObj);
+
         $this->contentDataProcessor = $contentDataProcessor ?? GeneralUtility::makeInstance(ContentDataProcessor::class);
         $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
         $this->jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
