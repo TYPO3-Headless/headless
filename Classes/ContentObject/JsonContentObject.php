@@ -43,6 +43,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     public function __construct(ContentObjectRenderer $cObj, ContentDataProcessor $contentDataProcessor = null)
     {
         parent::__construct($cObj);
+
         $this->contentDataProcessor = $contentDataProcessor ?? GeneralUtility::makeInstance(ContentDataProcessor::class);
         $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
         $this->jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
@@ -156,9 +157,8 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
 
     /**
      * @param array $dataProcessing
-     * @return mixed
      */
-    protected function processFieldWithDataProcessing(array $dataProcessing)
+    protected function processFieldWithDataProcessing(array $dataProcessing): mixed
     {
         $data = $this->contentDataProcessor->process(
             $this->cObj,
