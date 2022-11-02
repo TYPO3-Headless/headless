@@ -20,9 +20,6 @@ use TYPO3\CMS\Core\Resource\FileInterface;
  */
 class VimeoRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VimeoRenderer
 {
-    /**
-     * @return int
-     */
     public function getPriority(): int
     {
         return 2;
@@ -40,7 +37,8 @@ class VimeoRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VimeoRenderer
      */
     public function render(FileInterface $file, $width, $height, array $options = [], $usedPathsRelativeToCurrentScript = false): string
     {
-        if ($options['returnUrl'] === true) {
+        if (($options['returnUrl'] ?? false) === true) {
+            $options = $this->collectOptions($options, $file);
             $src = $this->createVimeoUrl($options, $file);
             return htmlspecialchars($src, ENT_QUOTES | ENT_HTML5);
         }

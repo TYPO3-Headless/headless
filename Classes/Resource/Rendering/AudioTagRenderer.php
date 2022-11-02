@@ -13,7 +13,6 @@ namespace FriendsOfTYPO3\Headless\Resource\Rendering;
 
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use TYPO3\CMS\Core\Resource\FileInterface;
-use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -23,9 +22,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class AudioTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\AudioTagRenderer
 {
-    /**
-     * @return int
-     */
     public function getPriority(): int
     {
         return 2;
@@ -43,43 +39,7 @@ class AudioTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\AudioTagRender
      */
     public function render(FileInterface $file, $width, $height, array $options = [], $usedPathsRelativeToCurrentScript = false): string
     {
-        if ($options['returnUrl'] === true) {
-            // If autoplay isn't set manually check if $file is a FileReference take autoplay from there
-            if (!isset($options['autoplay']) && $file instanceof FileReference) {
-                $autoplay = $file->getProperty('autoplay');
-                if ($autoplay !== null) {
-                    $options['autoplay'] = $autoplay;
-                }
-            }
-
-            $additionalAttributes = [];
-            if (isset($options['additionalAttributes']) && is_array($options['additionalAttributes'])) {
-                $additionalAttributes[] = GeneralUtility::implodeAttributes($options['additionalAttributes'], true, true);
-            }
-            if (isset($options['data']) && is_array($options['data'])) {
-                array_walk($options['data'], function (&$value, $key) {
-                    $value = 'data-' . htmlspecialchars($key) . '="' . htmlspecialchars($value) . '"';
-                });
-                $additionalAttributes[] = implode(' ', $options['data']);
-            }
-            if (!isset($options['controls']) || !empty($options['controls'])) {
-                $additionalAttributes[] = 'controls';
-            }
-            if (!empty($options['autoplay'])) {
-                $additionalAttributes[] = 'autoplay';
-            }
-            if (!empty($options['muted'])) {
-                $additionalAttributes[] = 'muted';
-            }
-            if (!empty($options['loop'])) {
-                $additionalAttributes[] = 'loop';
-            }
-            foreach (['class', 'dir', 'id', 'lang', 'style', 'title', 'accesskey', 'tabindex', 'onclick', 'preload', 'controlsList'] as $key) {
-                if (!empty($options[$key])) {
-                    $additionalAttributes[] = $key . '="' . htmlspecialchars($options[$key]) . '"';
-                }
-            }
-
+        if (($options['returnUrl'] ?? false) === true) {
             return htmlspecialchars(GeneralUtility::makeInstance(FileUtility::class)->getAbsoluteUrl($file->getPublicUrl($usedPathsRelativeToCurrentScript)), ENT_QUOTES | ENT_HTML5);
         }
         return parent::render(...func_get_args());
