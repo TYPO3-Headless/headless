@@ -28,13 +28,13 @@
   ],
   "require": {
     "ext-json": "*",
-    "typo3/cms-core": "^11.5",
-    "typo3/cms-install": "^11.5"
+    "typo3/cms-core": "^12.0",
+    "typo3/cms-install": "^12.0"
   },
   "require-dev": {
     "ergebnis/composer-normalize": "^2.15.0",
     "friendsofphp/php-cs-fixer": "^3.1",
-    "helmich/typo3-typoscript-lint": "^3",
+    "helmich/typo3-typoscript-lint": "^v3",
     "justinrainbow/json-schema": "^5.2",
     "php-coveralls/php-coveralls": "^2.5.2",
     "phpspec/prophecy-phpunit": "^2.0",
@@ -43,12 +43,9 @@
     "phpunit/phpcov": "^8.2",
     "saschaegerer/phpstan-typo3": "^1.1",
     "seld/jsonlint": "^1.8",
-    "symfony/yaml": "^5.3",
-    "typo3/cms-form": "11.*@dev",
-    "typo3/testing-framework": "^6"
-  },
-  "conflict": {
-    "typo3/cms-core": "<11.5.15"
+    "symfony/yaml": "^6.1",
+    "typo3/cms-form": "12.*@dev",
+    "typo3/testing-framework": "dev-main"
   },
   "config": {
     "preferred-install": {

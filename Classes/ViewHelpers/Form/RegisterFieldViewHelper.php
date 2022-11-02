@@ -26,7 +26,7 @@ class RegisterFieldViewHelper extends AbstractFormFieldViewHelper
      *
      * @throws Exception
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         $this->registerArgument('name', 'string', 'Name of input tag');
         $this->registerArgument('value', 'mixed', 'Value of input tag');
