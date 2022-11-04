@@ -15,6 +15,8 @@ use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
+use function json_encode;
+
 class JsonEncoderTest extends UnitTestCase
 {
     protected function setUp(): void
@@ -35,10 +37,21 @@ class JsonEncoderTest extends UnitTestCase
         self::assertSame($expectedValue, $encoder->encode($testValue));
     }
 
+    public function testPrettyEncoding(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.prettyPrint'] = true;
+        $encoder = GeneralUtility::makeInstance(JsonEncoder::class);
+
+        $encodeValue = ['nested' => ['test' => 1]];
+
+        self::assertSame(json_encode($encodeValue, JSON_PRETTY_PRINT), $encoder->encode($encodeValue));
+    }
+
     public function jsonProvider(): array
     {
         return [
             [[], '[]'],
+            [['test'=>1], '{"test":1}'],
             [new \stdClass(), '{}'],
             ["\xB1\x31", '[]'], // exception caught, return empty array instead
         ];

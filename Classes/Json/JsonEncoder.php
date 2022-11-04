@@ -14,7 +14,8 @@ namespace FriendsOfTYPO3\Headless\Json;
 use JsonException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Configuration\Features;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function json_encode;
 
@@ -24,13 +25,20 @@ class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
+    private Features $features;
+
+    public function __construct()
+    {
+        $this->features = GeneralUtility::makeInstance(Features::class);
+    }
+
     /**
      * @inheritDoc
      */
     public function encode($data, int $options = 0): string
     {
         try {
-            if (Environment::getContext()->isDevelopment() && !($options & JSON_PRETTY_PRINT)) {
+            if ($this->features->isFeatureEnabled('headless.prettyPrint') && !($options & JSON_PRETTY_PRINT)) {
                 $options |= JSON_PRETTY_PRINT;
             }
 
