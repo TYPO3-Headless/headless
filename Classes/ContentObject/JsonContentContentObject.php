@@ -22,6 +22,7 @@ use function array_merge;
 use function count;
 use function is_array;
 use function json_decode;
+use function str_contains;
 use function strpos;
 use function trim;
 
@@ -124,6 +125,10 @@ class JsonContentContentObject extends ContentContentObject
         $data = [];
 
         foreach ($contentElements as $element) {
+            if (str_contains($element, 'Oops, an error occurred!')) {
+                continue;
+            }
+
             if (strpos($element, '<!--INT_SCRIPT') !== false
                 && strpos($element, HeadlessUserInt::STANDARD) === false) {
                 $element = $this->headlessUserInt->wrap($element);
