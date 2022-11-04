@@ -20,9 +20,6 @@ use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Site\SiteFinder;
 
-/**
- * @codeCoverageIgnore
- */
 class CookieDomainPerSite implements MiddlewareInterface
 {
     private HeadlessFrontendUrlInterface $urlUtility;
