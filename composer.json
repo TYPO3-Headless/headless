@@ -28,23 +28,23 @@
   ],
   "require": {
     "ext-json": "*",
-    "typo3/cms-core": "^11.4",
-    "typo3/cms-install": "^11.4"
+    "typo3/cms-core": "^11.5",
+    "typo3/cms-install": "^11.5"
   },
   "require-dev": {
     "ergebnis/composer-normalize": "^2.15.0",
     "friendsofphp/php-cs-fixer": "^3.1",
-    "helmich/typo3-typoscript-lint": "^2.1",
+    "helmich/typo3-typoscript-lint": "^3",
     "justinrainbow/json-schema": "^5.2",
     "php-coveralls/php-coveralls": "^2.5.2",
     "phpspec/prophecy-phpunit": "^2.0",
     "phpstan/extension-installer": "^1.1",
-    "phpstan/phpstan": "^0.12.99",
+    "phpstan/phpstan": "^1.9",
     "phpunit/phpcov": "^8.2",
-    "saschaegerer/phpstan-typo3": "^0.13.3",
+    "saschaegerer/phpstan-typo3": "^1.1",
     "seld/jsonlint": "^1.8",
     "symfony/yaml": "^5.3",
-    "typo3/cms-form": "10.*.*@dev || 11.*.*@dev",
+    "typo3/cms-form": "11.*@dev",
     "typo3/testing-framework": "^6"
   },
   "conflict": {
