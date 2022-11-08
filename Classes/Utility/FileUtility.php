@@ -34,11 +34,10 @@ class FileUtility
 
     /**
      * @param FileReference|File $fileReference
-     * @param $dimensions
-     * @param $cropVariant
+     * @param string $cropVariant
      * @return array
      */
-    public function processFile($fileReference, array $dimensions = [], $cropVariant = 'default'): array
+    public function processFile($fileReference, array $dimensions = [], $cropVariant = 'default', bool $delayProcessing = false): array
     {
         /** @var ContentObjectRenderer $cObj */
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
@@ -50,7 +49,7 @@ class FileUtility
         $originalFileUrl = $fileReference->getPublicUrl();
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
-            if ($fileReference->getMimeType() !== 'image/svg+xml') {
+            if (!$delayProcessing && $fileReference->getMimeType() !== 'image/svg+xml') {
                 $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
             }
             $publicUrl = $this->getImageService()->getImageUri($fileReference, true);
