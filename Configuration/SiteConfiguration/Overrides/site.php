@@ -50,6 +50,19 @@ if ($features->isFeatureEnabled('headless.frontendUrls') ||
         $replaceShowItem .= 'frontendApiProxy, frontendFileApi,';
     }
 
+    if ($features->isFeatureEnabled('headless.cookieDomainPerSite')) {
+        $tempColumns['cookieDomain'] = [
+            'label' => 'Cookie Domain',
+            'config' => [
+                'type' => 'input',
+                'eval' => 'trim',
+                'placeholder' => '.ddev.site',
+            ],
+        ];
+
+        $replaceShowItem .= 'cookieDomain,';
+    }
+
     $GLOBALS['SiteConfiguration']['site']['columns']['base']['label'] = 'TYPO3 Entry Point';
     $GLOBALS['SiteConfiguration']['site']['columns']['base']['description'] = 'Main URL to call the TYPO3 headless api in default language.';
 
