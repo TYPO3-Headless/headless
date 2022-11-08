@@ -188,8 +188,7 @@ class JsonContentContentObject extends ContentContentObject
                 $this->cObj->currentRecordTotal = count($records);
                 $this->getTimeTracker()->setTSlogMessage('NUMROWS: ' . count($records));
 
-                /** @var ContentObjectRenderer $cObj */
-                $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
+                $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class, $frontendController);
                 $cObj->setParent($this->cObj->data, $this->cObj->currentRecord);
                 $this->cObj->currentRecordNumber = 0;
 
