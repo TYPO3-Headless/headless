@@ -127,6 +127,8 @@ Available since `3.0`
 Enable experimental JsonView backend module which allows preview in backend module of page json response
 when passing specific pageType, pageArguments, usergroups, language.
 
+This flag requires additional extension `friendsoftypo3/headless-dev-tools`
+
 .. code-block:: php
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.jsonViewModule'] = true;

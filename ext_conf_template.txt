@@ -1,2 +1,0 @@
-# cat=Settings; type=string; label=LLL:EXT:headless/Resources/Private/Language/locallang_be.xlf:yamlPath
-yamlPath = typo3conf/ext/headless/Configuration/Yaml/HeadlessModule.yml
