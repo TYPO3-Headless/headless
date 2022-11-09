@@ -16,6 +16,9 @@ tt_content.textpic {
                         10 {
                             references.fieldName = image
                             as = files
+                            processingConfiguration {
+                                delayProcessing = 1
+                            }
                         }
                         20 = FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor
                         20 {
