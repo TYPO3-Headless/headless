@@ -81,7 +81,7 @@ class PageLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\PageLinkBuilder
             try {
                 $frontendBase = GeneralUtility::makeInstance(FrontendBaseUtility::class);
                 $siteConf = $siteOfTargetPage->getConfiguration();
-                $frontendBaseUrl = $frontendBase->resolveWithVariants('', $siteConf['baseVariants'] ?? []);
+                $frontendBaseUrl = $frontendBase->resolveWithVariants($siteConf['frontendBase'] ?? '', $siteConf['baseVariants'] ?? []);
 
                 if ($frontendBaseUrl !== '') {
                     $parsedFrontendBase = parse_url($frontendBaseUrl);
