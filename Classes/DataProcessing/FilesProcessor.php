@@ -174,7 +174,13 @@ class FilesProcessor implements DataProcessorInterface
 
         foreach ($this->fileObjects as $key => $fileObject) {
             if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
-                $file = $this->getFileUtility()->processFile($fileObject, $properties, $cropVariant);
+                $file = $this->getFileUtility()->processFile(
+                    $fileObject,
+                    $properties,
+                    $cropVariant,
+                    (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1
+                );
+
                 $targetWidth = (int)($properties['width'] ?: $file['properties']['dimensions']['width']);
                 $targetHeight = (int)($properties['height'] ?: $file['properties']['dimensions']['height']);
 

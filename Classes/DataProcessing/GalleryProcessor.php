@@ -184,8 +184,8 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 $fileObj = $this->fileObjects[$fileKey] ?? null;
 
                 if ($fileObj) {
-                    if (($this->equalMediaWidth || $this->equalMediaHeight) && $fileObj['properties']['type'] === 'image') {
-                        $image = $this->getImageService()->getImage($fileObj['properties']['originalUrl'], null, true);
+                    if ($fileObj['properties']['type'] === 'image') {
+                        $image = $this->getImageService()->getImage((string)$fileObj['properties']['fileReferenceUid'], null, true);
                         $fileObj = $this->getFileUtility()->processFile($image, $this->mediaDimensions[$fileKey] ?? []);
 
                         if (isset($this->processorConfiguration['autogenerate.']['retina2x'],

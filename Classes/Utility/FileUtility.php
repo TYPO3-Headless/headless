@@ -75,12 +75,10 @@ class FileUtility
     }
 
     /**
-     * @param FileInterface $fileReference
      * @param array $dimensions
-     * @param string $cropVariant
      * @return array
      */
-    public function processFile(FileInterface $fileReference, array $dimensions = [], string $cropVariant = 'default'): array
+    public function processFile(FileInterface $fileReference, array $dimensions = [], string $cropVariant = 'default', bool $delayProcessing = false): array
     {
         $fileReferenceUid = $fileReference->getUid();
         $uidLocal = $fileReference->getProperty('uid_local');
@@ -107,7 +105,7 @@ class FileUtility
         ];
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
-            if ($fileReference->getMimeType() !== 'image/svg+xml') {
+            if (!$delayProcessing && $fileReference->getMimeType() !== 'image/svg+xml') {
                 $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
             }
             $publicUrl = $this->imageService->getImageUri($fileReference, true);
