@@ -14,17 +14,6 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
-/***
- *
- * This file is part of the "headless" Extension for TYPO3 CMS.
- *
- * For the full copyright and license information, please read the
- * LICENSE.md file that was distributed with this source code.
- *
- *  (c) 2019
- *
- ***/
-
 /**
  * This menu processor utilizes HMENU to generate a json encoded menu
  * string that will be decoded again and assigned to JSON as

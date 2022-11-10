@@ -7,11 +7,6 @@
  * LICENSE.md file that was distributed with this source code.
  */
 
-use FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject;
-use FriendsOfTYPO3\Headless\ContentObject\FloatContentObject;
-use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
-use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
-use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
 use FriendsOfTYPO3\Headless\Hooks\FileOrFolderLinkBuilder;
 use FriendsOfTYPO3\Headless\Hooks\TypolinkHook;
 use FriendsOfTYPO3\Headless\Resource\Rendering\AudioTagRenderer;
@@ -38,13 +33,7 @@ defined('TYPO3') || die();
 call_user_func(
     static function () {
         $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'headless/Configuration/TypoScript/';
-        $GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] = array_merge($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'], [
-            'JSON' => JsonContentObject::class,
-            'CONTENT_JSON' => JsonContentContentObject::class,
-            'INT' => IntegerContentObject::class,
-            'FLOAT' => FloatContentObject::class,
-            'BOOL' => BooleanContentObject::class,
-        ]);
+
         $GLOBALS['TYPO3_CONF_VARS']['FE']['typolinkBuilder']['file'] = FileOrFolderLinkBuilder::class;
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['fluid']['namespaces']['headless'] = [
             'FriendsOfTYPO3\Headless\ViewHelpers'
