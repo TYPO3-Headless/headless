@@ -13,6 +13,7 @@ namespace FriendsOfTYPO3\Headless\XClass\Controller;
 
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Extbase\Http\ForwardResponse;
+use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\FrontendLogin\Event\BeforeRedirectEvent;
 use TYPO3\CMS\FrontendLogin\Event\LoginConfirmedEvent;
 use TYPO3\CMS\FrontendLogin\Event\LoginErrorOccurredEvent;
@@ -29,6 +30,10 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
      */
     public function loginAction(): ResponseInterface
     {
+        if (!$this->isHeadlessEnabled()) {
+            return parent::loginAction();
+        }
+
         $status = 'success';
 
         if ($this->isLogoutSuccessful()) {
@@ -78,6 +83,10 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
      */
     public function overviewAction(bool $showLoginMessage = false): ResponseInterface
     {
+        if (!$this->isHeadlessEnabled()) {
+            return parent::overviewAction($showLoginMessage);
+        }
+
         $status = 'success';
 
         if (!$this->userAspect->isLoggedIn()) {
@@ -107,5 +116,13 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
         );
 
         return $this->htmlResponse();
+    }
+
+    private function isHeadlessEnabled(): bool
+    {
+        $typoScriptSetup = $GLOBALS['TSFE'] instanceof TypoScriptFrontendController ? $GLOBALS['TSFE']->tmpl->setup : [];
+
+        return isset($typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'])
+        || (bool)$typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'] === true;
     }
 }
