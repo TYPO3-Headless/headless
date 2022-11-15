@@ -122,7 +122,6 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
     {
         $typoScriptSetup = $GLOBALS['TSFE'] instanceof TypoScriptFrontendController ? $GLOBALS['TSFE']->tmpl->setup : [];
 
-        return isset($typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'])
-        || (bool)$typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'] === true;
+        return (bool)($typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'] ?? false);
     }
 }
