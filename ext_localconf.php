@@ -38,6 +38,7 @@ defined('TYPO3') || die();
 call_user_func(
     static function () {
         $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'headless/Configuration/TypoScript/';
+        $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'headless/Configuration/TypoScript/2.x/';
         $GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] = array_merge($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'], [
             'JSON' => JsonContentObject::class,
             'CONTENT_JSON' => JsonContentContentObject::class,
