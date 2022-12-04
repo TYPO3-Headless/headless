@@ -106,6 +106,30 @@ class ElementBodyResponseMiddleware implements MiddlewareInterface
                 }
             }
         }
+        
+        // If no content found then its possible that option doNotGroupByColPos = 1 is set
+        // then try to find without groups of colpos
+        foreach ($content as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            if ((int)($item['id'] ?? 0) === $elementId) {
+                return $item;
+            }
+
+            if ($recursiveElement && is_array($item)) {
+                foreach ($item as $prop) {
+                    if (is_array($prop)) {
+                        $result = $this->extractElement($prop, $elementId, true);
+
+                        if (!empty($result)) {
+                            return $result;
+                        }
+                    }
+                }
+            }
+        }
 
         return $body;
     }
