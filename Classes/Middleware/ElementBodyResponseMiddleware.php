@@ -84,11 +84,11 @@ class ElementBodyResponseMiddleware implements MiddlewareInterface
         $body = [];
 
         foreach ($content as $items) {
-            // skip iteration if array is flat means doNotGroupByColPos = 1 is set
-            if(isset($items['id'])) {
-                break;
+            // if array is flat means doNotGroupByColPos = 1 is set
+            if ((int)($items['id'] ?? 0) === $elementId) {
+                return $items;
             }
-            
+
             if (!is_array($items)) {
                 continue;
             }
@@ -106,30 +106,6 @@ class ElementBodyResponseMiddleware implements MiddlewareInterface
                             if (!empty($result)) {
                                 return $result;
                             }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // If no content found then its possible that option doNotGroupByColPos = 1 is set
-        // then try to find without groups of colpos
-        foreach ($content as $item) {
-            if (!is_array($item)) {
-                continue;
-            }
-
-            if ((int)($item['id'] ?? 0) === $elementId) {
-                return $item;
-            }
-
-            if ($recursiveElement && is_array($item)) {
-                foreach ($item as $prop) {
-                    if (is_array($prop)) {
-                        $result = $this->extractElement($prop, $elementId, true);
-
-                        if (!empty($result)) {
-                            return $result;
                         }
                     }
                 }
