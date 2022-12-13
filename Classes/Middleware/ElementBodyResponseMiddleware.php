@@ -84,13 +84,12 @@ class ElementBodyResponseMiddleware implements MiddlewareInterface
         $body = [];
 
         foreach ($content as $items) {
+            if (!is_array($items)) {
+                continue;
+            }
             // if array is flat means doNotGroupByColPos = 1 is set
             if ((int)($items['id'] ?? 0) === $elementId) {
                 return $items;
-            }
-
-            if (!is_array($items)) {
-                continue;
             }
 
             foreach ($items as $item) {
