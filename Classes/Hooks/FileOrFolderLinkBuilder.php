@@ -26,7 +26,7 @@ class FileOrFolderLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\FileOrFolderL
      */
     public function build(array &$linkDetails, string $linkText, string $target, array $conf): LinkResultInterface
     {
-        $setup = $GLOBALS['TSFE'] instanceof TypoScriptFrontendController ? $GLOBALS['TSFE']->tmpl->setup : null;
+        $setup = ($GLOBALS['TSFE'] ?? null) instanceof TypoScriptFrontendController ? $GLOBALS['TSFE']->tmpl->setup : null;
 
         if (
             array_key_exists('type', $linkDetails)
