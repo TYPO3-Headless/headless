@@ -103,6 +103,8 @@ call_user_func(
                 TypolinkHook::class . '->handleLink';
         }
 
+        $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['getData'][] = FriendsOfTYPO3\Headless\Hooks\ContentObjectRendererHook::class;
+
         $rendererRegistry = GeneralUtility::makeInstance(RendererRegistry::class);
         $rendererRegistry->registerRendererClass(YouTubeRenderer::class);
         $rendererRegistry->registerRendererClass(VimeoRenderer::class);
