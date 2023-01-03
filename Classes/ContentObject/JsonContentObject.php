@@ -25,7 +25,6 @@ use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
-use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 use function is_array;
 use function strpos;
