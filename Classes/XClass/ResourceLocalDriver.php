@@ -35,7 +35,7 @@ class ResourceLocalDriver extends LocalDriver
         if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface &&
             $this->hasCapability(ResourceStorage::CAPABILITY_PUBLIC)) {
             $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
-            $this->configuration['baseUri'] = $urlUtility->getStorageProxyUrl();
+            $this->configuration['baseUri'] = $urlUtility->getStorageProxyUrl($this->storageUid);
         }
 
         parent::determineBaseUrl();

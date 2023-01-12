@@ -39,7 +39,10 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                    'frontendFileApi' => [
+                        1 => 'https://test-frontend-api.tld/headless/fileadmin',
+                        2 => 'https://test-frontend-api.tld/headless/fileadmin_legacy',
+                    ],
                     'SpecialSitemapKey' => 'https://test-frontend.tld/sitemap',
                 ],
                 [
@@ -47,7 +50,10 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Testing"',
                     'frontendBase' => 'https://test-frontend2.tld',
                     'frontendApiProxy' => 'https://test-frontend-api2.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api2.tld/headless/fileadmin',
+                    'frontendFileApi' => [
+                        1 => 'https://test-frontend-api2.tld/headless/fileadmin',
+                        2 => 'https://test-frontend-api2.tld/headless/fileadmin_legacy',
+                    ],
                     'SpecialSitemapKey' => 'https://test-frontend2.tld/sitemap',
                 ],
                 [
@@ -55,7 +61,10 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Misconfigured"',
                     'frontendBase' => 'https://test-frontend3.tld/', // added extra slash at the end
                     'frontendApiProxy' => 'https://test-frontend-api3.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api3.tld/headless/fileadmin',
+                    'frontendFileApi' => [
+                        1 => 'https://test-frontend-api3.tld/headless/fileadmin',
+                        2 => 'https://test-frontend-api3.tld/headless/fileadmin_legacy',
+                    ],
                     'SpecialSitemapKey' => 'https://test-frontend3.tld/sitemap',
                 ]
             ]
@@ -72,7 +81,7 @@ class UrlUtilityTest extends UnitTestCase
 
         self::assertSame('https://test-frontend.tld', $urlUtility->getFrontendUrl());
         self::assertSame('https://test-frontend-api.tld/headless', $urlUtility->getProxyUrl());
-        self::assertSame('https://test-frontend-api.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
+        self::assertSame('https://test-frontend-api.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl(1));
         self::assertSame('https://test-frontend.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
 
         $resolver = $this->prophesize(Resolver::class);
@@ -86,7 +95,7 @@ class UrlUtilityTest extends UnitTestCase
 
         self::assertSame('https://test-frontend2.tld', $urlUtility->getFrontendUrl());
         self::assertSame('https://test-frontend-api2.tld/headless', $urlUtility->getProxyUrl());
-        self::assertSame('https://test-frontend-api2.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
+        self::assertSame('https://test-frontend-api2.tld/headless/fileadmin_legacy', $urlUtility->getStorageProxyUrl(2));
         self::assertSame('https://test-frontend2.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
 
         $resolver = $this->prophesize(Resolver::class);
@@ -101,7 +110,7 @@ class UrlUtilityTest extends UnitTestCase
 
         self::assertSame('https://test-frontend3.tld', $urlUtility->getFrontendUrl());
         self::assertSame('https://test-frontend-api3.tld/headless', $urlUtility->getProxyUrl());
-        self::assertSame('https://test-frontend-api3.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
+        self::assertSame('https://test-frontend-api3.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl(1));
         self::assertSame('https://test-frontend3.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
     }
 
