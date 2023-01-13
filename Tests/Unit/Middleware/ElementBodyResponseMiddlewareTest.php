@@ -142,6 +142,16 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
         );
 
         self::assertSame(json_encode(['id' => 1]), $testResponse->getBody()->__toString());
+
+        $responseArray = ['content' => [['id' => 1]]];
+        $testJson = json_encode($responseArray);
+        $response = new HtmlResponse($testJson);
+        $testResponse = $middleware->process(
+            $this->getTestRequest(['responseElementId' => 1], 'POST'),
+            $this->getMockHandlerWithResponse($response)
+        );
+
+        self::assertSame(json_encode(['id' => 1]), $testResponse->getBody()->__toString());
     }
 
     protected function getMockHandlerWithResponse($response)
