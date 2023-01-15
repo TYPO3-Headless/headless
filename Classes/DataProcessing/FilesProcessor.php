@@ -107,6 +107,11 @@ class FilesProcessor implements DataProcessorInterface
         $fileCollector = GeneralUtility::makeInstance(FileCollector::class);
 
         if (!empty($this->processorConfiguration['references.'])) {
+            // Support for references.data = levelmedia:-1,slide
+            $referencesUidList = (string)$this->contentObjectRenderer->stdWrapValue('references', $this->processorConfiguration ?? []);
+            $referencesUids = GeneralUtility::intExplode(',', $referencesUidList, true);
+            $fileCollector->addFileReferences($referencesUids);
+
             $referenceConfiguration = $this->processorConfiguration['references.'];
             $relationField = $this->contentObjectRenderer->stdWrapValue('fieldName', $referenceConfiguration);
 
