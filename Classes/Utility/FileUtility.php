@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Utility;
 
+use FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
@@ -139,9 +140,17 @@ class FileUtility
                 ? $fileReference->getProperty('extension') : null,
         ];
 
+        $properties = $this->eventDispatcher->dispatch(
+            new EnrichFileDataEvent(
+                $fileReference,
+                array_merge($originalProperties, $processedProperties
+                )
+            )
+        )->getProperties();
+
         return [
             'publicUrl' => $publicUrl,
-            'properties' => array_merge($originalProperties, $processedProperties),
+            'properties' => $properties,
         ];
     }
 
