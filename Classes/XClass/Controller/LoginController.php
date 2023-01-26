@@ -63,7 +63,7 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
                 'status' => $status,
                 'cookieWarning' => $this->showCookieWarning,
                 'messageKey' => $this->getStatusMessageKey(),
-                'storagePid' => implode(',', $this->getStorageFolders()),
+                'storagePid' => $this->shallEnforceLoginSigning() ? $this->getSignedStorageFolders() : implode(',', $this->getStorageFolders()),
                 'permaloginStatus' => $this->getPermaloginStatus(),
                 'redirectURL' => $this->redirectHandler->getLoginFormRedirectUrl($this->configuration, $this->isRedirectDisabled()),
                 'redirectReferrer' => $this->request->hasArgument('redirectReferrer') ? (string)$this->request->getArgument('redirectReferrer') : '',
