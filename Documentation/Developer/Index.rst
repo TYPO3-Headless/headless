@@ -297,6 +297,34 @@ Here's an example of how to override the meta object by data from a DB record:
     }
   }
 
+.. _developer-dataprocessors:
+
+TypoScript DataProcessors
+=========================
+
+This extension provides a couple of handy DataProcessors. Have a look into the default TypoScript to see them in action.
+
+Here's an example demonstrating their usage.
+
+.. code-block:: typoscript
+
+  lib.meta.fields.ogImage = TEXT
+  lib.meta.fields.ogImage {
+    dataProcessing {
+      # Use the column 'og_image' to render an array with all relevant
+      # information (such as the publicUrl)
+      10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+      10.as = media
+      10.references.fieldName = og_image
+      10.processingConfiguration.returnFlattenObject = 1
+
+      # Extract only property 'publicUrl' from the above created array
+      20 = FriendsOfTYPO3\Headless\DataProcessing\ExtractPropertyProcessor
+      20.key = media.publicUrl
+      20.as = media
+    }
+  }
+
 .. _developer-ext-form:
 
 EXT:form & form output decorators
