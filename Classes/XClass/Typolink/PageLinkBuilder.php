@@ -13,6 +13,7 @@ namespace FriendsOfTYPO3\Headless\XClass\Typolink;
 
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\UriInterface;
+use TYPO3\CMS\Core\Domain\Page;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Routing\InvalidRouteArgumentsException;
 use TYPO3\CMS\Core\Routing\RouterInterface;
@@ -48,14 +49,16 @@ class PageLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\PageLinkBuilder
             $currentSiteLanguage = $currentSite->getDefaultLanguage();
         }
 
-        $siteLanguageOfTargetPage = $this->getSiteLanguageOfTargetPage(
-            $siteOfTargetPage,
-            (string)($conf['language'] ?? 'current')
-        );
+        $siteLanguageOfTargetPage = $this->getSiteLanguageOfTargetPage($siteOfTargetPage, (string)($conf['language'] ?? 'current'));
 
         // By default, it is assumed to ab an internal link or current domain's linking scheme should be used
         // Use the config option to override this.
-        $useAbsoluteUrl = $conf['forceAbsoluteUrl'] ?? false;
+        // Global option config.forceAbsoluteUrls = 1 overrides any setting for this specific link
+        if ($tsfe->config['config']['forceAbsoluteUrls'] ?? false) {
+            $useAbsoluteUrl = true;
+        } else {
+            $useAbsoluteUrl = $conf['forceAbsoluteUrl'] ?? false;
+        }
         // Check if the current page equal to the site of the target page, now only set the absolute URL
         // Always generate absolute URLs if no current site is set
         if (
@@ -67,11 +70,12 @@ class PageLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\PageLinkBuilder
 
         $targetPageId = (int)($page['l10n_parent'] > 0 ? $page['l10n_parent'] : $page['uid']);
         $queryParameters['_language'] = $siteLanguageOfTargetPage;
+        $pageObject = new Page($page);
 
         if ($fragment
             && $useAbsoluteUrl === false
             && $currentSiteLanguage === $siteLanguageOfTargetPage
-            && $targetPageId === (int)$tsfe->id
+            && $targetPageId === $tsfe->id
             && (empty($conf['addQueryString']) || !isset($conf['addQueryString.']))
             && !($tsfe->config['config']['baseURL'] ?? false)
             && count($queryParameters) === 1 // _language is always set
@@ -79,6 +83,7 @@ class PageLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\PageLinkBuilder
             $uri = (new Uri())->withFragment($fragment);
         } else {
             try {
+                //headless specific code. Is it needed if we xclass PageRouter anyway?
                 $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withSite($siteOfTargetPage);
                 $frontendBaseUrl = $urlUtility->getFrontendUrl();
 
@@ -86,18 +91,16 @@ class PageLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\PageLinkBuilder
                     $parsedFrontendBase = parse_url($frontendBaseUrl);
                     $queryParameters['_frontendHost'] = $parsedFrontendBase['host'] ?? '';
                 }
+                //headless specific code end
 
                 $uri = $siteOfTargetPage->getRouter()->generateUri(
-                    $targetPageId,
+                    $pageObject,
                     $queryParameters,
                     $fragment,
                     $useAbsoluteUrl ? RouterInterface::ABSOLUTE_URL : RouterInterface::ABSOLUTE_PATH
                 );
             } catch (InvalidRouteArgumentsException $e) {
-                throw new UnableToLinkException(
-                    'The target page could not be linked. Error: ' . $e->getMessage(),
-                    1535472406
-                );
+                throw new UnableToLinkException('The target page could not be linked. Error: ' . $e->getMessage(), 1535472406);
             }
             // Override scheme if absoluteUrl is set, but only if the site defines a domain/host. Fall back to site scheme and else https.
             if ($useAbsoluteUrl && $uri->getHost()) {
