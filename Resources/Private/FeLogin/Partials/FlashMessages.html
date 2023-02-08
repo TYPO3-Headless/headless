@@ -1,19 +1,21 @@
-<f:spaceless>
-    <f:format.raw>
-        <f:flashMessages as="flashMessages">
-            [
-            <f:for each="{flashMessages}" as="flashMessage" iteration="msgIterator">
-                <f:format.json value="{
+<f:variable name="result">[]</f:variable>
+<f:flashMessages as="flashMessages">
+    <f:variable name="result">
+        [
+        <f:for each="{flashMessages}" as="flashMessage" iteration="msgIterator">
+            <f:format.json value="{
                     title: '{flashMessage.title}',
                     message: '{flashMessage.message}',
                     severity: '{flashMessage.severity}',
                     className: '{f:render(section:\'errorClass\', arguments:\'{severity: flashMessage.severity}\')}'
-                }"/>
-                {f:if(condition: msgIterator.isLast, else: ',')}
-            </f:for>
-            ]
-        </f:flashMessages>
-    </f:format.raw>
+                }" />
+            {f:if(condition: msgIterator.isLast, else: ',')}
+        </f:for>
+        ]
+    </f:variable>
+</f:flashMessages>
+<f:spaceless>
+    <f:format.raw>{result}</f:format.raw>
 </f:spaceless>
 <f:section name="errorClass">
 <f:spaceless>
