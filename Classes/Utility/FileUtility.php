@@ -22,6 +22,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
+use TYPO3\CMS\Frontend\Typolink\LinkResultInterface;
 
 /**
  * Class FileUtility
@@ -93,7 +94,7 @@ class FileUtility
 
         if (!empty($metaData['link'])) {
             $linkData = $this->contentObjectRenderer->typoLink('', ['parameter' => $metaData['link'], 'returnLast' => 'result']);
-            $link = $linkData->getUrl();
+            $link = $linkData instanceof LinkResultInterface ? $linkData->getUrl() : null;
         }
 
         $originalProperties = [

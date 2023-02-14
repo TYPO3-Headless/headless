@@ -121,6 +121,26 @@ class FileUtilityTest extends UnitTestCase
         $overwrittenBaseline['properties']['linkData'] = $linkResult;
         self::assertSame($overwrittenBaseline, $fileUtility->processFile($file));
 
+        // CASE when typolink of ContentObjectRenderer returns '' instead of LinkResult
+        $link = null;
+        $linkResult = '';
+        $file = $this->getMockFileForData($fileData, [
+            'extension' => 'jpg',
+            'title' => null,
+            'alternative' => null,
+            'description' => null,
+            'link' => 123
+        ]);
+        $processedFile = $this->getMockProcessedFileForData($fileData);
+        $imageService = $this->getImageServiceWithProcessedFile($file, $processedFile);
+        $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
+        $contentObjectRenderer->typoLink(Argument::any(), Argument::any())->willReturn($linkResult);
+        $fileUtility = $this->getFileUtility(null, $imageService, $contentObjectRenderer);
+        $overwrittenBaseline = $this->getBaselineResultArrayForFile();
+        $overwrittenBaseline['properties']['link'] = $link;
+        $overwrittenBaseline['properties']['linkData'] = $linkResult;
+        self::assertSame($overwrittenBaseline, $fileUtility->processFile($file));
+
         $fileReference = $this->getMockFileReferenceForData($fileReferenceData, 'video');
         $fileUtility = $this->getFileUtility();
 
