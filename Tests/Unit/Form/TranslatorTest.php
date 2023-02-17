@@ -37,6 +37,7 @@ class TranslatorTest extends UnitTestCase
                                 'identifier' => 'testfield',
                                 'label' => 'test field',
                                 'properties' => [],
+                                'value' => null,
                             ],
                             [
                                 'type' => 'input',
@@ -47,6 +48,7 @@ class TranslatorTest extends UnitTestCase
                                         ['code' => 111, 'message' => 'translateMe'],
                                     ]
                                 ],
+                                'value' => null,
                             ],
                             [
                                 'type' => 'Fieldset',
@@ -61,6 +63,7 @@ class TranslatorTest extends UnitTestCase
                                         'properties' => [],
                                     ],
                                 ],
+                                'value' => null,
                             ],
                             [
                                 'type' => 'input',
@@ -80,6 +83,7 @@ class TranslatorTest extends UnitTestCase
                                         'FERegularExpression' => '/a-z/',
                                     ]
                                 ],
+                                'value' => null,
                             ],
                             [
                                 'type' => 'input',
@@ -87,12 +91,14 @@ class TranslatorTest extends UnitTestCase
                                 'label' => 'overridden field',
                                 'properties' => [],
                                 'renderingOptions' => ['FEOverrideType' => 'select'],
+                                'value' => null,
                             ],
                             [
                                 'type' => 'ImageUpload',
                                 'identifier' => 'image',
                                 'label' => 'Upload image',
                                 'properties' => ['saveToFileMount' => '/upload-dir'],
+                                'value' => null,
                             ]
                         ]
                     ],
@@ -112,7 +118,8 @@ class TranslatorTest extends UnitTestCase
                                 'identifier' => 'testfield',
                                 'label' => 'translatedValue',
                                 'properties' => [],
-                                'defaultValue' => 'translatedValue'
+                                'value' => null,
+                                'defaultValue' => 'translatedValue',
                             ],
                             [
                                 'type' => 'input',
@@ -123,7 +130,8 @@ class TranslatorTest extends UnitTestCase
                                             ['code' => 111, 'message' => 'translatedError'],
                                         ]
                                 ],
-                                'defaultValue' => 'translatedValue'
+                                'value' => null,
+                                'defaultValue' => 'translatedValue',
                             ],
                             [
                                 'type' => 'Fieldset',
@@ -136,10 +144,12 @@ class TranslatorTest extends UnitTestCase
                                         'identifier' => 'nested',
                                         'label' => 'translatedValue',
                                         'properties' => [],
-                                        'defaultValue' => 'translatedValue'
+                                        'defaultValue' => 'translatedValue',
+                                        'value' => null,
                                     ],
                                 ],
-                                'defaultValue' => 'translatedValue'
+                                'value' => null,
+                                'defaultValue' => 'translatedValue',
                             ],
                             [
                                 'type' => 'input',
@@ -159,7 +169,8 @@ class TranslatorTest extends UnitTestCase
                                         'FERegularExpression' => '/a-z/',
                                     ]
                                 ],
-                                'defaultValue' => 'translatedValue'
+                                'value' => null,
+                                'defaultValue' => 'translatedValue',
                             ],
                             [
                                 'type' => 'input',
@@ -167,17 +178,20 @@ class TranslatorTest extends UnitTestCase
                                 'label' => 'translatedValue',
                                 'properties' => [],
                                 'renderingOptions' => ['FEOverrideType' => 'select'],
-                                'defaultValue' => 'translatedValue'
+                                'value' => null,
+                                'defaultValue' => 'translatedValue',
                             ],
                             [
                                 'type' => 'ImageUpload',
                                 'identifier' => 'image',
                                 'label' => 'translatedValue',
                                 'properties' => ['saveToFileMount' => 'translatedValue'],
+                                'value' => null,
                                 'defaultValue' => 'translatedValue',
                             ]
                         ],
-                        'label' => 'translatedValue'
+                        'label' => 'translatedValue',
+
                     ],
             ]
         ], $translator->translate($formDefinition, []));
