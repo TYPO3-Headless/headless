@@ -24,45 +24,21 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Typolink\LinkResultInterface;
 
-/**
- * Class FileUtility
- */
 class FileUtility
 {
     public const RETINA_RATIO = 2;
     public const LQIP_RATIO = 0.1;
 
-    /**
-     * @var ContentObjectRenderer
-     */
-    protected $contentObjectRenderer;
+    protected ContentObjectRenderer $contentObjectRenderer;
+    protected RendererRegistry $rendererRegistry;
+    protected ImageService  $imageService;
+    protected ?ServerRequestInterface $serverRequest;
 
     /**
-     * @param RendererRegistry
+     * @var array<string, array<string, string>>
      */
-    protected $rendererRegistry;
+    protected array $errors = [];
 
-    /**
-     * @var ImageService
-     */
-    protected $imageService;
-
-    /**
-     * @var ServerRequestInterface
-     */
-    protected $serverRequest;
-
-    /**
-     * @var array
-     */
-    protected $errors = [];
-
-    /**
-     * @param ContentObjectRenderer|null $contentObjectRenderer
-     * @param RendererRegistry|null $rendererRegistry
-     * @param ImageService|null $imageService
-     * @param ServerRequestInterface|null $serverRequest
-     */
     public function __construct(
         ?ContentObjectRenderer $contentObjectRenderer = null,
         ?RendererRegistry $rendererRegistry = null,
@@ -86,14 +62,11 @@ class FileUtility
         $fileRenderer = $this->rendererRegistry->getRenderer($fileReference);
         $crop = $fileReference->getProperty('crop');
         $originalFileUrl = $fileReference->getPublicUrl();
-
-        $metaData = $fileReference->toArray();
-
-        $link = null;
+        $link = $fileReference->getProperty('link');
         $linkData = null;
 
-        if (!empty($metaData['link'])) {
-            $linkData = $this->contentObjectRenderer->typoLink('', ['parameter' => $metaData['link'], 'returnLast' => 'result']);
+        if (!empty($link)) {
+            $linkData = $this->contentObjectRenderer->typoLink('', ['parameter' => $link, 'returnLast' => 'result']);
             $link = $linkData instanceof LinkResultInterface ? $linkData->getUrl() : null;
         }
 
@@ -101,7 +74,7 @@ class FileUtility
             'title' => $fileReference->getProperty('title'),
             'alternative' => $fileReference->getProperty('alternative'),
             'description' => $fileReference->getProperty('description'),
-            'link' => $link ?? null,
+            'link' => $link === '' ? null : $link,
             'linkData' => $linkData ?? null,
         ];
 
@@ -133,10 +106,8 @@ class FileUtility
                 'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant)
             ],
             'crop' => $crop,
-            'autoplay' => $fileReference->hasProperty('autoplay')
-                ? $fileReference->getProperty('autoplay') : null,
-            'extension' => $fileReference->hasProperty('extension')
-                ? $fileReference->getProperty('extension') : null,
+            'autoplay' => $fileReference->getProperty('autoplay'),
+            'extension' => $fileReference->getProperty('extension'),
         ];
 
         return [
@@ -146,20 +117,13 @@ class FileUtility
     }
 
     /**
-     * @param FileInterface $fileReference
-     * @param array $arguments
-     * @param string $cropVariant
-     * @return ProcessedFile
+     * @param array<string, mixed> $arguments
      */
     public function processImageFile(FileInterface $image, array $arguments = [], string $cropVariant = 'default'): ProcessedFile
     {
         try {
             $properties = $image->getProperties();
-            $cropString = $properties['crop'];
-            if ($image->hasProperty('crop') && $image->getProperty('crop')) {
-                $cropString = $image->getProperty('crop');
-            }
-            $cropVariantCollection = $this->createCropVariant((string)$cropString);
+            $cropVariantCollection = $this->createCropVariant((string)$image->getProperty('crop'));
             $cropVariant = $cropVariant ?: 'default';
             $cropArea = $cropVariantCollection->getCropArea($cropVariant);
             $processingInstructions = [
@@ -182,10 +146,6 @@ class FileUtility
         }
     }
 
-    /**
-     * @param string $fileUrl
-     * @return string
-     */
     public function getAbsoluteUrl(string $fileUrl): string
     {
         $siteUrl = $this->getNormalizedParams()->getSiteUrl();
@@ -199,7 +159,7 @@ class FileUtility
         return $fileUrl;
     }
 
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->errors;
     }
@@ -207,12 +167,6 @@ class FileUtility
     /**
      * When retrieving the height or width for a media file
      * a possible cropping needs to be taken into account.
-     *
-     * @param FileInterface $fileObject
-     * @param string $dimensionalProperty 'width' or 'height'
-     *
-     * @param string $cropVariant defaults to 'default' variant
-     * @return int
      */
     protected function getCroppedDimensionalProperty(
         FileInterface $fileObject,
@@ -229,10 +183,6 @@ class FileUtility
         )[$dimensionalProperty];
     }
 
-    /**
-     * @param int $value
-     * @return string
-     */
     protected function calculateKilobytesToFileSize(int $value): string
     {
         $units = $this->translate('viewhelper.format.bytes.units', 'fluid');
@@ -245,9 +195,6 @@ class FileUtility
         return number_format(round($bytes, 4 * 2)) . ' ' . $units[$pow];
     }
 
-    /**
-     * @return NormalizedParams
-     */
     protected function getNormalizedParams(): NormalizedParams
     {
         return $this->serverRequest->getAttribute('normalizedParams');
