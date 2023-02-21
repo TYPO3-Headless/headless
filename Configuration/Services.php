@@ -9,6 +9,12 @@
 
 declare(strict_types=1);
 
+use FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject;
+use FriendsOfTYPO3\Headless\ContentObject\FloatContentObject;
+use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
+use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
+use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
+use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
 use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
 use FriendsOfTYPO3\Headless\Seo\XmlSitemap\XmlSitemapRenderer;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
@@ -45,6 +51,14 @@ return static function (ContainerConfigurator $configurator): void {
     }
 
     $toLoad->exclude($excludes);
+
+    $toLoad->set(MenuProcessor::class)->public();
+
+    $toLoad->set(JsonContentObject::class)->tag('frontend.contentobject', ['identifier'=> 'JSON']);
+    $toLoad->set(JsonContentContentObject::class)->tag('frontend.contentobject', ['identifier'=> 'CONTENT_JSON']);
+    $toLoad->set(BooleanContentObject::class)->tag('frontend.contentobject', ['identifier'=> 'BOOL']);
+    $toLoad->set(IntegerContentObject::class)->tag('frontend.contentobject', ['identifier'=> 'INT']);
+    $toLoad->set(FloatContentObject::class)->tag('frontend.contentobject', ['identifier'=> 'FLOAT']);
 
     $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
     $services->set(XmlSitemapRenderer::class)->public()->share(false);
