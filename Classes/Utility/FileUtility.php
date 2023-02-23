@@ -60,9 +60,9 @@ class FileUtility
     protected $errors = [];
 
     /**
-     * @var mixed|EventDispatcherInterface|
+     * @var EventDispatcherInterface
      */
-    private mixed $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
     /**
      * @param ContentObjectRenderer|null    $contentObjectRenderer
