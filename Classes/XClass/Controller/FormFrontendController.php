@@ -74,7 +74,6 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         if (!empty($this->settings['persistenceIdentifier'])) {
             $formDefinition = $this->formPersistenceManager->load($this->settings['persistenceIdentifier']);
             $formDefinition['persistenceIdentifier'] = $this->settings['persistenceIdentifier'];
-            $formDefinition = $this->overrideByTypoScriptSettings($formDefinition);
             $formDefinition = $this->overrideByFlexFormSettings($formDefinition);
             $formDefinition = ArrayUtility::setValueByPath(
                 $formDefinition,
@@ -119,7 +118,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         /**
          * @var FormRuntime $formRuntime
          */
-        $formRuntime = $formDefinitionObj->bind($this->controllerContext->getRequest());
+        $formRuntime = $formDefinitionObj->bind($this->request);
         $formState = $formRuntime->getFormState();
         $finisherResponse = $formRuntime->run();
 
@@ -135,7 +134,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
         $currentPageIndex = $formRuntime->getCurrentPage() ? $formRuntime->getCurrentPage()->getIndex() : 0;
         $currentPageId = $currentPageIndex + 1;
-        $formFields = $formDefinition['renderables'][$currentPageIndex]['renderables'];
+        $formFields = $formDefinition['renderables'][$currentPageIndex]['renderables'] ?? [];
 
         // provides support for custom options providers (dynamic selects/radio/checkboxes)
         $formFieldsNames = $this->generateFieldNamesAndReplaceCustomOptions($formFields, $formDefinition['identifier'], $formRuntime->getFormDefinition());
@@ -193,7 +192,8 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         $formDefinition['i18n'] = count($i18n) ? $i18n : null;
         $formDefinition = $this->jsonFormTranslator->translate(
             $formDefinition,
-            $formRuntime->getFormDefinition()->getRenderingOptions()
+            $formRuntime->getFormDefinition()->getRenderingOptions(),
+            $formRuntime->getFormState() ? $formRuntime->getFormState()->getFormValues() : []
         );
 
         $formStatus['status'] = null;
@@ -207,7 +207,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
         if ($formState &&
             $formState->isFormSubmitted() &&
-            $this->getControllerContext()->getRequest()->getMethod() === 'POST') {
+            $this->request->getMethod() === 'POST') {
             $result = $formRuntime->getRequest()->getOriginalRequestMappingResults();
             /**
              * @var array<string, Error[]>
