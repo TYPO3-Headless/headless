@@ -154,7 +154,9 @@ class FileUtility
         $properties = $this->eventDispatcher->dispatch(
             new EnrichFileDataEvent(
                 $fileReference,
-                array_merge($originalProperties, $processedProperties
+                array_merge(
+                    $originalProperties,
+                    $processedProperties
                 )
             )
         )->getProperties();
