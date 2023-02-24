@@ -15,7 +15,7 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 
 final class EnrichFileDataEvent
 {
-    private ?FileInterface $fileReference;
+    private FileInterface $fileReference;
 
     private array $properties;
 
@@ -35,7 +35,7 @@ final class EnrichFileDataEvent
         $this->properties = $properties;
     }
 
-    public function getFileReference(): ?FileInterface
+    public function getFileReference(): FileInterface
     {
         return $this->fileReference;
     }
