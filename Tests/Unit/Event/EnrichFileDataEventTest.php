@@ -31,7 +31,7 @@ class EnrichFileDataEventTest extends UnitTestCase
             'prop-2' => 'value-2'
         ];
         $fileReferenceMock = $this->getMockFileReferenceForData($this->getFileReferenceBaselineData());
-        $enrichFileDataEvent = new EnrichFileDataEvent($fileReferenceMock,$properties);
+        $enrichFileDataEvent = new EnrichFileDataEvent($fileReferenceMock, $properties);
 
         self::assertSame($fileReferenceMock, $enrichFileDataEvent->getFileReference());
         self::assertSame($properties, $enrichFileDataEvent->getProperties());
