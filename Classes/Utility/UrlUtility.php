@@ -20,10 +20,11 @@ use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
-use TYPO3\CMS\Core\Site\Entity\SiteInterface;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+use function array_merge;
 use function count;
 use function rtrim;
 use function str_replace;
@@ -36,7 +37,6 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private Features $features;
     private Resolver $resolver;
     private SiteFinder $siteFinder;
-    private SiteInterface $site;
     private array $conf = [];
     private array $variants = [];
 
@@ -52,22 +52,23 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $request = $serverRequest ?? ($GLOBALS['TYPO3_REQUEST'] ?? null);
 
         if ($request instanceof ServerRequestInterface) {
-            $this->site = $request->getAttribute('site');
-            if ($this->site instanceof Site) {
-                $this->conf = $this->site->getConfiguration();
-                $this->variants = $this->conf['baseVariants'] ?? [];
-            }
+            $this->extractConfigurationFromRequest($request, $this);
         }
     }
 
     public function withSite(Site $site): self
     {
-        $object = clone $this;
-        $object->site = $site;
-        $object->conf = $site->getConfiguration();
-        $object->variants = $object->conf['baseVariants'] ?? [];
+        return $this->handleSiteConfiguration($site, clone $this);
+    }
 
-        return $object;
+    public function withRequest(ServerRequestInterface $request): HeadlessFrontendUrlInterface
+    {
+        return $this->extractConfigurationFromRequest($request, clone $this);
+    }
+
+    public function withLanguage(SiteLanguage $language): HeadlessFrontendUrlInterface
+    {
+        return $this->handleLanguageConfiguration($language, clone $this);
     }
 
     public function getFrontendUrlForPage(string $url, int $pageUid, string $returnField = 'frontendBase'): string
@@ -200,5 +201,58 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             }
         }
         return $frontendUrl;
+    }
+
+    private function handleLanguageConfiguration(SiteLanguage $language, HeadlessFrontendUrlInterface $object): HeadlessFrontendUrlInterface
+    {
+        $langConf = $language->toArray();
+        $variants = $langConf['baseVariants'] ?? [];
+        $frontendBase = trim($langConf['frontendBase'] ?? '');
+        $frontendApiProxy = trim($langConf['frontendApiProxy'] ?? '');
+        $frontendFileApi = trim($langConf['frontendFileApi'] ?? '');
+        $overrides = [];
+
+        if ($frontendBase !== '') {
+            $overrides['frontendBase'] =  $frontendBase;
+        }
+
+        if ($frontendApiProxy !== '') {
+            $overrides['frontendApiProxy'] =  $frontendApiProxy;
+        }
+
+        if ($frontendFileApi !== '') {
+            $overrides['frontendFileApi'] =  $frontendFileApi;
+        }
+
+        $object->conf = array_merge($object->conf, $overrides);
+
+        if ($variants !== []) {
+            $object->variants = $variants;
+        }
+
+        return $object;
+    }
+
+    private function handleSiteConfiguration(Site $site, UrlUtility $object): self
+    {
+        $object->conf = $site->getConfiguration();
+        $object->variants = $object->conf['baseVariants'] ?? [];
+
+        return $object;
+    }
+
+    private function extractConfigurationFromRequest(ServerRequestInterface $request, HeadlessFrontendUrlInterface $object): HeadlessFrontendUrlInterface
+    {
+        $site = $request->getAttribute('site');
+        if ($site instanceof Site) {
+            $object->handleSiteConfiguration($site, $object);
+        }
+
+        $language = $request->getAttribute('language');
+        if ($language instanceof SiteLanguage) {
+            $object->handleLanguageConfiguration($language, $object);
+        }
+
+        return $object;
     }
 }
