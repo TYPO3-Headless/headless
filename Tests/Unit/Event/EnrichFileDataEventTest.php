@@ -36,12 +36,12 @@ class EnrichFileDataEventTest extends UnitTestCase
         self::assertSame($fileReferenceMock, $enrichFileDataEvent->getFileReference());
         self::assertSame($properties, $enrichFileDataEvent->getProperties());
 
-        $overwriterProperties = $enrichFileDataEvent->getProperties();
-        $overwriterProperties['prop-1'] = 'value-overwritten';
-        $overwriterProperties['prop-3'] = 'value-3';
-        $enrichFileDataEvent->setProperties($overwriterProperties);
+        $overwriteProperties = $enrichFileDataEvent->getProperties();
+        $overwriteProperties['prop-1'] = 'value-overwritten';
+        $overwriteProperties['prop-3'] = 'value-3';
+        $enrichFileDataEvent->setProperties($overwriteProperties);
 
-        self::assertSame($overwriterProperties, $enrichFileDataEvent->getProperties());
+        self::assertSame($overwriteProperties, $enrichFileDataEvent->getProperties());
     }
 
     protected function getFileReferenceBaselineData(): array
