@@ -34,6 +34,8 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Typolink\LinkResult;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
+use function array_merge;
+
 class FileUtilityTest extends UnitTestCase
 {
     use ProphecyTrait;
@@ -264,6 +266,10 @@ class FileUtilityTest extends UnitTestCase
         $file->method('getUid')->willReturn($data['uid']);
         $file->method('getPublicUrl')->willReturn('/fileadmin/test-file.jpg');
         if ($overrideToArray !== []) {
+            $_data = array_merge($data, $overrideToArray);
+            $file->method('getProperty')->willReturnCallback(static function ($key) use ($_data) {
+                return $_data[$key] ?? null;
+            });
             $file->method('toArray')->willReturn($overrideToArray);
         } else {
             $file->method('toArray')->willReturn(
