@@ -25,8 +25,11 @@ class IntegerContentObjectTest extends UnitTestCase
      */
     public function renderTest()
     {
-        $booleanContentObject = new IntegerContentObject();
-        self::assertEquals(0, $booleanContentObject->render());
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+
+        $contentObject = new IntegerContentObject();
+        $contentObject->setContentObjectRenderer($cObj);
+        self::assertEquals(0, $contentObject->render());
     }
 
     /**
@@ -35,8 +38,11 @@ class IntegerContentObjectTest extends UnitTestCase
      */
     public function renderWithProviderTest($argument, int $result)
     {
-        $booleanContentObject = new IntegerContentObject();
-        self::assertEquals($result, $booleanContentObject->render($argument));
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+
+        $contentObject = new IntegerContentObject();
+        $contentObject->setContentObjectRenderer($cObj);
+        self::assertEquals($result, $contentObject->render($argument));
     }
 
     public function dataProvider(): array

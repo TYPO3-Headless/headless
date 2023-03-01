@@ -40,6 +40,7 @@ use TYPO3\CMS\Frontend\ContentObject\TextContentObject;
 use TYPO3\CMS\Frontend\ContentObject\UserContentObject;
 use TYPO3\CMS\Frontend\ContentObject\UserInternalContentObject;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+use TYPO3\CMS\Frontend\DataProcessing\DataProcessorRegistry;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_encode;
@@ -83,7 +84,7 @@ class JsonContentObjectTest extends UnitTestCase
         ];
 
         GeneralUtility::makeInstance(TimeTracker::class, false);
-        $contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class, $this->prophesize(Container::class)->reveal());
+        $contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class, $this->prophesize(Container::class)->reveal(), $this->prophesize(DataProcessorRegistry::class)->reveal());
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->uniqueHash()->willReturn(md5('123'));
@@ -92,7 +93,8 @@ class JsonContentObjectTest extends UnitTestCase
 
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
-        $this->contentObject = new JsonContentObject($contentObjectRenderer, $contentDataProcessor);
+        $this->contentObject = new JsonContentObject($contentDataProcessor);
+        $this->contentObject->setContentObjectRenderer($contentObjectRenderer);
     }
 
     /**
