@@ -45,7 +45,8 @@
     "seld/jsonlint": "^1.8",
     "symfony/yaml": "^6.1",
     "typo3/cms-form": "12.*@dev",
-    "typo3/testing-framework": "dev-main"
+    "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": "^0.1.2",
+    "typo3/testing-framework": "^7.0@dev"
   },
   "config": {
     "preferred-install": {
@@ -56,6 +57,7 @@
     "allow-plugins": {
       "typo3/class-alias-loader": true,
       "typo3/cms-composer-installers": true,
+      "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": true,
       "ergebnis/composer-normalize": true,
       "phpstan/extension-installer": true
     }
@@ -79,9 +81,6 @@
     }
   },
   "scripts": {
-    "post-autoload-dump": [
-      "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
-    ],
     "ci:composer:normalize": "@composer normalize --dry-run",
     "ci:coverage": [
     "@ci:coverage:unit",
