@@ -193,7 +193,8 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         $formDefinition['i18n'] = count($i18n) ? $i18n : null;
         $formDefinition = $this->jsonFormTranslator->translate(
             $formDefinition,
-            $formRuntime->getFormDefinition()->getRenderingOptions()
+            $formRuntime->getFormDefinition()->getRenderingOptions(),
+            $formRuntime->getFormState() ? $formRuntime->getFormState()->getFormValues() : []
         );
 
         $formStatus['status'] = null;
