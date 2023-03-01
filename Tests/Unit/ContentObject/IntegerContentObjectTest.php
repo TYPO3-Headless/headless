@@ -25,9 +25,7 @@ class IntegerContentObjectTest extends UnitTestCase
      */
     public function renderTest()
     {
-        $cObj = $this->createMock(ContentObjectRenderer::class);
-
-        $booleanContentObject = new IntegerContentObject($cObj);
+        $booleanContentObject = new IntegerContentObject();
         self::assertEquals(0, $booleanContentObject->render());
     }
 
@@ -37,9 +35,7 @@ class IntegerContentObjectTest extends UnitTestCase
      */
     public function renderWithProviderTest($argument, int $result)
     {
-        $cObj = $this->createMock(ContentObjectRenderer::class);
-
-        $booleanContentObject = new IntegerContentObject($cObj);
+        $booleanContentObject = new IntegerContentObject();
         self::assertEquals($result, $booleanContentObject->render($argument));
     }
 
