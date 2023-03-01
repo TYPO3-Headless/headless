@@ -21,19 +21,17 @@ class EnrichFileDataEventTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
-    public function eventTest()
+    public function testEvent()
     {
         $properties = [
             'prop-1' => 'value-1',
             'prop-2' => 'value-2'
         ];
         $fileReferenceMock = $this->getMockFileReferenceForData($this->getFileReferenceBaselineData());
-        $enrichFileDataEvent = new EnrichFileDataEvent($fileReferenceMock, $properties);
+        $enrichFileDataEvent = new EnrichFileDataEvent(clone $fileReferenceMock, $fileReferenceMock, $properties);
 
-        self::assertSame($fileReferenceMock, $enrichFileDataEvent->getFileReference());
+        self::assertEquals($fileReferenceMock, $enrichFileDataEvent->getOriginal());
+        self::assertSame($fileReferenceMock, $enrichFileDataEvent->getProcessed());
         self::assertSame($properties, $enrichFileDataEvent->getProperties());
 
         $overwriteProperties = $enrichFileDataEvent->getProperties();

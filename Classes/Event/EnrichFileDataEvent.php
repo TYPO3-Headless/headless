@@ -15,13 +15,17 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 
 final class EnrichFileDataEvent
 {
-    private FileInterface $fileReference;
-
+    private FileInterface $original;
+    private FileInterface $processed;
     private array $properties;
 
-    public function __construct(FileInterface $fileReference, array $properties = [])
-    {
-        $this->fileReference = $fileReference;
+    public function __construct(
+        FileInterface $originalFileReference,
+        FileInterface $processedFileReference,
+        array $properties = []
+    ) {
+        $this->original = $originalFileReference;
+        $this->processed = $processedFileReference;
         $this->properties = $properties;
     }
 
@@ -35,8 +39,13 @@ final class EnrichFileDataEvent
         $this->properties = $properties;
     }
 
-    public function getFileReference(): FileInterface
+    public function getProcessed(): FileInterface
     {
-        return $this->fileReference;
+        return $this->processed;
+    }
+
+    public function getOriginal(): FileInterface
+    {
+        return $this->original;
     }
 }
