@@ -11,7 +11,10 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Utility;
 
+use FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\Resource\AbstractFile;
@@ -33,6 +36,7 @@ class FileUtility
     protected RendererRegistry $rendererRegistry;
     protected ImageService  $imageService;
     protected ?ServerRequestInterface $serverRequest;
+    protected EventDispatcherInterface $eventDispatcher;
 
     /**
      * @var array<string, array<string, string>>
@@ -43,12 +47,15 @@ class FileUtility
         ?ContentObjectRenderer $contentObjectRenderer = null,
         ?RendererRegistry $rendererRegistry = null,
         ?ImageService $imageService = null,
-        ?ServerRequestInterface $serverRequest = null
+        ?ServerRequestInterface $serverRequest = null,
+        ?EventDispatcherInterface $eventDispatcher = null
     ) {
-        $this->contentObjectRenderer = $contentObjectRenderer ?? GeneralUtility::makeInstance(ContentObjectRenderer::class);
+        $this->contentObjectRenderer = $contentObjectRenderer ??
+            GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $this->rendererRegistry = $rendererRegistry ?? GeneralUtility::makeInstance(RendererRegistry::class);
         $this->imageService = $imageService ?? GeneralUtility::makeInstance(ImageService::class);
         $this->serverRequest = $serverRequest ?? ($GLOBALS['TYPO3_REQUEST'] ?? null);
+        $this->eventDispatcher = $eventDispatcher ?? GeneralUtility::makeInstance(EventDispatcher::class);
     }
 
     /**
@@ -110,9 +117,19 @@ class FileUtility
             'extension' => $fileReference->getProperty('extension'),
         ];
 
+        $properties = $this->eventDispatcher->dispatch(
+            new EnrichFileDataEvent(
+                $fileReference,
+                array_merge(
+                    $originalProperties,
+                    $processedProperties
+                )
+            )
+        )->getProperties();
+
         return [
             'publicUrl' => $publicUrl,
-            'properties' => array_merge($originalProperties, $processedProperties),
+            'properties' => $properties,
         ];
     }
 

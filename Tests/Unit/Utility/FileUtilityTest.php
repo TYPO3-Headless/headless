@@ -16,6 +16,9 @@ use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
+use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
@@ -204,12 +207,17 @@ class FileUtilityTest extends UnitTestCase
             $imageService = $imageService->reveal();
         }
 
+        $container = new Container();
+        $listenerProvider = new ListenerProvider($container);
+        $eventDispatcher = new EventDispatcher($listenerProvider);
+
         $fileUtility = $this->createPartialMock(FileUtility::class, ['translate']);
         $fileUtility->__construct(
             $contentObjectRenderer->reveal(),
             $rendererRegistry->reveal(),
             $imageService,
-            $serverRequest->reveal()
+            $serverRequest->reveal(),
+            $eventDispatcher
         );
 
         $fileUtility->method('translate')->willReturnCallback(static function ($key, $extension) {
