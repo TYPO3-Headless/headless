@@ -16,6 +16,9 @@ use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
+use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
@@ -30,6 +33,8 @@ use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Typolink\LinkResult;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+
+use function array_merge;
 
 class FileUtilityTest extends UnitTestCase
 {
@@ -202,12 +207,17 @@ class FileUtilityTest extends UnitTestCase
             $imageService = $imageService->reveal();
         }
 
+        $container = new Container();
+        $listenerProvider = new ListenerProvider($container);
+        $eventDispatcher = new EventDispatcher($listenerProvider);
+
         $fileUtility = $this->createPartialMock(FileUtility::class, ['translate']);
         $fileUtility->__construct(
             $contentObjectRenderer->reveal(),
             $rendererRegistry->reveal(),
             $imageService,
-            $serverRequest->reveal()
+            $serverRequest->reveal(),
+            $eventDispatcher
         );
 
         $fileUtility->method('translate')->willReturnCallback(static function ($key, $extension) {
@@ -256,6 +266,10 @@ class FileUtilityTest extends UnitTestCase
         $file->method('getUid')->willReturn($data['uid']);
         $file->method('getPublicUrl')->willReturn('/fileadmin/test-file.jpg');
         if ($overrideToArray !== []) {
+            $_data = array_merge($data, $overrideToArray);
+            $file->method('getProperty')->willReturnCallback(static function ($key) use ($_data) {
+                return $_data[$key] ?? null;
+            });
             $file->method('toArray')->willReturn($overrideToArray);
         } else {
             $file->method('toArray')->willReturn(
