@@ -33,7 +33,7 @@ class Translator
      * @param array<mixed> $renderingOptions
      * @return array<mixed>
      */
-    public function translate(array $formDefinition, array $renderingOptions): array
+    public function translate(array $formDefinition, array $renderingOptions, array $sentValues = []): array
     {
         $result['renderables'] = [];
         $formRuntime = [
@@ -57,7 +57,7 @@ class Translator
                 continue;
             }
 
-            $pageTranslation['renderables'] = $this->translateRenderables($page['renderables'], $formRuntime);
+            $pageTranslation['renderables'] = $this->translateRenderables($page['renderables'], $formRuntime, $sentValues);
 
             $result['renderables'][] = array_replace_recursive($page, $pageTranslation);
         }
@@ -68,15 +68,16 @@ class Translator
     /**
      * @param array<int, mixed> $renderables
      * @param array<string, mixed> $formRuntime
+     * @param array<string, mixed> sentValues
      * @return array<int, mixed>
      */
-    private function translateRenderables(array $renderables, array $formRuntime): array
+    private function translateRenderables(array $renderables, array $formRuntime, array $sentValues): array
     {
         foreach ($renderables as &$element) {
             $properties = [];
 
             if (isset($element['renderables']) && is_array($element['renderables'])) {
-                $element['renderables'] = $this->translateRenderables($element['renderables'], $formRuntime);
+                $element['renderables'] = $this->translateRenderables($element['renderables'], $formRuntime, $sentValues);
             }
 
             if (isset($element['validators']) &&
@@ -133,7 +134,8 @@ class Translator
                 $formRuntime
             );
 
-            $element['defaultValue'] = $translatedDefaultValue ?: ($element['defaultValue'] ?? '');
+            $element['defaultValue'] = $translatedDefaultValue !== '' && $translatedDefaultValue !== null ? $translatedDefaultValue : ($element['defaultValue'] ?? '');
+            $element['value'] = $sentValues[$element['identifier']] ?? null;
             $element['properties'] = $properties;
         }
 
