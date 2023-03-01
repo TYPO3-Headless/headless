@@ -22,7 +22,10 @@ class FloatContentObjectTest extends UnitTestCase
      */
     public function renderTest()
     {
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+
         $contentObject = new FloatContentObject();
+        $contentObject->setContentObjectRenderer($cObj);
         self::assertEquals(0.0, $contentObject->render());
     }
 
@@ -32,7 +35,10 @@ class FloatContentObjectTest extends UnitTestCase
      */
     public function renderWithProviderTest($argument, float $result)
     {
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+
         $contentObject = new FloatContentObject();
+        $contentObject->setContentObjectRenderer($cObj);
         self::assertEquals($result, $contentObject->render($argument));
     }
 
