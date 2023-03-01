@@ -11,7 +11,10 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Utility;
 
+use FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\Resource\AbstractFile;
@@ -58,21 +61,30 @@ class FileUtility
     protected $errors = [];
 
     /**
-     * @param ContentObjectRenderer|null $contentObjectRenderer
-     * @param RendererRegistry|null $rendererRegistry
-     * @param ImageService|null $imageService
-     * @param ServerRequestInterface|null $serverRequest
+     * @var EventDispatcherInterface
+     */
+    private EventDispatcherInterface $eventDispatcher;
+
+    /**
+     * @param ContentObjectRenderer|null    $contentObjectRenderer
+     * @param RendererRegistry|null         $rendererRegistry
+     * @param ImageService|null             $imageService
+     * @param ServerRequestInterface|null   $serverRequest
+     * @param EventDispatcherInterface|null $eventDispatcher
      */
     public function __construct(
         ?ContentObjectRenderer $contentObjectRenderer = null,
         ?RendererRegistry $rendererRegistry = null,
         ?ImageService $imageService = null,
-        ?ServerRequestInterface $serverRequest = null
+        ?ServerRequestInterface $serverRequest = null,
+        ?EventDispatcherInterface $eventDispatcher = null
     ) {
-        $this->contentObjectRenderer = $contentObjectRenderer ?? GeneralUtility::makeInstance(ContentObjectRenderer::class);
+        $this->contentObjectRenderer = $contentObjectRenderer ??
+            GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $this->rendererRegistry = $rendererRegistry ?? GeneralUtility::makeInstance(RendererRegistry::class);
         $this->imageService = $imageService ?? GeneralUtility::makeInstance(ImageService::class);
         $this->serverRequest = $serverRequest ?? ($GLOBALS['TYPO3_REQUEST'] ?? null);
+        $this->eventDispatcher = $eventDispatcher ?? GeneralUtility::makeInstance(EventDispatcher::class);
     }
 
     /**
@@ -139,9 +151,19 @@ class FileUtility
                 ? $fileReference->getProperty('extension') : null,
         ];
 
+        $properties = $this->eventDispatcher->dispatch(
+            new EnrichFileDataEvent(
+                $fileReference,
+                array_merge(
+                    $originalProperties,
+                    $processedProperties
+                )
+            )
+        )->getProperties();
+
         return [
             'publicUrl' => $publicUrl,
-            'properties' => array_merge($originalProperties, $processedProperties),
+            'properties' => $properties,
         ];
     }
 
