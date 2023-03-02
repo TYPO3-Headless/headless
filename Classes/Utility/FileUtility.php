@@ -59,16 +59,21 @@ class FileUtility
     }
 
     /**
-     * @param array $dimensions
-     * @return array
+     * @param array<string,mixed> $dimensions
+     * @return array<string, mixed>
      */
-    public function processFile(FileInterface $fileReference, array $dimensions = [], string $cropVariant = 'default', bool $delayProcessing = false): array
-    {
+    public function processFile(
+        FileInterface $fileReference,
+        array $dimensions = [],
+        string $cropVariant = 'default',
+        bool $delayProcessing = false
+    ): array {
+        $originalFileReference = clone $fileReference;
+        $originalFileUrl = $fileReference->getPublicUrl();
         $fileReferenceUid = $fileReference->getUid();
         $uidLocal = $fileReference->getProperty('uid_local');
         $fileRenderer = $this->rendererRegistry->getRenderer($fileReference);
         $crop = $fileReference->getProperty('crop');
-        $originalFileUrl = $fileReference->getPublicUrl();
         $link = $fileReference->getProperty('link');
         $linkData = null;
 
@@ -117,19 +122,18 @@ class FileUtility
             'extension' => $fileReference->getProperty('extension'),
         ];
 
-        $properties = $this->eventDispatcher->dispatch(
-            new EnrichFileDataEvent(
-                $fileReference,
-                array_merge(
-                    $originalProperties,
-                    $processedProperties
-                )
-            )
-        )->getProperties();
-
         return [
             'publicUrl' => $publicUrl,
-            'properties' => $properties,
+            'properties' => $this->eventDispatcher->dispatch(
+                new EnrichFileDataEvent(
+                    $originalFileReference,
+                    $fileReference,
+                    array_merge(
+                        $originalProperties,
+                        $processedProperties
+                    )
+                )
+            )->getProperties(),
         ];
     }
 
