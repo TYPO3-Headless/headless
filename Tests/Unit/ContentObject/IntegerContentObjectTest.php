@@ -27,8 +27,9 @@ class IntegerContentObjectTest extends UnitTestCase
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
 
-        $booleanContentObject = new IntegerContentObject($cObj);
-        self::assertEquals(0, $booleanContentObject->render());
+        $contentObject = new IntegerContentObject();
+        $contentObject->setContentObjectRenderer($cObj);
+        self::assertEquals(0, $contentObject->render());
     }
 
     /**
@@ -39,8 +40,9 @@ class IntegerContentObjectTest extends UnitTestCase
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
 
-        $booleanContentObject = new IntegerContentObject($cObj);
-        self::assertEquals($result, $booleanContentObject->render($argument));
+        $contentObject = new IntegerContentObject();
+        $contentObject->setContentObjectRenderer($cObj);
+        self::assertEquals($result, $contentObject->render($argument));
     }
 
     public function dataProvider(): array
