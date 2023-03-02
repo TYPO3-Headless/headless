@@ -1,9 +1,12 @@
 tt_content.textmedia =< lib.contentElementWithHeader
-tt_content.textmedia < lib.baseImage
 tt_content.textmedia {
     fields {
         content {
             fields {
+                enlargeImageOnClick = BOOL
+                enlargeImageOnClick {
+                    field = image_zoom
+                }
                 bodytext = TEXT
                 bodytext {
                     field = bodytext
