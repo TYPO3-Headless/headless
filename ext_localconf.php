@@ -87,11 +87,6 @@ call_user_func(
             ];
         }
 
-        if ($features->isFeatureEnabled('headless.supportOldPageOutput')) {
-            $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['typoLink_PostProc'][] =
-                TypolinkHook::class . '->handleLink';
-        }
-
         $rendererRegistry = GeneralUtility::makeInstance(RendererRegistry::class);
         $rendererRegistry->registerRendererClass(YouTubeRenderer::class);
         $rendererRegistry->registerRendererClass(VimeoRenderer::class);

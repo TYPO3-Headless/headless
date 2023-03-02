@@ -1,3 +1,15 @@
+Upgrade from 3.x to 4.x (BC release)
+=======================
+
+TYPO3 versions support
+--
+* `4.x` will support TYPO3 >= `12.4` **only**, if you are still on `11.5` please use `3.x` branch instead.
+
+Removal of JSON output schema (2.x) typoscript template
+--
+With 4.x release we are removing old typoscript template (2.x). Please move your
+instance to new output.
+
 Upgrade from 2.x to 3.x (BC release)
 =======================
 
