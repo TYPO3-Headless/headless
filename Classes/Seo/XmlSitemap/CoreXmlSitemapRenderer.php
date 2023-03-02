@@ -1,5 +1,12 @@
 <?php
 
+/*
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 /*
@@ -33,7 +40,6 @@ use TYPO3Fluid\Fluid\View\TemplateView;
  * This is a 1:1 copy from 12.2, to make compare with core changes easier, the only change are:
  * - removed final keyword
  * - changed methods visiblility private->protected
- *
  */
 class CoreXmlSitemapRenderer
 {
