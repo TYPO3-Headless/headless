@@ -169,11 +169,6 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
         $dataProcessingData = null;
         $features = GeneralUtility::makeInstance(Features::class);
 
-        if ($features->isFeatureEnabled('headless.supportOldPageOutput')) {
-            $dataProcessingData = isset($this->conf['returnNullIfDataProcessingEmpty'])
-            && (int)$this->conf['returnNullIfDataProcessingEmpty'] === 1 ? null : [];
-        }
-
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
             if (isset($data[$value])) {
                 $dataProcessingData = $data[$value];
