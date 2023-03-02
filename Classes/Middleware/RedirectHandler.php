@@ -20,7 +20,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
-use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Redirects\Service\RedirectService;

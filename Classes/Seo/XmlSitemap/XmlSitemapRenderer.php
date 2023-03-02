@@ -6,6 +6,7 @@
  * For the full copyright and license information, please read the
  * LICENSE.md file that was distributed with this source code.
  */
+
 declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Seo\XmlSitemap;
@@ -15,6 +16,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use TYPO3Fluid\Fluid\View\TemplateView;
+
 use function is_array;
 use function parse_url;
 use function trim;
