@@ -16,9 +16,11 @@ use FriendsOfTYPO3\Headless\ContentObject\FloatContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
+use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\Service\MarkerBasedTemplateService;
 use TYPO3\CMS\Core\TimeTracker\TimeTracker;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\CaseContentObject;
@@ -26,6 +28,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectArrayContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectArrayInternalContentObject;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectFactory;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\FilesContentObject;
 use TYPO3\CMS\Frontend\ContentObject\FluidTemplateContentObject;
@@ -43,6 +46,7 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\DataProcessing\DataProcessorRegistry;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
+use function array_values;
 use function json_encode;
 use function md5;
 
@@ -66,7 +70,6 @@ class JsonContentObjectTest extends UnitTestCase
             'USER' => UserContentObject::class,
             'USER_INT' => UserInternalContentObject::class,
             'FILES' => FilesContentObject::class,
-            'IMAGE' => ImageContentObject::class,
             'IMG_RESOURCE' => ImageResourceContentObject::class,
             'CONTENT' => ContentContentObject::class,
             'RECORDS' => RecordsContentObject::class,
@@ -74,25 +77,47 @@ class JsonContentObjectTest extends UnitTestCase
             'CASEFUNC' => CaseContentObject::class,
             'LOAD_REGISTER' => LoadRegisterContentObject::class,
             'RESTORE_REGISTER' => RestoreRegisterContentObject::class,
-            'FLUIDTEMPLATE' => FluidTemplateContentObject::class,
             'SVG' => ScalableVectorGraphicsContentObject::class,
-            'JSON' => JsonContentObject::class,
             'CONTENT_JSON' => JsonContentContentObject::class,
             'INT' => IntegerContentObject::class,
             'FLOAT' => FloatContentObject::class,
             'BOOL' => BooleanContentObject::class,
         ];
 
+        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
+        $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
+
+        $factory = $this->prophesize(ContentObjectFactory::class);
+        $factory->getContentObject(Argument::type('string'), Argument::type('object'), Argument::type('object'))
+            ->will(static function($args) use ($contentObjectRenderer) {
+            $obj = GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'][$args[0]] );
+            $obj->setContentObjectRenderer($contentObjectRenderer);
+
+            return $obj;
+        });
+
+        $container = new Container();
+        $container->set(ContentObjectFactory::class, $factory->reveal());
+
+        GeneralUtility::setContainer($container);
+
+        $contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class, $container, $this->prophesize(DataProcessorRegistry::class)->reveal());
+
+        foreach ($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] as $key => $class) {
+            GeneralUtility::makeInstance($class );
+        }
+
+        GeneralUtility::makeInstance(JsonContentObject::class, $contentDataProcessor );
+        GeneralUtility::makeInstance(ImageContentObject::class, $this->prophesize(MarkerBasedTemplateService::class)->reveal() );
+
         GeneralUtility::makeInstance(TimeTracker::class, false);
-        $contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class, $this->prophesize(Container::class)->reveal(), $this->prophesize(DataProcessorRegistry::class)->reveal());
+
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->uniqueHash()->willReturn(md5('123'));
 
         $GLOBALS['TSFE'] = $tsfe->reveal();
 
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
         $this->contentObject = new JsonContentObject($contentDataProcessor);
         $this->contentObject->setContentObjectRenderer($contentObjectRenderer);
     }
