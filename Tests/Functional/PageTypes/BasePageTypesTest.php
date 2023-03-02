@@ -23,7 +23,7 @@ abstract class BasePageTypesTest extends BaseTest
      * @param string $jsonString
      * @param string $jsonSchemaFile
      */
-    protected function assertJsonSchema($jsonString, $jsonSchemaFile)
+    protected function assertJsonSchema(string $jsonString, string $jsonSchemaFile)
     {
         $retriever = new UriRetriever();
         $schema = $retriever->retrieve(
