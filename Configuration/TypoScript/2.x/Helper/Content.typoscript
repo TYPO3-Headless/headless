@@ -1,7 +1,0 @@
-lib.content = CONTENT_JSON
-lib.content {
-    table = tt_content
-    select {
-        orderBy = sorting
-    }
-}
