@@ -59,7 +59,8 @@
       "typo3/cms-composer-installers": true,
       "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": true,
       "ergebnis/composer-normalize": true,
-      "phpstan/extension-installer": true
+      "phpstan/extension-installer": true,
+      "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": true
     }
   },
   "extra": {
