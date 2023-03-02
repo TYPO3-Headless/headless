@@ -31,7 +31,6 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectArrayInternalContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectFactory;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\FilesContentObject;
-use TYPO3\CMS\Frontend\ContentObject\FluidTemplateContentObject;
 use TYPO3\CMS\Frontend\ContentObject\HierarchicalMenuContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ImageContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ImageResourceContentObject;
@@ -46,7 +45,6 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\DataProcessing\DataProcessorRegistry;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-use function array_values;
 use function json_encode;
 use function md5;
 
@@ -89,12 +87,12 @@ class JsonContentObjectTest extends UnitTestCase
 
         $factory = $this->prophesize(ContentObjectFactory::class);
         $factory->getContentObject(Argument::type('string'), Argument::type('object'), Argument::type('object'))
-            ->will(static function($args) use ($contentObjectRenderer) {
-            $obj = GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'][$args[0]] );
-            $obj->setContentObjectRenderer($contentObjectRenderer);
+            ->will(static function ($args) use ($contentObjectRenderer) {
+                $obj = GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'][$args[0]]);
+                $obj->setContentObjectRenderer($contentObjectRenderer);
 
-            return $obj;
-        });
+                return $obj;
+            });
 
         $container = new Container();
         $container->set(ContentObjectFactory::class, $factory->reveal());
@@ -104,14 +102,13 @@ class JsonContentObjectTest extends UnitTestCase
         $contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class, $container, $this->prophesize(DataProcessorRegistry::class)->reveal());
 
         foreach ($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] as $key => $class) {
-            GeneralUtility::makeInstance($class );
+            GeneralUtility::makeInstance($class);
         }
 
-        GeneralUtility::makeInstance(JsonContentObject::class, $contentDataProcessor );
-        GeneralUtility::makeInstance(ImageContentObject::class, $this->prophesize(MarkerBasedTemplateService::class)->reveal() );
+        GeneralUtility::makeInstance(JsonContentObject::class, $contentDataProcessor);
+        GeneralUtility::makeInstance(ImageContentObject::class, $this->prophesize(MarkerBasedTemplateService::class)->reveal());
 
         GeneralUtility::makeInstance(TimeTracker::class, false);
-
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->uniqueHash()->willReturn(md5('123'));

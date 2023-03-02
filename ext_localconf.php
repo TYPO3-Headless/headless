@@ -8,7 +8,6 @@
  */
 
 use FriendsOfTYPO3\Headless\Hooks\FileOrFolderLinkBuilder;
-use FriendsOfTYPO3\Headless\Hooks\TypolinkHook;
 use FriendsOfTYPO3\Headless\Resource\Rendering\AudioTagRenderer;
 use FriendsOfTYPO3\Headless\Resource\Rendering\VideoTagRenderer;
 use FriendsOfTYPO3\Headless\Resource\Rendering\VimeoRenderer;
