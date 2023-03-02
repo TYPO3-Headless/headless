@@ -28,8 +28,8 @@
   ],
   "require": {
     "ext-json": "*",
-    "typo3/cms-core": "^12.1",
-    "typo3/cms-install": "^12.1"
+    "typo3/cms-core": "^12.2",
+    "typo3/cms-install": "^12.2"
   },
   "require-dev": {
     "ergebnis/composer-normalize": "^2.15.0",
@@ -45,7 +45,8 @@
     "seld/jsonlint": "^1.8",
     "symfony/yaml": "^6.1",
     "typo3/cms-form": "12.*@dev",
-    "typo3/testing-framework": "dev-main"
+    "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": "^0.1.2",
+    "typo3/testing-framework": "^7.0@dev"
   },
   "config": {
     "preferred-install": {
@@ -79,9 +80,6 @@
     }
   },
   "scripts": {
-    "post-autoload-dump": [
-      "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
-    ],
     "ci:composer:normalize": "@composer normalize --dry-run",
     "ci:coverage": [
     "@ci:coverage:unit",
