@@ -20,10 +20,10 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
 abstract class BaseTest extends FunctionalTestCase
 {
-    protected $coreExtensionsToLoad = [
+    protected array $coreExtensionsToLoad = [
         'install'
     ];
-    protected $testExtensionsToLoad = [
+    protected array $testExtensionsToLoad = [
         'typo3conf/ext/headless'
     ];
 
@@ -55,7 +55,7 @@ abstract class BaseTest extends FunctionalTestCase
      * @param string $jsonString
      * @param string $jsonSchemaFile
      */
-    protected function assertJsonSchema($jsonString, $jsonSchemaFile)
+    protected function assertJsonSchema(string $jsonString, string $jsonSchemaFile)
     {
         $data = json_decode($jsonString);
 
