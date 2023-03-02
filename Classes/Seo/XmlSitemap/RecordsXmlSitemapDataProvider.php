@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Seo\XmlSitemap;
 
 /**
+ * TODO is to check if we can get rid of this modification, eg. by changing behaviour of typoLink_URL globaly
+ *
  * @codeCoverageIgnore
  */
 class RecordsXmlSitemapDataProvider extends \TYPO3\CMS\Seo\XmlSitemap\RecordsXmlSitemapDataProvider
