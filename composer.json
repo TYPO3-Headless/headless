@@ -42,10 +42,10 @@
     "phpstan/phpstan": "^1.9",
     "phpunit/phpcov": "^8.2",
     "saschaegerer/phpstan-typo3": "^1.1",
+    "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": "^0.1.2",
     "seld/jsonlint": "^1.8",
     "symfony/yaml": "^6.1",
     "typo3/cms-form": "12.*@dev",
-    "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": "^0.1.2",
     "typo3/testing-framework": "^7.0@dev"
   },
   "config": {

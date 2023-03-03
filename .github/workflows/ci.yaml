@@ -70,7 +70,7 @@ jobs:
       matrix:
         php-versions: [8.1]
         typo3-versions:
-          - {typo3: 12, testing: dev-main}
+          - {typo3: 12, testing: ^7.0@dev}
 
     name: "Run tests with PHP ${{ matrix.php-versions }}
           using TYPO3 ${{ matrix.typo3-versions.typo3 }}
