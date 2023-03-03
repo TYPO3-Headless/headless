@@ -15,33 +15,28 @@ use FriendsOfTYPO3\Headless\XClass\TemplateView;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Fluid\Core\Rendering\RenderingContext;
 use TYPO3\CMS\Fluid\Core\ViewHelper\ViewHelperResolver;
+use TYPO3\CMS\Fluid\View\TemplatePaths;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use TYPO3Fluid\Fluid\Core\Cache\FluidCacheInterface;
 use TYPO3Fluid\Fluid\Core\Variables\StandardVariableProvider;
 use TYPO3Fluid\Fluid\View\Exception\InvalidTemplateResourceException;
-use TYPO3Fluid\Fluid\View\TemplatePaths;
 
 use function json_encode;
 
 class TemplateViewTest extends UnitTestCase
 {
-    public function testTemplateNotFoundOrPHPTemplatesDisabledRender(): void
+    public function testTemplateNotFoundRender(): void
     {
         $this->expectException(InvalidTemplateResourceException::class);
 
         $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1); // fe request
 
-        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], []);
+        $templatePaths = $this->createMock(TemplatePaths::class);
+
+        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
 
         $variableProvider = new StandardVariableProvider();
         $variableProvider->add('settings', ['phpTemplate' => 1]);
-
-        $context->setVariableProvider($variableProvider);
-        $view = new TemplateView($context);
-        $view->render();
-
-        $variableProvider = new StandardVariableProvider();
-        $variableProvider->add('settings', ['phpTemplate' => 0]);
 
         $context->setVariableProvider($variableProvider);
         $view = new TemplateView($context);
@@ -52,18 +47,16 @@ class TemplateViewTest extends UnitTestCase
     {
         $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1); // fe request
 
-        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], []);
+        $templatePaths = $this->createMock(TemplatePaths::class);
+        $templatePaths->method('resolveTemplateFileForControllerAndActionAndFormat')->willReturn(__DIR__ . '/Fixtures/Templates/Default/Default.php');
+
+        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
 
         $variableProvider = new StandardVariableProvider();
         $variableProvider->add('settings', ['phpTemplate' => 1]);
         $variableProvider->add('testValue', 'TestingJsonValue');
 
         $context->setVariableProvider($variableProvider);
-
-        $templatePaths = $this->createMock(TemplatePaths::class);
-        $templatePaths->method('resolveTemplateFileForControllerAndActionAndFormat')->willReturn(__DIR__ . '/Fixtures/Templates/Default/Default.php');
-
-        $context->setTemplatePaths($templatePaths);
 
         $view = new TemplateView($context);
 
