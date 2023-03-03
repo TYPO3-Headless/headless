@@ -24,6 +24,7 @@ class JsonDecoderTest extends UnitTestCase
     protected function setUp(): void
     {
         $this->resetSingletonInstances = true;
+        parent::setUp();
     }
 
     /**

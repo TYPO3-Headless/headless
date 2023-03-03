@@ -54,6 +54,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
             $this->contentDataProcessor->reveal(),
             $this->typoScriptService->reveal(),
         ]);
+        parent::setUp();
     }
 
     /**
