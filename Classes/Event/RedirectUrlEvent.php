@@ -17,31 +17,18 @@ use Psr\Http\Message\UriInterface;
 
 class RedirectUrlEvent implements StoppableEventInterface
 {
-    private $propagationStopped = false;
-    /**
-     * @var string
-     */
-    private $targetUrl;
+    private bool $propagationStopped = false;
+    private string $targetUrl;
     /**
      * @var array<string, mixed>
      */
-    private $redirectRecord;
-    /**
-     * @var int
-     */
-    private $targetStatusCode;
-    /**
-     * @var ServerRequestInterface
-     */
-    private $request;
-    /**
-     * @var UriInterface
-     */
-    private $originalTargetUrl;
+    private array $redirectRecord;
+    private int $targetStatusCode;
+    private ServerRequestInterface $request;
+    private UriInterface $originalTargetUrl;
 
     /**
-     * @param string $targetUrl
-     * @param array $redirectRecord
+     * @param array<string, mixed> $redirectRecord
      */
     public function __construct(
         ServerRequestInterface $request,
@@ -57,65 +44,41 @@ class RedirectUrlEvent implements StoppableEventInterface
         $this->originalTargetUrl = $originalTargetUrl;
     }
 
-    /**
-     * @return ServerRequestInterface
-     */
     public function getRequest(): ServerRequestInterface
     {
         return $this->request;
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     */
     public function setRequest(ServerRequestInterface $request): void
     {
         $this->request = $request;
     }
 
-    /**
-     * @return string
-     */
     public function getTargetUrl(): string
     {
         return $this->targetUrl;
     }
 
-    /**
-     * @param string $targetUrl
-     */
     public function setTargetUrl(string $targetUrl): void
     {
         $this->targetUrl = $targetUrl;
     }
 
-    /**
-     * @return int
-     */
     public function getTargetStatusCode(): int
     {
         return $this->targetStatusCode;
     }
 
-    /**
-     * @param int $targetStatusCode
-     */
     public function setTargetStatusCode(int $targetStatusCode): void
     {
         $this->targetStatusCode = $targetStatusCode;
     }
 
-    /**
-     * @return UriInterface
-     */
     public function getOriginalTargetUrl(): UriInterface
     {
         return $this->originalTargetUrl;
     }
 
-    /**
-     * @return mixed[]
-     */
     public function getRedirectRecord(): array
     {
         return $this->redirectRecord;

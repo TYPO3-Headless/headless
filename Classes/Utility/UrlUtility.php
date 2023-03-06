@@ -20,13 +20,14 @@ use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_merge;
-use function count;
 use function rtrim;
+use function str_contains;
 use function str_replace;
 use function strpos;
 
@@ -56,7 +57,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         }
     }
 
-    public function withSite(Site $site): self
+    public function withSite(Site $site): HeadlessFrontendUrlInterface
     {
         return $this->handleSiteConfiguration($site, clone $this);
     }
@@ -71,43 +72,51 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $this->handleLanguageConfiguration($language, clone $this);
     }
 
-    public function getFrontendUrlForPage(string $url, int $pageUid, string $returnField = 'frontendBase'): string
+    public function getFrontendUrlWithSite($url, SiteInterface $site, string $returnField = 'frontendBase'): string
     {
         if (!$this->features->isFeatureEnabled('headless.frontendUrls')) {
             return $url;
         }
 
+        $base = $site->getBase()->getHost();
+        $port = $site->getBase()->getPort();
+        $configuration = $site->getConfiguration();
+
+        $frontendBaseUrl = $this->resolveWithVariants(
+            $configuration[$returnField] ?? '',
+            $configuration['baseVariants'] ?? [],
+            $returnField
+        );
+
+        if ($frontendBaseUrl === '') {
+            return $url;
+        }
+
+        $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
+        $frontBase = $frontendBase->getHost();
+        $frontPort = $frontendBase->getPort();
+
+        if (str_contains($url, $base)) {
+            $url = str_replace($base, $frontBase, $url);
+        }
+
+        if ($port === $frontPort) {
+            return $url;
+        }
+        return str_replace(
+            $frontBase . ($port ? ':' . $port : ''),
+            $frontBase . ($frontPort ? ':' . $frontPort : ''),
+            $url
+        );
+    }
+
+    public function getFrontendUrlForPage(string $url, int $pageUid, string $returnField = 'frontendBase'): string
+    {
         try {
-            $site = $this->siteFinder->getSiteByPageId($pageUid);
-            $base = $site->getBase()->getHost();
-            $port = $site->getBase()->getPort();
-            $configuration = $site->getConfiguration();
-
-            $frontendBaseUrl = $this->resolveWithVariants(
-                $configuration[$returnField] ?? '',
-                $configuration['baseVariants'] ?? [],
+            return $this->getFrontendUrlWithSite(
+                $url,
+                $this->siteFinder->getSiteByPageId($pageUid),
                 $returnField
-            );
-
-            if ($frontendBaseUrl === '') {
-                return $url;
-            }
-
-            $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
-            $frontBase = $frontendBase->getHost();
-            $frontPort = $frontendBase->getPort();
-
-            if (strpos($url, $base) !== false) {
-                $url = str_replace($base, $frontBase, $url);
-            }
-
-            if ($port === $frontPort) {
-                return $url;
-            }
-            return str_replace(
-                $frontBase . ($port ? ':' . $port : ''),
-                $frontBase . ($frontPort ? ':' . $frontPort : ''),
-                $url
             );
         } catch (SiteNotFoundException $e) {
             $this->logError($e->getMessage());
@@ -185,7 +194,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         array $variants = [],
         string $returnField = 'frontendBase'
     ): string {
-        if (count($variants) === 0) {
+        if ($variants === []) {
             return $frontendUrl;
         }
 

@@ -72,12 +72,12 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
             return parent::buildRedirectResponse($uri, $redirectRecord);
         }
 
-        $this->urlUtility = $this->urlUtility->withSite($site);
+        $this->urlUtility = $this->urlUtility->withRequest($this->request);
 
         $redirectUrlEvent = new RedirectUrlEvent(
             $this->request,
             $uri,
-            $this->urlUtility->prepareRelativeUrlIfPossible((string)$uri),
+            $this->urlUtility->prepareRelativeUrlIfPossible($this->urlUtility->getFrontendUrlWithSite((string)$uri, $site)),
             (int)$redirectRecord['target_statuscode'],
             $redirectRecord
         );

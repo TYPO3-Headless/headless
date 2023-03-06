@@ -16,13 +16,11 @@ use FriendsOfTYPO3\Headless\XClass\ResourceLocalDriver;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
 use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
-use TYPO3\CMS\Core\Routing\PageRouter;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Form\Controller\FormFrontendController;
 use TYPO3\CMS\Form\Domain\Runtime\FormRuntime;
-use TYPO3\CMS\Frontend\Typolink\PageLinkBuilder;
 use TYPO3\CMS\FrontendLogin\Controller\LoginController;
 use TYPO3\CMS\Workspaces\Controller\PreviewController;
 use TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder;
@@ -40,16 +38,6 @@ call_user_func(
         ];
 
         $features = GeneralUtility::makeInstance(Features::class);
-
-        if ($features->isFeatureEnabled('headless.frontendUrls')) {
-            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][PageRouter::class] = [
-                'className' => FriendsOfTYPO3\Headless\XClass\Routing\PageRouter::class
-            ];
-
-            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][PageLinkBuilder::class] = [
-                'className' => FriendsOfTYPO3\Headless\XClass\Typolink\PageLinkBuilder::class,
-            ];
-        }
 
         if ($features->isFeatureEnabled('headless.storageProxy')) {
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][LocalDriver::class] = [
