@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Tests\Unit\Form\Decorator;
+namespace FriendsOfTYPO3\Headless\Testss\Unit\Form\Decorator;
 
 use FriendsOfTYPO3\Headless\Form\Decorator\DefinitionDecoratorInterface;
 use FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator;

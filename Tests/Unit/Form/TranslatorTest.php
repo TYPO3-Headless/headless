@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Tests\Unit\Form;
+namespace FriendsOfTYPO3\Headless\Testss\Unit\Form;
 
 use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
 use FriendsOfTYPO3\Headless\Form\Translator;
