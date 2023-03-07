@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Testss\Unit\Form\Decorator;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\Form\Decorator;
 
 use FriendsOfTYPO3\Headless\Form\Decorator\AbstractFormDefinitionDecorator;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
