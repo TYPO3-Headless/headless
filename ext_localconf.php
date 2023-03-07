@@ -30,7 +30,6 @@ defined('TYPO3') || die();
 call_user_func(
     static function () {
         $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'headless/Configuration/TypoScript/';
-        $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'headless/Configuration/TypoScript/2.x/';
 
         $GLOBALS['TYPO3_CONF_VARS']['FE']['typolinkBuilder']['file'] = FileOrFolderLinkBuilder::class;
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['fluid']['namespaces']['headless'] = [
@@ -65,7 +64,7 @@ call_user_func(
             ];
         }
 
-        if (ExtensionManagementUtility::isLoaded('workspaces') && $features->isFeatureEnabled('headless.workspaces')) {
+        if (ExtensionManagementUtility::isLoaded('workspaces')) {
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][PreviewController::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\Controller\PreviewController::class
             ];

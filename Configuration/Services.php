@@ -16,6 +16,7 @@ use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
 use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
+use FriendsOfTYPO3\Headless\Event\Listener\AfterPagePreviewUriGeneratedListener;
 use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
@@ -65,6 +66,7 @@ return static function (ContainerConfigurator $configurator): void {
     $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
     $services->set(FormTranslationService::class)->arg('$runtimeCache', service('cache.runtime'))->public();
     $services->set(AfterLinkIsGeneratedListener::class)->tag('event.listener', ['identifier' => 'headless/AfterLinkIsGenerated']);
+    $services->set(AfterPagePreviewUriGeneratedListener::class)->tag('event.listener', ['identifier' => 'headless/AfterPagePreviewUriGenerated']);
 
     $features = GeneralUtility::makeInstance(Features::class);
 

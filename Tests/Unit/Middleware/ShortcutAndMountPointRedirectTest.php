@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\Middleware;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\ShortcutAndMountPointRedirect;
 use Prophecy\Argument;

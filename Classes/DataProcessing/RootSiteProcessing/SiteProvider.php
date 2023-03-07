@@ -171,9 +171,7 @@ class SiteProvider implements SiteProviderInterface
             ->from('pages')
             ->where('is_siteroot = 1')
             ->andWhere('hidden = 0')
-            ->andWhere('deleted = 0')
-            ->andWhere('pid = ' . $queryBuilder->createNamedParameter($pid, \PDO::PARAM_INT))
-            ->execute();
+            ->andWhere('deleted = 0')->andWhere('pid = ' . $queryBuilder->createNamedParameter($pid, \PDO::PARAM_INT))->executeQuery();
 
         $pagesData = [];
 
@@ -211,9 +209,7 @@ class SiteProvider implements SiteProviderInterface
         $pagesData = [];
         $stmt = $queryBuilder
             ->select(...$columns)
-            ->from('pages')
-            ->where('uid IN (' . $queryBuilder->createNamedParameter($rootPagesId, Connection::PARAM_INT_ARRAY) . ')')
-            ->execute();
+            ->from('pages')->where('uid IN (' . $queryBuilder->createNamedParameter($rootPagesId, Connection::PARAM_INT_ARRAY) . ')')->executeQuery();
 
         if ($stmt instanceof Result) {
             $pagesData = $stmt->fetchAllAssociative();

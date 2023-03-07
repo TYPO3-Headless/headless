@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\Event;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\Event;
 
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
 use Prophecy\PhpUnit\ProphecyTrait;
