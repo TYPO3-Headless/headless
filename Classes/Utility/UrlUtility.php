@@ -74,14 +74,14 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
     public function getFrontendUrlWithSite($url, SiteInterface $site, string $returnField = 'frontendBase'): string
     {
-        if (!$this->features->isFeatureEnabled('headless.frontendUrls')) {
+        $configuration = $site->getConfiguration();
+
+        if (!($configuration['headless'] ?? false)) {
             return $url;
         }
 
         $base = $site->getBase()->getHost();
         $port = $site->getBase()->getPort();
-        $configuration = $site->getConfiguration();
-
         $frontendBaseUrl = $this->resolveWithVariants(
             $configuration[$returnField] ?? '',
             $configuration['baseVariants'] ?? [],

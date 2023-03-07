@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Functional;
+namespace FriendsOfTYPO3\Headless\Tests\Functional;
 
 use JsonSchema\SchemaStorage;
 use JsonSchema\Uri\UriRetriever;

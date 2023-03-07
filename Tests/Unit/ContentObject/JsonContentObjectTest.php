@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\ContentObject;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\FloatContentObject;

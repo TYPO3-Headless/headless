@@ -9,9 +9,9 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Functional\ContentTypes;
+namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
-use FriendsOfTYPO3\Headless\Test\Functional\BaseTest;
+use FriendsOfTYPO3\Headless\Tests\Functional\BaseTest;
 
 abstract class BaseContentTypeTest extends BaseTest
 {

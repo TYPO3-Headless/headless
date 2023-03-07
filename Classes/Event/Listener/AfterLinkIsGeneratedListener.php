@@ -21,8 +21,8 @@ use function is_numeric;
 final class AfterLinkIsGeneratedListener
 {
     public function __construct(
-        private HeadlessFrontendUrlInterface $urlUtility,
-        private LinkService $linkService
+        private readonly HeadlessFrontendUrlInterface $urlUtility,
+        private readonly LinkService $linkService
     ) {
     }
 

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\DataProcessing;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing;
 
 use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing\TestDomainSchema;

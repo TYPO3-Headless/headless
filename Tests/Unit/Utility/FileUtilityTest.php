@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\Utility;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\Utility;
 
 use FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;

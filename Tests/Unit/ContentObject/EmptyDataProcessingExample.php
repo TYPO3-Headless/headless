@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
-
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 
 class EmptyDataProcessingExample implements DataProcessorInterface

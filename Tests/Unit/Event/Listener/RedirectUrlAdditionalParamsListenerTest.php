@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\Event\Listener;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Event\Listener\RedirectUrlAdditionalParamsListener;
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
