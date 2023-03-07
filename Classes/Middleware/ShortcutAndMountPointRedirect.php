@@ -15,20 +15,25 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
+use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
+use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+use TYPO3\CMS\Frontend\Controller\ErrorController;
+
+use TYPO3\CMS\Frontend\Page\PageAccessFailureReasons;
 
 use function is_array;
 use function parse_url;
 
-class ShortcutAndMountPointRedirect implements MiddlewareInterface
+class ShortcutAndMountPointRedirect implements MiddlewareInterface, LoggerAwareInterface
 {
-    private ?TypoScriptFrontendController $controller;
-
+    use LoggerAwareTrait;
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $queryParams = $request->getQueryParams();
@@ -38,14 +43,18 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        $this->controller = $request->getAttribute('frontend.controller');
-        if ($this->controller === null && isset($GLOBALS['TSFE'])) {
-            $this->controller = $GLOBALS['TSFE'];
-        }
+        $exposeInformation = $GLOBALS['TYPO3_CONF_VARS']['FE']['exposeRedirectInformation'] ?? false;
 
-        $redirectToUri = $this->getRedirectUri($request);
+        // Check for shortcut page and mount point redirect
+        try {
+            $redirectToUri = $this->getRedirectUri($request);
+        } catch (ImmediateResponseException $e) {
+            return $e->getResponse();
+        }
         if ($redirectToUri !== null && $redirectToUri !== (string)$request->getUri()) {
-            $this->releaseTypoScriptFrontendControllerLocks();
+            /** @var PageArguments $pageArguments */
+            $pageArguments = $request->getAttribute('routing', null);
+            $message = 'TYPO3 Shortcut/Mountpoint' . ($exposeInformation ? ' at page with ID ' . $pageArguments->getPageId() : '');
 
             if ($this->isHeadlessEnabled($request)) {
                 $parsed = parse_url($redirectToUri);
@@ -55,27 +64,43 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
                 }
             }
 
-            return new RedirectResponse($redirectToUri, 307);
+            return new RedirectResponse(
+                $redirectToUri,
+                307,
+                ['X-Redirect-By' => $message]
+            );
         }
 
         // See if the current page is of doktype "External URL", if so, do a redirect as well.
-        if (
-            empty($this->controller->config['config']['disablePageExternalUrl'] ?? null)
-            && PageRepository::DOKTYPE_LINK === (int)$this->controller->page['doktype']
-        ) {
+        $controller = $request->getAttribute('frontend.controller');
+        if ((int)$controller->page['doktype'] === PageRepository::DOKTYPE_LINK) {
             $externalUrl = $this->prefixExternalPageUrl(
-                $this->controller->page['url'],
+                $controller->page['url'],
                 $request->getAttribute('normalizedParams')->getSiteUrl()
             );
-
-            if ($externalUrl !== '') {
-                $this->releaseTypoScriptFrontendControllerLocks();
+            $message = 'TYPO3 External URL' . ($exposeInformation ? ' at page with ID ' . $controller->page['uid'] : '');
+            if (!empty($externalUrl)) {
                 if ($this->isHeadlessEnabled($request)) {
                     return new JsonResponse(['redirectUrl' => $externalUrl, 'statusCode' => 303]);
                 }
 
-                return new RedirectResponse($externalUrl, 303);
+                return new RedirectResponse(
+                    $externalUrl,
+                    303,
+                    ['X-Redirect-By' => $message]
+                );
             }
+            $this->logger->error(
+                'Page of type "External URL" could not be resolved properly',
+                [
+                    'page' => $controller->page,
+                ]
+            );
+            return GeneralUtility::makeInstance(ErrorController::class)->pageNotFoundAction(
+                $request,
+                'Page of type "External URL" could not be resolved properly',
+                $controller->getPageAccessFailureReasons(PageAccessFailureReasons::INVALID_EXTERNAL_URL)
+            );
         }
 
         return $handler->handle($request);
@@ -83,13 +108,9 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
 
     protected function getRedirectUri(ServerRequestInterface $request): ?string
     {
-        $redirectToUri = $this->controller->getRedirectUriForShortcut($request);
-        return $redirectToUri ?? $this->controller->getRedirectUriForMountPoint($request);
-    }
-
-    protected function releaseTypoScriptFrontendControllerLocks(): void
-    {
-        $this->controller->releaseLocks();
+        $controller = $request->getAttribute('frontend.controller');
+        $redirectToUri = $controller->getRedirectUriForShortcut($request);
+        return $redirectToUri ?? $controller->getRedirectUriForMountPoint($request);
     }
 
     /**
@@ -102,17 +123,12 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
     protected function prefixExternalPageUrl(string $redirectTo, string $sitePrefix): string
     {
         $uI = parse_url($redirectTo);
-
-        if (!$uI) {
-            return $redirectTo;
-        }
-
         // If relative path, prefix Site URL
         // If it's a valid email without protocol, add "mailto:"
         if (!($uI['scheme'] ?? false)) {
             if (GeneralUtility::validEmail($redirectTo)) {
                 $redirectTo = 'mailto:' . $redirectTo;
-            } elseif ($redirectTo[0] !== '/') {
+            } elseif (!str_starts_with($redirectTo, '/')) {
                 $redirectTo = $sitePrefix . $redirectTo;
             }
         }

@@ -52,8 +52,6 @@ return (static function (): array {
         return $middlewares;
     }
 
-    $rearrangedMiddlewares = $features->isFeatureEnabled('rearrangedRedirectMiddlewares');
-
     return array_merge_recursive($middlewares, [
         'frontend' => [
             'typo3/cms-redirects/redirecthandler' => [
@@ -65,10 +63,10 @@ return (static function (): array {
             'headless/cms-redirects/redirecthandler' => [
                 'target' => RedirectHandler::class,
                 'before' => [
-                    $rearrangedMiddlewares ? 'typo3/cms-frontend/base-redirect-resolver' : 'typo3/cms-frontend/page-resolver',
+                    'typo3/cms-frontend/base-redirect-resolver',
                 ],
                 'after' => [
-                    $rearrangedMiddlewares ? 'typo3/cms-frontend/authentication' : 'typo3/cms-frontend/static-route-resolver',
+                    'typo3/cms-frontend/authentication',
                 ],
             ],
             'headless/cms-frontend/shortcut-and-mountpoint-redirect' => [
