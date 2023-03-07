@@ -15,11 +15,13 @@ use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
 use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
+use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
-use FriendsOfTYPO3\Headless\Seo\XmlSitemap\XmlSitemapRenderer;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use TYPO3\CMS\Core\Configuration\Features;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Controller\FormFrontendController;
 use TYPO3\CMS\FrontendLogin\Controller\LoginController;
 
@@ -34,14 +36,14 @@ return static function (ContainerConfigurator $configurator): void {
 
     $toLoad = $services->load('FriendsOfTYPO3\\Headless\\', '../Classes/*');
 
-    $excludes = ['../Classes/Seo/XmlSitemap/XmlSitemapRenderer.php'];
+    $excludes = [];
 
     if (!class_exists(FormFrontendController::class, false)) {
-        $excludes = array_merge($excludes, [
+        $excludes = [
             '../Classes/Form/*',
             '../Classes/XClass/Controller/FormFrontendController.php',
             '../Classes/XClass/FormRuntime.php',
-        ]);
+        ];
     }
 
     if (!class_exists(LoginController::class, false)) {
@@ -61,6 +63,12 @@ return static function (ContainerConfigurator $configurator): void {
     $toLoad->set(FloatContentObject::class)->tag('frontend.contentobject', ['identifier'=> 'FLOAT']);
 
     $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
-    $services->set(XmlSitemapRenderer::class)->public()->share(false);
     $services->set(FormTranslationService::class)->arg('$runtimeCache', service('cache.runtime'))->public();
+    $services->set(AfterLinkIsGeneratedListener::class)->tag('event.listener', ['identifier' => 'headless/AfterLinkIsGenerated']);
+
+    $features = GeneralUtility::makeInstance(Features::class);
+
+    if ($features->isFeatureEnabled('headless.overrideFluidTemplates')) {
+        $services->alias(\TYPO3\CMS\Fluid\View\TemplateView::class, \FriendsOfTYPO3\Headless\XClass\TemplateView::class);
+    }
 };

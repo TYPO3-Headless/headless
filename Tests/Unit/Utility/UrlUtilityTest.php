@@ -413,7 +413,7 @@ class UrlUtilityTest extends UnitTestCase
         $resolver->evaluate(Argument::any())->willReturn(true);
 
         $siteFinder = $this->prophesize(SiteFinder::class);
-        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalledOnce()->willReturn($site->reveal());
+        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalled(2)->willReturn($site->reveal());
 
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
         $urlUtility = $urlUtility->withSite($site->reveal());
@@ -457,7 +457,7 @@ class UrlUtilityTest extends UnitTestCase
         $resolver->evaluate(Argument::any())->willReturn(true);
 
         $siteFinder = $this->prophesize(SiteFinder::class);
-        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalledOnce()->willReturn($site->reveal());
+        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalled(2)->willReturn($site->reveal());
 
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
         $urlUtility = $urlUtility->withSite($site->reveal());
@@ -501,7 +501,7 @@ class UrlUtilityTest extends UnitTestCase
         $resolver->evaluate(Argument::any())->willReturn(true);
 
         $siteFinder = $this->prophesize(SiteFinder::class);
-        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalledOnce()->willReturn($site->reveal());
+        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalled(2)->willReturn($site->reveal());
 
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
         $urlUtility = $urlUtility->withSite($site->reveal());

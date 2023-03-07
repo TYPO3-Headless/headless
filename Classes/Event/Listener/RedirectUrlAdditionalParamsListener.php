@@ -13,16 +13,16 @@ namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
-use FriendsOfTYPO3\Headless\XClass\Routing\PageRouter;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
+use TYPO3\CMS\Core\LinkHandling\TypoLinkCodecService;
 use TYPO3\CMS\Core\Resource\Exception\InvalidPathException;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Folder;
+use TYPO3\CMS\Core\Routing\PageRouter;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\Service\TypoLinkCodecService;
 
 use function parse_str;
 use function strpos;
@@ -95,7 +95,6 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
      * @todo this metod is not fully utilized, author should take a look at it
      * @codeCoverageIgnore
      *
-     * @param string $redirectTarget
      * @return array
      */
     protected function resolveLinkDetailsFromLinkTarget(string $redirectTarget): array
@@ -131,9 +130,6 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
 
     /**
      * @codeCoverageIgnore
-     *
-     * @param Site $site
-     * @return PageRouter
      */
     protected function getPageRouterForSite(Site $site): PageRouter
     {
@@ -143,7 +139,6 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
     /**
      * @codeCoverageIgnore
      *
-     * @param string $message
      * @param array $context
      */
     protected function logError(string $message, array $context): void
