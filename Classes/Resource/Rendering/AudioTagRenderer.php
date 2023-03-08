@@ -34,13 +34,12 @@ class AudioTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\AudioTagRender
      * @param int|string $width TYPO3 known format; examples: 220, 200m or 200c
      * @param int|string $height TYPO3 known format; examples: 220, 200m or 200c
      * @param array $options
-     * @param bool $usedPathsRelativeToCurrentScript See $file->getPublicUrl()
      * @return string
      */
-    public function render(FileInterface $file, $width, $height, array $options = [], $usedPathsRelativeToCurrentScript = false): string
+    public function render(FileInterface $file, $width, $height, array $options = []): string
     {
         if (($options['returnUrl'] ?? false) === true) {
-            return htmlspecialchars(GeneralUtility::makeInstance(FileUtility::class)->getAbsoluteUrl($file->getPublicUrl($usedPathsRelativeToCurrentScript)), ENT_QUOTES | ENT_HTML5);
+            return htmlspecialchars(GeneralUtility::makeInstance(FileUtility::class)->getAbsoluteUrl($file->getPublicUrl()), ENT_QUOTES | ENT_HTML5);
         }
         return parent::render(...func_get_args());
     }
