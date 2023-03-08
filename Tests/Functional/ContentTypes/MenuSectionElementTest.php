@@ -31,7 +31,7 @@ class MenuSectionElementTest extends BaseContentTypeTest
         self::assertIsArray($contentElement['content']);
         self::assertIsArray($contentElement['content']['menu']);
         self::assertIsArray($contentElement['content']['menu'][0]);
-//        self::assertIsArray($contentElement['content']['menu'][1]);
+        self::assertIsArray($contentElement['content']['menu'][1]);
 
         self::assertEquals('Root', $contentElement['content']['menu'][0]['title']);
         self::assertEquals('/', $contentElement['content']['menu'][0]['link']);
@@ -41,12 +41,12 @@ class MenuSectionElementTest extends BaseContentTypeTest
         self::assertIsArray($contentElement['content']['menu'][0]['media']);
         self::assertIsArray($contentElement['content']['menu'][0]['content']);
 
-//        self::assertEquals('Page 2', $contentElement['content']['menu'][1]['title']);
-//        self::assertEquals('/page2', $contentElement['content']['menu'][1]['link']);
-//        self::assertEquals('0', $contentElement['content']['menu'][1]['active']);
-//        self::assertEquals('0', $contentElement['content']['menu'][1]['current']);
-//        self::assertEquals('0', $contentElement['content']['menu'][1]['spacer']);
-//        self::assertIsArray($contentElement['content']['menu'][1]['media']);
-//        self::assertIsArray($contentElement['content']['menu'][1]['content']);
+        self::assertEquals('Page 2', $contentElement['content']['menu'][1]['title']);
+        self::assertEquals('/page2', $contentElement['content']['menu'][1]['link']);
+        self::assertEquals('0', $contentElement['content']['menu'][1]['active']);
+        self::assertEquals('0', $contentElement['content']['menu'][1]['current']);
+        self::assertEquals('0', $contentElement['content']['menu'][1]['spacer']);
+        self::assertIsArray($contentElement['content']['menu'][1]['media']);
+        self::assertIsArray($contentElement['content']['menu'][1]['content']);
     }
 }

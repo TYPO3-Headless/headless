@@ -35,33 +35,33 @@ class MenuRelatedPagesElementTest extends BaseContentTypeTest
         self::assertIsArray($contentElement['content']);
         self::assertIsArray($contentElement['content']['menu']);
         self::assertIsArray($contentElement['content']['menu'][0]);
-//        self::assertIsArray($contentElement['content']['menu'][1]);
-//
-//        self::assertEquals('Page 10', $contentElement['content']['menu'][0]['title']);
-//        self::assertEquals('/page10', $contentElement['content']['menu'][0]['link']);
-//        self::assertEquals('0', $contentElement['content']['menu'][0]['active']);
-//        self::assertEquals('0', $contentElement['content']['menu'][0]['current']);
-//        self::assertEquals('0', $contentElement['content']['menu'][0]['spacer']);
-//        self::assertArrayNotHasKey('children', $contentElement['content']['menu'][0]);
-//        self::assertIsArray($contentElement['content']['menu'][0]['media']);
-//        self::assertEmpty($contentElement['content']['menu'][0]['media']);
-//
-//        self::assertEquals('Page 8', $contentElement['content']['menu'][1]['title']);
-//        self::assertEquals('/page8', $contentElement['content']['menu'][1]['link']);
-//        self::assertEquals('0', $contentElement['content']['menu'][1]['active']);
-//        self::assertEquals('0', $contentElement['content']['menu'][1]['current']);
-//        self::assertEquals('0', $contentElement['content']['menu'][1]['spacer']);
-//        self::assertArrayNotHasKey('children', $contentElement['content']['menu'][1]);
-//        self::assertIsArray($contentElement['content']['menu'][1]['media']);
-//        self::assertEmpty($contentElement['content']['menu'][1]['media']);
-//
-//        self::assertEquals('Page 9', $contentElement['content']['menu'][2]['title']);
-//        self::assertEquals('/page9', $contentElement['content']['menu'][2]['link']);
-//        self::assertEquals('0', $contentElement['content']['menu'][2]['active']);
-//        self::assertEquals('0', $contentElement['content']['menu'][2]['current']);
-//        self::assertEquals('0', $contentElement['content']['menu'][2]['spacer']);
-//        self::assertArrayNotHasKey('children', $contentElement['content']['menu'][2]);
-//        self::assertIsArray($contentElement['content']['menu'][2]['media']);
-//        self::assertEmpty($contentElement['content']['menu'][2]['media']);
+        self::assertIsArray($contentElement['content']['menu'][1]);
+
+        self::assertEquals('Page 10', $contentElement['content']['menu'][0]['title']);
+        self::assertEquals('/page10', $contentElement['content']['menu'][0]['link']);
+        self::assertEquals('0', $contentElement['content']['menu'][0]['active']);
+        self::assertEquals('0', $contentElement['content']['menu'][0]['current']);
+        self::assertEquals('0', $contentElement['content']['menu'][0]['spacer']);
+        self::assertArrayNotHasKey('children', $contentElement['content']['menu'][0]);
+        self::assertIsArray($contentElement['content']['menu'][0]['media']);
+        self::assertEmpty($contentElement['content']['menu'][0]['media']);
+
+        self::assertEquals('Page 8', $contentElement['content']['menu'][1]['title']);
+        self::assertEquals('/page8', $contentElement['content']['menu'][1]['link']);
+        self::assertEquals('0', $contentElement['content']['menu'][1]['active']);
+        self::assertEquals('0', $contentElement['content']['menu'][1]['current']);
+        self::assertEquals('0', $contentElement['content']['menu'][1]['spacer']);
+        self::assertArrayNotHasKey('children', $contentElement['content']['menu'][1]);
+        self::assertIsArray($contentElement['content']['menu'][1]['media']);
+        self::assertEmpty($contentElement['content']['menu'][1]['media']);
+
+        self::assertEquals('Page 9', $contentElement['content']['menu'][2]['title']);
+        self::assertEquals('/page9', $contentElement['content']['menu'][2]['link']);
+        self::assertEquals('0', $contentElement['content']['menu'][2]['active']);
+        self::assertEquals('0', $contentElement['content']['menu'][2]['current']);
+        self::assertEquals('0', $contentElement['content']['menu'][2]['spacer']);
+        self::assertArrayNotHasKey('children', $contentElement['content']['menu'][2]);
+        self::assertIsArray($contentElement['content']['menu'][2]['media']);
+        self::assertEmpty($contentElement['content']['menu'][2]['media']);
     }
 }
