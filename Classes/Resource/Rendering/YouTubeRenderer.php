@@ -32,10 +32,9 @@ class YouTubeRenderer extends \TYPO3\CMS\Core\Resource\Rendering\YouTubeRenderer
      * @param int|string $width TYPO3 known format; examples: 220, 200m or 200c
      * @param int|string $height TYPO3 known format; examples: 220, 200m or 200c
      * @param array $options
-     * @param bool $usedPathsRelativeToCurrentScript See $file->getPublicUrl()
      * @return string
      */
-    public function render(FileInterface $file, $width, $height, array $options = [], $usedPathsRelativeToCurrentScript = false): string
+    public function render(FileInterface $file, $width, $height, array $options = []): string
     {
         if (($options['returnUrl'] ?? false) === true) {
             $options = $this->collectOptions($options, $file);
