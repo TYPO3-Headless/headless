@@ -222,7 +222,12 @@ class FilesProcessor implements DataProcessorInterface
 
                 $data[] = $file;
             } else {
-                $data[$key] = $this->getFileUtility()->processFile($fileObject, $properties, $cropVariant);
+                $data[$key] = $this->getFileUtility()->processFile(
+                    $fileObject,
+                    $properties,
+                    $cropVariant,
+                    (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1
+                );
 
                 $crop = $fileObject->getProperty('crop');
 
