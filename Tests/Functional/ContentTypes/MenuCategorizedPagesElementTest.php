@@ -37,11 +37,10 @@ class MenuCategorizedPagesElementTest extends BaseContentTypeTest
         self::assertIsArray($contentElement['content']['menu'][0]);
         self::assertIsArray($contentElement['content']['menu'][0]['media']);
 
-        // regression in core
-//        self::assertEquals('Page 3', $contentElement['content']['menu'][0]['title']);
-//        self::assertEquals('/page3', $contentElement['content']['menu'][0]['link']);
-//        self::assertEquals('0', $contentElement['content']['menu'][0]['active']);
-//        self::assertEquals('0', $contentElement['content']['menu'][0]['current']);
-//        self::assertEquals('0', $contentElement['content']['menu'][0]['spacer']);
+        self::assertEquals('Page 3', $contentElement['content']['menu'][0]['title']);
+        self::assertEquals('/page3', $contentElement['content']['menu'][0]['link']);
+        self::assertEquals('0', $contentElement['content']['menu'][0]['active']);
+        self::assertEquals('0', $contentElement['content']['menu'][0]['current']);
+        self::assertEquals('0', $contentElement['content']['menu'][0]['spacer']);
     }
 }
