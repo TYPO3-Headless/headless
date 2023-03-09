@@ -198,7 +198,8 @@ class FilesProcessor implements DataProcessorInterface
                                 'height' => $targetHeight * FileUtility::RETINA_RATIO,
                             ]
                         ),
-                        $cropVariant
+                        $cropVariant,
+                        (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1
                     )['publicUrl'];
                 }
 
@@ -214,13 +215,14 @@ class FilesProcessor implements DataProcessorInterface
                                 'height' => $targetHeight * FileUtility::LQIP_RATIO,
                             ]
                         ),
-                        $cropVariant
+                        $cropVariant,
+                        (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1
                     )['publicUrl'];
                 }
 
                 $data[] = $file;
             } else {
-                $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant);
+                $data[] = $this->getFileUtility()->processFile($fileObject, $dimensions, $cropVariant, (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1);
             }
         }
 
