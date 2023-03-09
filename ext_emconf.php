@@ -8,14 +8,14 @@
  */
 
 $EM_CONF[$_EXTKEY] = [
-    'title' => 'Headless',
-    'description' => 'This extension provides way to output content from TYPO3 in JSON format.',
+    'title' => 'TYPO3 Headless API',
+    'description' => 'Makes TYPO3 a headless CMS. Content and pages available in JSON format. Supports multilanguage, multidomain, forms, frontend login, workspaces and more. For JS frontend app see nuxt-typo3 package',
     'state' => 'stable',
     'author' => 'Łukasz Uznański',
     'author_email' => 'extensions@macopedia.pl',
     'author_company' => 'Macopedia Sp. z o.o.',
     'category' => 'fe',
-    'version' => '3.2.2',
+    'version' => '3.3.0',
     'constraints' => [
         'depends' => [
             'frontend' => '11.4.0-11.5.99',
