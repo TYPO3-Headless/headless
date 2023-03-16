@@ -3,5 +3,6 @@ lib.content {
     table = tt_content
     select {
         orderBy = sorting
+        includeRecordsWithoutDefaultTranslation = 1
     }
 }
