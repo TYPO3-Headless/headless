@@ -167,7 +167,7 @@ Output
 You can override every field in output using typoscript. This extension allows you to use standard typoscript objects such as TEXT, COA, CASE.
 
 ## Page response
-n headless v3.0 we introduce a new, smaller, faster and more flat page response.
+In headless v3.0 we introduce a new, smaller, faster and more flat page response.
 If you want to keep compatibility with your frontend application, you can load a deprecated typoscript template for version 2.x and keep the old structure of the response running.
 #### New response (version 3.x) ⬇️
 ![image](https://user-images.githubusercontent.com/15106746/136414744-88d54d44-2f3c-4d7d-9911-832ceefcfe16.png)
