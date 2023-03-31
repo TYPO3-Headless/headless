@@ -116,6 +116,9 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ($theValue === 'USER_INT' || strpos((string)$content[$theKey], '<!--INT_SCRIPT.') === 0) {
                     $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey]);
                 }
+                if ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 && $content[$theKey] === '') {
+                    $content[$theKey] = null;
+                }
                 if (!empty($contentDataProcessing['dataProcessing.'])) {
                     $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
                 }
