@@ -28,7 +28,6 @@ use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use FriendsOfTYPO3\Headless\XClass\TemplateView;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -37,7 +36,7 @@ use TYPO3\CMS\FrontendLogin\Controller\LoginController;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
-return static function (ContainerConfigurator $configurator, ContainerBuilder $containerBuilder): void {
+return static function (ContainerConfigurator $configurator): void {
     $services = $configurator->services()
         ->defaults()
         ->autoconfigure()
