@@ -12,67 +12,65 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 $features = GeneralUtility::makeInstance(Features::class);
 
-if ($features->isFeatureEnabled('headless.frontendUrls')) {
-    $tempColumns = [
-        'frontendBase' => [
-            'label' => 'Frontend Entry Point',
-            'description' => 'For example "https://front.staging.domain.tld" or "http://front.domain.local"',
-            'config' => [
-                'type' => 'input',
-                'eval' => 'trim',
-                'placeholder' => 'http://www.domain.local',
-            ],
-        ]
+$tempColumns = [
+    'frontendBase' => [
+        'label' => 'Frontend Entry Point',
+        'description' => 'For example "https://front.staging.domain.tld" or "http://front.domain.local"',
+        'config' => [
+            'type' => 'input',
+            'eval' => 'trim',
+            'placeholder' => 'http://www.domain.local',
+        ],
+    ],
+];
+
+$replaceShowItem = 'base, frontendBase,';
+
+if ($features->isFeatureEnabled('headless.storageProxy')) {
+    $tempColumns['frontendApiProxy'] = [
+        'label' => 'Frontend API proxy url',
+        'description' => 'Main URL to for proxy API',
+        'config' => [
+            'type' => 'input',
+            'eval' => 'trim',
+            'placeholder' => 'http://front-domain.tld/api',
+        ],
     ];
 
-    $replaceShowItem = 'base, frontendBase, ';
+    $tempColumns['frontendFileApi'] = [
+        'label' => 'Frontend API proxy url for files',
+        'description' => 'Main URL to for proxy API files',
+        'config' => [
+            'type' => 'input',
+            'eval' => 'trim',
+            'placeholder' => 'http://front-domain.tld/api/fileadmin',
+        ],
+    ];
 
-    if ($features->isFeatureEnabled('headless.storageProxy')) {
-        $tempColumns['frontendApiProxy'] = [
-            'label' => 'Frontend API proxy url',
-            'description' => 'Main URL to for proxy API',
-            'config' => [
-                'type' => 'input',
-                'eval' => 'trim',
-                'placeholder' => 'http://front-domain.tld/api',
-            ],
-        ];
-
-        $tempColumns['frontendFileApi'] = [
-            'label' => 'Frontend API proxy url for files',
-            'description' => 'Main URL to for proxy API files',
-            'config' => [
-                'type' => 'input',
-                'eval' => 'trim',
-                'placeholder' => 'http://front-domain.tld/api/fileadmin',
-            ],
-        ];
-
-        $replaceShowItem .= 'frontendApiProxy, frontendFileApi,';
-    }
-
-    if ($features->isFeatureEnabled('headless.cookieDomainPerSite')) {
-        $tempColumns['cookieDomain'] = [
-            'label' => 'Cookie Domain',
-            'config' => [
-                'type' => 'input',
-                'eval' => 'trim',
-                'placeholder' => '.ddev.site',
-            ],
-        ];
-
-        $replaceShowItem .= 'cookieDomain,';
-    }
-
-    $GLOBALS['SiteConfiguration']['site_base_variant']['columns'] = array_merge(
-        $GLOBALS['SiteConfiguration']['site_base_variant']['columns'],
-        $tempColumns
-    );
-    $GLOBALS['SiteConfiguration']['site_base_variant']['columns']['base']['label'] = 'TYPO3 Entry Point';
-
-    $GLOBALS['SiteConfiguration']['site_base_variant']['types']['1']['showitem'] = str_replace(
-        'base,',
-        $replaceShowItem,
-        $GLOBALS['SiteConfiguration']['site_base_variant']['types']['1']['showitem']
-    );
+    $replaceShowItem .= 'frontendApiProxy, frontendFileApi,';
 }
+
+if ($features->isFeatureEnabled('headless.cookieDomainPerSite')) {
+    $tempColumns['cookieDomain'] = [
+        'label' => 'Cookie Domain',
+        'config' => [
+            'type' => 'input',
+            'eval' => 'trim',
+            'placeholder' => '.ddev.site',
+        ],
+    ];
+
+    $replaceShowItem .= 'cookieDomain,';
+}
+
+$GLOBALS['SiteConfiguration']['site_base_variant']['columns'] = array_merge(
+    $GLOBALS['SiteConfiguration']['site_base_variant']['columns'],
+    $tempColumns
+);
+$GLOBALS['SiteConfiguration']['site_base_variant']['columns']['base']['label'] = 'TYPO3 Entry Point';
+
+$GLOBALS['SiteConfiguration']['site_base_variant']['types']['1']['showitem'] = str_replace(
+    'base,',
+    $replaceShowItem,
+    $GLOBALS['SiteConfiguration']['site_base_variant']['types']['1']['showitem']
+);

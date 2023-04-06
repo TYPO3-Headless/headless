@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Test\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\ShortcutAndMountPointRedirect;
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
@@ -37,7 +39,10 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         $genericHtml = '<body>test</body>';
         $linkRedirect = 'https://test.domain2.tld';
         $genericResponse = new HtmlResponse($genericHtml);
-        $middleware = new ShortcutAndMountPointRedirect();
+        $middleware = new ShortcutAndMountPointRedirect((new HeadlessMode())->withRequest((new ServerRequest())->withAttribute(
+            'headless',
+            ['mode' => HeadlessMode::FULL]
+        )));
 
         $correctRedirect = [
             'redirectUrl' => $linkRedirect,
@@ -65,7 +70,10 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
 
         self::assertEquals($genericHtml, $initialDataResponse->getBody()->__toString());
 
-        $middleware = new ShortcutAndMountPointRedirect();
+        $middleware = new ShortcutAndMountPointRedirect((new HeadlessMode())->withRequest((new ServerRequest())->withAttribute(
+            'headless',
+            ['mode' => HeadlessMode::FULL]
+        )));
         $shortcutJsonDecoded = [
             'redirectUrl' => '/shortcut-target',
             'statusCode' => 307
@@ -84,7 +92,7 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         );
         self::assertEquals($shortcutJsonDecoded, json_decode($middlewareResponse->getBody()->__toString(), true));
 
-        $middleware = new ShortcutAndMountPointRedirect();
+        $middleware = new ShortcutAndMountPointRedirect((new HeadlessMode()));
 
         $testRedirectResponse = new RedirectResponse('https://test.domain.tld/shortcut-target', 307);
 
@@ -107,7 +115,7 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         );
         self::assertEquals($testRedirectResponse->getStatusCode(), $middlewareResponse->getStatusCode());
 
-        $middleware = new ShortcutAndMountPointRedirect();
+        $middleware = new ShortcutAndMountPointRedirect(new HeadlessMode());
 
         $linkRedirectResponse = $middleware->process(
             $this->getTestRequest(
@@ -125,7 +133,10 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         self::assertEquals($linkRedirect, $linkRedirectResponse->getHeader('location')[0]);
         self::assertEquals(303, $linkRedirectResponse->getStatusCode());
 
-        $middleware = new ShortcutAndMountPointRedirect();
+        $middleware = new ShortcutAndMountPointRedirect((new HeadlessMode())->withRequest((new ServerRequest())->withAttribute(
+            'headless',
+            ['mode' => HeadlessMode::FULL]
+        )));
         $GLOBALS['TSFE'] = $this->getTsfeProphecy(
             '0',
             ['id' => 1, 'doktype' => PageRepository::DOKTYPE_DEFAULT, 'url' => $linkRedirect]
@@ -166,7 +177,10 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         $genericHtml = '<body>test</body>';
         $genericResponse = new HtmlResponse($genericHtml);
 
-        $middleware = new ShortcutAndMountPointRedirect();
+        $middleware = new ShortcutAndMountPointRedirect((new HeadlessMode())->withRequest((new ServerRequest())->withAttribute(
+            'headless',
+            ['mode' => HeadlessMode::FULL]
+        )));
 
         $linkRedirectResponse = $middleware->process(
             $this->getTestRequest(
@@ -217,8 +231,11 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
             $request = $request->withAttribute('frontend.controller', $withTsfe);
         }
 
+        $request = $request->withAttribute('headless', new Headless());
+
         if ($withEnabledHeadless) {
-            return $request->withAttribute('site', new Site('test_site', 1, ['headless' => true]));
+            $request = $request->withAttribute('site', new Site('test_site', 1, ['headless' => true]));
+            return $request->withAttribute('headless', new Headless(HeadlessMode::FULL));
         }
 
         return $request;

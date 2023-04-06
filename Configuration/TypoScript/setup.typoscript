@@ -10,3 +10,4 @@ plugin.tx_headless {
 @import "EXT:headless/Configuration/TypoScript/ContentElement/*.typoscript"
 ## Include configuration
 @import "EXT:headless/Configuration/TypoScript/Configuration/*.typoscript"
+@import "EXT:headless/Configuration/TypoScript/Configuration/LoggedUser/FeLogin.typoscript"

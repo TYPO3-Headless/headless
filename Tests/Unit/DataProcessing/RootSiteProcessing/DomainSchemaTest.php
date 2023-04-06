@@ -13,6 +13,8 @@ namespace FriendsOfTYPO3\Headless\Test\Unit\DataProcessing\RootSiteProcessing;
 
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider;
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -139,8 +141,9 @@ class DomainSchemaTest extends UnitTestCase
 
         $siteFinder->getSiteByPageId(Argument::is(1))->willReturn($site);
         $dummyRequest = (new ServerRequest())->withAttribute('site', $site);
+        $dummyRequest = $dummyRequest->withAttribute('headless', new Headless());
 
-        return new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), $dummyRequest);
+        return new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), $dummyRequest, (new HeadlessMode())->withRequest($dummyRequest));
     }
 
     protected function getSiteWithBase(UriInterface $uri, $withLanguage = null)

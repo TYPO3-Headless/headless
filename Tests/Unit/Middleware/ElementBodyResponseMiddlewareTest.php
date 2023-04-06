@@ -13,6 +13,8 @@ namespace FriendsOfTYPO3\Headless\Test\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Middleware\ElementBodyResponseMiddleware;
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -29,7 +31,7 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
      */
     public function processTest()
     {
-        $middleware = new ElementBodyResponseMiddleware(new JsonEncoder());
+        $middleware = new ElementBodyResponseMiddleware(new JsonEncoder(), new HeadlessMode());
 
         $responseArray = ['content' => ['colPos1' => [['id' => 1]]]];
         $result = json_encode($responseArray['content']['colPos1'][0]);
@@ -120,7 +122,7 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             )
         );
 
-        $middleware = new ElementBodyResponseMiddleware(new JsonEncoder());
+        $middleware = new ElementBodyResponseMiddleware(new JsonEncoder(), new HeadlessMode());
 
         $responseArray = ['content' => ['colPos2' => null, 'colPos1' => [['id' => 1]]]];
         $result = json_encode($responseArray['content']['colPos1'][0]);
@@ -176,6 +178,8 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             $request = $request->withMethod($withMethod);
         }
 
+        $request = $request->withAttribute('headless', new Headless());
+
         if ($withSite) {
             $site = $this->prophesize(Site::class);
             $site->getConfiguration()->willReturn([
@@ -183,6 +187,7 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             ]);
 
             $request = $request->withAttribute('site', $site->reveal());
+            $request = $request->withAttribute('headless', new Headless($headless ? HeadlessMode::FULL : HeadlessMode::NONE));
         }
 
         return $request;
