@@ -53,8 +53,8 @@ class RootSitesProcessorTest extends UnitTestCase
                     'baseURL' => 'https://frontend.tld',
                     'api' => ['baseURL' => '/proxy/'],
                     'i18n' => [
-                        'locales' => ['default'],
-                        'defaultLocale' => 'default'
+                        'locales' => ['en_US'],
+                        'defaultLocale' => 'en_US'
                     ],
                 ],
                 [
@@ -62,8 +62,8 @@ class RootSitesProcessorTest extends UnitTestCase
                     'baseURL' => 'https://frontend.tld',
                     'api' => ['baseURL' => '/proxy/'],
                     'i18n' => [
-                        'locales' => ['default'],
-                        'defaultLocale' => 'default'
+                        'locales' => ['en_US'],
+                        'defaultLocale' => 'en_US'
                     ],
                 ]
             ]
