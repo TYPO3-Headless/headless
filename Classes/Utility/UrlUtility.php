@@ -80,34 +80,42 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             return $url;
         }
 
-        $base = $site->getBase()->getHost();
-        $port = $site->getBase()->getPort();
-        $frontendBaseUrl = $this->resolveWithVariants(
-            $configuration[$returnField] ?? '',
-            $configuration['baseVariants'] ?? [],
-            $returnField
-        );
+        try {
+            $base = $site->getBase()->getHost();
+            $port = $site->getBase()->getPort();
+            $frontendBaseUrl = $this->resolveWithVariants(
+                $configuration[$returnField] ?? '',
+                $configuration['baseVariants'] ?? [],
+                $returnField
+            );
 
-        if ($frontendBaseUrl === '') {
-            return $url;
+            if ($frontendBaseUrl === '') {
+                return $url;
+            }
+
+            $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
+            $frontBase = $frontendBase->getHost();
+            $frontPort = $frontendBase->getPort();
+            $targetUri = new Uri($this->sanitizeBaseUrl($url));
+
+            if (str_contains($url, $base)) {
+                $targetUri = $targetUri->withHost($frontBase);
+            }
+
+            if ($port === $frontPort) {
+                return (string)$targetUri;
+            }
+
+            if ($frontPort) {
+                $targetUri = $targetUri->withPort($frontPort);
+            }
+
+            return (string)$targetUri;
+        } catch (SiteNotFoundException $e) {
+            $this->logError($e->getMessage());
         }
 
-        $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
-        $frontBase = $frontendBase->getHost();
-        $frontPort = $frontendBase->getPort();
-
-        if (str_contains($url, $base)) {
-            $url = str_replace($base, $frontBase, $url);
-        }
-
-        if ($port === $frontPort) {
-            return $url;
-        }
-        return str_replace(
-            $frontBase . ($port ? ':' . $port : ''),
-            $frontBase . ($frontPort ? ':' . $frontPort : ''),
-            $url
-        );
+        return $url;
     }
 
     public function getFrontendUrlForPage(string $url, int $pageUid, string $returnField = 'frontendBase'): string
