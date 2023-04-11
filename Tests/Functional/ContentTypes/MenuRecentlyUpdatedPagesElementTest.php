@@ -9,7 +9,9 @@
 
 declare(strict_types=1);
 
-use FriendsOfTYPO3\Headless\Test\Functional\ContentTypes\BaseContentTypeTest;
+namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
+
+use DateTime;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;

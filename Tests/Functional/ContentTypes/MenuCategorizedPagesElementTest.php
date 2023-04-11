@@ -9,7 +9,8 @@
 
 declare(strict_types=1);
 
-use FriendsOfTYPO3\Headless\Test\Functional\ContentTypes\BaseContentTypeTest;
+namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
+
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
 class MenuCategorizedPagesElementTest extends BaseContentTypeTest

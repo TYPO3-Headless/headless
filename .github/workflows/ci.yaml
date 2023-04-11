@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - 4.x
   pull_request:
   schedule:
     - cron: '15 3 * * 1'
@@ -27,8 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - 7.4
-          - 8.0
+          - 8.1
   code-quality:
     name: "Code quality checks"
     runs-on: ubuntu-20.04
@@ -62,15 +62,15 @@ jobs:
           - "ts:lint"
           - "php:cs-fixer"
         php-version:
-          - 7.4
+          - 8.1
   tests:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 2
       matrix:
-        php-versions: [7.4, 8.0]
+        php-versions: [8.1]
         typo3-versions:
-          - {typo3: 11, testing: 6}
+          - {typo3: 12, testing: ^7.0@dev}
 
     name: "Run tests with PHP ${{ matrix.php-versions }}
           using TYPO3 ${{ matrix.typo3-versions.typo3 }}
@@ -100,7 +100,7 @@ jobs:
       - name: "Install composer dependencies"
         run: composer require typo3/minimal
              "^${{ matrix.typo3-versions.typo3 }}"
-             typo3/testing-framework "^${{ matrix.typo3-versions.testing }}"
+             typo3/testing-framework "${{ matrix.typo3-versions.testing }}"
              --prefer-dist --no-progress --no-suggest
 
       - name: "Run Unit tests"

@@ -1,9 +1,0 @@
-tt_content.list =< lib.contentElementWithHeader
-tt_content.list {
-    fields {
-        type = TEXT
-        type {
-            field = list_type
-        }
-    }
-}

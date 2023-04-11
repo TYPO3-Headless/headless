@@ -66,7 +66,7 @@ class LoginFormViewHelper extends FormViewHelper
      *
      * @return string rendered form
      */
-    public function render()
+    public function render(): string
     {
         $this->setFormActionUri();
         if (isset($this->arguments['method']) && strtolower($this->arguments['method']) === 'get') {
@@ -104,7 +104,7 @@ class LoginFormViewHelper extends FormViewHelper
     /**
      * Sets the "action" attribute of the form tag
      */
-    protected function setFormActionUri()
+    protected function setFormActionUri(): void
     {
         if ($this->hasArgument('actionUri')) {
             $formActionUri = $this->arguments['actionUri'];
@@ -150,7 +150,7 @@ class LoginFormViewHelper extends FormViewHelper
      *
      * @return string HTML-string for the additional identity properties
      */
-    protected function renderAdditionalIdentityFields()
+    protected function renderAdditionalIdentityFields(): string
     {
         if ($this->viewHelperVariableContainer->exists(FormViewHelper::class, 'additionalIdentityProperties')) {
             $additionalIdentityProperties = $this->viewHelperVariableContainer->get(FormViewHelper::class, 'additionalIdentityProperties');
@@ -170,7 +170,7 @@ class LoginFormViewHelper extends FormViewHelper
      * @return string Hidden fields with referrer information
      * @todo filter out referrer information that is equal to the target (e.g. same packageKey)
      */
-    protected function renderHiddenReferrerFields()
+    protected function renderHiddenReferrerFields(): string
     {
         $request = $this->renderingContext->getControllerContext()
             ->getRequest();
@@ -203,7 +203,7 @@ class LoginFormViewHelper extends FormViewHelper
     /**
      * Adds the field name prefix to the ViewHelperVariableContainer
      */
-    protected function addFieldNamePrefixToViewHelperVariableContainer()
+    protected function addFieldNamePrefixToViewHelperVariableContainer(): void
     {
         $fieldNamePrefix = $this->getFieldNamePrefix();
         $this->viewHelperVariableContainer->add(FormViewHelper::class, 'fieldNamePrefix', $fieldNamePrefix);
@@ -218,7 +218,7 @@ class LoginFormViewHelper extends FormViewHelper
      * @return string A hidden field containing the Identity (UID in TYPO3 Flow, uid in Extbase) of the given object or NULL if the object is unknown to the persistence framework
      * @see \TYPO3\CMS\Extbase\Mvc\Controller\Argument::setValue()
      */
-    protected function renderHiddenIdentityField($object, $name)
+    protected function renderHiddenIdentityField(?object $object, ?string $name): string
     {
         if ($object instanceof LazyLoadingProxy) {
             $object = $object->_loadRealInstance();
@@ -229,13 +229,13 @@ class LoginFormViewHelper extends FormViewHelper
         ) {
             return '';
         }
-        // Intentionally NOT using PersistenceManager::getIdentifierByObject here!!
+        // Intentionally NOT using PersistenceManager::getIdentifierByObject here.
         // Using that one breaks re-submission of data in forms in case of an error.
         $identifier = $object->getUid();
         if ($identifier === null) {
             return '';
         }
-        $name = $this->prefixFieldName($name) . '[__identity]';
+        $name = $this->prefixFieldName($name ?? '') . '[__identity]';
         $this->registerFieldNameForFormTokenGeneration($name);
 
         $this->addHiddenField($name, $identifier);
@@ -244,7 +244,7 @@ class LoginFormViewHelper extends FormViewHelper
     /**
      * Render the request hash field
      */
-    protected function renderTrustedPropertiesField()
+    protected function renderTrustedPropertiesField(): string
     {
         $formFieldNames
             = $this->viewHelperVariableContainer->get(

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\DataProcessing;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing;
 
 use FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor;
 use Prophecy\Argument;
@@ -54,6 +54,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
             $this->contentDataProcessor->reveal(),
             $this->typoScriptService->reveal(),
         ]);
+        parent::setUp();
     }
 
     /**

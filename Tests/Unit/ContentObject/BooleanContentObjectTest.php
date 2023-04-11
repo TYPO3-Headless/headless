@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\ContentObject;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -27,8 +27,10 @@ class BooleanContentObjectTest extends UnitTestCase
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
 
-        $booleanContentObject = new BooleanContentObject($cObj);
-        self::assertFalse($booleanContentObject->render());
+        $contentObject = new BooleanContentObject();
+        $contentObject->setContentObjectRenderer($cObj);
+
+        self::assertFalse($contentObject->render());
     }
 
     /**
@@ -38,9 +40,9 @@ class BooleanContentObjectTest extends UnitTestCase
     public function renderWithProviderTest($argument, bool $result)
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
-
-        $booleanContentObject = new BooleanContentObject($cObj);
-        self::assertEquals($result, $booleanContentObject->render($argument));
+        $contentObject = new BooleanContentObject();
+        $contentObject->setContentObjectRenderer($cObj);
+        self::assertEquals($result, $contentObject->render($argument));
     }
 
     public function dataProvider(): array

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\Hooks;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\Hooks;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Prophecy\PhpUnit\ProphecyTrait;

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Functional\PageTypes;
+namespace FriendsOfTYPO3\Headless\Tests\Functional\PageTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
@@ -25,10 +25,6 @@ class SchemaPageTypesTest extends BasePageTypesTest
         );
 
         self::assertEquals(200, $response->getStatusCode());
-//        $this->assertJsonSchema(
-//            (string)$response->getBody(),
-//            $this->getJsonSchemaPath() . 'menu.json'
-//        );
     }
 
     /**
@@ -41,9 +37,5 @@ class SchemaPageTypesTest extends BasePageTypesTest
         );
 
         self::assertEquals(200, $response->getStatusCode());
-//        $this->assertJsonSchema(
-//            (string)$response->getBody(),
-//            $this->getJsonSchemaPath() . 'page.json'
-//        );
     }
 }

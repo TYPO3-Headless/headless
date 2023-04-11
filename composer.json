@@ -28,13 +28,13 @@
   ],
   "require": {
     "ext-json": "*",
-    "typo3/cms-core": "^11.5",
-    "typo3/cms-install": "^11.5"
+    "typo3/cms-core": "^12.1",
+    "typo3/cms-install": "^12.1"
   },
   "require-dev": {
     "ergebnis/composer-normalize": "^2.15.0",
     "friendsofphp/php-cs-fixer": "^3.1",
-    "helmich/typo3-typoscript-lint": "^3",
+    "helmich/typo3-typoscript-lint": "^v3",
     "justinrainbow/json-schema": "^5.2",
     "php-coveralls/php-coveralls": "^2.5.2",
     "phpspec/prophecy-phpunit": "^2.0",
@@ -42,13 +42,11 @@
     "phpstan/phpstan": "^1.9",
     "phpunit/phpcov": "^8.2",
     "saschaegerer/phpstan-typo3": "^1.1",
+    "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": "^0.1.2",
     "seld/jsonlint": "^1.8",
-    "symfony/yaml": "^5.3",
-    "typo3/cms-form": "11.*@dev",
-    "typo3/testing-framework": "^6"
-  },
-  "conflict": {
-    "typo3/cms-core": "<11.5.15"
+    "symfony/yaml": "^6.1",
+    "typo3/cms-form": "12.*@dev",
+    "typo3/testing-framework": "^7.0@dev"
   },
   "config": {
     "preferred-install": {
@@ -59,8 +57,10 @@
     "allow-plugins": {
       "typo3/class-alias-loader": true,
       "typo3/cms-composer-installers": true,
+      "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": true,
       "ergebnis/composer-normalize": true,
-      "phpstan/extension-installer": true
+      "phpstan/extension-installer": true,
+      "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": true
     }
   },
   "extra": {
@@ -82,9 +82,6 @@
     }
   },
   "scripts": {
-    "post-autoload-dump": [
-      "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
-    ],
     "ci:composer:normalize": "@composer normalize --dry-run",
     "ci:coverage": [
     "@ci:coverage:unit",

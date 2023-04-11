@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\ContentObject;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\ContentObject\FloatContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -24,7 +24,8 @@ class FloatContentObjectTest extends UnitTestCase
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
 
-        $contentObject = new FloatContentObject($cObj);
+        $contentObject = new FloatContentObject();
+        $contentObject->setContentObjectRenderer($cObj);
         self::assertEquals(0.0, $contentObject->render());
     }
 
@@ -36,7 +37,8 @@ class FloatContentObjectTest extends UnitTestCase
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
 
-        $contentObject = new FloatContentObject($cObj);
+        $contentObject = new FloatContentObject();
+        $contentObject->setContentObjectRenderer($cObj);
         self::assertEquals($result, $contentObject->render($argument));
     }
 

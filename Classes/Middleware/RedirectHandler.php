@@ -14,11 +14,12 @@ namespace FriendsOfTYPO3\Headless\Middleware;
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
+use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Redirects\Service\RedirectService;
@@ -28,18 +29,18 @@ use TYPO3\CMS\Redirects\Service\RedirectService;
  */
 final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\RedirectHandler
 {
-    private EventDispatcherInterface $eventDispatcher;
     private ServerRequestInterface $request;
     private HeadlessFrontendUrlInterface $urlUtility;
 
     public function __construct(
         RedirectService $redirectService,
+        EventDispatcherInterface $eventDispatcher,
+        ResponseFactoryInterface $responseFactory,
+        LoggerInterface $logger,
         HeadlessFrontendUrlInterface $urlUtility,
-        EventDispatcher $eventDispatcher
     ) {
-        parent::__construct($redirectService);
+        parent::__construct($redirectService, $eventDispatcher, $responseFactory, $logger);
         $this->urlUtility = $urlUtility;
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -71,12 +72,12 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
             return parent::buildRedirectResponse($uri, $redirectRecord);
         }
 
-        $this->urlUtility = $this->urlUtility->withSite($site);
+        $this->urlUtility = $this->urlUtility->withRequest($this->request);
 
         $redirectUrlEvent = new RedirectUrlEvent(
             $this->request,
             $uri,
-            $this->urlUtility->prepareRelativeUrlIfPossible((string)$uri),
+            $this->urlUtility->prepareRelativeUrlIfPossible($this->urlUtility->getFrontendUrlWithSite((string)$uri, $site)),
             (int)$redirectRecord['target_statuscode'],
             $redirectRecord
         );

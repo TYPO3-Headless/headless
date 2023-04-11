@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\DataProcessing;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing;
 
 use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing\TestDomainSchema;
@@ -41,7 +41,6 @@ class RootSitesProcessorTest extends UnitTestCase
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
         $contentObjectRenderer->data['uid'] = 1;
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
         $conf = [];
         $conf['siteProvider'] = TestSiteProvider::class;
         $conf['siteSchema'] = TestDomainSchema::class;
@@ -53,8 +52,8 @@ class RootSitesProcessorTest extends UnitTestCase
                     'baseURL' => 'https://frontend.tld',
                     'api' => ['baseURL' => '/proxy/'],
                     'i18n' => [
-                        'locales' => ['default'],
-                        'defaultLocale' => 'default'
+                        'locales' => ['en_US'],
+                        'defaultLocale' => 'en_US'
                     ],
                 ],
                 [
@@ -62,8 +61,8 @@ class RootSitesProcessorTest extends UnitTestCase
                     'baseURL' => 'https://frontend.tld',
                     'api' => ['baseURL' => '/proxy/'],
                     'i18n' => [
-                        'locales' => ['default'],
-                        'defaultLocale' => 'default'
+                        'locales' => ['en_US'],
+                        'defaultLocale' => 'en_US'
                     ],
                 ]
             ]
@@ -87,20 +86,6 @@ class RootSitesProcessorTest extends UnitTestCase
     /**
      * @test
      */
-    public function objectSetButFeatureDisabled(): void
-    {
-        $processor = new RootSitesProcessor();
-
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
-        $contentObjectRenderer->data['uid'] = 1;
-        $this->expectException(\RuntimeException::class);
-        self::assertEquals([], $processor->process($contentObjectRenderer, [], [], []));
-    }
-
-    /**
-     * @test
-     */
     public function featureEnabledButWrongSiteProvider(): void
     {
         $processor = new RootSitesProcessor();
@@ -108,7 +93,6 @@ class RootSitesProcessorTest extends UnitTestCase
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
         $contentObjectRenderer->data['uid'] = 1;
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
         $conf = [];
         $conf['siteProvider'] = \stdClass::class;
         $this->expectException(\InvalidArgumentException::class);
@@ -125,7 +109,6 @@ class RootSitesProcessorTest extends UnitTestCase
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
         $contentObjectRenderer->data['uid'] = 1;
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
         $conf = [];
         $conf['siteSchema'] = \stdClass::class;
         $this->expectException(\InvalidArgumentException::class);

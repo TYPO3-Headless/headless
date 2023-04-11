@@ -11,17 +11,6 @@ Feature flags
 
 To change the setting for this extension feature either use Localconfiguration.php: or AdditionalConfiguration.php:
 
-**headless.frontendUrls** or **FrontendBaseUrlInPagePreview** (deprecated)
-
-This feature toggle extends current SiteConfiguration (and it's variants) with new field for Frontend Url
-(url frontend of PWA app). This new field is used when there is a need to preview a page such as: "view" module or right click on a page + show, or the 'eye' icon in page view
-& allow generating proper cross-domain links for headless instance.
-
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
-
-
 **headless.storageProxy**
 
 Enable ability to set storage proxy in site configuration (and it's variants) & serve files via proxy from same domain
@@ -108,18 +97,6 @@ Enable simplified target links' property
 
 Simplified output return only value i.e. `_blank` for target attribute instead of html string ` target="_blank"`
 
-**headless.supportOldPageOutput**
-
-Available since `3.0`
-
-Enable support for 2.x version of json page output for frontend app.
-Restores default behavior of empty data processing (`[]` vs `null`)
-and change return object of typolink (property `url` vs `href`)
-
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.supportOldPageOutput'] = true;
-
 **headless.jsonViewModule**
 
 Available since `3.0`
@@ -183,10 +160,6 @@ To enable headless support for `EXT:workspaces` please also add to you site(s) c
    -  :Header1:   headless.simplifiedLinkTarget
       :Header2:   >= 2.6
       :Header3:   removed
-
-   -  :Header1:   headless.supportOldPageOutput
-      :Header2:   not available
-      :Header3:   >= 3.0
 
    -  :Header1:   headless.jsonViewModule
       :Header2:   not available

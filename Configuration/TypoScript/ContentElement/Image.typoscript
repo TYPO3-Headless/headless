@@ -1,9 +1,12 @@
 tt_content.image =< lib.contentElementWithHeader
-tt_content.image < lib.baseImage
 tt_content.image {
     fields {
         content {
             fields {
+                enlargeImageOnClick = BOOL
+                enlargeImageOnClick {
+                    field = image_zoom
+                }
                 gallery = TEXT
                 gallery {
                     dataProcessing {

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\Utility;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\Utility;
 
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
@@ -402,10 +402,74 @@ class UrlUtilityTest extends UnitTestCase
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
                     'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
                 ]
-            ]
+            ],
+            'headless' => false,
         ]);
 
-        $uri = new Uri('https://test-backend-api.tld');
+        $resolver = $this->prophesize(Resolver::class);
+        $resolver->evaluate(Argument::any())->willReturn(true);
+
+        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalled(2)->willReturn($site->reveal());
+
+        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
+        $urlUtility = $urlUtility->withSite($site->reveal());
+
+        // flag is not existing/disabled
+        self::assertSame(
+            'https://test-backend-api.tld/test-page',
+            $urlUtility->getFrontendUrlForPage('https://test-backend-api.tld/test-page', 1)
+        );
+
+        // flag is enabled
+        $site = $this->prophesize(Site::class);
+        $site->getConfiguration()->shouldBeCalled(2)->willReturn([
+            'base' => 'https://www.typo3.org',
+            'languages' => [],
+            'baseVariants' => [
+                [
+                    'base' => 'https://test-backend-api23.tld',
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendBase' => 'https://test-frontend23.tld',
+                    'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
+                ]
+            ],
+            'headless' => true,
+        ]);
+
+        $uri = new Uri('https://test-backend-api23.tld');
+
+        $site->getBase()->shouldBeCalled(2)->willReturn($uri);
+
+        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalled(1)->willReturn($site->reveal());
+
+        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
+
+        self::assertSame(
+            'https://test-frontend23.tld/test-page',
+            $urlUtility->getFrontendUrlForPage('https://test-backend-api23.tld/test-page', 1)
+        );
+    }
+
+    public function testFrontendUrlForPageWithAlreadyFrontendUrlResolved(): void
+    {
+        $site = $this->prophesize(Site::class);
+        $site->getConfiguration()->shouldBeCalled(2)->willReturn([
+            'base' => 'https://www.typo3.org',
+            'languages' => [],
+            'baseVariants' => [
+                [
+                    'base' => 'https://api.tld',
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendBase' => 'https://front.api.tld',
+                ]
+            ],
+            'headless' => true
+        ]);
+
+        $uri = new Uri('https://api.tld');
 
         $site->getBase()->shouldBeCalled(2)->willReturn($uri);
 
@@ -418,17 +482,9 @@ class UrlUtilityTest extends UnitTestCase
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
         $urlUtility = $urlUtility->withSite($site->reveal());
 
-        // flag is not existing/disabled
         self::assertSame(
-            'https://test-backend-api.tld/test-page',
-            $urlUtility->getFrontendUrlForPage('https://test-backend-api.tld/test-page', 1)
-        );
-
-        // flag is enabled
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
-        self::assertSame(
-            'https://test-frontend.tld/test-page',
-            $urlUtility->getFrontendUrlForPage('https://test-backend-api.tld/test-page', 1)
+            'https://front.api.tld/test-page',
+            $urlUtility->getFrontendUrlForPage('https://front.api.tld/test-page', 1)
         );
     }
 
@@ -482,18 +538,15 @@ class UrlUtilityTest extends UnitTestCase
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
                     'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
                 ]
-            ]
+            ],
+            'headless' => false,
         ]);
-
-        $uri = new Uri('https://test-backend-api.tld');
-
-        $site->getBase()->shouldBeCalled(2)->willReturn($uri);
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
 
         $siteFinder = $this->prophesize(SiteFinder::class);
-        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalledOnce()->willReturn($site->reveal());
+        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalled(2)->willReturn($site->reveal());
 
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
         $urlUtility = $urlUtility->withSite($site->reveal());
@@ -504,8 +557,31 @@ class UrlUtilityTest extends UnitTestCase
             $urlUtility->getFrontendUrlForPage('https://test-backend-api.tld/test-page', 1)
         );
 
-        // flag is enabled
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
+        $site = $this->prophesize(Site::class);
+        $site->getConfiguration()->shouldBeCalled(2)->willReturn([
+            'base' => 'https://www.typo3.org',
+            'languages' => [],
+            'baseVariants' => [
+                [
+                    'base' => 'https://test-backend-api.tld',
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendBase' => 'https://test-frontend.tld:3000',
+                    'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
+                ]
+            ],
+            'headless' => true,
+        ]);
+
+        $uri = new Uri('https://test-backend-api.tld');
+
+        $site->getBase()->shouldBeCalled(2)->willReturn($uri);
+
+        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalled(2)->willReturn($site->reveal());
+
+        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
+
         self::assertSame(
             'https://test-frontend.tld:3000/test-page',
             $urlUtility->getFrontendUrlForPage('https://test-backend-api.tld/test-page', 1)
@@ -526,18 +602,15 @@ class UrlUtilityTest extends UnitTestCase
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
                     'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
                 ]
-            ]
+            ],
+            'headless' => false,
         ]);
-
-        $uri = new Uri('https://test-backend-api.tld:8000');
-
-        $site->getBase()->shouldBeCalled(2)->willReturn($uri);
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
 
         $siteFinder = $this->prophesize(SiteFinder::class);
-        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalledOnce()->willReturn($site->reveal());
+        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalled(2)->willReturn($site->reveal());
 
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
         $urlUtility = $urlUtility->withSite($site->reveal());
@@ -549,7 +622,31 @@ class UrlUtilityTest extends UnitTestCase
         );
 
         // flag is enabled
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
+        $site = $this->prophesize(Site::class);
+        $site->getConfiguration()->willReturn([
+            'base' => 'https://www.typo3.org',
+            'languages' => [],
+            'baseVariants' => [
+                [
+                    'base' => 'https://test-backend-api.tld:8000',
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendBase' => 'https://test-frontend.tld:3000',
+                    'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
+                ]
+            ],
+            'headless' => true,
+        ]);
+
+        $uri = new Uri('https://test-backend-api.tld:8000');
+
+        $site->getBase()->shouldBeCalled(2)->willReturn($uri);
+
+        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalled(2)->willReturn($site->reveal());
+
+        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
+
         self::assertSame(
             'https://test-frontend.tld:3000/test-page',
             $urlUtility->getFrontendUrlForPage('https://test-backend-api.tld:8000/test-page', 1)
@@ -570,7 +667,6 @@ class UrlUtilityTest extends UnitTestCase
         $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalledOnce()->willReturn($site);
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), $request->reveal());
 
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
         self::assertSame(
             'https://test-backend-api.tld:8000/test-page',
             $urlUtility->getFrontendUrlForPage('https://test-backend-api.tld:8000/test-page', 1)

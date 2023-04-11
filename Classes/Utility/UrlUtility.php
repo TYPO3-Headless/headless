@@ -20,13 +20,14 @@ use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_merge;
-use function count;
 use function rtrim;
+use function str_contains;
 use function strpos;
 
 class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
@@ -55,7 +56,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         }
     }
 
-    public function withSite(Site $site): self
+    public function withSite(Site $site): HeadlessFrontendUrlInterface
     {
         return $this->handleSiteConfiguration($site, clone $this);
     }
@@ -70,18 +71,17 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $this->handleLanguageConfiguration($language, clone $this);
     }
 
-    public function getFrontendUrlForPage(string $url, int $pageUid, string $returnField = 'frontendBase'): string
+    public function getFrontendUrlWithSite($url, SiteInterface $site, string $returnField = 'frontendBase'): string
     {
-        if (!$this->features->isFeatureEnabled('headless.frontendUrls')) {
+        $configuration = $site->getConfiguration();
+
+        if (!($configuration['headless'] ?? false)) {
             return $url;
         }
 
         try {
-            $site = $this->siteFinder->getSiteByPageId($pageUid);
             $base = $site->getBase()->getHost();
             $port = $site->getBase()->getPort();
-            $configuration = $site->getConfiguration();
-
             $frontendBaseUrl = $this->resolveWithVariants(
                 $configuration[$returnField] ?? '',
                 $configuration['baseVariants'] ?? [],
@@ -97,7 +97,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             $frontPort = $frontendBase->getPort();
             $targetUri = new Uri($this->sanitizeBaseUrl($url));
 
-            if (strpos($url, $base) !== false) {
+            if (str_contains($url, $base)) {
                 $targetUri = $targetUri->withHost($frontBase);
             }
 
@@ -110,6 +110,21 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             }
 
             return (string)$targetUri;
+        } catch (SiteNotFoundException $e) {
+            $this->logError($e->getMessage());
+        }
+
+        return $url;
+    }
+
+    public function getFrontendUrlForPage(string $url, int $pageUid, string $returnField = 'frontendBase'): string
+    {
+        try {
+            return $this->getFrontendUrlWithSite(
+                $url,
+                $this->siteFinder->getSiteByPageId($pageUid),
+                $returnField
+            );
         } catch (SiteNotFoundException $e) {
             $this->logError($e->getMessage());
         }
@@ -186,7 +201,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         array $variants = [],
         string $returnField = 'frontendBase'
     ): string {
-        if (count($variants) === 0) {
+        if ($variants === []) {
             return $frontendUrl;
         }
 

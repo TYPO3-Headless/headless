@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\ContentObject;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\Json\JsonDecoder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -24,6 +24,7 @@ class JsonDecoderTest extends UnitTestCase
     protected function setUp(): void
     {
         $this->resetSingletonInstances = true;
+        parent::setUp();
     }
 
     /**

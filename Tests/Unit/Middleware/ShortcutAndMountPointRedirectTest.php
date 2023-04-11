@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\Middleware;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\ShortcutAndMountPointRedirect;
 use Prophecy\Argument;
@@ -126,15 +126,20 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         self::assertEquals(303, $linkRedirectResponse->getStatusCode());
 
         $middleware = new ShortcutAndMountPointRedirect();
-        $GLOBALS['TSFE'] = $this->getTsfeProphecy(
+        $tsfe = $this->getTsfeProphecy(
             '0',
             ['id' => 1, 'doktype' => PageRepository::DOKTYPE_DEFAULT, 'url' => $linkRedirect]
-        )->reveal();
+        );
+        $tsfe->getRedirectUriForShortcut(Argument::any())->willReturn(null);
+        $tsfe->getRedirectUriForMountPoint(Argument::any())->willReturn(null);
+
+        $GLOBALS['TSFE'] = $tsfe->reveal();
 
         $normalResponse = $middleware->process(
             $this->getTestRequest(
                 ['type' => 0],
-                'https://test.domain.tld'
+                'https://test.domain.tld',
+                $GLOBALS['TSFE']
             ),
             $this->getMockHandlerWithResponse($genericResponse)
         );
@@ -239,7 +244,6 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
             $pageData = ['id' => 1, 'doktype' => PageRepository::DOKTYPE_LINK, 'url' => 'https://test.domain2.tld'];
         } elseif ($pageData['doktype'] === PageRepository::DOKTYPE_SHORTCUT) {
             $tsfe->getRedirectUriForShortcut(Argument::any())->willReturn('https://test.domain.tld/shortcut-target');
-            $tsfe->releaseLocks()->shouldBeCalled(1);
         }
 
         $tsfe->page = $pageData;

@@ -84,13 +84,6 @@ class RootSitesProcessor implements DataProcessorInterface
             return $processedData;
         }
 
-        $features = GeneralUtility::makeInstance(Features::class);
-
-        if (!$features->isFeatureEnabled('headless.frontendUrls')) {
-            $msg = 'headless.frontendUrls option should be enabled!';
-            throw new RuntimeException($msg);
-        }
-
         $siteProviderClass = $processorConfiguration['siteProvider'] ?? SiteProvider::class;
         $siteSchemaClass = $processorConfiguration['siteSchema'] ?? SiteSchema::class;
 

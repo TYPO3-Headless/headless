@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Unit\DataProcessing\RootSiteProcessing;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing;
 
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider;

@@ -9,9 +9,9 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Test\Functional\PageTypes;
+namespace FriendsOfTYPO3\Headless\Tests\Functional\PageTypes;
 
-use FriendsOfTYPO3\Headless\Test\Functional\BaseTest;
+use FriendsOfTYPO3\Headless\Tests\Functional\BaseTest;
 use JsonSchema\SchemaStorage;
 use JsonSchema\Uri\UriRetriever;
 use JsonSchema\Validator;
@@ -23,7 +23,7 @@ abstract class BasePageTypesTest extends BaseTest
      * @param string $jsonString
      * @param string $jsonSchemaFile
      */
-    protected function assertJsonSchema($jsonString, $jsonSchemaFile)
+    protected function assertJsonSchema(string $jsonString, string $jsonSchemaFile)
     {
         $retriever = new UriRetriever();
         $schema = $retriever->retrieve(

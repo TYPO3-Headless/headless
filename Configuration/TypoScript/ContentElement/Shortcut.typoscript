@@ -8,9 +8,9 @@ tt_content.shortcut {
                     10 = RECORDS
                     10 {
                         source.field = records
-                        tables = {$styles.content.shortcut.tables}
+                        tables = tt_content
                         conf {
-                            {$styles.content.shortcut.tables}.stdWrap.wrap = |###BREAK###
+                            tt_content.stdWrap.wrap = |###BREAK###
                         }
                     }
                     stdWrap {
