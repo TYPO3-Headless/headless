@@ -16,8 +16,6 @@ use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProviderInterf
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteSchemaInterface;
 use InvalidArgumentException;
-use RuntimeException;
-use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
