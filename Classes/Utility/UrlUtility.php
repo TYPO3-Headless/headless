@@ -27,7 +27,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use function array_merge;
 use function count;
 use function rtrim;
-use function str_replace;
 use function strpos;
 
 class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
@@ -96,19 +95,21 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
             $frontBase = $frontendBase->getHost();
             $frontPort = $frontendBase->getPort();
+            $targetUri = new Uri($this->sanitizeBaseUrl($url));
 
             if (strpos($url, $base) !== false) {
-                $url = str_replace($base, $frontBase, $url);
+                $targetUri = $targetUri->withHost($frontBase);
             }
 
             if ($port === $frontPort) {
-                return $url;
+                return (string)$targetUri;
             }
-            return str_replace(
-                $frontBase . ($port ? ':' . $port : ''),
-                $frontBase . ($frontPort ? ':' . $frontPort : ''),
-                $url
-            );
+
+            if ($frontPort) {
+                $targetUri = $targetUri->withPort($frontPort);
+            }
+
+            return (string)$targetUri;
         } catch (SiteNotFoundException $e) {
             $this->logError($e->getMessage());
         }
