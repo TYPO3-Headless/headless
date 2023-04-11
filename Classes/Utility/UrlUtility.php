@@ -28,7 +28,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use function array_merge;
 use function rtrim;
 use function str_contains;
-use function str_replace;
 use function strpos;
 
 class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
