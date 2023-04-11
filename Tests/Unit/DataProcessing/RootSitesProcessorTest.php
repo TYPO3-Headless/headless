@@ -41,7 +41,6 @@ class RootSitesProcessorTest extends UnitTestCase
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
         $contentObjectRenderer->data['uid'] = 1;
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
         $conf = [];
         $conf['siteProvider'] = TestSiteProvider::class;
         $conf['siteSchema'] = TestDomainSchema::class;
@@ -87,20 +86,6 @@ class RootSitesProcessorTest extends UnitTestCase
     /**
      * @test
      */
-    public function objectSetButFeatureDisabled(): void
-    {
-        $processor = new RootSitesProcessor();
-
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
-        $contentObjectRenderer->data['uid'] = 1;
-        $this->expectException(\RuntimeException::class);
-        self::assertEquals([], $processor->process($contentObjectRenderer, [], [], []));
-    }
-
-    /**
-     * @test
-     */
     public function featureEnabledButWrongSiteProvider(): void
     {
         $processor = new RootSitesProcessor();
@@ -108,7 +93,6 @@ class RootSitesProcessorTest extends UnitTestCase
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
         $contentObjectRenderer->data['uid'] = 1;
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
         $conf = [];
         $conf['siteProvider'] = \stdClass::class;
         $this->expectException(\InvalidArgumentException::class);
@@ -125,7 +109,6 @@ class RootSitesProcessorTest extends UnitTestCase
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
         $contentObjectRenderer->data['uid'] = 1;
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
         $conf = [];
         $conf['siteSchema'] = \stdClass::class;
         $this->expectException(\InvalidArgumentException::class);

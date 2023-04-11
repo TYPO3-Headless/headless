@@ -11,17 +11,6 @@ Feature flags
 
 To change the setting for this extension feature either use Localconfiguration.php: or AdditionalConfiguration.php:
 
-**headless.frontendUrls** or **FrontendBaseUrlInPagePreview** (deprecated)
-
-This feature toggle extends current SiteConfiguration (and it's variants) with new field for Frontend Url
-(url frontend of PWA app). This new field is used when there is a need to preview a page such as: "view" module or right click on a page + show, or the 'eye' icon in page view
-& allow generating proper cross-domain links for headless instance.
-
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
-
-
 **headless.storageProxy**
 
 Enable ability to set storage proxy in site configuration (and it's variants) & serve files via proxy from same domain

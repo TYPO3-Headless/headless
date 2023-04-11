@@ -465,7 +465,8 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://front.api.tld',
                 ]
-            ]
+            ],
+            'headless' => true
         ]);
 
         $uri = new Uri('https://api.tld');
@@ -481,8 +482,6 @@ class UrlUtilityTest extends UnitTestCase
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
         $urlUtility = $urlUtility->withSite($site->reveal());
 
-        // flag is enabled
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
         self::assertSame(
             'https://front.api.tld/test-page',
             $urlUtility->getFrontendUrlForPage('https://front.api.tld/test-page', 1)
@@ -632,7 +631,6 @@ class UrlUtilityTest extends UnitTestCase
         $siteFinder->getSiteByPageId(Argument::is(1))->shouldBeCalledOnce()->willReturn($site);
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), $request->reveal());
 
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.frontendUrls'] = true;
         self::assertSame(
             'https://test-backend-api.tld:8000/test-page',
             $urlUtility->getFrontendUrlForPage('https://test-backend-api.tld:8000/test-page', 1)
