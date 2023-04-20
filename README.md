@@ -49,7 +49,13 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 ## Requirements and compatibility
 With the release of TYPO3 v11.5 LTS we have to move support for TYPO3 v9 and v10 to another branch as changes between those two versions are incompatible. Version 3.x and master branch will support TYPO3 v11, and headless version 2.x keep support for v9 and v10.
 
+#### Headless version 4.x
+
+Is compatible with TYPO3 >= 12.2 and PHP >= 8.1
+
+
 #### Headless version 3.x
+
 |   	|  PHP 7.2	| PHP 7.3   |  PHP 7.4 	|  PHP 8.0  	|
 |---	|---	|---	|---	|---	|
 |  TYPO3 v9.5  	|   no 	|   no 	|   no	|   no	|
@@ -57,11 +63,14 @@ With the release of TYPO3 v11.5 LTS we have to move support for TYPO3 v9 and v10
 |  TYPO3 v11.5 	|   no	|   no	|   yes	|   yes	|
 
 #### Headless version 2.x
+
 |   	|  PHP 7.2	| PHP 7.3   |  PHP 7.4 	|  PHP 8.0  	|
 |---	|---	|---	|---	|---	|
 |  TYPO3 v9.5  	|   yes 	|   yes 	|   yes	|   no	|
 |  TYPO3 v10.4	|   yes	|   yes	|   yes	|   no	|
 |  TYPO3 v11.5 	|   no	|   no	|   no	|   no	|
+
+
 ## Quickstart / Demo
 
 If you want to take a look at working demo including frontend, backend and demo data, use our DDEV based demo project here:
@@ -210,14 +219,9 @@ Render your all headless sites configuration for your frontend application.
 
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
-If you have any questions, join #initiative-pwa Slack channel.
+If you have any questions, join #initiative-headless-pwa Slack channel.
 
 ## Credits
 
 A special thanks goes to [macopedia.com](https://macopedia.com) company, which is sponsoring development of this solution.
 
-### Developers involved in the project
-
-- Łukasz Uznański (Macopedia)
-- Adam Marcinkowski (Macopedia)
-- Vaclav Janoch (ITplusX)
