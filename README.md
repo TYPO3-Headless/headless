@@ -74,7 +74,7 @@ Is compatible with TYPO3 >= 12.2 and PHP >= 8.1
 ## Quickstart / Demo
 
 If you want to take a look at working demo including frontend, backend and demo data, use our DDEV based demo project here:
-https://github.com/TYPO3-Initiatives/pwa-demo
+[https://github.com/TYPO3-Initiatives/pwa-demo](https://github.com/TYPO3-Headless/pwa-demo)
 
 ## Installation
 Install extension using composer\
