@@ -37,7 +37,7 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 - support for EXT:felogin
 - support for EXT:redirects
 - support for EXT:seo
-- [BETA] backend module for simulating page preview (with specific page type, lang, usergroup)
+- [BETA] backend module for simulating page preview (with specific page type, lang, usergroup) see [headless_dev_tools](https://github.com/TYPO3-Headless/headless_dev_tools)
 
 ### Additional extensions and integrations
 
@@ -45,30 +45,15 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 - headless support for EXT:solr [headless_solr](https://github.com/TYPO3-Initiatives/headless_solr)
 - headless support for EXT:powermail [headless_powermail](https://github.com/TYPO3-Initiatives/headless_powermail)
 - headless support for EXT:gridelements [headless_gridelements](https://github.com/itplusx/headless_gridelements)
+- small tools/tweaks for local headless development [headless_dev_tools](https://github.com/TYPO3-Headless/headless_dev_tools)
 
 ## Requirements and compatibility
-With the release of TYPO3 v11.5 LTS we have to move support for TYPO3 v9 and v10 to another branch as changes between those two versions are incompatible. Version 3.x and master branch will support TYPO3 v11, and headless version 2.x keep support for v9 and v10.
 
-#### Headless version 4.x
-
-Is compatible with TYPO3 >= 12.2 and PHP >= 8.1
-
-
-#### Headless version 3.x
-
-|   	|  PHP 7.2	| PHP 7.3   |  PHP 7.4 	|  PHP 8.0  	|
-|---	|---	|---	|---	|---	|
-|  TYPO3 v9.5  	|   no 	|   no 	|   no	|   no	|
-|  TYPO3 v10.4	|   no	|   no	|   no	|   no	|
-|  TYPO3 v11.5 	|   no	|   no	|   yes	|   yes	|
-
-#### Headless version 2.x
-
-|   	|  PHP 7.2	| PHP 7.3   |  PHP 7.4 	|  PHP 8.0  	|
-|---	|---	|---	|---	|---	|
-|  TYPO3 v9.5  	|   yes 	|   yes 	|   yes	|   no	|
-|  TYPO3 v10.4	|   yes	|   yes	|   yes	|   no	|
-|  TYPO3 v11.5 	|   no	|   no	|   no	|   no	|
+| EXT:headless version  	 | TYPO3 support | PHP support       | Status 	               |
+|-----------------------|--------------|-------------------|------------------------|
+| `>= 4.0`  	           | `12` 	       | `>= 8.1`  	       | Active development & support	 |
+| `>= 3.0`              | `11`	        | `>= 7.4, <= 8.2`	 | Active support	        |
+| `>= 2.0` 	            | `9`, `10`	 | `>= 7.2, <=7.4`	  | Critical bugfixes only	|
 
 
 ## Quickstart / Demo
@@ -179,7 +164,10 @@ You can override every field in output using typoscript. This extension allows y
 ## Page response
 In headless v3.0 we introduce a new, smaller, faster and more flat page response.
 If you want to keep compatibility with your frontend application, you can load a deprecated typoscript template for version 2.x and keep the old structure of the response running.
-#### New response (version 3.x) ⬇️
+
+#### Example page response  ⬇️
+since version 3.x & under active maintenance
+
 ![image](https://user-images.githubusercontent.com/15106746/136414744-88d54d44-2f3c-4d7d-9911-832ceefcfe16.png)
 
 #### Old response (version 2.x) ⬇️
