@@ -19,6 +19,7 @@ use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\TypoScript\TemplateService;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
@@ -208,6 +209,8 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         bool $withEnabledHeadless = true
     ) {
         $request = new ServerRequest();
+        $request = $request->withUri(new Uri('/'));
+
         if ($withQueryParams !== []) {
             $request = $request->withQueryParams($withQueryParams);
         }
