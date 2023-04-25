@@ -82,10 +82,12 @@ return static function (ContainerConfigurator $configurator, ContainerBuilder $c
     $features = GeneralUtility::makeInstance(Features::class);
 
     if ($features->isFeatureEnabled('headless.overrideFluidTemplates')) {
-        $services->alias(
+        $templateService = $services->alias(
             \TYPO3\CMS\Fluid\View\TemplateView::class,
             TemplateView::class
         );
+
+        $templateService->public();
     }
 
     foreach (
