@@ -31,7 +31,6 @@ class FileUtility
 {
     public const RETINA_RATIO = 2;
     public const LQIP_RATIO = 0.1;
-
     protected ContentObjectRenderer $contentObjectRenderer;
     protected RendererRegistry $rendererRegistry;
     protected ImageService  $imageService;
@@ -122,18 +121,32 @@ class FileUtility
             'extension' => $fileReference->getProperty('extension'),
         ];
 
-        return [
-            'publicUrl' => $publicUrl,
-            'properties' => $this->eventDispatcher->dispatch(
-                new EnrichFileDataEvent(
-                    $originalFileReference,
-                    $fileReference,
-                    array_merge(
-                        $originalProperties,
-                        $processedProperties
-                    )
+        $event = $this->eventDispatcher->dispatch(
+            new EnrichFileDataEvent(
+                $originalFileReference,
+                $fileReference,
+                array_merge(
+                    $originalProperties,
+                    $processedProperties
                 )
-            )->getProperties(),
+            )
+        );
+
+        $cacheBuster = '';
+
+        if ($event->getProperties()['type'] === 'image') {
+            $modified = $event->getProcessed()->getProperty('modification_date');
+
+            if (!$modified) {
+                $modified = $event->getProcessed()->getProperty('tstamp');
+            }
+
+            $cacheBuster = '?' . $modified;
+        }
+
+        return [
+            'publicUrl' => $publicUrl . $cacheBuster,
+            'properties' => $event->getProperties(),
         ];
     }
 
