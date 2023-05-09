@@ -119,7 +119,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if (!empty($conf['dataProcessing.'] ?? [])) {
                     $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing(
                         $conf,
-                        $content[rtrim($theKey, '.')]
+                        $content[rtrim($theKey, '.')] ?? null
                     );
                 }
             }
@@ -132,7 +132,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if (!empty($theValue['dataProcessing.'] ?? [])) {
                     $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing(
                         $theValue,
-                        $content[rtrim($theKey, '.')]
+                        $content[rtrim($theKey, '.')] ?? null
                     );
                 }
             }
@@ -159,10 +159,9 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
         return array_unique($filteredKeys);
     }
 
-    protected function processFieldWithDataProcessing(array $conf, mixed $fieldsData = []): mixed
+    protected function processFieldWithDataProcessing(array $conf, mixed $fieldsData = null): mixed
     {
         $dataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
-        $merge = (int)($conf['merge'] ?? 0) === 1;
 
         $data = $this->contentDataProcessor->process(
             $this->cObj,
@@ -181,8 +180,8 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 $dataProcessingData = $data[$value];
             }
         }
-        $fieldsData = is_array($fieldsData) ? $fieldsData : [];
-        return $merge ? array_merge($fieldsData, $dataProcessingData ?? []) : $dataProcessingData;
+        $merge = ((int)($conf['merge'] ?? 0) === 1) && is_array($fieldsData) && is_array($dataProcessingData);
+        return $merge ? array_merge($fieldsData, $dataProcessingData) : $dataProcessingData;
     }
 
     /**
