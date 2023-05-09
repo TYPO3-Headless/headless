@@ -208,7 +208,9 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         if ($formState &&
             $formState->isFormSubmitted() &&
             $this->request->getMethod() === 'POST') {
-            $result = $formRuntime->getRequest()->getOriginalRequestMappingResults();
+            /** @var ExtbaseRequestParameters $extbaseRequestParameters */
+            $extbaseRequestParameters = $formRuntime->getRequest()->getAttribute('extbase');
+            $result = $extbaseRequestParameters->getOriginalRequestMappingResults();
             /**
              * @var array<string, Error[]>
              */
