@@ -117,10 +117,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                     $content[$theKey] = null;
                 }
                 if (!empty($conf['dataProcessing.'] ?? [])) {
-                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing(
-                        $conf,
-                        $content[rtrim($theKey, '.')] ?? null
-                    );
+                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($conf);
                 }
             }
             if ((string)$theKey && strpos($theKey, '.') > 0 && !isset($setup[rtrim($theKey, '.')])) {
