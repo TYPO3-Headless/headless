@@ -14,6 +14,7 @@ namespace FriendsOfTYPO3\Headless\Utility;
 use FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
@@ -47,7 +48,8 @@ class FileUtility
         ?RendererRegistry $rendererRegistry = null,
         ?ImageService $imageService = null,
         ?ServerRequestInterface $serverRequest = null,
-        ?EventDispatcherInterface $eventDispatcher = null
+        ?EventDispatcherInterface $eventDispatcher = null,
+        ?Features $features = null
     ) {
         $this->contentObjectRenderer = $contentObjectRenderer ??
             GeneralUtility::makeInstance(ContentObjectRenderer::class);
@@ -55,6 +57,7 @@ class FileUtility
         $this->imageService = $imageService ?? GeneralUtility::makeInstance(ImageService::class);
         $this->serverRequest = $serverRequest ?? ($GLOBALS['TYPO3_REQUEST'] ?? null);
         $this->eventDispatcher = $eventDispatcher ?? GeneralUtility::makeInstance(EventDispatcher::class);
+        $this->features = $features ?? GeneralUtility::makeInstance(Features::class);
     }
 
     /**
@@ -134,7 +137,7 @@ class FileUtility
 
         $cacheBuster = '';
 
-        if ($event->getProperties()['type'] === 'image') {
+        if ($this->features->isFeatureEnabled('headless.assetsCacheBusting') && $event->getProperties()['type'] !== 'video') {
             $modified = $event->getProcessed()->getProperty('modification_date');
 
             if (!$modified) {
