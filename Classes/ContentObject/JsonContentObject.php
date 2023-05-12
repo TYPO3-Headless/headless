@@ -110,8 +110,8 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ((isset($conf['floatval']) && $conf['floatval']) || $theValue === 'FLOAT') {
                     $content[$theKey] = (float)$content[$theKey];
                 }
-                if ($theValue === 'BOOL') {
-                    $content[$theKey] = (bool)$content[$theKey];
+                if ((isset($conf['boolval']) && $conf['boolval']) || $theValue === 'BOOL') {
+                    $content[$theKey] = (bool)(int)$content[$theKey];
                 }
                 if ($theValue === 'USER_INT' || strpos((string)$content[$theKey], '<!--INT_SCRIPT.') === 0) {
                     $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey], (int)($conf['ifEmptyReturnNull'] ?? 0) === 1 ? HeadlessUserInt::STANDARD_NULLABLE : HeadlessUserInt::STANDARD);
