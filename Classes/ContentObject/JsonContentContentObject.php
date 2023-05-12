@@ -23,7 +23,6 @@ use function count;
 use function is_array;
 use function json_decode;
 use function str_contains;
-use function strpos;
 use function trim;
 
 use const JSON_FORCE_OBJECT;
@@ -128,8 +127,7 @@ class JsonContentContentObject extends ContentContentObject
                 continue;
             }
 
-            if (strpos($element, '<!--INT_SCRIPT') !== false
-                && strpos($element, HeadlessUserInt::STANDARD) === false) {
+            if (str_contains($element, '<!--INT_SCRIPT') && !str_contains($element, HeadlessUserInt::STANDARD)) {
                 $element = $this->headlessUserInt->wrap($element);
             }
 
