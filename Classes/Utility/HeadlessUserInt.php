@@ -17,28 +17,79 @@ use function preg_quote;
 use function preg_replace;
 use function preg_replace_callback;
 use function sprintf;
-use function strpos;
+use function str_contains;
 use function substr;
 
 class HeadlessUserInt
 {
     public const STANDARD = 'HEADLESS_INT';
     public const NESTED = 'NESTED_HEADLESS_INT';
+    public const STANDARD_NULLABLE = 'HEADLESS_INT_NULL';
+    public const NESTED_NULLABLE = 'NESTED_HEADLESS_INT_NULL';
     private const REGEX = '/("|)%s_START<<(.*?)>>%s_END("|)/s';
+
+    public function wrap(string $content, string $type = self::STANDARD): string
+    {
+        return preg_replace(
+            '/(' . preg_quote('<!--INT_SCRIPT.', '/') . '[0-9a-z]{32}' . preg_quote('-->', '/') . ')/',
+            sprintf('%s_START<<\1>>%s_END', $type, $type),
+            $content
+        );
+    }
+
+    public function unwrap(string $content): string
+    {
+        if (str_contains($content, self::NESTED)) {
+            $content = preg_replace_callback(
+                sprintf(self::REGEX, self::NESTED, self::NESTED),
+                [$this, 'replace'],
+                $content
+            );
+        }
+
+        if (str_contains($content, self::NESTED_NULLABLE)) {
+            $content = preg_replace_callback(
+                sprintf(self::REGEX, self::NESTED_NULLABLE, self::NESTED_NULLABLE),
+                function (array $content) {
+                    return $this->replace($content, true);
+                },
+                $content
+            );
+        }
+
+        if (str_contains($content, self::STANDARD_NULLABLE)) {
+            $content = preg_replace_callback(
+                sprintf(self::REGEX, self::STANDARD_NULLABLE, self::STANDARD_NULLABLE),
+                function (array $content) {
+                    return $this->replace($content, true);
+                },
+                $content
+            );
+        }
+
+        return preg_replace_callback(
+            sprintf(self::REGEX, self::STANDARD, self::STANDARD),
+            [$this, 'replace'],
+            $content
+        );
+    }
 
     /**
      * for use in preg_replace_callback
      * to unwrap all HEADLESS_INT<<>>HEADLESS_INT blocks
      *
      * @param array<int, string> $input
-     * @return string
      */
-    private function replace(array $input): string
+    private function replace(array $input, bool $returnNull = false): ?string
     {
         $content = $input[2];
         if ($input[1] === $input[3] && $input[1] === '"') {
             // have a look inside if it might be json already
             $decoded = json_decode($content);
+
+            if (empty($decoded) && $returnNull) {
+                return json_encode(null);
+            }
 
             if ($decoded !== null) {
                 return $content;
@@ -52,31 +103,5 @@ class HeadlessUserInt
             $jsonEncoded = substr($jsonEncoded, 1, -1);
         }
         return $jsonEncoded;
-    }
-
-    public function wrap(string $content, string $type = self::STANDARD): string
-    {
-        return preg_replace(
-            '/(' . preg_quote('<!--INT_SCRIPT.', '/') . '[0-9a-z]{32}' . preg_quote('-->', '/') . ')/',
-            sprintf('%s_START<<\1>>%s_END', $type, $type),
-            $content
-        );
-    }
-
-    public function unwrap(string $content): string
-    {
-        if (strpos($content, self::NESTED) !== false) {
-            $content = preg_replace_callback(
-                sprintf(self::REGEX, self::NESTED, self::NESTED),
-                [$this, 'replace'],
-                $content
-            );
-        }
-
-        return preg_replace_callback(
-            sprintf(self::REGEX, self::STANDARD, self::STANDARD),
-            [$this, 'replace'],
-            $content
-        );
     }
 }
