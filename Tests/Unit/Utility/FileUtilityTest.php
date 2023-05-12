@@ -73,6 +73,7 @@ class FileUtilityTest extends UnitTestCase
 
     public function testProcessFile()
     {
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.assetsCacheBusting'] = true;
         $fileData = [
             'uid' => 103,
             'pid' => 0,
