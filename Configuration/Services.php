@@ -21,6 +21,7 @@ use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterPagePreviewUriGeneratedListener;
+use FriendsOfTYPO3\Headless\Event\Listener\LoginConfirmedEventListener;
 use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
@@ -54,7 +55,9 @@ return static function (ContainerConfigurator $configurator, ContainerBuilder $c
         ];
     }
 
-    if (!class_exists(LoginController::class, false)) {
+    $feloginInstalled = class_exists(LoginController::class, false);
+
+    if (!$feloginInstalled) {
         $excludes = array_merge($excludes, [
             '../Classes/XClass/Controller/LoginController.php',
         ]);
@@ -74,6 +77,14 @@ return static function (ContainerConfigurator $configurator, ContainerBuilder $c
         'event.listener',
         ['identifier' => 'headless/AfterLinkIsGenerated']
     );
+
+    if ($feloginInstalled) {
+        $services->set(LoginConfirmedEventListener::class)->tag(
+            'event.listener',
+            ['identifier' => 'headless/LoginConfirmedEvent']
+        );
+    }
+
     $services->set(AfterPagePreviewUriGeneratedListener::class)->tag(
         'event.listener',
         ['identifier' => 'headless/AfterPagePreviewUriGenerated']
