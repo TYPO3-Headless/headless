@@ -17,6 +17,8 @@ use TYPO3\CMS\Core\TypoScript\TemplateService;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
+use function json_encode;
+
 class HeadlessUserIntTest extends UnitTestCase
 {
     use ProphecyTrait;
@@ -127,6 +129,56 @@ class HeadlessUserIntTest extends UnitTestCase
         $tsfe->content = $classUnderTest->unwrap($tsfe->content);
 
         self::assertEquals($testProcessed, $tsfe->content);
+    }
+
+    /**
+     * @test
+     */
+    public function processingEmptyPluginResponse()
+    {
+        $testProcessed = json_encode(
+            ''
+        );
+        $testContent = '"HEADLESS_INT_NULL_START<<' . $testProcessed . '>>HEADLESS_INT_NULL_END"';
+
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
+
+        $tmpl = $this->prophesize(TemplateService::class);
+        $tmpl->setup = $setup;
+
+        $tsfe = $this->prophesize(TypoScriptFrontendController::class);
+        $tsfe->tmpl = $tmpl->reveal();
+
+        $tsfe->content = $testContent;
+
+        $classUnderTest = new HeadlessUserInt();
+
+        $tsfe->content = $classUnderTest->unwrap($tsfe->content);
+
+        self::assertEquals(json_encode(null), $tsfe->content);
+
+        $testProcessed = json_encode(
+            ''
+        );
+        $testContent = '"NESTED_HEADLESS_INT_NULL_START<<' . $testProcessed . '>>NESTED_HEADLESS_INT_NULL_END"';
+
+        $setup = [];
+        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
+
+        $tmpl = $this->prophesize(TemplateService::class);
+        $tmpl->setup = $setup;
+
+        $tsfe = $this->prophesize(TypoScriptFrontendController::class);
+        $tsfe->tmpl = $tmpl->reveal();
+
+        $tsfe->content = $testContent;
+
+        $classUnderTest = new HeadlessUserInt();
+
+        $tsfe->content = $classUnderTest->unwrap($tsfe->content);
+
+        self::assertEquals(json_encode(null), $tsfe->content);
     }
 
     /**
