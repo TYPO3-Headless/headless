@@ -111,7 +111,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                     $content[$theKey] = (bool)(int)$content[$theKey];
                 }
                 if ($theValue === 'USER_INT' || strpos((string)$content[$theKey], '<!--INT_SCRIPT.') === 0) {
-                    $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey]);
+                    $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey], (int)($conf['ifEmptyReturnNull'] ?? 0) === 1 ? HeadlessUserInt::STANDARD_NULLABLE : HeadlessUserInt::STANDARD);
                 }
                 if ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 && $content[$theKey] === '') {
                     $content[$theKey] = null;

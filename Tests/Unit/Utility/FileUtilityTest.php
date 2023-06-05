@@ -73,6 +73,7 @@ class FileUtilityTest extends UnitTestCase
 
     public function testProcessFile()
     {
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.assetsCacheBusting'] = true;
         $fileData = [
             'uid' => 103,
             'pid' => 0,
@@ -361,7 +362,7 @@ class FileUtilityTest extends UnitTestCase
     protected function getBaselineResultArrayForFile(): array
     {
         return [
-            'publicUrl' => 'https://test-frontend.tld/fileadmin/test-file.jpg',
+            'publicUrl' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
             'properties' =>
                 [
                     'title' => null,
@@ -396,7 +397,7 @@ class FileUtilityTest extends UnitTestCase
     protected function getBaselineResultArrayForFileReference(): array
     {
         return [
-            'publicUrl' => 'https://test-frontend.tld/fileadmin/test-file.jpg',
+            'publicUrl' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
             'properties' =>
                 [
                     'title' => null,
@@ -482,6 +483,7 @@ class FileUtilityTest extends UnitTestCase
             'width' => 526,
             'uid_local' => 103,
             'height' => 526,
+            'tstamp' => 1639061876,
         ];
     }
 
