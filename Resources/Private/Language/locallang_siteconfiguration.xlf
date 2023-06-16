@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en"
+          datatype="plaintext"
+          original="EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf"
+          date="2023-05-25T10:00:00Z"
+          product-name="headless">
+        <header/>
+        <body>
+            <trans-unit id="site.columns.base.label" resname="site.columns.base.label">
+                <source>TYPO3 Entry Point</source>
+            </trans-unit>
+            <trans-unit id="site.columns.base.description" resname="site.columns.base.description">
+                <source>Main URL to call the TYPO3 headless api in default language.</source>
+            </trans-unit>
+            <trans-unit id="site.columns.cookieDomain.label" resname="site.columns.cookieDomain.label">
+                <source>Cookie Domain</source>
+            </trans-unit>
+            <trans-unit id="site.columns.frontendApiProxy.label" resname="site.columns.frontendApiProxy.label">
+                <source>Frontend API proxy url</source>
+            </trans-unit>
+            <trans-unit id="site.columns.frontendApiProxy.description" resname="site.columns.frontendApiProxy.description">
+                <source>Main URL to for proxy API</source>
+            </trans-unit>
+            <trans-unit id="site.columns.frontendBase.label" resname="site.columns.frontendBase.label">
+                <source>Frontend Entry Point</source>
+            </trans-unit>
+            <trans-unit id="site.columns.frontendBase.description" resname="site.columns.frontendBase.description">
+                <source>Main URL to call the frontend in default language.</source>
+            </trans-unit>
+            <trans-unit id="site.columns.frontendFileApi.label" resname="site.columns.frontendFileApi.label">
+                <source>Frontend API proxy url for files</source>
+            </trans-unit>
+            <trans-unit id="site.columns.frontendFileApi.description" resname="site.columns.frontendFileApi.description">
+                <source>Main URL to for proxy API files</source>
+            </trans-unit>
+            <trans-unit id="siteBaseVariant.columns.cookieDomain.label" resname="siteBaseVariant.columns.cookieDomain.label">
+                <source>Cookie Domain</source>
+            </trans-unit>
+            <trans-unit id="siteBaseVariant.columns.frontendApiProxy.label" resname="siteBaseVariant.columns.frontendApiProxy.label">
+                <source>Frontend API proxy url</source>
+            </trans-unit>
+            <trans-unit id="siteBaseVariant.columns.frontendApiProxy.description" resname="siteBaseVariant.columns.frontendApiProxy.description">
+                <source>Main URL to for proxy API</source>
+            </trans-unit>
+            <trans-unit id="siteBaseVariant.columns.frontendBase.label" resname="siteBaseVariant.columns.frontendBase.label">
+                <source>Frontend Entry Point</source>
+            </trans-unit>
+            <trans-unit id="siteBaseVariant.columns.frontendBase.description" resname="siteBaseVariant.columns.frontendBase.description">
+                <source>For example "https://front.staging.domain.tld" or "http://front.domain.local"</source>
+            </trans-unit>
+            <trans-unit id="siteBaseVariant.columns.frontendFileApi.label" resname="siteBaseVariant.columns.frontendFileApi.label">
+                <source>Frontend API proxy url for files</source>
+            </trans-unit>
+            <trans-unit id="siteBaseVariant.columns.frontendFileApi.description" resname="siteBaseVariant.columns.frontendFileApi.description">
+                <source>Main URL to for proxy API files</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

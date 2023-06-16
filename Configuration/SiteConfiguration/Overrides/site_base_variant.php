@@ -14,8 +14,8 @@ $features = GeneralUtility::makeInstance(Features::class);
 
 $tempColumns = [
     'frontendBase' => [
-        'label' => 'Frontend Entry Point',
-        'description' => 'For example "https://front.staging.domain.tld" or "http://front.domain.local"',
+        'label' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:siteBaseVariant.columns.frontendBase.label',
+        'description' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:siteBaseVariant.columns.frontendBase.description',
         'config' => [
             'type' => 'input',
             'eval' => 'trim',
@@ -28,8 +28,8 @@ $replaceShowItem = 'base, frontendBase, ';
 
 if ($features->isFeatureEnabled('headless.storageProxy')) {
     $tempColumns['frontendApiProxy'] = [
-        'label' => 'Frontend API proxy url',
-        'description' => 'Main URL to for proxy API',
+        'label' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:siteBaseVariant.columns.frontendApiProxy.label',
+        'description' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:siteBaseVariant.columns.frontendApiProxy.description',
         'config' => [
             'type' => 'input',
             'eval' => 'trim',
@@ -38,8 +38,8 @@ if ($features->isFeatureEnabled('headless.storageProxy')) {
     ];
 
     $tempColumns['frontendFileApi'] = [
-        'label' => 'Frontend API proxy url for files',
-        'description' => 'Main URL to for proxy API files',
+        'label' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:siteBaseVariant.columns.frontendFileApi.label',
+        'description' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:siteBaseVariant.columns.frontendFileApi.description',
         'config' => [
             'type' => 'input',
             'eval' => 'trim',
@@ -52,7 +52,7 @@ if ($features->isFeatureEnabled('headless.storageProxy')) {
 
 if ($features->isFeatureEnabled('headless.cookieDomainPerSite')) {
     $tempColumns['cookieDomain'] = [
-        'label' => 'Cookie Domain',
+        'label' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:siteBaseVariant.columns.cookieDomain.label',
         'config' => [
             'type' => 'input',
             'eval' => 'trim',
@@ -67,7 +67,7 @@ $GLOBALS['SiteConfiguration']['site_base_variant']['columns'] = array_merge(
     $GLOBALS['SiteConfiguration']['site_base_variant']['columns'],
     $tempColumns
 );
-$GLOBALS['SiteConfiguration']['site_base_variant']['columns']['base']['label'] = 'TYPO3 Entry Point';
+$GLOBALS['SiteConfiguration']['site_base_variant']['columns']['base']['label'] = 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.columns.base.label';
 
 $GLOBALS['SiteConfiguration']['site_base_variant']['types']['1']['showitem'] = str_replace(
     'base,',
