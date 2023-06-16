@@ -276,7 +276,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
                 );
             } else {
                 if (!empty($field['properties']['customOptions'])) {
-                    $customOptions = GeneralUtility::makeInstance($field['properties']['customOptions']);
+                    $customOptions = GeneralUtility::makeInstance($field['properties']['customOptions'], $field, $formFields, $identifier);
 
                     if ($customOptions instanceof CustomOptionsInterface) {
                         $field['properties']['options'] = $customOptions->get();
