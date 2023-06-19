@@ -45,8 +45,9 @@ return static function (ContainerConfigurator $configurator, ContainerBuilder $c
     $toLoad = $services->load('FriendsOfTYPO3\\Headless\\', '../Classes/*');
 
     $excludes = [];
+    $cmsFormsInstalled = class_exists(FormFrontendController::class, false);
 
-    if (!class_exists(FormFrontendController::class, false)) {
+    if (!$cmsFormsInstalled) {
         $excludes = [
             '../Classes/Form/*',
             '../Classes/XClass/Controller/FormFrontendController.php',
@@ -69,7 +70,6 @@ return static function (ContainerConfigurator $configurator, ContainerBuilder $c
     $toLoad->set(FloatContentObject::class)->tag('frontend.contentobject', ['identifier' => 'FLOAT']);
 
     $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
-    $services->set(FormTranslationService::class)->arg('$runtimeCache', service('cache.runtime'))->public();
     $services->set(AfterLinkIsGeneratedListener::class)->tag(
         'event.listener',
         ['identifier' => 'headless/AfterLinkIsGenerated']
@@ -78,6 +78,10 @@ return static function (ContainerConfigurator $configurator, ContainerBuilder $c
         'event.listener',
         ['identifier' => 'headless/AfterPagePreviewUriGenerated']
     );
+
+    if ($cmsFormsInstalled) {
+        $services->set(FormTranslationService::class)->arg('$runtimeCache', service('cache.runtime'))->public();
+    }
 
     $features = GeneralUtility::makeInstance(Features::class);
 
