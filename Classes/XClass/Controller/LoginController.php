@@ -12,13 +12,15 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\XClass\Controller;
 
 use Psr\Http\Message\ResponseInterface;
-use TYPO3\CMS\Extbase\Http\ForwardResponse;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+use TYPO3\CMS\Core\Security\RequestToken;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\FrontendLogin\Event\BeforeRedirectEvent;
-use TYPO3\CMS\FrontendLogin\Event\LoginConfirmedEvent;
 use TYPO3\CMS\FrontendLogin\Event\LoginErrorOccurredEvent;
 use TYPO3\CMS\FrontendLogin\Event\LogoutConfirmedEvent;
 use TYPO3\CMS\FrontendLogin\Event\ModifyLoginFormViewEvent;
+
+use function implode;
+use function json_encode;
 
 /**
  * @codeCoverageIgnore
@@ -46,81 +48,66 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
         if (($forwardResponse = $this->handleLoginForwards()) !== null) {
             return $forwardResponse;
         }
-
-        if ($this->redirectUrl !== '') {
-            $this->eventDispatcher->dispatch(new BeforeRedirectEvent($this->loginType, $this->redirectUrl));
-            $data = [
-                'redirectUrl' => $this->redirectUrl,
-                'statusCode' => 301
-            ];
-            return $this->responseFactory->createResponse()->withHeader('Content-Type', 'application/json; charset=utf-8')
-                ->withBody($this->streamFactory->createStream(json_encode($data)));
+        if (($redirectResponse = $this->handleRedirect($status)) !== null) {
+            return $redirectResponse;
         }
+
         $this->eventDispatcher->dispatch(new ModifyLoginFormViewEvent($this->view));
+
+        $storagePageIds = ($GLOBALS['TYPO3_CONF_VARS']['FE']['checkFeUserPid'] ?? false)
+            ? $this->pageRepository->getPageIdsRecursive(GeneralUtility::intExplode(',', (string)($this->settings['pages'] ?? ''), true), (int)($this->settings['recursive'] ?? 0))
+            : [];
 
         $this->view->assignMultiple(
             [
                 'status' => $status,
-                'cookieWarning' => $this->showCookieWarning,
+                'storagePid' => implode(',', $storagePageIds),
                 'messageKey' => $this->getStatusMessageKey(),
-                'storagePid' => $this->shallEnforceLoginSigning() ? $this->getSignedStorageFolders() : implode(',', $this->getStorageFolders()),
                 'permaloginStatus' => $this->getPermaloginStatus(),
-                'redirectURL' => $this->redirectHandler->getLoginFormRedirectUrl($this->configuration, $this->isRedirectDisabled()),
+                'redirectURL' => $this->redirectHandler->getLoginFormRedirectUrl($this->request, $this->configuration, $this->isRedirectDisabled()),
                 'redirectReferrer' => $this->request->hasArgument('redirectReferrer') ? (string)$this->request->getArgument('redirectReferrer') : '',
-                'referer' => $this->requestHandler->getPropertyFromGetAndPost('referer'),
+                'referer' => $this->getRefererForLoginForm(),
                 'noRedirect' => $this->isRedirectDisabled(),
+                'requestToken' => RequestToken::create('core/user-auth/fe')
+                    ->withMergedParams(['pid' => implode(',', $storagePageIds)]),
             ]
         );
 
         return $this->jsonResponse();
     }
 
-    /**
-     * User overview for logged in users
-     *
-     * @param bool $showLoginMessage
-     * @return ResponseInterface
-     */
-    public function overviewAction(bool $showLoginMessage = false): ResponseInterface
+    protected function handleRedirect(string $status = 'success'): ?ResponseInterface
     {
+        if ($this->redirectUrl === '') {
+            return null;
+        }
+
         if (!$this->isHeadlessEnabled()) {
-            return parent::overviewAction($showLoginMessage);
+            return parent::handleRedirect();
         }
 
-        $status = 'success';
+        $event = $this->eventDispatcher->dispatch(new BeforeRedirectEvent(
+            $this->loginType,
+            $this->redirectUrl,
+            $this->request
+        ));
 
-        if (!$this->userAspect->isLoggedIn()) {
-            return new ForwardResponse('login');
-        }
+        $data = [
+            'redirectUrl' => $event->getRedirectUrl(),
+            'statusCode' => 303,
+            'status' => $status,
+        ];
 
-        $this->eventDispatcher->dispatch(new LoginConfirmedEvent($this, $this->view));
-
-        if ($this->redirectUrl !== '') {
-            $this->eventDispatcher->dispatch(new BeforeRedirectEvent($this->loginType, $this->redirectUrl));
-            $data = [
-                'redirectUrl' => $this->redirectUrl,
-                'statusCode' => 301,
-                'status' => 'success'
-            ];
-            return $this->responseFactory->createResponse()->withHeader('Content-Type', 'application/json; charset=utf-8')
-                ->withBody($this->streamFactory->createStream(json_encode($data)));
-        }
-
-        $this->view->assignMultiple(
-            [
-                'status' => $status,
-                'cookieWarning' => $this->showCookieWarning,
-                'user' => $this->userService->getFeUserData(),
-                'showLoginMessage' => $showLoginMessage,
-            ]
-        );
-
-        return $this->htmlResponse();
+        return $this->responseFactory->createResponse()->withHeader(
+            'Content-Type',
+            'application/json; charset=utf-8'
+        )
+            ->withBody($this->streamFactory->createStream(json_encode($data)));
     }
 
     private function isHeadlessEnabled(): bool
     {
-        $typoScriptSetup = $GLOBALS['TSFE'] instanceof TypoScriptFrontendController ? $GLOBALS['TSFE']->tmpl->setup : [];
+        $typoScriptSetup = $this->request->getAttribute('frontend.typoscript')->getSetupArray();
 
         return (bool)($typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'] ?? false);
     }
