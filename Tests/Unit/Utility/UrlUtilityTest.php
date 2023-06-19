@@ -110,20 +110,20 @@ class UrlUtilityTest extends UnitTestCase
     {
         $site = $this->prophesize(Site::class);
         $site->getConfiguration()->shouldBeCalled(3)->willReturn([
-            'base' => 'https://api.typo3.org',
-            'frontendBase' => 'https://www.typo3.org',
-            'frontendApiProxy' => 'https://www.typo3.org/headless',
-            'frontendFileApi' => 'https://www.typo3.org/headless/fileadmin',
-            'SpecialSitemapKey' => 'https://www.typo3.org/custom-sitemap',
+            'base' => 'https://api.typo3.org/',
+            'frontendBase' => 'https://www.typo3.org/',
+            'frontendApiProxy' => 'https://www.typo3.org/headless/',
+            'frontendFileApi' => 'https://www.typo3.org/headless/fileadmin/',
+            'SpecialSitemapKey' => 'https://www.typo3.org/custom-sitemap/',
             'languages' => [],
             'baseVariants' => [
                 [
                     'base' => 'https://test-backend-api.tld',
                     'condition' => 'applicationContext == "Development"',
-                    'frontendBase' => 'https://test-frontend.tld',
-                    'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
-                    'SpecialSitemapKey' => 'https://test-frontend.tld/sitemap',
+                    'frontendBase' => 'https://test-frontend.tld/',
+                    'frontendApiProxy' => 'https://test-frontend-api.tld/headless/',
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin/',
+                    'SpecialSitemapKey' => 'https://test-frontend.tld/sitemap/',
                 ],
             ]
         ]);
@@ -722,9 +722,9 @@ class UrlUtilityTest extends UnitTestCase
             'hreflang' => 'en-us',
             'direction' =>  'ltr',
             'flag' =>  'us',
-            'frontendBase' => 'https://frontend-domain-from-lang.tld',
+            'frontendBase' => 'https://frontend-domain-from-lang.tld/',
             'frontendApiProxy' => 'https://frontend-domain-from-lang.tld/headless/',
-            'frontendFileApi' => 'https://frontend-domain-from-lang.tld/headless/fileadmin',
+            'frontendFileApi' => 'https://frontend-domain-from-lang.tld/headless/fileadmin/',
         ]));
 
         $resolver = $this->prophesize(Resolver::class);
@@ -732,7 +732,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder, $request->reveal());
         self::assertSame('https://frontend-domain-from-lang.tld', $urlUtility->getFrontendUrl());
-        self::assertSame('https://frontend-domain-from-lang.tld/headless/', $urlUtility->getProxyUrl());
+        self::assertSame('https://frontend-domain-from-lang.tld/headless', $urlUtility->getProxyUrl());
         self::assertSame('https://frontend-domain-from-lang.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
 
         // configuration on language lvl with variants
@@ -794,9 +794,9 @@ class UrlUtilityTest extends UnitTestCase
                 [
                     'base' => 'https://test-backend-api.tld',
                     'condition' => 'applicationContext == "Development"',
-                    'frontendBase' => 'https://test-frontend-from-from-request-lang.tld',
-                    'frontendApiProxy' => 'https://test-frontend-from-from-request-lang.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-from-from-request-lang.tld/headless/fileadmin'
+                    'frontendBase' => 'https://test-frontend-from-from-request-lang.tld/',
+                    'frontendApiProxy' => 'https://test-frontend-from-from-request-lang.tld/headless/',
+                    'frontendFileApi' => 'https://test-frontend-from-from-request-lang.tld/headless/fileadmin/'
                 ],
             ],
         ]));
