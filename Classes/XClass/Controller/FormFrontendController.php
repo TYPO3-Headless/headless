@@ -137,7 +137,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         $formFields = $formDefinition['renderables'][$currentPageIndex]['renderables'] ?? [];
 
         // provides support for custom options providers (dynamic selects/radio/checkboxes)
-        $formFieldsNames = $this->generateFieldNamesAndReplaceCustomOptions($formFields, $formDefinition['identifier'], $formRuntime->getFormDefinition());
+        $formFieldsNames = $this->generateFieldNamesAndReplaceCustomOptions($formFields, $formDefinition['identifier'], $formRuntime);
 
         if ($honeyPot) {
             $formFields[] = [
@@ -262,7 +262,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      * @param array<mixed> $formFields
      * @return array<int, string>
      */
-    private function generateFieldNamesAndReplaceCustomOptions(array &$formFields, string $identifier, FormDefinition $definition): array
+    private function generateFieldNamesAndReplaceCustomOptions(array &$formFields, string $identifier, FormRuntime $formRuntime): array
     {
         $formFieldsNames = [];
 
@@ -272,11 +272,11 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
                 is_array($field['renderables'])) {
                 $formFieldsNames = array_merge(
                     $formFieldsNames,
-                    $this->generateFieldNamesAndReplaceCustomOptions($field['renderables'], $identifier, $definition)
+                    $this->generateFieldNamesAndReplaceCustomOptions($field['renderables'], $identifier, $formRuntime)
                 );
             } else {
                 if (!empty($field['properties']['customOptions'])) {
-                    $customOptions = GeneralUtility::makeInstance($field['properties']['customOptions'], $field, $formFields, $identifier);
+                    $customOptions = GeneralUtility::makeInstance($field['properties']['customOptions'], $field, $formFields, $identifier, $formRuntime);
 
                     if ($customOptions instanceof CustomOptionsInterface) {
                         $field['properties']['options'] = $customOptions->get();
@@ -285,7 +285,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
                     unset($field['properties']['customOptions']);
                 }
 
-                $defaultValue = $definition->getElementDefaultValueByIdentifier($field['identifier']);
+                $defaultValue = $formRuntime->getFormDefinition()->getElementDefaultValueByIdentifier($field['identifier']);
 
                 if ($defaultValue) {
                     $field['properties']['defaultValue'] = $defaultValue;
