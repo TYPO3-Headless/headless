@@ -37,6 +37,7 @@ class FileUtility
     protected ImageService  $imageService;
     protected ?ServerRequestInterface $serverRequest;
     protected EventDispatcherInterface $eventDispatcher;
+    protected Features $features;
 
     /**
      * @var array<string, array<string, string>>
