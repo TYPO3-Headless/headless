@@ -201,6 +201,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         array $variants = [],
         string $returnField = 'frontendBase'
     ): string {
+        $frontendUrl = rtrim($frontendUrl, '/');
         if ($variants === []) {
             return $frontendUrl;
         }

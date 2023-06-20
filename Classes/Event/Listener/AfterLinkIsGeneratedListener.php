@@ -16,8 +16,6 @@ use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Site\Entity\NullSite;
 use TYPO3\CMS\Frontend\Event\AfterLinkIsGeneratedEvent;
 
-use function is_numeric;
-
 final class AfterLinkIsGeneratedListener
 {
     public function __construct(
@@ -30,16 +28,20 @@ final class AfterLinkIsGeneratedListener
     {
         $result = $event->getLinkResult();
 
-        $params = $this->linkService->resolve($result->getLinkText());
-
-        if (!isset($params['pageuid'])) {
+        if ($result->getType() !== 'page') {
             return;
         }
 
-        if (is_numeric($params['pageuid'])) {
+        $pageId = $result->getLinkConfiguration()['parameter'] ?? 0;
+
+        if (isset($result->getLinkConfiguration()['parameter.'])) {
+            $pageId = (int)($this->linkService->resolve($event->getContentObjectRenderer()->parameters['href'] ?? '')['pageuid'] ?? 0);
+        }
+
+        if ($pageId) {
             $href = $this->urlUtility->getFrontendUrlForPage(
                 $event->getLinkResult()->getUrl(),
-                (int)$params['pageuid']
+                (int)$pageId
             );
         } else {
             $site = $event->getContentObjectRenderer()->getRequest()->getAttribute('site');

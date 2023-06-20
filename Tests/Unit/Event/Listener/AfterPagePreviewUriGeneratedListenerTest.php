@@ -7,8 +7,9 @@
  * LICENSE.md file that was distributed with this source code.
  */
 
-namespace FriendsOfTYPO3\Headless\Event\Listener;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\Event\Listener;
 
+use FriendsOfTYPO3\Headless\Event\Listener\AfterPagePreviewUriGeneratedListener;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;

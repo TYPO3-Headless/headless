@@ -33,6 +33,9 @@ class DecodeViewHelper extends AbstractViewHelper
         $json = $this->arguments['json'];
         if ($json === null) {
             $json = $this->renderChildren();
+            if ($json !== null) {
+                $json = trim($json);
+            }
             if (empty($json)) {
                 return null;
             }
