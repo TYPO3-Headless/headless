@@ -25,7 +25,6 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_merge;
-use function count;
 use function rtrim;
 use function strpos;
 
@@ -186,7 +185,9 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         array $variants = [],
         string $returnField = 'frontendBase'
     ): string {
-        if (count($variants) === 0) {
+        $frontendUrl = rtrim($frontendUrl, '/');
+
+        if ($variants === []) {
             return $frontendUrl;
         }
 

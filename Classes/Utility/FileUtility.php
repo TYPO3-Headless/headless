@@ -14,6 +14,7 @@ namespace FriendsOfTYPO3\Headless\Utility;
 use FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
@@ -31,7 +32,6 @@ class FileUtility
 {
     public const RETINA_RATIO = 2;
     public const LQIP_RATIO = 0.1;
-
     protected ContentObjectRenderer $contentObjectRenderer;
     protected RendererRegistry $rendererRegistry;
     protected ImageService  $imageService;
@@ -42,13 +42,15 @@ class FileUtility
      * @var array<string, array<string, string>>
      */
     protected array $errors = [];
+    protected Features $features;
 
     public function __construct(
         ?ContentObjectRenderer $contentObjectRenderer = null,
         ?RendererRegistry $rendererRegistry = null,
         ?ImageService $imageService = null,
         ?ServerRequestInterface $serverRequest = null,
-        ?EventDispatcherInterface $eventDispatcher = null
+        ?EventDispatcherInterface $eventDispatcher = null,
+        ?Features $features = null
     ) {
         $this->contentObjectRenderer = $contentObjectRenderer ??
             GeneralUtility::makeInstance(ContentObjectRenderer::class);
@@ -56,6 +58,7 @@ class FileUtility
         $this->imageService = $imageService ?? GeneralUtility::makeInstance(ImageService::class);
         $this->serverRequest = $serverRequest ?? ($GLOBALS['TYPO3_REQUEST'] ?? null);
         $this->eventDispatcher = $eventDispatcher ?? GeneralUtility::makeInstance(EventDispatcher::class);
+        $this->features = $features ?? GeneralUtility::makeInstance(Features::class);
     }
 
     /**
@@ -122,18 +125,32 @@ class FileUtility
             'extension' => $fileReference->getProperty('extension'),
         ];
 
-        return [
-            'publicUrl' => $publicUrl,
-            'properties' => $this->eventDispatcher->dispatch(
-                new EnrichFileDataEvent(
-                    $originalFileReference,
-                    $fileReference,
-                    array_merge(
-                        $originalProperties,
-                        $processedProperties
-                    )
+        $event = $this->eventDispatcher->dispatch(
+            new EnrichFileDataEvent(
+                $originalFileReference,
+                $fileReference,
+                array_merge(
+                    $originalProperties,
+                    $processedProperties
                 )
-            )->getProperties(),
+            )
+        );
+
+        $cacheBuster = '';
+
+        if ($this->features->isFeatureEnabled('headless.assetsCacheBusting') && $event->getProperties()['type'] !== 'video') {
+            $modified = $event->getProcessed()->getProperty('modification_date');
+
+            if (!$modified) {
+                $modified = $event->getProcessed()->getProperty('tstamp');
+            }
+
+            $cacheBuster = '?' . $modified;
+        }
+
+        return [
+            'publicUrl' => $publicUrl . $cacheBuster,
+            'properties' => $event->getProperties(),
         ];
     }
 
