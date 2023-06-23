@@ -42,6 +42,7 @@ class FileUtility
      * @var array<string, array<string, string>>
      */
     protected array $errors = [];
+    protected Features $features;
 
     public function __construct(
         ?ContentObjectRenderer $contentObjectRenderer = null,
