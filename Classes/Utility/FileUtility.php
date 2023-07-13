@@ -63,7 +63,7 @@ class FileUtility
 
     /**
      * @param FileInterface $fileReference
-     * @param array<string,mixed> $dimensions
+     * @param array<string,mixed> $arguments
      * @param string $cropVariant
      * @param bool $delayProcessing
      *
@@ -71,7 +71,7 @@ class FileUtility
      */
     public function processFile(
         FileInterface $fileReference,
-        array $dimensions = [],
+        array $arguments = [],
         string $cropVariant = 'default',
         bool $delayProcessing = false
     ): array {
@@ -99,7 +99,7 @@ class FileUtility
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
             if (!$delayProcessing && $fileReference->getMimeType() !== 'image/svg+xml') {
-                $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
+                $fileReference = $this->processImageFile($fileReference, $arguments, $cropVariant);
             }
             $publicUrl = $this->imageService->getImageUri($fileReference, true);
         } elseif ($fileRenderer !== null) {
