@@ -184,19 +184,30 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 $fileObj = $this->fileObjects[$fileKey] ?? null;
 
                 if ($fileObj) {
+                    $fileExtension = $this->processorConfiguration['fileExtension'] ?? null;
+
                     if ($fileObj['properties']['type'] === 'image') {
                         $image = $this->getImageService()->getImage((string)$fileObj['properties']['fileReferenceUid'], null, true);
-                        $fileObj = $this->getFileUtility()->processFile($image, $this->mediaDimensions[$fileKey] ?? []);
+                        $fileObj = $this->getFileUtility()->processFile(
+                            $image,
+                            array_merge(
+                                ['fileExtension' => $fileExtension],
+                                $this->mediaDimensions[$fileKey] ?? []
+                            )
+                        );
 
                         if (isset($this->processorConfiguration['autogenerate.']['retina2x'],
                             $fileObj['properties']['dimensions']['width']) &&
                             (int)$this->processorConfiguration['autogenerate.']['retina2x'] === 1) {
                             $fileObj['urlRetina'] = $this->getFileUtility()->processFile(
                                 $image,
-                                [
-                                    'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::RETINA_RATIO,
-                                    'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::RETINA_RATIO,
-                                ]
+                                array_merge(
+                                    ['fileExtension' => $fileExtension],
+                                    [
+                                        'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::RETINA_RATIO,
+                                        'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::RETINA_RATIO,
+                                    ]
+                                )
                             )['publicUrl'];
                         }
 
@@ -205,10 +216,13 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                                 (int)$this->processorConfiguration['autogenerate.']['lqip'] === 1) {
                             $fileObj['urlLqip'] = $this->getFileUtility()->processFile(
                                 $image,
-                                [
+                                array_merge(
+                                    ['fileExtension' => $fileExtension],
+                                    [
                                         'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::LQIP_RATIO,
                                         'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::LQIP_RATIO,
                                     ]
+                                )
                             )['publicUrl'];
                         }
                     }
