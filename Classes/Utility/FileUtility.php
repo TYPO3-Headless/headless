@@ -62,7 +62,11 @@ class FileUtility
     }
 
     /**
+     * @param FileInterface $fileReference
      * @param array<string,mixed> $dimensions
+     * @param string $cropVariant
+     * @param bool $delayProcessing
+     *
      * @return array<string, mixed>
      */
     public function processFile(
@@ -155,10 +159,17 @@ class FileUtility
     }
 
     /**
+     * @param FileInterface $image
      * @param array<string, mixed> $arguments
+     * @param string $cropVariant
+     *
+     * @return ProcessedFile
      */
-    public function processImageFile(FileInterface $image, array $arguments = [], string $cropVariant = 'default'): ProcessedFile
-    {
+    public function processImageFile(
+        FileInterface $image,
+        array $arguments = [],
+        string $cropVariant = 'default'
+    ): ProcessedFile {
         try {
             $properties = $image->getProperties();
             $cropVariantCollection = $this->createCropVariant((string)$image->getProperty('crop'));
