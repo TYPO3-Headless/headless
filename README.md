@@ -68,7 +68,7 @@ Install extension using composer\
 Then, you should include extension typoscript template, and you are ready to go. Also, please remember to don't use fluid styled content on the same page tree together with ext:headless.
 
 ## Documentation
-[Extension documentation](https://docs.typo3.org/p/friendsoftypo3/headless/master/en-us/Index.html)
+[Extension documentation](https://docs.typo3.org/p/friendsoftypo3/headless/main/en-us/Index.html)
 
 ## JSON  Content Object
 In headless extension we implemented new JSON Content Object, which allows you to specify what fields you want to output, and how they will look. First, let's take a look at simple example
@@ -174,6 +174,7 @@ since version 3.x & under active maintenance
 ![image](https://user-images.githubusercontent.com/15106746/136414370-a4bec856-5a95-4965-b60b-5a37be5ce5c9.png)
 
 ## DataProcessing
+
 You can use Data Processors just like in `FLUIDTEMPLATE` Content Object, e.g.
 
 ```
@@ -190,24 +191,33 @@ lib.languages {
 ```
 
 ## Built in data processors
-We provide multiple data processorors for headless usage
+
+We provide multiple data processors for headless rendering purposes.
+
+### DatabaseQueryProcessor
+Used for fetching records from the database.
 
 ### FilesProcessor
 This processor should be used to process files (standard or media files).
-Also, it allows you to proccess images.
+
+Also, it allows you to process images. See [docs chapter: Images](https://docs.typo3.org/p/friendsoftypo3/headless/main/en-us/Developer/Images.html) for details.
+
 ### GalleryProcessor
-Should be used along with `FilesProcessor` (chained). Used for processing mutliple
-media files.
+Should be used along with `FilesProcessor` (chained). Used for processing mutliple media files.
+
 ### MenuProcessor
 Used for navigation. Works just like standard menu processor.
+
 ### FlexFormProcessor
-Used for proecessing flexforms.
+Used for processing flexforms.
+
 ### RootSitesProcessor
 Render your all headless sites configuration for your frontend application.
 
 ## Development
+
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
-If you have any questions, join #initiative-headless-pwa Slack channel.
+If you have any questions, join the #initiative-headless-pwa Slack channel.
 
 ## Credits
 
