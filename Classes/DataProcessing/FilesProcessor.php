@@ -178,48 +178,38 @@ class FilesProcessor implements DataProcessorInterface
 
         foreach ($this->fileObjects as $key => $fileObject) {
             if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
+                $delayProcessing = (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1;
+
+                // 1. render image as usual
                 $file = $this->getFileUtility()->processFile(
                     $fileObject,
                     $properties,
                     $cropVariant,
-                    (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1
+                    $delayProcessing
                 );
 
-                $targetWidth = (int)($properties['width'] ?: $file['properties']['dimensions']['width']);
-                $targetHeight = (int)($properties['height'] ?: $file['properties']['dimensions']['height']);
+                // 2. render autogenerate variants
+                $targetWidth = (int)($properties['width'] ?? $file['properties']['dimensions']['width']);
+                $targetHeight = (int)($properties['height'] ?? $file['properties']['dimensions']['height']);
+                if ($targetWidth || $targetHeight) {
+                    foreach ($this->processorConfiguration['processingConfiguration.']['autogenerate.'] as $formatKey => $formatConf) {
+                        $formatKey = rtrim($formatKey, '.');
+                        $factor = (float)($formatConf['factor'] ?? 1.0);
 
-                if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x']) &&
-                    (int)$this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x'] === 1 &&
-                    ($targetWidth || $targetHeight)) {
-                    $file['urlRetina'] = $this->getFileUtility()->processFile(
-                        $fileObject,
-                        array_merge(
-                            $properties,
-                            [
-                                'width' => $targetWidth * FileUtility::RETINA_RATIO,
-                                'height' => $targetHeight * FileUtility::RETINA_RATIO,
-                            ]
-                        ),
-                        $cropVariant,
-                        (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1
-                    )['publicUrl'];
-                }
-
-                if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.']['lqip']) &&
-                    (int)$this->processorConfiguration['processingConfiguration.']['autogenerate.']['lqip'] === 1 &&
-                    ($targetWidth || $targetHeight)) {
-                    $file['urlLqip'] = $this->getFileUtility()->processFile(
-                        $fileObject,
-                        array_merge(
-                            $properties,
-                            [
-                                'width' => $targetWidth * FileUtility::LQIP_RATIO,
-                                'height' => $targetHeight * FileUtility::LQIP_RATIO,
-                            ]
-                        ),
-                        $cropVariant,
-                        (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1
-                    )['publicUrl'];
+                        $file['publicUrl_' . $formatKey] = $this->getFileUtility()->processFile(
+                            $fileObject,
+                            array_merge(
+                                $properties,
+                                [
+                                    'fileExtension' => $formatConf['fileExtension'] ?? null,
+                                    'width' => $targetWidth * $factor,
+                                    'height' => $targetHeight * $factor,
+                                ]
+                            ),
+                            $cropVariant,
+                            $delayProcessing
+                        )['publicUrl'];
+                    }
                 }
 
                 $data[] = $file;
