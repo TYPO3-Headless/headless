@@ -13,7 +13,7 @@ This chapter will explain different usecases for developer working with `headles
 Internal Extbase plugins
 ========================
 
-To integrate a custom frontend plugin which return its data inside the JSON object, we have to do the following:
+To integrate a custom frontend plugin which returns its data inside the JSON object, we have to do the following:
 
 Follow the standard proceeding to `register and configure extbase plugins <https://docs.typo3.org/m/typo3/book-extbasefluid/master/en-us/4-FirstExtension/7-configuring-the-plugin.html>`__:
 
@@ -122,7 +122,7 @@ Main part is a user function definition to run a plugin from TypoScript:
 For any other plugin, just change the `vendorName`, `extensionName`, `pluginName` and `controller` options,
 and import needed constant and setup values (like for view, persistence and settings in this case).
 
-Than use the constants of that extension to overwrite the paths to the fluid templates:
+Then use the constants of that extension to overwrite the paths to the fluid templates:
 
 .. code-block:: typoscript
 
@@ -328,13 +328,13 @@ EXT:headless out of box provides for developers:
     elements: []
   }
 
-You can anytime extend & customize for your needs simply by create custom
-decorator which implements `DefinitionDecoratorInterface` or extend provided
-`AbstractFormDefinitionDecorator` which provides you ability to override
-definition of each element or whole form definition.
+You can anytime extend & customize for your needs simply by creating a custom
+decorator which implements `DefinitionDecoratorInterface` or extend the provided
+`AbstractFormDefinitionDecorator` which provides the ability to override the
+definition of each element or the whole form definition.
 
-After creating custom decorator you can attach to your form simply by setting
-`formDecorator` in rendering options of form, :ref:`see more <configuration-ext-form>`
+After creating a custom decorator you can attach it to your form simply by setting
+`formDecorator` in the rendering options of the form, :ref:`see more <configuration-ext-form>`
 
 .. _developer-snippets:
 
