@@ -175,9 +175,25 @@ class FilesProcessor implements DataProcessorInterface
     {
         $data = [];
         $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
+        $formats = $this->processorConfiguration['processingConfiguration.']['formats.'] ?? [];
+
+        // Legacy workaround
+        $autogenerateConfig = $this->processorConfiguration['processingConfiguration.']['autogenerate.'] ?? null;
+        if ($autogenerateConfig) {
+            if (($autogenerateConfig['retina2x'] ?? 0) == 1) {
+                $formats['urlRetina'] = [
+                    'factor' => FileUtility::RETINA_RATIO,
+                ];
+            }
+            if (($autogenerateConfig['lqip'] ?? 0) == 1) {
+                $formats['urlLqip'] = [
+                    'factor' => FileUtility::LQIP_RATIO,
+                ];
+            }
+        }
 
         foreach ($this->fileObjects as $key => $fileObject) {
-            if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
+            if ($formats) {
                 $delayProcessing = (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1;
 
                 // 1. render image as usual
@@ -188,15 +204,15 @@ class FilesProcessor implements DataProcessorInterface
                     $delayProcessing
                 );
 
-                // 2. render autogenerate variants
+                // 2. render additional formats
                 $targetWidth = (int)($properties['width'] ?? $file['properties']['dimensions']['width']);
                 $targetHeight = (int)($properties['height'] ?? $file['properties']['dimensions']['height']);
                 if ($targetWidth || $targetHeight) {
-                    foreach ($this->processorConfiguration['processingConfiguration.']['autogenerate.'] as $formatKey => $formatConf) {
+                    foreach ($formats as $formatKey => $formatConf) {
                         $formatKey = rtrim($formatKey, '.');
                         $factor = (float)($formatConf['factor'] ?? 1.0);
 
-                        $file['publicUrl_' . $formatKey] = $this->getFileUtility()->processFile(
+                        $file[$formatKey] = $this->getFileUtility()->processFile(
                             $fileObject,
                             array_merge(
                                 $properties,

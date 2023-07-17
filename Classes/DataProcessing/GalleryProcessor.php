@@ -178,6 +178,23 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      */
     protected function prepareGalleryData()
     {
+        $formats = $this->processorConfiguration['formats.'] ?? [];
+
+        // Legacy workaround
+        $autogenerateConfig = $this->processorConfiguration['autogenerate.'] ?? null;
+        if ($autogenerateConfig) {
+            if (($autogenerateConfig['retina2x'] ?? 0) == 1) {
+                $formats['urlRetina'] = [
+                    'factor' => FileUtility::RETINA_RATIO,
+                ];
+            }
+            if (($autogenerateConfig['lqip'] ?? 0) == 1) {
+                $formats['urlLqip'] = [
+                    'factor' => FileUtility::LQIP_RATIO,
+                ];
+            }
+        }
+
         for ($row = 1; $row <= $this->galleryData['count']['rows']; $row++) {
             for ($column = 1; $column <= $this->galleryData['count']['columns']; $column++) {
                 $fileKey = (($row - 1) * $this->galleryData['count']['columns']) + $column - 1;
@@ -196,12 +213,12 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                             )
                         );
 
-                        // 2. render autogenerate variants
-                        foreach ($this->processorConfiguration['autogenerate.'] ?? [] as $formatKey => $formatConf) {
+                        // 2. render additional formats
+                        foreach ($formats ?? [] as $formatKey => $formatConf) {
                             $formatKey = rtrim($formatKey, '.');
                             $factor = (float)($formatConf['factor'] ?? 1.0);
 
-                            $fileObj['publicUrl_' . $formatKey] = $this->getFileUtility()->processFile(
+                            $fileObj[$formatKey] = $this->getFileUtility()->processFile(
                                 $image,
                                 [
                                     'fileExtension' => $formatConf['fileExtension'] ?? null,
