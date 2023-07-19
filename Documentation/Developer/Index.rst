@@ -274,7 +274,7 @@ Here's an example of how to override the meta object by data from a DB record:
 
   lib.meta.stdWrap.override.cObject = JSON
   lib.meta.stdWrap.override.cObject {
-    stdWrap.if.isTrue.data = GP:tx_news_pi1|news
+    if.isTrue.data = GP:tx_news_pi1|news
     dataProcessing.10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
     dataProcessing.10 {
       table = tx_news_domain_model_news
