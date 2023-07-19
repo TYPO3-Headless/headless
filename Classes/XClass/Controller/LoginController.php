@@ -48,10 +48,10 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
         }
 
         if ($this->redirectUrl !== '') {
-            $this->eventDispatcher->dispatch(new BeforeRedirectEvent($this->loginType, $this->redirectUrl));
+            $event = $this->eventDispatcher->dispatch(new BeforeRedirectEvent($this->loginType, $this->redirectUrl, $this->request));
             $data = [
-                'redirectUrl' => $this->redirectUrl,
-                'statusCode' => 301
+                'redirectUrl' => $event->getRedirectUrl(),
+                'statusCode' => 303
             ];
             return $this->responseFactory->createResponse()->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withBody($this->streamFactory->createStream(json_encode($data)));
@@ -96,10 +96,10 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
         $this->eventDispatcher->dispatch(new LoginConfirmedEvent($this, $this->view));
 
         if ($this->redirectUrl !== '') {
-            $this->eventDispatcher->dispatch(new BeforeRedirectEvent($this->loginType, $this->redirectUrl));
+            $event = $this->eventDispatcher->dispatch(new BeforeRedirectEvent($this->loginType, $this->redirectUrl, $this->request));
             $data = [
-                'redirectUrl' => $this->redirectUrl,
-                'statusCode' => 301,
+                'redirectUrl' => $event->getRedirectUrl(),
+                'statusCode' => 303,
                 'status' => 'success'
             ];
             return $this->responseFactory->createResponse()->withHeader('Content-Type', 'application/json; charset=utf-8')
