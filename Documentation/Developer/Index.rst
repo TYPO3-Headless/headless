@@ -10,6 +10,69 @@ This chapter will explain different usecases for developer working with `headles
 
 .. _developer-plugin-extbase:
 
+New cObjects
+============
+
+EXT:headless comes with a bunch of new cObjects to be used via TypoScript:
+
+* BOOL
+* FLOAT
+* INT
+* JSON
+* JSON_CONTENT
+
+`BOOL`, `FLOAT` and `INT` are basically like `TEXT` (with `value` and `stdWrap` properties!) but make sure their result is being cast to bool, float or int.
+
+JSON
+----
+
+To build and render a JSON object into your page output.
+
+.. code-block:: typoscript
+
+  lib.meta = JSON
+  lib.meta {
+    if.isTrue = 1
+    fields {
+      title = TEXT
+      title {
+        field = seo_title
+        stdWrap.ifEmpty.cObject = TEXT
+        stdWrap.ifEmpty.cObject {
+          field = title
+        }
+      }
+      robots {
+        fields {
+          noIndex = BOOL
+          noIndex.field = no_index
+        }
+      }
+      ogImage = TEXT
+      ogImage {
+        dataProcessing {
+          10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+          10 {
+            as = media
+            references.fieldName = og_image
+            processingConfiguration {
+              returnFlattenObject = 1
+            }
+          }
+        }
+      }
+    }
+    dataProcessing {
+    }
+    stdWrap {
+    }
+  }
+
+JSON_CONTENT
+------------
+
+t.b.c.
+
 Internal Extbase plugins
 ========================
 
