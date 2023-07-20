@@ -67,7 +67,7 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
                 'permaloginStatus' => $this->getPermaloginStatus(),
                 'redirectURL' => $this->redirectHandler->getLoginFormRedirectUrl($this->configuration, $this->isRedirectDisabled()),
                 'redirectReferrer' => $this->request->hasArgument('redirectReferrer') ? (string)$this->request->getArgument('redirectReferrer') : '',
-                'referer' => $this->requestHandler->getPropertyFromGetAndPost('referer'),
+                'referer' => $this->redirectHandler->getReferrerForLoginForm($this->request, $this->settings),
                 'noRedirect' => $this->isRedirectDisabled(),
             ]
         );
