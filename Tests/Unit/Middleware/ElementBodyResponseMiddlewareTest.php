@@ -179,7 +179,7 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
         if ($withSite) {
             $site = $this->prophesize(Site::class);
             $site->getConfiguration()->willReturn([
-                'headless' => $headless
+                'headless' => $headless,
             ]);
 
             $request = $request->withAttribute('site', $site->reveal());

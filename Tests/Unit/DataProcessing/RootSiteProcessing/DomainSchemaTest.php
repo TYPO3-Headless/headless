@@ -113,9 +113,9 @@ class DomainSchemaTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => $domainUri . ':3000',
                     'frontendApiProxy' => $domainUri . '/headless',
-                    'frontendFileApi' => $domainUri . '/headless/fileadmin'
-                ]
-            ]
+                    'frontendFileApi' => $domainUri . '/headless/fileadmin',
+                ],
+            ],
         ]);
 
         $site
@@ -155,9 +155,9 @@ class DomainSchemaTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld:3000',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
-                ]
-            ]
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                ],
+            ],
         ]);
 
         $site->getBase()->willReturn($uri);

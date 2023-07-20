@@ -86,7 +86,7 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
 
         return new JsonResponse([
             'redirectUrl' => $redirectUrlEvent->getTargetUrl(),
-            'statusCode' => $redirectUrlEvent->getTargetStatusCode()
+            'statusCode' => $redirectUrlEvent->getTargetStatusCode(),
         ]);
     }
 }

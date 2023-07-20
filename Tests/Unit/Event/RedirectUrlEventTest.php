@@ -30,7 +30,7 @@ class RedirectUrlEventTest extends UnitTestCase
         $uri = new Uri('https://test.domain.tld');
         $redirectRecord = [
             'target_statuscode' => 307,
-            'target' => 'https://test.domain5.tld'
+            'target' => 'https://test.domain5.tld',
         ];
         $redirectEvent = new RedirectUrlEvent($request, $uri, 'https://test.domain2.tld', 301, $redirectRecord);
 

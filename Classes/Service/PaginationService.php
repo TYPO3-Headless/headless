@@ -25,7 +25,7 @@ class PaginationService
         'itemsPerPage' => 10,
         'maximumNumberOfLinks' => 99,
         'insertAbove' => false,
-        'insertBelow' => true
+        'insertBelow' => true,
     ];
 
     /**
@@ -93,7 +93,7 @@ class PaginationService
             'itemsPerPage' => $itemsPerPage,
             'maximumNumberOfLinks' => $maximumNumberOfLinks,
             'insertAbove' => $insertAbove,
-            'insertBelow' => $insertBelow
+            'insertBelow' => $insertBelow,
         ];
         $this->numberOfPages = (int)ceil(count($this->objects) / $itemsPerPage);
     }
@@ -140,7 +140,7 @@ class PaginationService
             'configuration' => $this->configuration,
             'recordId' => $this->recordId,
             'pageId' => $this->getCurrentPageId(),
-            'pagination' => $this->buildPagination()
+            'pagination' => $this->buildPagination(),
         ];
     }
 
@@ -169,7 +169,7 @@ class PaginationService
             'displayRangeStart' => $this->displayRangeStart,
             'displayRangeEnd' => $this->displayRangeEnd,
             'hasLessPages' => $this->displayRangeStart > 2,
-            'hasMorePages' => $this->displayRangeEnd + 1 < $this->numberOfPages
+            'hasMorePages' => $this->displayRangeEnd + 1 < $this->numberOfPages,
         ];
         if ($this->currentPage < $this->numberOfPages) {
             $pagination['nextPage'] = $this->currentPage + 1;

@@ -98,7 +98,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
         $sKeyArray = $this->filterByStringKeys($setup);
         foreach ($sKeyArray as $theKey) {
             $theValue = $setup[$theKey];
-            if ((string)$theKey && strpos($theKey, '.') === false) {
+            if ((string)$theKey && !str_contains($theKey, '.')) {
                 $conf = $setup[$theKey . '.'] ?? [];
                 $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
@@ -111,7 +111,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ((isset($conf['boolval']) && $conf['boolval']) || $theValue === 'BOOL') {
                     $content[$theKey] = (bool)(int)$content[$theKey];
                 }
-                if ($theValue === 'USER_INT' || strpos((string)$content[$theKey], '<!--INT_SCRIPT.') === 0) {
+                if ($theValue === 'USER_INT' || str_starts_with((string)$content[$theKey], '<!--INT_SCRIPT.')) {
                     $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey], (int)($conf['ifEmptyReturnNull'] ?? 0) === 1 ? HeadlessUserInt::STANDARD_NULLABLE : HeadlessUserInt::STANDARD);
                 }
                 if ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 && $content[$theKey] === '') {
@@ -165,7 +165,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             $dataProcessing,
             [
                 'data' => $this->cObj->data,
-                'current' => $this->cObj->data[$this->cObj->currentValKey ?? null] ?? null
+                'current' => $this->cObj->data[$this->cObj->currentValKey ?? null] ?? null,
             ]
         );
 

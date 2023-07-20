@@ -53,7 +53,7 @@ class RootSitesProcessorTest extends UnitTestCase
                     'api' => ['baseURL' => '/proxy/'],
                     'i18n' => [
                         'locales' => ['en_US'],
-                        'defaultLocale' => 'en_US'
+                        'defaultLocale' => 'en_US',
                     ],
                 ],
                 [
@@ -62,10 +62,10 @@ class RootSitesProcessorTest extends UnitTestCase
                     'api' => ['baseURL' => '/proxy/'],
                     'i18n' => [
                         'locales' => ['en_US'],
-                        'defaultLocale' => 'en_US'
+                        'defaultLocale' => 'en_US',
                     ],
-                ]
-            ]
+                ],
+            ],
         ], $processor->process($contentObjectRenderer, [], $conf, []));
     }
 

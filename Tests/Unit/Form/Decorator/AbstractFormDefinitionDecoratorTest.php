@@ -26,7 +26,7 @@ class AbstractFormDefinitionDecoratorTest extends UnitTestCase
         $definition = [
             'identifier' => 'test-123',
             'renderables' => [0 => ['renderables' => []]],
-            'i18n' => ['properties' => []]
+            'i18n' => ['properties' => []],
         ];
         $test = $stub($definition, 1);
         self::assertSame(['id' => 'test-123', 'api' => ['api' => 'test'], 'i18n' => [], 'elements' => []], $test);
@@ -71,7 +71,7 @@ class AbstractFormDefinitionDecoratorTest extends UnitTestCase
                                         'identifier' => 'RegularExpression',
                                         'options' => ['regularExpression' => '/a-b/'],
                                         'FERegularExpression' => '/a-z/',
-                                    ]
+                                    ],
                                 ],
                             ],
                             [
@@ -85,11 +85,11 @@ class AbstractFormDefinitionDecoratorTest extends UnitTestCase
                                 'identifier' => 'image',
                                 'label' => 'Upload image',
                                 'properties' => ['saveToFileMount' => '/upload-dir'],
-                            ]
-                        ]
-                    ]
+                            ],
+                        ],
+                    ],
             ],
-            'i18n' => ['properties' => []]
+            'i18n' => ['properties' => []],
         ];
         $test = $stub($definition, 0);
 
@@ -125,7 +125,7 @@ class AbstractFormDefinitionDecoratorTest extends UnitTestCase
                         [
                             'identifier' => 'RegularExpression',
                             'options' => ['regularExpression' => '/a-z/'],
-                        ]
+                        ],
                     ],
                     'name' => 'tx_form_formframework[test-123][validators]',
                 ],
@@ -142,7 +142,7 @@ class AbstractFormDefinitionDecoratorTest extends UnitTestCase
                     'label' => 'Upload image',
                     'properties' => [],
                     'name' => 'tx_form_formframework[test-123][image]',
-                ]
+                ],
             ],
         ], $test);
     }

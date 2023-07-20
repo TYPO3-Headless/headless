@@ -86,12 +86,12 @@ class DataProcessingTraitTest extends TestCase
                                 'children' => [
                                     ['data' => 123, 'uid' => 1],
                                     ['data' => 'asdasd', 'uid' => 2],
-                                    ['data' => false, 'uid' => 3]
-                                ]
+                                    ['data' => false, 'uid' => 3],
+                                ],
                             ],
-                        ]
-                    ]
-                ]
+                        ],
+                    ],
+                ],
             ]
         ));
     }
@@ -102,23 +102,23 @@ class DataProcessingTraitTest extends TestCase
             [
                 [],
                 ['appendData' => 1],
-                []
+                [],
             ],
             [
                 ['test' => []],
                 ['appendData' => 0, 'as' => 'test'],
-                ['test' => []]
+                ['test' => []],
             ],
             [
                 ['test' => [[123 => 'asd']]],
                 ['appendData' => 0, 'as' => 'test'],
-                ['test' => [[123 => 'asd']]]
+                ['test' => [[123 => 'asd']]],
             ],
             [
                 ['test' => [[123 => ['asd' => 1]]]],
                 ['appendData' => 0, 'as' => 'test'],
-                ['test' => [[123 => ['asd' => 1], 'data' => 'test']]]
-            ]
+                ['test' => [[123 => ['asd' => 1], 'data' => 'test']]],
+            ],
         ];
     }
 }

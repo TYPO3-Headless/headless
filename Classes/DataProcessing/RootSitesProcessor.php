@@ -120,7 +120,7 @@ class RootSitesProcessor implements DataProcessorInterface
             [
                 'processorConfiguration' => $processorConfiguration,
                 'siteUid' => $siteUid,
-                'cObj' => $cObj
+                'cObj' => $cObj,
             ]
         );
 

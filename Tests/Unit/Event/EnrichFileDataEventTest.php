@@ -25,7 +25,7 @@ class EnrichFileDataEventTest extends UnitTestCase
     {
         $properties = [
             'prop-1' => 'value-1',
-            'prop-2' => 'value-2'
+            'prop-2' => 'value-2',
         ];
         $fileReferenceMock = $this->getMockFileReferenceForData($this->getFileReferenceBaselineData());
         $enrichFileDataEvent = new EnrichFileDataEvent(clone $fileReferenceMock, $fileReferenceMock, $properties);

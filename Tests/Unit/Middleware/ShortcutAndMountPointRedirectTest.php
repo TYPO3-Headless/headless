@@ -42,7 +42,7 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
 
         $correctRedirect = [
             'redirectUrl' => $linkRedirect,
-            'statusCode' => 303
+            'statusCode' => 303,
         ];
 
         $linkRedirectResponse = $middleware->process(
@@ -69,7 +69,7 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
         $middleware = new ShortcutAndMountPointRedirect();
         $shortcutJsonDecoded = [
             'redirectUrl' => '/shortcut-target',
-            'statusCode' => 307
+            'statusCode' => 307,
         ];
 
         $middlewareResponse = $middleware->process(
@@ -188,7 +188,7 @@ class ShortcutAndMountPointRedirectTest extends UnitTestCase
 
         $correctRedirect = [
             'redirectUrl' => $expectedValue,
-            'statusCode' => 303
+            'statusCode' => 303,
         ];
 
         $linkRedirectJson = json_decode($linkRedirectResponse->getBody()->__toString(), true);

@@ -115,7 +115,7 @@ class FileUtilityTest extends UnitTestCase
             'title' => null,
             'alternative' => null,
             'description' => null,
-            'link' => 123
+            'link' => 123,
         ]);
         $processedFile = $this->getMockProcessedFileForData($fileData);
         $imageService = $this->getImageServiceWithProcessedFile($file, $processedFile);
@@ -135,7 +135,7 @@ class FileUtilityTest extends UnitTestCase
             'title' => null,
             'alternative' => null,
             'description' => null,
-            'link' => 123
+            'link' => 123,
         ]);
         $processedFile = $this->getMockProcessedFileForData($fileData);
         $imageService = $this->getImageServiceWithProcessedFile($file, $processedFile);
@@ -224,8 +224,8 @@ class FileUtilityTest extends UnitTestCase
         $fileUtility->method('translate')->willReturnCallback(static function ($key, $extension) {
             $translated = [
                 'fluid' => [
-                    'viewhelper.format.bytes.units' => 'B,KB,MB,GB,TB,PB,EB,ZB,YB'
-                ]
+                    'viewhelper.format.bytes.units' => 'B,KB,MB,GB,TB,PB,EB,ZB,YB',
+                ],
             ];
 
             return $translated[$extension][$key] ?? null;
@@ -244,7 +244,7 @@ class FileUtilityTest extends UnitTestCase
                 'toArray',
                 'getProperty',
                 'getUid',
-                'getPublicUrl'
+                'getPublicUrl',
             ]
         );
         $resourceStorage = $this->prophesize(ResourceStorage::class);
