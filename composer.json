@@ -47,6 +47,9 @@
     "typo3/cms-form": "^12.4",
     "typo3/testing-framework": "^7.0"
   },
+  "conflict": {
+    "typo3/cms-core": "<12.4.3"
+  },
   "config": {
     "preferred-install": {
       "*": "dist"
