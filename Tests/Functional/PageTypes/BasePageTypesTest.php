@@ -36,7 +36,7 @@ abstract class BasePageTypesTest extends BaseTest
         );
         $validator = new Validator();
         $validator->check($data, $schema);
-        if (false === $validator->isValid()) {
+        if ($validator->isValid() === false) {
             foreach ($validator->getErrors() as $error) {
                 self::fail(sprintf('Property "%s" is not valid: %s in %s', $error['property'], $error['message'], $jsonString));
             }

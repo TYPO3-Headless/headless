@@ -21,10 +21,10 @@ use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 abstract class BaseTest extends FunctionalTestCase
 {
     protected array $coreExtensionsToLoad = [
-        'install'
+        'install',
     ];
     protected array $testExtensionsToLoad = [
-        'typo3conf/ext/headless'
+        'typo3conf/ext/headless',
     ];
 
     /**
@@ -40,7 +40,7 @@ abstract class BaseTest extends FunctionalTestCase
             1,
             [
                 'constants' => ['EXT:headless/Configuration/TypoScript/constants.typoscript'],
-                'setup' => ['EXT:headless/Configuration/TypoScript/setup.typoscript']
+                'setup' => ['EXT:headless/Configuration/TypoScript/setup.typoscript'],
             ]
         );
 
@@ -70,7 +70,7 @@ abstract class BaseTest extends FunctionalTestCase
         );
         $validator = new Validator();
         $validator->check($data, $schema);
-        if (false === $validator->isValid()) {
+        if ($validator->isValid() === false) {
             foreach ($validator->getErrors() as $error) {
                 self::fail(sprintf('Property "%s" is not valid: %s in %s', $error['property'], $error['message'], $jsonString));
             }

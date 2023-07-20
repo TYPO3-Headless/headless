@@ -102,7 +102,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 );
                 $this->mediaDimensions[$key] = [
                     'width' => $mediaWidth,
-                    'height' => $mediaHeight
+                    'height' => $mediaHeight,
                 ];
             }
 
@@ -126,7 +126,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 );
                 $this->mediaDimensions[$key] = [
                     'width' => $mediaWidth,
-                    'height' => $mediaHeight
+                    'height' => $mediaHeight,
                 ];
             }
 
@@ -144,7 +144,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 );
                 $this->mediaDimensions[$key] = [
                     'width' => $mediaWidth,
-                    'height' => $mediaHeight
+                    'height' => $mediaHeight,
                 ];
             }
         }

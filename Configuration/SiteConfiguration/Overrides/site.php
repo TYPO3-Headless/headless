@@ -21,7 +21,7 @@ $tempColumns = [
             'eval' => 'trim',
             'placeholder' => 'http://www.domain.local',
         ],
-    ]
+    ],
 ];
 
 $replaceShowItem = 'base, frontendBase, ';
