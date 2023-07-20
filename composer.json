@@ -44,11 +44,11 @@
     "saschaegerer/phpstan-typo3": "^1.1",
     "seld/jsonlint": "^1.8",
     "symfony/yaml": "^5.3",
-    "typo3/cms-form": "11.*@dev",
+    "typo3/cms-form": "^11.5",
     "typo3/testing-framework": "^6"
   },
   "conflict": {
-    "typo3/cms-core": "<11.5.15"
+    "typo3/cms-core": "<11.5.29"
   },
   "config": {
     "preferred-install": {
