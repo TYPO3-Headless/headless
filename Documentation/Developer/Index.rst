@@ -71,7 +71,49 @@ To build and render a JSON object into your page output.
 JSON_CONTENT
 ------------
 
-t.b.c.
+This cObject basically behaves like TYPO3's `CONTENT`, the main difference is that content elements are grouped by `colPol` & encoded into JSON by default.
+
+`CONTENT_JSON` has the same options as `CONTENT` but also offers two new options for edge cases in json context.
+
+**merge**
+
+This option allows to generate another `CONTENT_JSON` call in one definition & then merge both results into one dataset
+(useful for handling slide feature of CONTENT cObject).
+
+.. code-block:: typoscript
+
+  lib.content = CONTENT_JSON
+  lib.content {
+    table = tt_content
+    select {
+      orderBy = sorting
+      where = {#colPos} != 1
+    }
+    merge {
+      table = tt_content
+      select {
+        orderBy = sorting
+        where = {#colPos} = 1
+      }
+      slide = -1
+    }
+  }
+
+**doNotGroupByColPos = 0(default)|1**
+
+This option allows to return a flat array (without grouping by colPos) but still encoded into JSON.
+
+.. code-block:: typoscript
+
+  lib.content = CONTENT_JSON
+  lib.content {
+    table = tt_content
+    select {
+      orderBy = sorting
+      where = {#colPos} != 1
+    }
+    doNotGroupByColPos = 1
+  }
 
 Internal Extbase plugins
 ========================
