@@ -31,7 +31,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Controller\FormFrontendController;
-use TYPO3\CMS\Frontend\DataProcessing\GalleryProcessor;
+use FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor;
 use TYPO3\CMS\FrontendLogin\Controller\LoginController;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
