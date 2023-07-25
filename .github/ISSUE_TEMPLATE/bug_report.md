@@ -24,7 +24,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **TYPO3 version and TYPO3 Headless version**
- Please provide exact version of TYPO3 and TYPO3 Headless
+ Please provide the exact version of TYPO3 and TYPO3 Headless
 
 **Additional context**
-Add any other context about the problem here.
+Add any other information related to the problem here.
