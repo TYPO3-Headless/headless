@@ -17,6 +17,7 @@ use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
 use FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FlexFormProcessor;
+use FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
@@ -31,7 +32,6 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Controller\FormFrontendController;
-use TYPO3\CMS\Frontend\DataProcessing\GalleryProcessor;
 use TYPO3\CMS\FrontendLogin\Controller\LoginController;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
