@@ -247,16 +247,10 @@ Here's an example of how you can create a JSON array of multiple objects from a 
           # Replace 'inner tokens' by comma, remove others
           split {
             token = ###BREAK###
-            cObjNum = 1 |*|2|*| 3
-            1 {
-              current = 1
-              stdWrap.wrap = |
-            }
-
-            2 < .1
+            cObjNum = 1|*|2|*|1
+            1.current = 1
+            2.current = 1
             2.stdWrap.wrap = ,|
-
-            3 < .1
           }
         }
       }
