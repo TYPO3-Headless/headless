@@ -29,7 +29,8 @@
   "require": {
     "ext-json": "*",
     "typo3/cms-core": "^12.4",
-    "typo3/cms-install": "^12.4"
+    "typo3/cms-install": "^12.4",
+    "typo3/coding-standards": "^0.7.1"
   },
   "require-dev": {
     "ergebnis/composer-normalize": "^2.15.0",
@@ -47,6 +48,9 @@
     "typo3/cms-form": "^12.4",
     "typo3/testing-framework": "^7.0"
   },
+  "conflict": {
+    "typo3/cms-core": "<12.4.3"
+  },
   "config": {
     "preferred-install": {
       "*": "dist"
@@ -57,7 +61,8 @@
       "typo3/class-alias-loader": true,
       "typo3/cms-composer-installers": true,
       "ergebnis/composer-normalize": true,
-      "phpstan/extension-installer": true
+      "phpstan/extension-installer": true,
+      "sbuerk/typo3-cmscomposerinstallers-testingframework-bridge": true
     }
   },
   "extra": {
@@ -101,7 +106,7 @@
       "find . -name '*.json' -not -path '*.Build/vendor*' | xargs .Build/vendor/bin/jsonlint -q"
     ],
     "ci:php:cs-fixer": [
-      "php-cs-fixer fix -v --dry-run --using-cache no --diff"
+      "php-cs-fixer fix -v --dry-run --using-cache no --diff --config .php-cs-fixer.php"
     ],
     "ci:php:lint": "find *.php Classes Configuration Tests -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l",
     "ci:php:stan": "phpstan --no-progress",
@@ -125,7 +130,7 @@
       "docker run --rm t3docs/render-documentation show-shell-commands > tempfile.sh; echo 'dockrun_t3rd makehtml' >> tempfile.sh; bash tempfile.sh; rm tempfile.sh"
     ],
     "fix:php:cs-fixer": [
-      "php-cs-fixer fix -v --using-cache no"
+      "php-cs-fixer fix -v --using-cache no --config .php-cs-fixer.php"
     ],
     "prepare-release": [
       "rm .gitignore",

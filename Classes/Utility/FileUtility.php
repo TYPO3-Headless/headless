@@ -118,7 +118,7 @@ class FileUtility
             ],
             'cropDimensions' => [
                 'width' => $this->getCroppedDimensionalProperty($fileReference, 'width', $cropVariant),
-                'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant)
+                'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant),
             ],
             'crop' => $crop,
             'autoplay' => $fileReference->getProperty('autoplay'),

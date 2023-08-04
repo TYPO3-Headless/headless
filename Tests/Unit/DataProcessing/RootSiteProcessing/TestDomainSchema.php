@@ -49,7 +49,7 @@ class TestDomainSchema implements SiteSchemaInterface
                 ],
                 'i18n' => [
                     'locales' => $locales,
-                    'defaultLocale' => $site->getDefaultLanguage()->getTypo3Language()
+                    'defaultLocale' => $site->getDefaultLanguage()->getTypo3Language(),
                 ],
             ];
 

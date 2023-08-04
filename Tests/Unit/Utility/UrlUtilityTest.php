@@ -58,8 +58,8 @@ class UrlUtilityTest extends UnitTestCase
                     'frontendApiProxy' => 'https://test-frontend-api3.tld/headless',
                     'frontendFileApi' => 'https://test-frontend-api3.tld/headless/fileadmin',
                     'SpecialSitemapKey' => 'https://test-frontend3.tld/sitemap',
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $resolver = $this->prophesize(Resolver::class);
@@ -125,7 +125,7 @@ class UrlUtilityTest extends UnitTestCase
                     'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin/',
                     'SpecialSitemapKey' => 'https://test-frontend.tld/sitemap/',
                 ],
-            ]
+            ],
         ]);
 
         $siteFinder = $this->prophesize(SiteFinder::class);
@@ -167,16 +167,16 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
                 ],
                 [
                     'base' => 'https://test-second-backend-api.tld',
                     'condition' => 'applicationContext == "Testing"',
                     'frontendBase' => 'https://test-second-frontend.tld',
                     'frontendApiProxy' => 'https://test-second-frontend.tld/headless',
-                    'frontendFileApi' => 'https://test-second-frontend.tld/headless/fileadmin'
-                ]
-            ]
+                    'frontendFileApi' => 'https://test-second-frontend.tld/headless/fileadmin',
+                ],
+            ],
         ]);
 
         $resolver = $this->prophesize(Resolver::class);
@@ -261,16 +261,16 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
                 ],
                 [
                     'base' => 'https://test-second-backend-api.tld',
                     'condition' => 'applicationContext == "Testing"',
                     'frontendBase' => 'https://test-second-frontend.tld',
                     'frontendApiProxy' => 'https://test-second-frontend.tld/headless',
-                    'frontendFileApi' => 'https://test-second-frontend.tld/headless/fileadmin'
-                ]
-            ]
+                    'frontendFileApi' => 'https://test-second-frontend.tld/headless/fileadmin',
+                ],
+            ],
         ]);
 
         $resolver = $this->prophesize(Resolver::class);
@@ -299,7 +299,7 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend-from-lang.tld',
                     'frontendApiProxy' => 'https://test-frontend-from-lang.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-from-lang.tld/headless/fileadmin'
+                    'frontendFileApi' => 'https://test-frontend-from-lang.tld/headless/fileadmin',
                 ],
             ],
         ]));
@@ -373,14 +373,14 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend-from-lang.tld',
                     'frontendApiProxy' => 'https://test-frontend-from-lang.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-from-lang.tld/headless/fileadmin'
+                    'frontendFileApi' => 'https://test-frontend-from-lang.tld/headless/fileadmin',
                 ],
                 [
                     'base' => 'https://test-backend-api-testing.tld',
                     'condition' => 'applicationContext == "Testing"',
                     'frontendBase' => 'https://test-frontend-from-lang-testing-env.tld',
                     'frontendApiProxy' => 'https://test-frontend-from-lang-testing-env.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-from-lang-testing-env.tld/headless/fileadmin'
+                    'frontendFileApi' => 'https://test-frontend-from-lang-testing-env.tld/headless/fileadmin',
                 ],
             ],
         ]));
@@ -400,8 +400,8 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
-                ]
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                ],
             ],
             'headless' => false,
         ]);
@@ -432,8 +432,8 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend23.tld',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
-                ]
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                ],
             ],
             'headless' => true,
         ]);
@@ -464,9 +464,9 @@ class UrlUtilityTest extends UnitTestCase
                     'base' => 'https://api.tld',
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://front.api.tld',
-                ]
+                ],
             ],
-            'headless' => true
+            'headless' => true,
         ]);
 
         $uri = new Uri('https://api.tld');
@@ -500,8 +500,8 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld:3000',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
-                ]
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                ],
             ],
             'headless' => false,
         ]);
@@ -531,8 +531,8 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld:3000',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
-                ]
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                ],
             ],
             'headless' => true,
         ]);
@@ -564,8 +564,8 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld:3000',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
-                ]
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                ],
             ],
             'headless' => false,
         ]);
@@ -596,8 +596,8 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld:3000',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
-                ]
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                ],
             ],
             'headless' => true,
         ]);
@@ -674,7 +674,7 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend-from-lang.tld',
                     'frontendApiProxy' => 'https://test-frontend-from-lang.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-from-lang.tld/headless/fileadmin'
+                    'frontendFileApi' => 'https://test-frontend-from-lang.tld/headless/fileadmin',
                 ],
             ],
         ]));
@@ -760,7 +760,7 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend-from-when-develop-lang.tld',
                     'frontendApiProxy' => 'https://test-frontend-from-when-develop-lang.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-from-when-develop-lang.tld/headless/fileadmin'
+                    'frontendFileApi' => 'https://test-frontend-from-when-develop-lang.tld/headless/fileadmin',
                 ],
             ],
         ]));
@@ -796,7 +796,7 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend-from-from-request-lang.tld/',
                     'frontendApiProxy' => 'https://test-frontend-from-from-request-lang.tld/headless/',
-                    'frontendFileApi' => 'https://test-frontend-from-from-request-lang.tld/headless/fileadmin/'
+                    'frontendFileApi' => 'https://test-frontend-from-from-request-lang.tld/headless/fileadmin/',
                 ],
             ],
         ]));
@@ -819,14 +819,14 @@ class UrlUtilityTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => $frontendUrl,
                     'frontendApiProxy' => $frontendUrl . '/headless',
-                    'frontendFileApi' => $frontendUrl . '/headless/fileadmin'
-                ]
+                    'frontendFileApi' => $frontendUrl . '/headless/fileadmin',
+                ],
             ];
         }
         $site->getConfiguration()->shouldBeCalled(2)->willReturn([
             'base' => 'https://www.typo3.org',
             'languages' => [],
-            'baseVariants' => $variants
+            'baseVariants' => $variants,
         ]);
 
         $uri = new Uri($backendUrl);
