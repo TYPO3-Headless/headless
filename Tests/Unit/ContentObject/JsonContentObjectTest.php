@@ -83,7 +83,8 @@ class JsonContentObjectTest extends UnitTestCase
         ];
 
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
+        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
+        $contentObjectRenderer->start([], 'tt_content');
 
         $factory = $this->prophesize(ContentObjectFactory::class);
         $factory->getContentObject(Argument::type('string'), Argument::type('object'), Argument::type('object'))
