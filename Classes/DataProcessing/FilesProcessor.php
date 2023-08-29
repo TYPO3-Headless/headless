@@ -205,6 +205,8 @@ class FilesProcessor implements DataProcessorInterface
                 );
 
                 // 2. render additional formats
+                $originalWidth = $fileObject->getProperty('width');
+                $originalHeight = $fileObject->getProperty('height');
                 $targetWidth = (int)($properties['width'] ?? $file['properties']['dimensions']['width']);
                 $targetHeight = (int)($properties['height'] ?? $file['properties']['dimensions']['height']);
                 if ($targetWidth || $targetHeight) {
@@ -218,8 +220,10 @@ class FilesProcessor implements DataProcessorInterface
                                 $properties,
                                 [
                                     'fileExtension' => $formatConf['fileExtension'] ?? null,
-                                    'width' => $targetWidth * $factor,
-                                    'height' => $targetHeight * $factor,
+                                    // multiply width/height by factor,
+                                    // but don't stretch image beyond its original dimensions!
+                                    'width' => min($targetWidth * $factor, $originalWidth),
+                                    'height' => min($targetHeight * $factor, $originalHeight),
                                 ]
                             ),
                             $cropVariant,

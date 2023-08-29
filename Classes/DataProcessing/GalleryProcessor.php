@@ -214,6 +214,10 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                         );
 
                         // 2. render additional formats
+                        $originalWidth = $image->getProperty('width');
+                        $originalHeight = $image->getProperty('height');
+                        $targetWidth = $fileObj['properties']['dimensions']['width'];
+                        $targetHeight = $fileObj['properties']['dimensions']['height'];
                         foreach ($formats ?? [] as $formatKey => $formatConf) {
                             $formatKey = rtrim($formatKey, '.');
                             $factor = (float)($formatConf['factor'] ?? 1.0);
@@ -222,8 +226,10 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                                 $image,
                                 [
                                     'fileExtension' => $formatConf['fileExtension'] ?? null,
-                                    'width' => $fileObj['properties']['dimensions']['width'] * $factor,
-                                    'height' => $fileObj['properties']['dimensions']['height'] * $factor,
+                                    // multiply width/height by factor,
+                                    // but don't stretch image beyond its original dimensions!
+                                    'width' => min($targetWidth * $factor, $originalWidth),
+                                    'height' => min($targetHeight * $factor, $originalHeight),
                                 ]
                             )['publicUrl'];
                         }
