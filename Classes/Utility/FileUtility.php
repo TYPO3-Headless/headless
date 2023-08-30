@@ -80,7 +80,6 @@ class FileUtility
         $fileReferenceUid = $fileReference->getUid();
         $uidLocal = $fileReference->getProperty('uid_local');
         $fileRenderer = $this->rendererRegistry->getRenderer($fileReference);
-        $crop = $fileReference->getProperty('crop');
         $link = $fileReference->getProperty('link');
         $linkData = null;
 
@@ -116,18 +115,21 @@ class FileUtility
             'uidLocal' => $uidLocal,
             'fileReferenceUid' => $fileReferenceUid,
             'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getSize()),
-            'dimensions' => [
-                'width' => $fileReference->getProperty('width'),
-                'height' => $fileReference->getProperty('height'),
-            ],
-            'cropDimensions' => [
-                'width' => $this->getCroppedDimensionalProperty($fileReference, 'width', $cropVariant),
-                'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant),
-            ],
-            'crop' => $crop,
             'autoplay' => $fileReference->getProperty('autoplay'),
             'extension' => $fileReference->getProperty('extension'),
         ];
+
+        if ($fileReference->hasProperty('width') && $fileReference->hasProperty('height')) {
+            $processedProperties['crop'] = $fileReference->getProperty('crop');
+            $processedProperties['dimensions'] = [
+                'width' => $fileReference->getProperty('width'),
+                'height' => $fileReference->getProperty('height'),
+            ];
+            $processedProperties['cropDimensions'] = [
+                'width' => $this->getCroppedDimensionalProperty($fileReference, 'width', $cropVariant),
+                'height' => $this->getCroppedDimensionalProperty($fileReference, 'height', $cropVariant)
+            ];
+        }
 
         $event = $this->eventDispatcher->dispatch(
             new EnrichFileDataEvent(
