@@ -18,8 +18,8 @@ use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Service\MarkerBasedTemplateService;
 use TYPO3\CMS\Core\TimeTracker\TimeTracker;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -82,14 +82,16 @@ class JsonContentObjectTest extends UnitTestCase
             'BOOL' => BooleanContentObject::class,
         ];
 
+        $request = new ServerRequest();
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
+        $contentObjectRenderer->setRequest($request);
         $contentObjectRenderer->start([], 'tt_content');
 
         $factory = $this->prophesize(ContentObjectFactory::class);
         $factory->getContentObject(Argument::type('string'), Argument::type('object'), Argument::type('object'))
-            ->will(static function ($args) use ($contentObjectRenderer) {
+            ->will(static function ($args) use ($contentObjectRenderer, $request) {
                 $obj = GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'][$args[0]]);
+                $obj->setRequest($request);
                 $obj->setContentObjectRenderer($contentObjectRenderer);
 
                 return $obj;
@@ -102,7 +104,7 @@ class JsonContentObjectTest extends UnitTestCase
 
         $contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class, $container, $this->prophesize(DataProcessorRegistry::class)->reveal());
 
-        foreach ($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] as $key => $class) {
+        foreach ($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] as $class) {
             GeneralUtility::makeInstance($class);
         }
 
@@ -117,6 +119,7 @@ class JsonContentObjectTest extends UnitTestCase
         $GLOBALS['TSFE'] = $tsfe->reveal();
 
         $this->contentObject = new JsonContentObject($contentDataProcessor);
+        $this->contentObject->setRequest($request);
         $this->contentObject->setContentObjectRenderer($contentObjectRenderer);
     }
 
@@ -157,7 +160,7 @@ class JsonContentObjectTest extends UnitTestCase
             [['fields.' => ['test' => 'TEXT', 'test.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites'], '20' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '20.' => ['as' => 'sites']]]]], json_encode(['test' => ['SomeCustomProcessing']])],
             [['fields.' => ['test' => 'TEXT', 'test.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites'], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]]]]], json_encode(['test' => ['SomeCustomProcessing']])],
             [['fields.' => ['test.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites'], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]]]]], json_encode(['test' => ['SomeCustomProcessing']])],
-            [['returnNullIfDataProcessingEmpty'=>1, 'fields.' => ['test' => 'TEXT', 'test.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\EmptyDataProcessingExample', '10.' => ['as' => 'sites']]]]], json_encode(['test' => [null]])],
+            [['returnNullIfDataProcessingEmpty' => 1, 'fields.' => ['test' => 'TEXT', 'test.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\EmptyDataProcessingExample', '10.' => ['as' => 'sites']]]]], json_encode(['test' => [null]])],
             [['fields.' => ['test' => 'INT', 'test.' => ['value' => 1]]], json_encode(['test' => 1])],
             [['fields.' => ['test' => 'BOOL', 'test.' => ['value' => 0]]], json_encode(['test' => false])],
             [['fields.' => ['test' => 'BOOL', 'test.' => ['value' => 1]]], json_encode(['test' => true])],

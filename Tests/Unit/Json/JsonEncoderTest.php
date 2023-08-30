@@ -52,7 +52,7 @@ class JsonEncoderTest extends UnitTestCase
     {
         return [
             [[], '[]'],
-            [['test'=>1], '{"test":1}'],
+            [['test' => 1], '{"test":1}'],
             [new \stdClass(), '{}'],
             ["\xB1\x31", '[]'], // exception caught, return empty array instead
         ];
