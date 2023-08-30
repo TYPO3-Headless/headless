@@ -10,6 +10,111 @@ This chapter will explain different usecases for developer working with `headles
 
 .. _developer-plugin-extbase:
 
+New cObjects
+============
+
+EXT:headless comes with a bunch of new cObjects to be used via TypoScript:
+
+* BOOL
+* FLOAT
+* INT
+* JSON
+* JSON_CONTENT
+
+`BOOL`, `FLOAT` and `INT` are basically like `TEXT` (with `value` and `stdWrap` properties!) but make sure their result is being cast to bool, float or int.
+
+JSON
+----
+
+To build and render a JSON object into your page output.
+
+.. code-block:: typoscript
+
+  lib.meta = JSON
+  lib.meta {
+    if.isTrue = 1
+    fields {
+      title = TEXT
+      title {
+        field = seo_title
+        stdWrap.ifEmpty.cObject = TEXT
+        stdWrap.ifEmpty.cObject {
+          field = title
+        }
+      }
+      robots {
+        fields {
+          noIndex = BOOL
+          noIndex.field = no_index
+        }
+      }
+      ogImage = TEXT
+      ogImage {
+        dataProcessing {
+          10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+          10 {
+            as = media
+            references.fieldName = og_image
+            processingConfiguration {
+              returnFlattenObject = 1
+            }
+          }
+        }
+      }
+    }
+    dataProcessing {
+    }
+    stdWrap {
+    }
+  }
+
+JSON_CONTENT
+------------
+
+This cObject basically behaves like TYPO3's `CONTENT`, the main difference is that content elements are grouped by `colPol` & encoded into JSON by default.
+
+`CONTENT_JSON` has the same options as `CONTENT` but also offers two new options for edge cases in json context.
+
+**merge**
+
+This option allows to generate another `CONTENT_JSON` call in one definition & then merge both results into one dataset
+(useful for handling slide feature of CONTENT cObject).
+
+.. code-block:: typoscript
+
+  lib.content = CONTENT_JSON
+  lib.content {
+    table = tt_content
+    select {
+      orderBy = sorting
+      where = {#colPos} != 1
+    }
+    merge {
+      table = tt_content
+      select {
+        orderBy = sorting
+        where = {#colPos} = 1
+      }
+      slide = -1
+    }
+  }
+
+**doNotGroupByColPos = 0(default)|1**
+
+This option allows to return a flat array (without grouping by colPos) but still encoded into JSON.
+
+.. code-block:: typoscript
+
+  lib.content = CONTENT_JSON
+  lib.content {
+    table = tt_content
+    select {
+      orderBy = sorting
+      where = {#colPos} != 1
+    }
+    doNotGroupByColPos = 1
+  }
+
 Internal Extbase plugins
 ========================
 
@@ -274,7 +379,7 @@ Here's an example of how to override the meta object by data from a DB record:
 
   lib.meta.stdWrap.override.cObject = JSON
   lib.meta.stdWrap.override.cObject {
-    stdWrap.if.isTrue.data = GP:tx_news_pi1|news
+    if.isTrue.data = GP:tx_news_pi1|news
     dataProcessing.10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
     dataProcessing.10 {
       table = tx_news_domain_model_news
