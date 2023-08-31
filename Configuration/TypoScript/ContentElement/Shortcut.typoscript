@@ -3,7 +3,7 @@ tt_content.shortcut {
     fields {
         content {
             fields {
-                shortcut = COA
+                shortcut =< lib.renderChildren
                 shortcut {
                     10 = RECORDS
                     10 {
@@ -11,27 +11,6 @@ tt_content.shortcut {
                         tables = tt_content
                         conf {
                             tt_content.stdWrap.wrap = |###BREAK###
-                        }
-                    }
-                    stdWrap {
-                        innerWrap = [|]
-                        split {
-                            token = ###BREAK###
-                            cObjNum = 1 |*|2|*| 3
-                            1 {
-                                current = 1
-                                stdWrap.wrap = |
-                            }
-
-                            2 {
-                                current = 1
-                                stdWrap.wrap = ,|
-                            }
-
-                            3 {
-                                current = 1
-                                stdWrap.wrap = |
-                            }
                         }
                     }
                 }
