@@ -37,7 +37,7 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *      bodytext = TEXT
  *      bodytext {
  *          field = bodytext
- *          parseFunc =< lib.parseFunc_links
+ *          parseFunc =< lib.parseFunc_RTE
  *      }
  *      link = TEXT
  *      link {
