@@ -108,7 +108,7 @@ class TranslatorTest extends UnitTestCase
 
         self::assertSame([
             'identifier' => 'testForm',
-            'i18n' => ['properties' => ['test' =>'translatedValue']],
+            'i18n' => ['properties' => ['test' => 'translatedValue']],
             'renderables' => [
                 0 =>
                     [
