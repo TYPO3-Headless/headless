@@ -20,6 +20,7 @@ use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -69,18 +70,17 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $this->handleLanguageConfiguration($language, clone $this);
     }
 
-    public function getFrontendUrlForPage(string $url, int $pageUid, string $returnField = 'frontendBase'): string
+    public function getFrontendUrlWithSite($url, SiteInterface $site, string $returnField = 'frontendBase'): string
     {
         if (!$this->features->isFeatureEnabled('headless.frontendUrls')) {
             return $url;
         }
 
+        $configuration = $site->getConfiguration();
+
         try {
-            $site = $this->siteFinder->getSiteByPageId($pageUid);
             $base = $site->getBase()->getHost();
             $port = $site->getBase()->getPort();
-            $configuration = $site->getConfiguration();
-
             $frontendBaseUrl = $this->resolveWithVariants(
                 $configuration[$returnField] ?? '',
                 $configuration['baseVariants'] ?? [],
@@ -109,6 +109,25 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             }
 
             return (string)$targetUri;
+        } catch (SiteNotFoundException $e) {
+            $this->logError($e->getMessage());
+        }
+
+        return $url;
+    }
+
+    public function getFrontendUrlForPage(string $url, int $pageUid, string $returnField = 'frontendBase'): string
+    {
+        try {
+            if (!$this->features->isFeatureEnabled('headless.frontendUrls')) {
+                return $url;
+            }
+
+            return $this->getFrontendUrlWithSite(
+                $url,
+                $this->siteFinder->getSiteByPageId($pageUid),
+                $returnField
+            );
         } catch (SiteNotFoundException $e) {
             $this->logError($e->getMessage());
         }
