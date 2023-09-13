@@ -19,7 +19,7 @@ EXT:headless comes with a bunch of new cObjects to be used via TypoScript:
 * FLOAT
 * INT
 * JSON
-* JSON_CONTENT
+* CONTENT_JSON
 
 `BOOL`, `FLOAT` and `INT` are basically like `TEXT` (with `value` and `stdWrap` properties!) but make sure their result is being cast to bool, float or int.
 
@@ -68,7 +68,7 @@ To build and render a JSON object into your page output.
     }
   }
 
-JSON_CONTENT
+CONTENT_JSON
 ------------
 
 This cObject basically behaves like TYPO3's `CONTENT`, the main difference is that content elements are grouped by `colPol` & encoded into JSON by default.
