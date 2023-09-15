@@ -51,7 +51,18 @@ page {
                 }
             }
             meta =< lib.meta
-            categories =< lib.categories
+            categories = JSON
+            categories {
+                dataProcessing {
+                    10 = headless-categories
+                    10 {
+                        relationTable = pages
+                        relationUid.field = uid
+
+                        as = categories
+                    }
+                }
+            }
             breadcrumbs =< lib.breadcrumbs
             appearance =< lib.pageAppearance
             content =< lib.content
