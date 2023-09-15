@@ -20,6 +20,7 @@ use FriendsOfTYPO3\Headless\DataProcessing\FlexFormProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
+use FriendsOfTYPO3\Headless\Event\Listener\AfterCacheableContentIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterPagePreviewUriGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\LoginConfirmedEventListener;
@@ -77,6 +78,12 @@ return static function (ContainerConfigurator $configurator, ContainerBuilder $c
         'event.listener',
         ['identifier' => 'headless/AfterLinkIsGenerated']
     );
+    $services->set(AfterCacheableContentIsGeneratedListener::class)->tag(
+        'event.listener',
+        ['identifier' => 'headless/AfterCacheableContentIsGenerated']
+    );
+
+    $features = GeneralUtility::makeInstance(Features::class);
 
     if ($feloginInstalled) {
         $services->set(LoginConfirmedEventListener::class)->tag(
@@ -93,8 +100,6 @@ return static function (ContainerConfigurator $configurator, ContainerBuilder $c
     if ($cmsFormsInstalled) {
         $services->set(FormTranslationService::class)->arg('$runtimeCache', service('cache.runtime'))->public();
     }
-
-    $features = GeneralUtility::makeInstance(Features::class);
 
     if ($features->isFeatureEnabled('headless.overrideFluidTemplates')) {
         $templateService = $services->alias(
