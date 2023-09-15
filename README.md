@@ -208,7 +208,7 @@ Used for navigation. Works just like standard menu processor.
 Used for proecessing flexforms.
 ### RootSitesProcessor
 Render your all headless sites configuration for your frontend application.
-### CatregoriesProcessor
+### CategoriesProcessor
 This processor returns an array of categories (`id` and `title`) by either a
 relation record or a comma separated list of category uids
 
