@@ -1,6 +1,6 @@
 lib.headlessPage = PAGE
 lib.headlessPage {
-      config {
+    config {
         no_cache = 0
         sendCacheHeaders = 1
         debug = 0
