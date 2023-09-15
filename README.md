@@ -247,7 +247,7 @@ Used for processing flexforms.
 
 ### RootSitesProcessor
 Render your all headless sites configuration for your frontend application.
-### CatregoriesProcessor
+### CategoriesProcessor
 This processor returns an array of categories (`id` and `title`) by either a
 relation record or a comma separated list of category uids
 
