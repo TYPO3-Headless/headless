@@ -208,6 +208,9 @@ Used for navigation. Works just like standard menu processor.
 Used for proecessing flexforms.
 ### RootSitesProcessor
 Render your all headless sites configuration for your frontend application.
+### CatregoriesProcessor
+This processor returns an array of categories (`id` and `title`) by either a
+relation record or a comma separated list of category uids
 
 ## Development
 Development for this extension is happening as part of the TYPO3 PWA initiative, see https://typo3.org/community/teams/typo3-development/initiatives/pwa/
