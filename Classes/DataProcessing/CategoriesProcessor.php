@@ -62,9 +62,7 @@ class CategoriesProcessor implements DataProcessorInterface
         array $contentObjectConfiguration,
         array $processorConfiguration,
         array $processedData
-    ): array
-    {
-
+    ): array {
         if (isset($processorConfiguration['if.']) && !$cObj->checkIf($processorConfiguration['if.'])) {
             return $processedData;
         }
@@ -75,20 +73,20 @@ class CategoriesProcessor implements DataProcessorInterface
 
         $defaultQueryConfig = [
             'pidInList' => 'root',
-            'selectFields' => 'uid AS id,title'
+            'selectFields' => 'uid AS id,title',
         ];
 
         if (empty($categoryIdList) === false) {
             $queryConfig = [
                 'where' => '{#sys_category.uid} IN (' . $categoryIdList . ')',
-                'languageField' => 0
+                'languageField' => 0,
             ];
         }
 
         if (empty($relationTable) === false && empty($relationUid) === false) {
             $queryConfig = [
                 'join' => 'sys_category_record_mm on sys_category_record_mm.uid_local = sys_category.uid',
-                'where' => '({#sys_category_record_mm.tablenames} = \'' . $relationTable . '\' AND {#sys_category_record_mm.uid_foreign}=' . $relationUid . ')'
+                'where' => '({#sys_category_record_mm.tablenames} = \'' . $relationTable . '\' AND {#sys_category_record_mm.uid_foreign}=' . $relationUid . ')',
             ];
         }
 
