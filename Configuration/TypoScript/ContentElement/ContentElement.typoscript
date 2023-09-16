@@ -23,7 +23,7 @@ lib.contentElement {
                     relationUid.field = uid
 
                     as = categories
-                  }
+                }
             }
         }
         appearance =< lib.appearance
