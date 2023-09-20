@@ -19,8 +19,7 @@ lib.contentElement {
             dataProcessing {
                 10 = headless-categories
                 10 {
-                    relationTable = tt_content
-                    relationUid.field = uid
+                    relation.fieldName = categories
 
                     as = categories
                 }
