@@ -16,14 +16,13 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 
 /*
- * Example usage (get categories by relation record):
+ * Example usage (get categories by relation field):
     categories = JSON
     categories {
         dataProcessing {
             10 = headless-categories
             10 {
-                relationTable = pages
-                relationUid.field = uid
+                relation.fieldName = categories
 
                 as = categories
             }
@@ -66,15 +65,13 @@ class CategoriesProcessor implements DataProcessorInterface
             return $processedData;
         }
 
-        $relationTable = $cObj->stdWrapValue('relationTable', $processorConfiguration);
-        $relationUid = (int)$cObj->stdWrapValue('relationUid', $processorConfiguration);
-        $categoryIdList = (string)$cObj->stdWrapValue('categoryIdList', $processorConfiguration, '');
-
         $defaultQueryConfig = [
             'pidInList' => 'root',
             'selectFields' => 'uid AS id,title',
         ];
+        $queryConfig = [];
 
+        $categoryIdList = (string)$cObj->stdWrapValue('categoryIdList', $processorConfiguration, '');
         if (empty($categoryIdList) === false) {
             $queryConfig = [
                 'where' => '{#sys_category.uid} IN (' . $categoryIdList . ')',
@@ -82,11 +79,24 @@ class CategoriesProcessor implements DataProcessorInterface
             ];
         }
 
-        if (empty($relationTable) === false && empty($relationUid) === false) {
-            $queryConfig = [
-                'join' => 'sys_category_record_mm on sys_category_record_mm.uid_local = sys_category.uid',
-                'where' => '({#sys_category_record_mm.tablenames} = \'' . $relationTable . '\' AND {#sys_category_record_mm.uid_foreign}=' . $relationUid . ')',
-            ];
+
+        if (!empty($processorConfiguration['relation.'])) {
+            $referenceConfiguration = $processorConfiguration['relation.'];
+            $relationField = $cObj->stdWrapValue('fieldName', $referenceConfiguration ?? []);
+            if (!empty($relationField)) {
+                $relationTable = $cObj->stdWrapValue('table', $referenceConfiguration, $cObj->getCurrentTable());
+
+                if (!empty($relationTable)) {
+                    $queryConfig = [
+                        'join' => 'sys_category_record_mm on sys_category_record_mm.uid_local = sys_category.uid',
+                        'where' => '({#sys_category_record_mm.tablenames} = \'' . $relationTable . '\' AND {#sys_category_record_mm.fieldname} = \'' . $relationField . '\' AND {#sys_category_record_mm.uid_foreign}=' . $cObj->data['uid'] . ')',
+                    ];
+                }
+            }
+        }
+
+        if (empty($queryConfig) === true) {
+            return $processedData;
         }
 
         ArrayUtility::mergeRecursiveWithOverrule(
