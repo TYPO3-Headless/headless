@@ -56,9 +56,7 @@ page {
                 dataProcessing {
                     10 = headless-categories
                     10 {
-                        relationTable = pages
-                        relationUid.field = uid
-
+                        relation.fieldName = categories
                         as = categories
                     }
                 }
