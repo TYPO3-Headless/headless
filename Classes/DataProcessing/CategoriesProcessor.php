@@ -67,7 +67,7 @@ class CategoriesProcessor implements DataProcessorInterface
 
         $defaultQueryConfig = [
             'pidInList' => 'root',
-            'selectFields' => 'uid AS id,title',
+            'selectFields' => '{#sys_category}.{#uid} AS id, {#sys_category}.{#title}',
         ];
         $queryConfig = [];
 
@@ -79,7 +79,6 @@ class CategoriesProcessor implements DataProcessorInterface
             ];
         }
 
-
         if (!empty($processorConfiguration['relation.'])) {
             $referenceConfiguration = $processorConfiguration['relation.'];
             $relationField = $cObj->stdWrapValue('fieldName', $referenceConfiguration ?? []);
@@ -88,8 +87,8 @@ class CategoriesProcessor implements DataProcessorInterface
 
                 if (!empty($relationTable)) {
                     $queryConfig = [
-                        'join' => 'sys_category_record_mm on sys_category_record_mm.uid_local = sys_category.uid',
-                        'where' => '({#sys_category_record_mm.tablenames} = \'' . $relationTable . '\' AND {#sys_category_record_mm.fieldname} = \'' . $relationField . '\' AND {#sys_category_record_mm.uid_foreign}=' . $cObj->data['uid'] . ')',
+                        'join' => '{#sys_category_record_mm} on {#sys_category_record_mm}.{#uid_local} = {#sys_category}.{#uid}',
+                        'where' => '({#sys_category_record_mm}.{#tablenames} = \'' . $relationTable . '\' AND {#sys_category_record_mm}.{#fieldname} = \'' . $relationField . '\' AND {#sys_category_record_mm}.{#uid_foreign}=' . $cObj->data['uid'] . ')',
                     ];
                 }
             }
