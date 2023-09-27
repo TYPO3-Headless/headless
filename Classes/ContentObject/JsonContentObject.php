@@ -70,7 +70,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             $data = $this->cObjGet($conf['fields.']);
         }
         if (isset($conf['dataProcessing.'])) {
-            $data = $this->processFieldWithDataProcessing($conf);
+            $data = $this->processFieldWithDataProcessing($conf, $data);
         }
 
         $json = '';
@@ -104,7 +104,6 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             $theValue = $setup[$theKey];
             if ((string)$theKey && !str_contains($theKey, '.')) {
                 $conf = $setup[$theKey . '.'] ?? [];
-                $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
                 if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
@@ -121,19 +120,21 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 && $content[$theKey] === '') {
                     $content[$theKey] = null;
                 }
-                if (!empty($contentDataProcessing['dataProcessing.'])) {
-                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
+                if (!empty($conf['dataProcessing.'] ?? [])) {
+                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($conf);
                 }
             }
             if ((string)$theKey && strpos($theKey, '.') > 0 && !isset($setup[rtrim($theKey, '.')])) {
                 $contentFieldName = $theValue['source'] ?? rtrim($theKey, '.');
-                $contentFieldTypeProcessing['dataProcessing.'] = $theValue['dataProcessing.'] ?? [];
 
                 if (array_key_exists('fields.', $theValue)) {
                     $content[$contentFieldName] = $this->cObjGet($theValue['fields.']);
                 }
-                if (!empty($contentFieldTypeProcessing['dataProcessing.'])) {
-                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentFieldTypeProcessing);
+                if (!empty($theValue['dataProcessing.'] ?? [])) {
+                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing(
+                        $theValue,
+                        $content[rtrim($theKey, '.')] ?? null
+                    );
                 }
             }
         }
@@ -159,11 +160,10 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
         return array_unique($filteredKeys);
     }
 
-    /**
-     * @param array $dataProcessing
-     */
-    protected function processFieldWithDataProcessing(array $dataProcessing): mixed
+    protected function processFieldWithDataProcessing(array $conf, mixed $fieldsData = null): mixed
     {
+        $dataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
+
         $data = $this->contentDataProcessor->process(
             $this->cObj,
             $dataProcessing,
@@ -181,7 +181,8 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 $dataProcessingData = $data[$value];
             }
         }
-        return $dataProcessingData;
+        $merge = ((int)($conf['merge'] ?? 0) === 1) && is_array($fieldsData) && is_array($dataProcessingData);
+        return $merge ? array_merge($fieldsData, $dataProcessingData) : $dataProcessingData;
     }
 
     /**
