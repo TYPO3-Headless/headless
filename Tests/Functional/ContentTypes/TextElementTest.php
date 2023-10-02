@@ -28,7 +28,7 @@ class TextElementTest extends BaseContentTypeTest
         $contentElement = $fullTree['content']['colPos0'][0];
         $categories = [
             ['id' => 1, 'title' => 'SysCategory1Title'],
-            ['id' => 2, 'title' => 'SysCategory2Title']
+            ['id' => 2, 'title' => 'SysCategory2Title'],
         ];
 
         $this->checkDefaultContentFields($contentElement, 1, 1, 'text', 0, $categories);
