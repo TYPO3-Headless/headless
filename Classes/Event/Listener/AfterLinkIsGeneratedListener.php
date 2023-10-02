@@ -21,8 +21,7 @@ final class AfterLinkIsGeneratedListener
     public function __construct(
         private readonly HeadlessFrontendUrlInterface $urlUtility,
         private readonly LinkService $linkService
-    ) {
-    }
+    ) {}
 
     public function __invoke(AfterLinkIsGeneratedEvent $event): void
     {
