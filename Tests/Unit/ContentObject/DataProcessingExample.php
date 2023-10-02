@@ -34,6 +34,6 @@ class DataProcessingExample implements DataProcessorInterface
 
         $processedData[$targetVariableName] = ['SomeCustomProcessing'];
 
-        return  $processedData;
+        return $processedData;
     }
 }

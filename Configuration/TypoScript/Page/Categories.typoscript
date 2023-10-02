@@ -1,5 +1,5 @@
-categories = COA
-categories {
+lib.categories = COA
+lib.categories {
     10 = CONTENT
     10 {
         table = sys_category

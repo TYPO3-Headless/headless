@@ -1,19 +1,7 @@
-page = PAGE
+page < lib.headlessPage
 page {
     typeNum = 0
-    config {
-        no_cache = 0
-        sendCacheHeaders = 1
-        debug = 0
-        admPanel = 0
-        disableAllHeaderCode = 1
-        additionalHeaders.10 {
-            header = Content-Type: application/json; charset=utf-8
-            replace = 1
-        }
-    }
 
-    10 = JSON
     10 {
         fields {
             id = INT

@@ -30,7 +30,7 @@
     "ext-json": "*",
     "typo3/cms-core": "^12.4",
     "typo3/cms-install": "^12.4",
-    "typo3/coding-standards": "^0.7.1"
+    "typo3/coding-standards": "dev-main"
   },
   "require-dev": {
     "ergebnis/composer-normalize": "^2.15.0",

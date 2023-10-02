@@ -6,7 +6,7 @@ tt_content.text {
                 bodytext = TEXT
                 bodytext {
                     field = bodytext
-                    parseFunc =< lib.parseFunc_links
+                    parseFunc =< lib.parseFunc_RTE
                 }
             }
         }
