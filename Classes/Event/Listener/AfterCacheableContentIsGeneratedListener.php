@@ -20,9 +20,7 @@ use const JSON_THROW_ON_ERROR;
 
 class AfterCacheableContentIsGeneratedListener
 {
-    public function __construct(private readonly JsonEncoder $encoder)
-    {
-    }
+    public function __construct(private readonly JsonEncoder $encoder) {}
 
     public function __invoke(AfterCacheableContentIsGeneratedEvent $event)
     {

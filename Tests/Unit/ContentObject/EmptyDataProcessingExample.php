@@ -33,6 +33,6 @@ class EmptyDataProcessingExample implements DataProcessorInterface
 
         $processedData[$targetVariableName] = [null];
 
-        return  $processedData;
+        return $processedData;
     }
 }

@@ -11,6 +11,4 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Form\Decorator;
 
-class FormDefinitionDecorator extends AbstractFormDefinitionDecorator
-{
-}
+class FormDefinitionDecorator extends AbstractFormDefinitionDecorator {}
