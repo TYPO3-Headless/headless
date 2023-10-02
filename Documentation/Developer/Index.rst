@@ -192,7 +192,7 @@ object with a header definition `lib.contentElementWithHeader`:
           bodytext = TEXT
           bodytext {
             field = bodytext
-            parseFunc =< lib.parseFunc_links
+            parseFunc =< lib.parseFunc_RTE
           }
           demoSubfields {
             fields {
