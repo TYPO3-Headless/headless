@@ -17,9 +17,7 @@ use TYPO3\CMS\Core\Http\Uri;
 
 final class AfterPagePreviewUriGeneratedListener
 {
-    public function __construct(private readonly HeadlessFrontendUrlInterface $urlUtility)
-    {
-    }
+    public function __construct(private readonly HeadlessFrontendUrlInterface $urlUtility) {}
 
     public function __invoke(AfterPagePreviewUriGeneratedEvent $event): void
     {

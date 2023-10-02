@@ -38,7 +38,7 @@ class DomainViewHelper extends AbstractViewHelper
             case 'frontendBase':
                 return $urlUtility->getFrontendUrl();
             case 'proxyUrl':
-                return  $urlUtility->getProxyUrl();
+                return $urlUtility->getProxyUrl();
             case 'storageProxyUrl':
                 return $urlUtility->getStorageProxyUrl();
         }

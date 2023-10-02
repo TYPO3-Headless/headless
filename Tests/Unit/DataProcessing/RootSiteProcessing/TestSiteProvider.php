@@ -16,9 +16,7 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 
 class TestSiteProvider implements SiteProviderInterface
 {
-    public function prepare(array $config, int $siteUid)
-    {
-    }
+    public function prepare(array $config, int $siteUid) {}
 
     public function getSites(): array
     {

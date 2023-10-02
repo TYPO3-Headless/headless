@@ -1,0 +1,44 @@
+/**
+* This lib renders children in headless.
+* To use this code copy code below and replace FIELDNAME and TABLENAME with correct values for relation
+*
+children =< lib.renderChildren
+children.10 {
+  source.field = FIELDNAME
+  tables = TABLENAME
+  conf.TABLENAME.stdWrap.wrap = |###BREAK###
+}
+*
+*/
+
+lib.renderChildren = COA
+lib.renderChildren {
+    10 = RECORDS
+    stdWrap {
+        innerWrap = [|]
+        split {
+            token = ###BREAK###
+            cObjNum = 1 |*|2|*| 3
+            1 {
+                current = 1
+                stdWrap {
+                    wrap = |
+                }
+            }
+
+            2 {
+                current = 1
+                stdWrap {
+                    wrap = ,|
+                }
+            }
+
+            3 {
+                current = 1
+                stdWrap {
+                    wrap = |
+                }
+            }
+        }
+    }
+}
