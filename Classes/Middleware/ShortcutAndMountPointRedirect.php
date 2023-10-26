@@ -35,9 +35,7 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface, LoggerAwareI
 {
     use LoggerAwareTrait;
 
-    public function __construct(private readonly HeadlessMode $headlessMode)
-    {
-    }
+    public function __construct(private readonly HeadlessMode $headlessMode) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {

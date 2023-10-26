@@ -21,9 +21,7 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 
 class HeadlessModeSetter implements MiddlewareInterface
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
