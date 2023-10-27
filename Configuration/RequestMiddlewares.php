@@ -8,6 +8,7 @@
  */
 
 use FriendsOfTYPO3\Headless\Middleware\ElementBodyResponseMiddleware;
+use FriendsOfTYPO3\Headless\Middleware\HeadlessModeSetter;
 use FriendsOfTYPO3\Headless\Middleware\RedirectHandler;
 use FriendsOfTYPO3\Headless\Middleware\ShortcutAndMountPointRedirect;
 use FriendsOfTYPO3\Headless\Middleware\SiteBaseRedirectResolver;
@@ -25,6 +26,12 @@ return (static function (): array {
                     'typo3/cms-frontend/content-length-headers',
                 ],
                 'target' => UserIntMiddleware::class,
+            ],
+            'headless/mode-setter' => [
+                'before' => [
+                    'typo3/cms-frontend/base-redirect-resolver',
+                ],
+                'target' => HeadlessModeSetter::class,
             ],
         ],
     ];

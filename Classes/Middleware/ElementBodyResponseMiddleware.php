@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Middleware;
 
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -26,10 +27,12 @@ use function json_decode;
 class ElementBodyResponseMiddleware implements MiddlewareInterface
 {
     private JsonEncoder $jsonEncoder;
+    private HeadlessMode $headlessMode;
 
-    public function __construct(JsonEncoder $jsonEncoder = null)
+    public function __construct(JsonEncoder $jsonEncoder = null, HeadlessMode $headlessMode)
     {
         $this->jsonEncoder = $jsonEncoder;
+        $this->headlessMode = $headlessMode;
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -45,9 +48,7 @@ class ElementBodyResponseMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        $siteConf = $request->getAttribute('site')->getConfiguration();
-
-        if (!($siteConf['headless'] ?? false)) {
+        if (!$this->headlessMode->withRequest($request)->isEnabled()) {
             return $response;
         }
 

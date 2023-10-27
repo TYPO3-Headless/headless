@@ -13,6 +13,8 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Event\Listener\RedirectUrlAdditionalParamsListener;
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -244,6 +246,6 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 
         $siteFinder->getSiteByPageId(Argument::is(1))->willReturn($site);
 
-        return new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
+        return new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), null, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
     }
 }

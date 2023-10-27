@@ -1,0 +1,21 @@
+plugin.tx_headless {
+    # Do not remove this!
+    # This will indicate, that the static typoscript for EXT:headless was loaded
+    staticTemplate = 1
+}
+
+[traverse(request.getHeaders(), 'accept')[0] == 'application/json']
+    ## Include page
+    @import "EXT:headless/Configuration/TypoScript/Page/*.typoscript"
+    ## Include content elements
+    @import "EXT:headless/Configuration/TypoScript/ContentElement/*.typoscript"
+    ## Include configuration
+    @import "EXT:headless/Configuration/TypoScript/Configuration/*.typoscript"
+[END]
+
+[traverse(request.getHeaders(), 'accept')[0] == 'application/json' && frontend.user.isLoggedIn]
+    initialData.10.fields.user.fields {
+        logged = BOOL
+        logged.value = 1
+    }
+[END]
