@@ -87,7 +87,7 @@ class JsonDecoderTest extends UnitTestCase
             [true, false],
             [false, false],
             ['[]', true],
-            ['""', false]
+            ['""', false],
         ];
     }
 }

@@ -13,6 +13,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject;
 use Prophecy\PhpUnit\ProphecyTrait;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -26,8 +27,10 @@ class BooleanContentObjectTest extends UnitTestCase
     public function renderTest()
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->setRequest(new ServerRequest());
 
         $contentObject = new BooleanContentObject();
+        $contentObject->setRequest(new ServerRequest());
         $contentObject->setContentObjectRenderer($cObj);
 
         self::assertFalse($contentObject->render());
@@ -40,7 +43,9 @@ class BooleanContentObjectTest extends UnitTestCase
     public function renderWithProviderTest($argument, bool $result)
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->setRequest(new ServerRequest());
         $contentObject = new BooleanContentObject();
+        $contentObject->setRequest(new ServerRequest());
         $contentObject->setContentObjectRenderer($cObj);
         self::assertEquals($result, $contentObject->render($argument));
     }

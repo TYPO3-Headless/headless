@@ -28,14 +28,17 @@ use function trim;
 use const JSON_FORCE_OBJECT;
 
 /**
- * CONTENT_JSON Content object behaves & has the same options as standard TYPO3' Content
- * main difference is content is grouped by colPol field & encoded into JSON by default.
+ * This cObject basically behaves like TYPO3's CONTENT,
+ * the main difference is that content elements are
+ * grouped by colPol & encoded into JSON by default.
  *
- * CONTENT_JSON has the same options as CONTENT, also adds two new options for edge cases in json context
+ * CONTENT_JSON has the same options as CONTENT but also
+ * offers two new options for edge cases in json context.
  *
  * ** merge ** option
- * New option allows to generate another CONTENT_JSON call in one definition & then merge both results into one dataset
- * (useful for handling slide feature of CONTENT cObject)
+ * This option allows to generate another CONTENT_JSON call
+ * in one definition & then merge both results into one
+ * dataset (useful for handling slide feature of CONTENT cObject).
  *
  * for example:
  *
@@ -57,7 +60,8 @@ use const JSON_FORCE_OBJECT;
  *  }
  *
  * ** doNotGroupByColPos = 0(default)|1 **
- * Option allows return of flat array (without grouping by colPos) encoded into JSON
+ * This option allows to return a flat array (without grouping
+ * by colPos) but still encoded into JSON.
  *
  * lib.content = CONTENT_JSON
  * lib.content {
@@ -67,6 +71,7 @@ use const JSON_FORCE_OBJECT;
  *        where = {#colPos} != 1
  *    }
  *    doNotGroupByColPos = 1
+ * }
  */
 class JsonContentContentObject extends ContentContentObject
 {

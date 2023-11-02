@@ -8,8 +8,10 @@
  */
 
 use FriendsOfTYPO3\Headless\Middleware\ElementBodyResponseMiddleware;
+use FriendsOfTYPO3\Headless\Middleware\HeadlessModeSetter;
 use FriendsOfTYPO3\Headless\Middleware\RedirectHandler;
 use FriendsOfTYPO3\Headless\Middleware\ShortcutAndMountPointRedirect;
+use FriendsOfTYPO3\Headless\Middleware\SiteBaseRedirectResolver;
 use FriendsOfTYPO3\Headless\Middleware\UserIntMiddleware;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -23,7 +25,13 @@ return (static function (): array {
                 'after' => [
                     'typo3/cms-frontend/content-length-headers',
                 ],
-                'target' => UserIntMiddleware::class
+                'target' => UserIntMiddleware::class,
+            ],
+            'headless/mode-setter' => [
+                'before' => [
+                    'typo3/cms-frontend/base-redirect-resolver',
+                ],
+                'target' => HeadlessModeSetter::class,
             ],
         ],
     ];
@@ -31,9 +39,9 @@ return (static function (): array {
     if ($features->isFeatureEnabled('headless.elementBodyResponse')) {
         $middlewares['frontend']['headless/cms-frontend/element-body-response'] = [
             'after' => [
-                'typo3/cms-adminpanel/data-persister',
+                'typo3/cms-frontend/content-length-headers',
             ],
-            'target' => ElementBodyResponseMiddleware::class
+            'target' => ElementBodyResponseMiddleware::class,
         ];
     }
 
@@ -41,10 +49,10 @@ return (static function (): array {
         $middlewares['backend'] = [
             'headless/cms-backend/cookie-domain-middleware' => [
                 'before' => [
-                    'typo3/cms-backend/authentication'
+                    'typo3/cms-backend/authentication',
                 ],
-                'target' => \FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite::class
-            ]
+                'target' => \FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite::class,
+            ],
         ];
     }
 
@@ -58,7 +66,10 @@ return (static function (): array {
                 'disabled' => true,
             ],
             'typo3/cms-frontend/shortcut-and-mountpoint-redirect' => [
-                'disabled' => true
+                'disabled' => true,
+            ],
+            'typo3/cms-frontend/base-redirect-resolver' => [
+                'target' => SiteBaseRedirectResolver::class,
             ],
             'headless/cms-redirects/redirecthandler' => [
                 'target' => RedirectHandler::class,
@@ -78,6 +89,6 @@ return (static function (): array {
                     'typo3/cms-frontend/content-length-headers',
                 ],
             ],
-        ]
+        ],
     ]);
 })();

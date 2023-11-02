@@ -39,7 +39,8 @@ class RootSitesProcessorTest extends UnitTestCase
         $processor = new RootSitesProcessor();
 
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
+        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
+        $contentObjectRenderer->start([], 'tt_content');
         $contentObjectRenderer->data['uid'] = 1;
         $conf = [];
         $conf['siteProvider'] = TestSiteProvider::class;
@@ -53,7 +54,7 @@ class RootSitesProcessorTest extends UnitTestCase
                     'api' => ['baseURL' => '/proxy/'],
                     'i18n' => [
                         'locales' => ['en_US'],
-                        'defaultLocale' => 'en_US'
+                        'defaultLocale' => 'en_US',
                     ],
                 ],
                 [
@@ -62,10 +63,10 @@ class RootSitesProcessorTest extends UnitTestCase
                     'api' => ['baseURL' => '/proxy/'],
                     'i18n' => [
                         'locales' => ['en_US'],
-                        'defaultLocale' => 'en_US'
+                        'defaultLocale' => 'en_US',
                     ],
-                ]
-            ]
+                ],
+            ],
         ], $processor->process($contentObjectRenderer, [], $conf, []));
     }
 
@@ -77,7 +78,8 @@ class RootSitesProcessorTest extends UnitTestCase
         $processor = new RootSitesProcessor();
 
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
+        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
+        $contentObjectRenderer->start([], 'tt_content');
 
         $conf = [];
         self::assertEquals([], $processor->process($contentObjectRenderer, [], $conf, []));
@@ -91,7 +93,8 @@ class RootSitesProcessorTest extends UnitTestCase
         $processor = new RootSitesProcessor();
 
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
+        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
+        $contentObjectRenderer->start([], 'tt_content');
         $contentObjectRenderer->data['uid'] = 1;
         $conf = [];
         $conf['siteProvider'] = \stdClass::class;
@@ -107,7 +110,8 @@ class RootSitesProcessorTest extends UnitTestCase
         $processor = new RootSitesProcessor();
 
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->start([], 'tt_content', $this->prophesize(ServerRequestInterface::class)->reveal());
+        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
+        $contentObjectRenderer->start([], 'tt_content');
         $contentObjectRenderer->data['uid'] = 1;
         $conf = [];
         $conf['siteSchema'] = \stdClass::class;

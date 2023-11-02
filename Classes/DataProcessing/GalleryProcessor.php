@@ -102,14 +102,14 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 );
                 $this->mediaDimensions[$key] = [
                     'width' => $mediaWidth,
-                    'height' => $mediaHeight
+                    'height' => $mediaHeight,
                 ];
             }
 
             // Recalculate gallery width
             $this->galleryData['width'] = floor($maximumRowWidth / $mediaScalingCorrection);
 
-            // User entered a predefined width
+        // User entered a predefined width
         } elseif ($this->equalMediaWidth) {
             $mediaScalingCorrection = 1;
 
@@ -126,14 +126,14 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 );
                 $this->mediaDimensions[$key] = [
                     'width' => $mediaWidth,
-                    'height' => $mediaHeight
+                    'height' => $mediaHeight,
                 ];
             }
 
             // Recalculate gallery width
             $this->galleryData['width'] = floor($totalRowWidth / $mediaScalingCorrection);
 
-            // Automatic setting of width and height
+        // Automatic setting of width and height
         } else {
             $maxMediaWidth = (int)($galleryWidthMinusBorderAndSpacing / $this->galleryData['count']['columns']);
             foreach ($this->fileObjects as $key => $fileObject) {
@@ -144,7 +144,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 );
                 $this->mediaDimensions[$key] = [
                     'width' => $mediaWidth,
-                    'height' => $mediaHeight
+                    'height' => $mediaHeight,
                 ];
             }
         }

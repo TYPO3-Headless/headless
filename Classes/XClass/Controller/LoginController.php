@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass\Controller;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Security\RequestToken;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -66,7 +67,7 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
                 'permaloginStatus' => $this->getPermaloginStatus(),
                 'redirectURL' => $this->redirectHandler->getLoginFormRedirectUrl($this->request, $this->configuration, $this->isRedirectDisabled()),
                 'redirectReferrer' => $this->request->hasArgument('redirectReferrer') ? (string)$this->request->getArgument('redirectReferrer') : '',
-                'referer' => $this->getRefererForLoginForm(),
+                'referer' => $this->redirectHandler->getReferrerForLoginForm($this->request, $this->settings),
                 'noRedirect' => $this->isRedirectDisabled(),
                 'requestToken' => RequestToken::create('core/user-auth/fe')
                     ->withMergedParams(['pid' => implode(',', $storagePageIds)]),
@@ -107,8 +108,6 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
 
     private function isHeadlessEnabled(): bool
     {
-        $typoScriptSetup = $this->request->getAttribute('frontend.typoscript')->getSetupArray();
-
-        return (bool)($typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'] ?? false);
+        return GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled();
     }
 }

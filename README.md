@@ -70,6 +70,10 @@ Then, you should include extension typoscript template, and you are ready to go.
 ## Documentation
 [Extension documentation](https://docs.typo3.org/p/friendsoftypo3/headless/main/en-us/Index.html)
 
+
+## Contributing
+![Alt](https://repobeats.axiom.co/api/embed/197db91cad9195bb15a06c91fda5a215bff26cba.svg)
+
 ## JSON  Content Object
 In headless extension we implemented new JSON Content Object, which allows you to specify what fields you want to output, and how they will look. First, let's take a look at simple example
 ```
@@ -213,6 +217,37 @@ Used for processing flexforms.
 
 ### RootSitesProcessor
 Render your all headless sites configuration for your frontend application.
+
+## Configuration
+### Available Settings:
+- **Not Enabled**: Headless mode is deactivated.
+- **Mixed Mode**: Fluid and headless operate concurrently.
+- **Fully Headless Mode**: Headless mode is fully activated.
+
+To set up headless mode, utilize the site configuration flag as shown below:
+
+```yaml
+'headless': 0|1|2
+```
+
+While the legacy flag (true|false) is still recognized, transitioning to the integer notation is recommended.
+
+### Options:
+- **0** (formerly: false) = headless mode is deactivated for the site within the TYPO3 instance.
+- **1** (formerly: true) = headless mode is fully activated for the site within the TYPO3 instance.
+- **2** = mixed mode headless is activated (both fluid & json API are accessible within a single site in the TYPO3 instance).
+
+Options **0** (formerly: false) or **1** (formerly: true) inform the extension to either fully disable or enable headless mode for a particular site.
+
+### To Enable Mixed Mode:
+For a chosen site in TYPO3, follow these steps:
+- In the typoscript template for the site, load the "Headless - Mixed mode JSON response" setup file instead of the default headless one.
+- Set `headless` flag to a value of `2` in the site configuration file or configure the flag via editor in the Site's management backend.
+
+The mixed mode flag (value of `2`) instructs the EXT:headless extension to additionally check for the `Accept` header with a value of `application/json` when processing requests to the particular site in the TYPO3 instance.
+
+- In cases where a request lacks the `Accept` header or `Accept` has a different value than `application/json`, TYPO3 will respond with HTML content (standard TYPO3's response).
+- In cases where a request's header `Accept` matches the value of `application/json`, TYPO3 will respond with a JSON response.
 
 ## Development
 

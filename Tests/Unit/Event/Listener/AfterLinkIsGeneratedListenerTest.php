@@ -126,7 +126,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $urlUtility->getFrontendUrlForPage(Argument::is('/'), Argument::is(5))->willReturn('https://front.typo3.tld');
 
         $linkService = $this->prophesize(LinkService::class);
-        $linkService->resolve(Argument::any())->willReturn(['pageuid'=> 5]);
+        $linkService->resolve(Argument::any())->willReturn(['pageuid' => 5]);
 
         $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $linkService->reveal());
 

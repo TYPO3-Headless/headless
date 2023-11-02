@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Tests\Unit\XClass;
 
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\XClass\TemplateView;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Fluid\Core\Rendering\RenderingContext;
@@ -29,10 +31,10 @@ class TemplateViewTest extends UnitTestCase
     {
         $this->expectException(InvalidTemplateResourceException::class);
 
-        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1); // fe request
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1) // fe request
+            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
 
         $templatePaths = $this->createMock(TemplatePaths::class);
-
         $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
 
         $variableProvider = new StandardVariableProvider();
@@ -45,7 +47,8 @@ class TemplateViewTest extends UnitTestCase
 
     public function testTemplateRender(): void
     {
-        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1); // fe request
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1) // fe request
+            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
 
         $templatePaths = $this->createMock(TemplatePaths::class);
         $templatePaths->method('resolveTemplateFileForControllerAndActionAndFormat')->willReturn(__DIR__ . '/Fixtures/Templates/Default/Default.php');
@@ -61,5 +64,83 @@ class TemplateViewTest extends UnitTestCase
         $view = new TemplateView($context);
 
         self::assertSame(json_encode(['testKey' => 'TestingJsonValue']), $view->render());
+    }
+
+    public function testTemplateFoundRender(): void
+    {
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1) // fe request
+            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
+
+        $templatePaths = $this->createMock(TemplatePaths::class);
+
+        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
+
+        $variableProvider = new StandardVariableProvider();
+        $variableProvider->add('settings', ['phpTemplate' => 1]);
+        $variableProvider->add('testValue', 'TestingJsonValue');
+
+        $context->setVariableProvider($variableProvider);
+
+        $templatePaths = $this->createMock(TemplatePaths::class);
+        $templatePaths->method('resolveTemplateFileForControllerAndActionAndFormat')->willReturn(null);
+
+        $context->setTemplatePaths($templatePaths);
+
+        $this->expectException(InvalidTemplateResourceException::class);
+
+        $view = new TemplateView($context);
+        $view->render();
+    }
+
+    public function testChangingAction(): void
+    {
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1) // fe request
+            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
+
+        $templatePaths = $this->createMock(TemplatePaths::class);
+        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
+
+        $variableProvider = new StandardVariableProvider();
+        $variableProvider->add('settings', ['phpTemplate' => 1]);
+        $variableProvider->add('testValue', 'TestingJsonValue');
+
+        $context->setVariableProvider($variableProvider);
+
+        $templatePaths = $this->createMock(TemplatePaths::class);
+        $templatePaths->method('resolveTemplateFileForControllerAndActionAndFormat')->willReturn(__DIR__ . '/Fixtures/Templates/Default/Default.php');
+
+        $context->setTemplatePaths($templatePaths);
+
+        self::assertSame('Default', $context->getControllerAction());
+
+        $view = new TemplateView($context);
+        $view->render('test');
+        self::assertSame('Test', $context->getControllerAction());
+    }
+
+    public function testExceptionInTemplate(): void
+    {
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1) // fe request
+            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
+
+        $templatePaths = $this->createMock(TemplatePaths::class);
+        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
+
+        $variableProvider = new StandardVariableProvider();
+        $variableProvider->add('settings', ['phpTemplate' => 1]);
+        $variableProvider->add('testValue', 'TestingJsonValue');
+
+        $context->setVariableProvider($variableProvider);
+
+        $templatePaths = $this->createMock(TemplatePaths::class);
+        $templatePaths->method('resolveTemplateFileForControllerAndActionAndFormat')->willReturn(__DIR__ . '/Fixtures/Templates/Default/DefaultException.php');
+
+        $context->setTemplatePaths($templatePaths);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Example exception in template');
+
+        $view = new TemplateView($context);
+        $view->render();
     }
 }

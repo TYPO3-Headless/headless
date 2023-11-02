@@ -108,7 +108,7 @@ class HeadlessUserIntTest extends UnitTestCase
     {
         $testProcessed = json_encode(
             [
-                'key1' => 'value'
+                'key1' => 'value',
             ]
         );
         $testContent = '"HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END"';
@@ -188,7 +188,7 @@ class HeadlessUserIntTest extends UnitTestCase
     {
         $nestedProcessed = json_encode(
             [
-                'key2' => 'value2'
+                'key2' => 'value2',
             ]
         );
 
@@ -207,7 +207,7 @@ class HeadlessUserIntTest extends UnitTestCase
             [
                 'key1' => 'value',
                 'nestedContent' => [
-                    'key2' => 'value2'
+                    'key2' => 'value2',
                 ],
             ]
         );
@@ -239,13 +239,13 @@ class HeadlessUserIntTest extends UnitTestCase
     {
         $nestedProcessed = json_encode(
             [
-                'key2' => 'value2'
+                'key2' => 'value2',
             ]
         );
 
         $testProcessed2 = json_encode(
             [
-                'key3' => 'value3'
+                'key3' => 'value3',
             ]
         );
 
@@ -265,12 +265,12 @@ class HeadlessUserIntTest extends UnitTestCase
                 [
                     'key1' => 'value',
                     'nestedContent' => [
-                        'key2' => 'value2'
+                        'key2' => 'value2',
                     ],
                 ],
                 [
                     'key3' => 'value3',
-                ]
+                ],
             ]
         );
 

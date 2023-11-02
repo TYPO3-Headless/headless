@@ -55,7 +55,7 @@ class CookieDomainPerSiteTest extends UnitTestCase
                     'frontendFileApi' => 'https://test-frontend-api2.tld/headless/fileadmin',
                     'SpecialSitemapKey' => 'https://test-frontend2.tld/sitemap',
                 ],
-            ]
+            ],
         ]);
 
         $resolver = $this->prophesize(Resolver::class);
@@ -64,7 +64,7 @@ class CookieDomainPerSiteTest extends UnitTestCase
         $siteFinder = $this->prophesize(SiteFinder::class);
 
         $siteFinder->getAllSites()->willReturn([
-            $site
+            $site,
         ]);
 
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
@@ -115,7 +115,7 @@ class CookieDomainPerSiteTest extends UnitTestCase
                     'frontendFileApi' => 'https://test-frontend-api2.tld/headless/fileadmin',
                     'SpecialSitemapKey' => 'https://test-frontend2.tld/sitemap',
                 ],
-            ]
+            ],
         ]);
 
         $resolver = $this->prophesize(Resolver::class);
@@ -124,7 +124,7 @@ class CookieDomainPerSiteTest extends UnitTestCase
         $siteFinder = $this->prophesize(SiteFinder::class);
 
         $siteFinder->getAllSites()->willReturn([
-            $site
+            $site,
         ]);
 
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());

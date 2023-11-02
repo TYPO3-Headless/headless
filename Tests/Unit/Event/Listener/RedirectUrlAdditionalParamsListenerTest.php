@@ -13,6 +13,8 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Event\Listener\RedirectUrlAdditionalParamsListener;
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -46,7 +48,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $request = (new ServerRequest())->withAttribute('test', 1)->withUri($uri);
         $redirectRecord = [
             'target_statuscode' => 307,
-            'target' => 'https://test.domain5.tld'
+            'target' => 'https://test.domain5.tld',
         ];
 
         $redirectEvent = new RedirectUrlEvent($request, $uri, 'https://test.domain2.tld', 301, $redirectRecord);
@@ -57,7 +59,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $request = (new ServerRequest())->withAttribute('test', 1)->withUri(new Uri('https://test.domain3.tld'));
         $redirectRecord = [
             'target_statuscode' => 307,
-            'target' => 'https://test.domain5.tld'
+            'target' => 'https://test.domain5.tld',
         ];
 
         $redirectEvent = new RedirectUrlEvent(
@@ -80,7 +82,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $additionalParams = 'tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123';
         $redirectRecord = [
             'target_statuscode' => 307,
-            'target' => 't3://page?uid=1 - - - tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123'
+            'target' => 't3://page?uid=1 - - - tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123',
         ];
 
         $newUri = new Uri('https://test.domain2.tld/123/123');
@@ -140,7 +142,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 
         $redirectRecord = [
             'target_statuscode' => 307,
-            'target' => 't3://page?uid=1&L=1 - - - tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123'
+            'target' => 't3://page?uid=1&L=1 - - - tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123',
         ];
 
         $newUri = new Uri('https://test.domain2.tld/123/123');
@@ -166,7 +168,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
                             'controller' => 'Test',
                             'test' => '123',
                         ],
-                    '_language' => $language
+                    '_language' => $language,
                 ]
             )
             ->shouldBeCalledOnce()
@@ -212,9 +214,9 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld:3000',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
-                ]
-            ]
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                ],
+            ],
         ]);
 
         $site->getBase()->willReturn($uri);
@@ -244,6 +246,6 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 
         $siteFinder->getSiteByPageId(Argument::is(1))->willReturn($site);
 
-        return new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
+        return new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), null, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
     }
 }
