@@ -201,13 +201,11 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                             (int)$this->processorConfiguration['autogenerate.']['retina2x'] === 1) {
                             $fileObj['urlRetina'] = $this->getFileUtility()->processFile(
                                 $image,
-                                array_merge(
-                                    ['fileExtension' => $fileExtension],
-                                    [
-                                        'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::RETINA_RATIO,
-                                        'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::RETINA_RATIO,
-                                    ]
-                                )
+                                [
+                                    'fileExtension' => $fileExtension,
+                                    'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::RETINA_RATIO,
+                                    'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::RETINA_RATIO,
+                                ]
                             )['publicUrl'];
                         }
 
@@ -216,13 +214,11 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                                 (int)$this->processorConfiguration['autogenerate.']['lqip'] === 1) {
                             $fileObj['urlLqip'] = $this->getFileUtility()->processFile(
                                 $image,
-                                array_merge(
-                                    ['fileExtension' => $fileExtension],
-                                    [
-                                        'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::LQIP_RATIO,
-                                        'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::LQIP_RATIO,
-                                    ]
-                                )
+                                [
+                                    'fileExtension' => $fileExtension,
+                                    'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::LQIP_RATIO,
+                                    'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::LQIP_RATIO,
+                                ]
                             )['publicUrl'];
                         }
                     }
