@@ -83,7 +83,7 @@ Configuration
 The rendering configuration can be set via the property `processingConfiguration` and provides the following sub-properties:
 
 * `returnFlattenObject`: without that flag an array of (multiple) images is rendered. Set this if you're only rendering 1 image and want to reduce nesting.
-* `delayProcessing`: ??
+* `delayProcessing`: can be used to skip processing of images (and have them simply collected with the `FilesProcessor`), in order to have them processed by the next processor in line (which is generally `GalleryProcessor`).
 * `fileExtension`: can be used to convert the images to any desired format, e.g. `webp`.
 * `autogenerate`:
   * `retina2x`: set this to render an additional image URI in high quality (200%).
