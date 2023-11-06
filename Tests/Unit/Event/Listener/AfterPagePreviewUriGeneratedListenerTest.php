@@ -27,7 +27,7 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
         $resolver->evaluate(Argument::any())->willReturn(true);
         $siteFinder = $this->prophesize(SiteFinder::class);
 
-        $listener = new AfterPagePreviewUriGeneratedListener(new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()));
+        $listener = new AfterPagePreviewUriGeneratedListener(new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()), $siteFinder->reveal());
 
         self::assertInstanceOf(AfterPagePreviewUriGeneratedListener::class, $listener);
     }
