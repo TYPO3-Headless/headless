@@ -46,6 +46,7 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 - headless support for EXT:powermail [headless_powermail](https://github.com/TYPO3-Initiatives/headless_powermail)
 - headless support for EXT:gridelements [headless_gridelements](https://github.com/itplusx/headless_gridelements)
 - small tools/tweaks for local headless development [headless_dev_tools](https://github.com/TYPO3-Headless/headless_dev_tools)
+- headless support for EXT:container [headless-container-support](https://github.com/TYPO3-Headless/headless-container-support) and [headless_container](https://github.com/itplusx/headless-container)
 
 ## Requirements and compatibility
 
