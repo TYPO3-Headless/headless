@@ -31,7 +31,7 @@ class HeadlessModeSetter implements MiddlewareInterface
          * @var Site $site
          */
         $site = $request->getAttribute('site');
-        if ($site) {
+        if ($site instanceof Site) {
             $mode = (int)($site->getConfiguration()['headless'] ?? HeadlessMode::NONE);
         }
 
