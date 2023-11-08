@@ -11,7 +11,11 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Hooks;
 
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -36,6 +40,23 @@ class PreviewUrlHook
         if (isset($GLOBALS['BE_USER']) && $GLOBALS['BE_USER']->workspace !== 0) {
             return $previewUrl;
         }
-        return GeneralUtility::makeInstance(UrlUtility::class)->getFrontendUrlForPage($previewUrl, $pageUid);
+
+        try {
+            $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
+            $site = $siteFinder->getSiteByPageId($pageUid);
+            $mode = (int)($site->getConfiguration()['headless'] ?? HeadlessMode::NONE);
+
+            if ($mode === HeadlessMode::MIXED) {
+                // in BE context we override it to force generate url
+                $mode = HeadlessMode::FULL;
+            }
+
+            $request = $GLOBALS['TYPO3_REQUEST'];
+            $request = $request->withAttribute('headless', new Headless($mode));
+            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request);
+            return $urlUtility->getFrontendUrlWithSite($previewUrl, $site);
+        } catch (SiteNotFoundException $e) {
+            return $previewUrl;
+        }
     }
 }

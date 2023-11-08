@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Hooks;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -29,11 +30,9 @@ class TypolinkHook
             return;
         }
 
-        $setup = $GLOBALS['TSFE']->tmpl->setup;
+        $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
 
-        if (!isset($setup['plugin.']['tx_headless.']['staticTemplate'])
-            || (bool)$setup['plugin.']['tx_headless.']['staticTemplate'] === false
-        ) {
+        if (!$headlessMode->isEnabled()) {
             // Just do nothing and don't modify the previously generated typolink when EXT:headless won't be used
             return;
         }

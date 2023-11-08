@@ -75,18 +75,18 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
     public function getFrontendUrlWithSite($url, SiteInterface $site, string $returnField = 'frontendBase'): string
     {
+        $this->handleSiteConfiguration($site, $this);
+
         if (!$this->headlessMode->isEnabled()) {
             return $url;
         }
-
-        $configuration = $site->getConfiguration();
 
         try {
             $base = $site->getBase()->getHost();
             $port = $site->getBase()->getPort();
             $frontendBaseUrl = $this->resolveWithVariants(
-                $configuration[$returnField] ?? '',
-                $configuration['baseVariants'] ?? [],
+                $this->conf[$returnField] ?? '',
+                $this->variants,
                 $returnField
             );
 
@@ -122,10 +122,6 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     public function getFrontendUrlForPage(string $url, int $pageUid, string $returnField = 'frontendBase'): string
     {
         try {
-            if (!$this->headlessMode->isEnabled()) {
-                return $url;
-            }
-
             return $this->getFrontendUrlWithSite(
                 $url,
                 $this->siteFinder->getSiteByPageId($pageUid),
@@ -208,7 +204,6 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         string $returnField = 'frontendBase'
     ): string {
         $frontendUrl = rtrim($frontendUrl, '/');
-
         if ($variants === []) {
             return $frontendUrl;
         }
@@ -268,6 +263,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private function extractConfigurationFromRequest(ServerRequestInterface $request, HeadlessFrontendUrlInterface $object): HeadlessFrontendUrlInterface
     {
         $site = $request->getAttribute('site');
+
         if ($site instanceof Site) {
             $object->handleSiteConfiguration($site, $object);
         }
