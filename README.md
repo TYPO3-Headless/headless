@@ -63,17 +63,48 @@ If you want to take a look at working demo including frontend, backend and demo 
 [https://github.com/TYPO3-Initiatives/pwa-demo](https://github.com/TYPO3-Headless/pwa-demo)
 
 ## Installation
-Install extension using composer\
-``composer require friendsoftypo3/headless``
+Install extension using composer
 
-Then, you should include extension typoscript template, and you are ready to go. Also, please remember to don't use fluid styled content on the same page tree together with ext:headless.
+``composer require friendsoftypo3/headless``
 
 ## Documentation
 [Extension documentation](https://docs.typo3.org/p/friendsoftypo3/headless/main/en-us/Index.html)
 
+## Configuration
 
-## Contributing
-![Alt](https://repobeats.axiom.co/api/embed/197db91cad9195bb15a06c91fda5a215bff26cba.svg)
+Since versions: `4.2` | `3.5` Flag `headless` is required to configure in site configuration!
+
+This flag instructs how `EXT:headless` should behave in multisite instance.
+
+For each site you can set in which mode site is operated (standard aka HTML response, headless, or mixed mode).
+
+You can set `headless` flag manually in yaml file or via site configuration in the backend:
+
+```yaml
+'headless': 0|1|2
+```
+
+### Possible values:
+While the legacy flag (`true`|`false`) is still recognized, transitioning to the integer notation is recommended.
+- **0** (formerly: `false`) = headless mode is deactivated for the site within the TYPO3 instance. **Default value!**
+- **1** (formerly: `true`) = headless mode is fully activated for the site within the TYPO3 instance.
+- **2** = mixed mode headless is activated (both fluid & json API are accessible within a single site in the TYPO3 instance).
+
+### Configuration steps
+For a chosen site in TYPO3, follow these steps:
+
+#### To enable Headless Mode:
+- In the typoscript template for the site, load the "Headless" setup file.
+- Set `headless` flag to a value of `1` in the site configuration file or configure the flag via editor in the Site's management backend.
+
+#### To enable Mixed Mode:
+- In the typoscript template for the site, load the "Headless - Mixed mode JSON response" setup file instead of the default headless one.
+- Set `headless` flag to a value of `2` in the site configuration file or configure the flag via editor in the Site's management backend.
+
+The mixed mode flag (value of `2`) instructs the EXT:headless extension to additionally check for the `Accept` header with a value of `application/json` when processing requests to the particular site in the TYPO3 instance.
+
+- In cases where a request lacks the `Accept` header or `Accept` has a different value than `application/json`, TYPO3 will respond with HTML content (standard TYPO3's response).
+- In cases where a request's header `Accept` matches the value of `application/json`, TYPO3 will respond with a JSON response.
 
 ## JSON  Content Object
 In headless extension we implemented new JSON Content Object, which allows you to specify what fields you want to output, and how they will look. First, let's take a look at simple example
@@ -166,17 +197,9 @@ Output
 ## Customizing
 You can override every field in output using typoscript. This extension allows you to use standard typoscript objects such as TEXT, COA, CASE.
 
-## Page response
-In headless v3.0 we introduce a new, smaller, faster and more flat page response.
-If you want to keep compatibility with your frontend application, you can load a deprecated typoscript template for version 2.x and keep the old structure of the response running.
-
-#### Example page response  ⬇️
-since version 3.x & under active maintenance
+## Example page response  ⬇️
 
 ![image](https://user-images.githubusercontent.com/15106746/136414744-88d54d44-2f3c-4d7d-9911-832ceefcfe16.png)
-
-#### Old response (version 2.x) ⬇️
-![image](https://user-images.githubusercontent.com/15106746/136414370-a4bec856-5a95-4965-b60b-5a37be5ce5c9.png)
 
 ## DataProcessing
 
@@ -219,36 +242,8 @@ Used for processing flexforms.
 ### RootSitesProcessor
 Render your all headless sites configuration for your frontend application.
 
-## Configuration
-### Available Settings:
-- **Not Enabled**: Headless mode is deactivated.
-- **Mixed Mode**: Fluid and headless operate concurrently.
-- **Fully Headless Mode**: Headless mode is fully activated.
-
-To set up headless mode, utilize the site configuration flag as shown below:
-
-```yaml
-'headless': 0|1|2
-```
-
-While the legacy flag (true|false) is still recognized, transitioning to the integer notation is recommended.
-
-### Options:
-- **0** (formerly: false) = headless mode is deactivated for the site within the TYPO3 instance.
-- **1** (formerly: true) = headless mode is fully activated for the site within the TYPO3 instance.
-- **2** = mixed mode headless is activated (both fluid & json API are accessible within a single site in the TYPO3 instance).
-
-Options **0** (formerly: false) or **1** (formerly: true) inform the extension to either fully disable or enable headless mode for a particular site.
-
-### To Enable Mixed Mode:
-For a chosen site in TYPO3, follow these steps:
-- In the typoscript template for the site, load the "Headless - Mixed mode JSON response" setup file instead of the default headless one.
-- Set `headless` flag to a value of `2` in the site configuration file or configure the flag via editor in the Site's management backend.
-
-The mixed mode flag (value of `2`) instructs the EXT:headless extension to additionally check for the `Accept` header with a value of `application/json` when processing requests to the particular site in the TYPO3 instance.
-
-- In cases where a request lacks the `Accept` header or `Accept` has a different value than `application/json`, TYPO3 will respond with HTML content (standard TYPO3's response).
-- In cases where a request's header `Accept` matches the value of `application/json`, TYPO3 will respond with a JSON response.
+## Contributing
+![Alt](https://repobeats.axiom.co/api/embed/197db91cad9195bb15a06c91fda5a215bff26cba.svg)
 
 ## Development
 
