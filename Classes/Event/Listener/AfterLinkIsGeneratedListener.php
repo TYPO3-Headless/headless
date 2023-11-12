@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Site\Entity\NullSite;
 use TYPO3\CMS\Frontend\Event\AfterLinkIsGeneratedEvent;
@@ -31,7 +32,12 @@ final class AfterLinkIsGeneratedListener
             return;
         }
 
-        $pageId = $result->getLinkConfiguration()['parameter'] ?? 0;
+        $page = $result->getLinkConfiguration()['page'] ?? null;
+        if ($page != null && $page['doktype'] == PageRepository::DOKTYPE_SHORTCUT) {
+            $pageId = $page['shortcut'];
+        } else {
+            $pageId = $result->getLinkConfiguration()['parameter'] ?? 0;
+        }
 
         if (isset($result->getLinkConfiguration()['parameter.'])) {
             $pageId = (int)($this->linkService->resolve($event->getContentObjectRenderer()->parameters['href'] ?? '')['pageuid'] ?? 0);
