@@ -39,10 +39,11 @@ final class AfterPagePreviewUriGeneratedListener
             }
 
             $request = $GLOBALS['TYPO3_REQUEST'];
+            $request = $request->withAttribute('language', $site->getLanguageById($event->getLanguageId()));
             $request = $request->withAttribute('headless', new Headless($mode));
 
-            $this->urlUtility = $this->urlUtility->withRequest($request);
-            $event->setPreviewUri(new Uri($this->urlUtility->getFrontendUrlWithSite($event->getPreviewUri()->__toString(), $site)));
+            $urlUtility = $this->urlUtility->withRequest($request);
+            $event->setPreviewUri(new Uri($urlUtility->getFrontendUrlWithSite($event->getPreviewUri()->__toString(), $site)));
         } catch (SiteNotFoundException) {
         }
     }
