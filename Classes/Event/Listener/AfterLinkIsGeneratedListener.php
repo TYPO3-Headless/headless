@@ -33,7 +33,7 @@ final class AfterLinkIsGeneratedListener
         }
 
         $page = $result->getLinkConfiguration()['page'] ?? null;
-        if ($page != null && $page['doktype'] == PageRepository::DOKTYPE_SHORTCUT) {
+        if ($page != null && $page['doktype'] === PageRepository::DOKTYPE_SHORTCUT) {
             $pageId = $page['shortcut'];
         } else {
             $pageId = $result->getLinkConfiguration()['parameter'] ?? 0;
