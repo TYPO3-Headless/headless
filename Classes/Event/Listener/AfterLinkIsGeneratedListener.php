@@ -37,8 +37,10 @@ final class AfterLinkIsGeneratedListener
             $pageId = (int)($this->linkService->resolve($event->getContentObjectRenderer()->parameters['href'] ?? '')['pageuid'] ?? 0);
         }
 
+        $urlUtility = $this->urlUtility->withRequest($event->getContentObjectRenderer()->getRequest());
+
         if ($pageId) {
-            $href = $this->urlUtility->getFrontendUrlForPage(
+            $href = $urlUtility->getFrontendUrlForPage(
                 $event->getLinkResult()->getUrl(),
                 (int)$pageId
             );
@@ -46,7 +48,7 @@ final class AfterLinkIsGeneratedListener
             $site = $event->getContentObjectRenderer()->getRequest()->getAttribute('site');
 
             if (!$site instanceof NullSite) {
-                $href = $this->urlUtility->getFrontendUrlWithSite($event->getLinkResult()->getUrl(), $site);
+                $href = $urlUtility->getFrontendUrlWithSite($event->getLinkResult()->getUrl(), $site);
             }
         }
 

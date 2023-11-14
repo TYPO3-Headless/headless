@@ -21,6 +21,7 @@ use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Routing\SiteRouteResult;
+use TYPO3\CMS\Core\Site\Entity\NullSite;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -147,6 +148,19 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
 
         $handler = $this->prophesize(RequestHandler::class);
         $handler->handle($request)->willReturn(new JsonResponse(['nextMiddleware' => true]));
+
+        $response = $resolver->process($request, $handler->reveal());
+
+        self::assertSame(['ErrorController' => true], json_decode($response->getBody()->getContents(), true));
+
+        $uri = new Uri('https://www.typo3rocks.org/');
+
+        $request = new ServerRequest();
+        $request = $request->withUri($uri);
+        $request = $request->withAttribute('site', new NullSite());
+
+        $handler = $this->prophesize(RequestHandler::class);
+        $handler->handle($request)->willReturn(new JsonResponse(['ErrorController' => true]));
 
         $response = $resolver->process($request, $handler->reveal());
 

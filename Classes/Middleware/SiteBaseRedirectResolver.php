@@ -17,6 +17,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
+use TYPO3\CMS\Core\Site\Entity\NullSite;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class SiteBaseRedirectResolver extends \TYPO3\CMS\Frontend\Middleware\SiteBaseRedirectResolver
@@ -26,6 +27,11 @@ class SiteBaseRedirectResolver extends \TYPO3\CMS\Frontend\Middleware\SiteBaseRe
         $response = parent::process($request, $handler);
 
         $site = $request->getAttribute('site');
+
+        if ($site instanceof NullSite) {
+            return $response;
+        }
+
         $siteConf = $site->getConfiguration();
 
         if (!($siteConf['headless'] ?? false)) {
