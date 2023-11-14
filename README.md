@@ -70,6 +70,12 @@ Install extension using composer
 ## Documentation
 [Extension documentation](https://docs.typo3.org/p/friendsoftypo3/headless/main/en-us/Index.html)
 
+## How to start with TYPO3 Headless video tutorial
+
+Whether you are a developer, content manager, or a tech enthusiast, this tutorial is tailored to provide a comprehensive introduction to TYPO3 Headless, helping you to get started on your journey with confidence.
+
+[![video still](https://i.ytimg.com/vi/7MOwugAyHkY/hq720.jpg)](https://www.youtube.com/watch?v=7MOwugAyHkY)
+
 ## Configuration
 
 Since versions: `4.2` | `3.5` Flag `headless` is required to configure in site configuration!
