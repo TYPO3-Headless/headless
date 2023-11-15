@@ -38,16 +38,19 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private SiteFinder $siteFinder;
     private array $conf = [];
     private array $variants = [];
+    private HeadlessMode $headlessMode;
 
     public function __construct(
         ?Features $features = null,
         ?Resolver $resolver = null,
         ?SiteFinder $siteFinder = null,
-        ?ServerRequestInterface $serverRequest = null
+        ?ServerRequestInterface $serverRequest = null,
+        ?HeadlessMode $headlessMode = null
     ) {
         $this->features = $features ?? GeneralUtility::makeInstance(Features::class);
         $this->resolver = $resolver ?? GeneralUtility::makeInstance(Resolver::class, 'site', []);
         $this->siteFinder = $siteFinder ?? GeneralUtility::makeInstance(SiteFinder::class);
+        $this->headlessMode = $headlessMode ?? GeneralUtility::makeInstance(HeadlessMode::class);
         $request = $serverRequest ?? ($GLOBALS['TYPO3_REQUEST'] ?? null);
 
         if ($request instanceof ServerRequestInterface) {
@@ -72,18 +75,18 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
     public function getFrontendUrlWithSite($url, SiteInterface $site, string $returnField = 'frontendBase'): string
     {
-        if (!$this->features->isFeatureEnabled('headless.frontendUrls')) {
+        $this->handleSiteConfiguration($site, $this);
+
+        if (!$this->headlessMode->isEnabled()) {
             return $url;
         }
-
-        $configuration = $site->getConfiguration();
 
         try {
             $base = $site->getBase()->getHost();
             $port = $site->getBase()->getPort();
             $frontendBaseUrl = $this->resolveWithVariants(
-                $configuration[$returnField] ?? '',
-                $configuration['baseVariants'] ?? [],
+                $this->conf[$returnField] ?? '',
+                $this->variants,
                 $returnField
             );
 
@@ -119,10 +122,6 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     public function getFrontendUrlForPage(string $url, int $pageUid, string $returnField = 'frontendBase'): string
     {
         try {
-            if (!$this->features->isFeatureEnabled('headless.frontendUrls')) {
-                return $url;
-            }
-
             return $this->getFrontendUrlWithSite(
                 $url,
                 $this->siteFinder->getSiteByPageId($pageUid),
@@ -205,7 +204,6 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         string $returnField = 'frontendBase'
     ): string {
         $frontendUrl = rtrim($frontendUrl, '/');
-
         if ($variants === []) {
             return $frontendUrl;
         }
@@ -265,6 +263,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private function extractConfigurationFromRequest(ServerRequestInterface $request, HeadlessFrontendUrlInterface $object): HeadlessFrontendUrlInterface
     {
         $site = $request->getAttribute('site');
+
         if ($site instanceof Site) {
             $object->handleSiteConfiguration($site, $object);
         }
@@ -273,6 +272,8 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         if ($language instanceof SiteLanguage) {
             $object->handleLanguageConfiguration($language, $object);
         }
+
+        $object->headlessMode = $object->headlessMode->withRequest($request);
 
         return $object;
     }

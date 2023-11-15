@@ -11,9 +11,10 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass\Controller;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Http\ForwardResponse;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\FrontendLogin\Event\BeforeRedirectEvent;
 use TYPO3\CMS\FrontendLogin\Event\LoginConfirmedEvent;
 use TYPO3\CMS\FrontendLogin\Event\LoginErrorOccurredEvent;
@@ -120,8 +121,6 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
 
     private function isHeadlessEnabled(): bool
     {
-        $typoScriptSetup = $GLOBALS['TSFE'] instanceof TypoScriptFrontendController ? $GLOBALS['TSFE']->tmpl->setup : [];
-
-        return (bool)($typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'] ?? false);
+        return GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled();
     }
 }

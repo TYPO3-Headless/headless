@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Middleware;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -28,6 +29,12 @@ use function parse_url;
 class ShortcutAndMountPointRedirect implements MiddlewareInterface
 {
     private ?TypoScriptFrontendController $controller;
+    private HeadlessMode $headlessMode;
+
+    public function __construct(HeadlessMode $headlessMode)
+    {
+        $this->headlessMode = $headlessMode;
+    }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -121,17 +128,6 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface
 
     private function isHeadlessEnabled(ServerRequestInterface $request): bool
     {
-        /**
-         * @var Site
-         */
-        $site = $request->getAttribute('site');
-
-        if (!($site instanceof Site)) {
-            return false;
-        }
-
-        $siteConf = $request->getAttribute('site')->getConfiguration();
-
-        return $siteConf['headless'] ?? false;
+        return $this->headlessMode->withRequest($request)->isEnabled();
     }
 }

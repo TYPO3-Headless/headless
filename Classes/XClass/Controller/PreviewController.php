@@ -25,11 +25,6 @@ class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewControll
     protected function generateUrl(Site $site, int $pageUid, array $parameters): string
     {
         $url = (string)$site->getRouter()->generateUri($pageUid, $parameters);
-
-        if ($site->getConfiguration()['headless'] ?? false) {
-            return GeneralUtility::makeInstance(UrlUtility::class)->getFrontendUrlForPage($url, $pageUid);
-        }
-
-        return $url;
+        return GeneralUtility::makeInstance(UrlUtility::class)->getFrontendUrlForPage($url, $pageUid);
     }
 }

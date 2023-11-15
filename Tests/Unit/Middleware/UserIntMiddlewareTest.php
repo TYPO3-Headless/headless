@@ -12,12 +12,12 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Test\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\UserIntMiddleware;
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
-use TYPO3\CMS\Core\TypoScript\TemplateService;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Http\RequestHandler;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -30,10 +30,11 @@ class UserIntMiddlewareTest extends UnitTestCase
      */
     public function processTest()
     {
-        $middleware = new UserIntMiddleware(new HeadlessUserInt());
+        $middleware = new UserIntMiddleware(new HeadlessUserInt(), new HeadlessMode());
 
         $request = new ServerRequest();
-        $request = $request->withAttribute('frontend.controller', $this->getTsfeProphecy()->reveal());
+
+        $request = $request->withAttribute('headless', new Headless(HeadlessMode::FULL));
 
         $intScript = '<!--INT_SCRIPT.d53df2a300e62171a7b4882c4b88a153-->';
         $responseString = HeadlessUserInt::NESTED . '_START<<' . $intScript . '>>' . HeadlessUserInt::NESTED . '_END';
@@ -47,10 +48,10 @@ class UserIntMiddlewareTest extends UnitTestCase
             )->getBody()->__toString()
         );
 
-        $middleware = new UserIntMiddleware(new HeadlessUserInt());
+        $middleware = new UserIntMiddleware(new HeadlessUserInt(), new HeadlessMode());
 
         $request = new ServerRequest();
-        $request = $request->withAttribute('frontend.controller', $this->getTsfeProphecy('0')->reveal());
+        $request = $request->withAttribute('headless', new Headless());
 
         self::assertEquals(
             $responseString,
@@ -60,12 +61,13 @@ class UserIntMiddlewareTest extends UnitTestCase
             )->getBody()->__toString()
         );
 
-        $GLOBALS['TSFE'] = $this->getTsfeProphecy('0')->reveal();
+        $request = new ServerRequest();
+        $request = $request->withAttribute('headless', new Headless());
 
         self::assertEquals(
             $responseString,
             $middleware->process(
-                new ServerRequest(),
+                $request,
                 $this->getMockHandlerWithResponse($response)
             )->getBody()->__toString()
         );
@@ -76,19 +78,5 @@ class UserIntMiddlewareTest extends UnitTestCase
         $handler = $this->createPartialMock(RequestHandler::class, ['handle']);
         $handler->method('handle')->willReturn($response);
         return $handler;
-    }
-
-    protected function getTsfeProphecy(string $staticTemplate = '1')
-    {
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = $staticTemplate;
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
-        $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
-        return $tsfe;
     }
 }

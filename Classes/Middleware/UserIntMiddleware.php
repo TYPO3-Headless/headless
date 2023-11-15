@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Middleware;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -18,37 +19,25 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 class UserIntMiddleware implements MiddlewareInterface
 {
-    /**
-     * @var TypoScriptFrontendController
-     */
-    private $tsfe;
-    /**
-     * @var HeadlessUserInt
-     */
-    private $headlessUserInt;
+    private HeadlessUserInt $headlessUserInt;
+    private HeadlessMode $headlessMode;
 
     public function __construct(
-        HeadlessUserInt $headlessUserInt = null
+        HeadlessUserInt $headlessUserInt = null,
+        HeadlessMode $headlessMode
     ) {
         $this->headlessUserInt = $headlessUserInt ?? GeneralUtility::makeInstance(HeadlessUserInt::class);
+        $this->headlessMode = $headlessMode;
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = $handler->handle($request);
 
-        $this->tsfe = $request->getAttribute('frontend.controller');
-        if ($this->tsfe === null && isset($GLOBALS['TSFE'])) {
-            $this->tsfe = $GLOBALS['TSFE'];
-        }
-
-        if (!isset($this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'])
-            || (bool)$this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'] === false
-        ) {
+        if (!$this->headlessMode->withRequest($request)->isEnabled()) {
             return $response;
         }
 

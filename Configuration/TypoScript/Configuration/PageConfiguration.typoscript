@@ -1,5 +1,7 @@
+page >
 page = PAGE
 page {
+    dataProcessing >
     typeNum = 0
     config {
         no_cache = 0

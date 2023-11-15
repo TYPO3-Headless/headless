@@ -8,6 +8,7 @@
  */
 
 declare(strict_types=1);
+
 use FriendsOfTYPO3\Headless\Seo\XmlSitemap\XmlSitemapRenderer;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;

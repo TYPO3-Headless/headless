@@ -11,7 +11,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Hooks;
 
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Typolink\LinkResultInterface;
 use TYPO3\CMS\Frontend\Typolink\UnableToLinkException;
 
@@ -26,14 +27,9 @@ class FileOrFolderLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\FileOrFolderL
      */
     public function build(array &$linkDetails, string $linkText, string $target, array $conf): LinkResultInterface
     {
-        $setup = ($GLOBALS['TSFE'] ?? null) instanceof TypoScriptFrontendController ? $GLOBALS['TSFE']->tmpl->setup : null;
+        $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
 
-        if (
-            array_key_exists('type', $linkDetails)
-            && $linkDetails['type'] === 'file'
-            && isset($setup['plugin.']['tx_headless.']['staticTemplate'])
-            && (bool)$setup['plugin.']['tx_headless.']['staticTemplate'] === true
-        ) {
+        if ($headlessMode->isEnabled()) {
             $conf['forceAbsoluteUrl'] = 1;
         }
 

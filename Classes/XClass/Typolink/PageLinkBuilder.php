@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass\Typolink;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Core\Http\Uri;
@@ -79,12 +80,16 @@ class PageLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\PageLinkBuilder
             $uri = (new Uri())->withFragment($fragment);
         } else {
             try {
-                $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withSite($siteOfTargetPage);
-                $frontendBaseUrl = $urlUtility->getFrontendUrl();
+                $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
 
-                if ($frontendBaseUrl !== '') {
-                    $parsedFrontendBase = parse_url($frontendBaseUrl);
-                    $queryParameters['_frontendHost'] = $parsedFrontendBase['host'] ?? '';
+                if ($headlessMode->isEnabled()) {
+                    $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withSite($siteOfTargetPage);
+                    $frontendBaseUrl = $urlUtility->getFrontendUrl();
+
+                    if ($frontendBaseUrl !== '') {
+                        $parsedFrontendBase = parse_url($frontendBaseUrl);
+                        $queryParameters['_frontendHost'] = $parsedFrontendBase['host'] ?? '';
+                    }
                 }
 
                 $uri = $siteOfTargetPage->getRouter()->generateUri(

@@ -10,10 +10,3 @@ initialData.10.fields.user.fields {
     logged = BOOL
     logged.value = 0
 }
-
-[frontend.user.isLoggedIn]
-    initialData.10.fields.user.fields {
-        logged = BOOL
-        logged.value = 1
-    }
-[global]
