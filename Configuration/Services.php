@@ -77,12 +77,15 @@ return static function (ContainerConfigurator $configurator): void {
         'event.listener',
         ['identifier' => 'headless/AfterLinkIsGenerated']
     );
-    $services->set(AfterCacheableContentIsGeneratedListener::class)->tag(
-        'event.listener',
-        ['identifier' => 'headless/AfterCacheableContentIsGenerated']
-    );
 
     $features = GeneralUtility::makeInstance(Features::class);
+
+    if ($features->isFeatureEnabled('headless.pageTitleProviders')) {
+        $services->set(AfterCacheableContentIsGeneratedListener::class)->tag(
+            'event.listener',
+            ['identifier' => 'headless/AfterCacheableContentIsGenerated']
+        );
+    }
 
     if ($feloginInstalled) {
         $services->set(LoginConfirmedEventListener::class)->tag(
