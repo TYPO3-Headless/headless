@@ -178,6 +178,23 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      */
     protected function prepareGalleryData()
     {
+        $formats = $this->processorConfiguration['formats.'] ?? [];
+
+        // Legacy workaround
+        $autogenerateConfig = $this->processorConfiguration['autogenerate.'] ?? null;
+        if ($autogenerateConfig) {
+            if (($autogenerateConfig['retina2x'] ?? 0) == 1) {
+                $formats['urlRetina'] = [
+                    'factor' => FileUtility::RETINA_RATIO,
+                ];
+            }
+            if (($autogenerateConfig['lqip'] ?? 0) == 1) {
+                $formats['urlLqip'] = [
+                    'factor' => FileUtility::LQIP_RATIO,
+                ];
+            }
+        }
+
         for ($row = 1; $row <= $this->galleryData['count']['rows']; $row++) {
             for ($column = 1; $column <= $this->galleryData['count']['columns']; $column++) {
                 $fileKey = (($row - 1) * $this->galleryData['count']['columns']) + $column - 1;
@@ -186,29 +203,34 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 if ($fileObj) {
                     if ($fileObj['properties']['type'] === 'image') {
                         $image = $this->getImageService()->getImage((string)$fileObj['properties']['fileReferenceUid'], null, true);
-                        $fileObj = $this->getFileUtility()->processFile($image, $this->mediaDimensions[$fileKey] ?? []);
 
-                        if (isset($this->processorConfiguration['autogenerate.']['retina2x'],
-                            $fileObj['properties']['dimensions']['width']) &&
-                            (int)$this->processorConfiguration['autogenerate.']['retina2x'] === 1) {
-                            $fileObj['urlRetina'] = $this->getFileUtility()->processFile(
+                        // 1. render image as usual
+                        $fileObj = $this->getFileUtility()->processFile(
+                            $image,
+                            array_merge(
+                                ['fileExtension' => $this->processorConfiguration['fileExtension'] ?? null],
+                                $this->mediaDimensions[$fileKey] ?? []
+                            )
+                        );
+
+                        // 2. render additional formats
+                        $originalWidth = $image->getProperty('width');
+                        $originalHeight = $image->getProperty('height');
+                        $targetWidth = $fileObj['properties']['dimensions']['width'];
+                        $targetHeight = $fileObj['properties']['dimensions']['height'];
+                        foreach ($formats ?? [] as $formatKey => $formatConf) {
+                            $formatKey = rtrim($formatKey, '.');
+                            $factor = (float)($formatConf['factor'] ?? 1.0);
+
+                            $fileObj[$formatKey] = $this->getFileUtility()->processFile(
                                 $image,
                                 [
-                                    'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::RETINA_RATIO,
-                                    'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::RETINA_RATIO,
+                                    'fileExtension' => $formatConf['fileExtension'] ?? null,
+                                    // multiply width/height by factor,
+                                    // but don't stretch image beyond its original dimensions!
+                                    'width' => min($targetWidth * $factor, $originalWidth),
+                                    'height' => min($targetHeight * $factor, $originalHeight),
                                 ]
-                            )['publicUrl'];
-                        }
-
-                        if (isset($this->processorConfiguration['autogenerate.']['lqip'],
-                            $fileObj['properties']['dimensions']['width']) &&
-                                (int)$this->processorConfiguration['autogenerate.']['lqip'] === 1) {
-                            $fileObj['urlLqip'] = $this->getFileUtility()->processFile(
-                                $image,
-                                [
-                                        'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::LQIP_RATIO,
-                                        'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::LQIP_RATIO,
-                                    ]
                             )['publicUrl'];
                         }
                     }
