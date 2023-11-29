@@ -97,7 +97,7 @@ class FileUtility
             'linkData' => $linkData ?? null,
         ];
 
-        if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
+        if ($fileRenderer === null && GeneralUtility::inList($GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'], $fileReference->getExtension())) {
             if (!$delayProcessing && $fileReference->getMimeType() !== 'image/svg+xml') {
                 $fileReference = $this->processImageFile($fileReference, $arguments, $cropVariant);
             }
