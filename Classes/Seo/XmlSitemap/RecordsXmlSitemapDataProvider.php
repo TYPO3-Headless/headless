@@ -34,7 +34,7 @@ class RecordsXmlSitemapDataProvider extends \TYPO3\CMS\Seo\XmlSitemap\RecordsXml
         $typoLinkConfig = [
             'parameter' => $pageId,
             'additionalParams' => $additionalParamsString ? '&' . $additionalParamsString : '',
-            'forceAbsoluteUrl' => 0,
+            'forceAbsoluteUrl' => 1,
         ];
 
         $data['loc'] = $this->cObj->typoLink_URL($typoLinkConfig);

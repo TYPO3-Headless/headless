@@ -20,7 +20,7 @@ class PagesXmlSitemapDataProvider extends \TYPO3\CMS\Seo\XmlSitemap\PagesXmlSite
     {
         $typoLinkConfig = [
             'parameter' => $data['uid'],
-            'forceAbsoluteUrl' => 0,
+            'forceAbsoluteUrl' => 1,
         ];
 
         $data['loc'] = $this->cObj->typoLink_URL($typoLinkConfig);
