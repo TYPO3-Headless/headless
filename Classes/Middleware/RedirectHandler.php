@@ -40,9 +40,11 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
         ResponseFactoryInterface $responseFactory,
         LoggerInterface $logger,
         HeadlessFrontendUrlInterface $urlUtility,
+        HeadlessMode $headlessMode
     ) {
         parent::__construct($redirectService, $eventDispatcher, $responseFactory, $logger);
         $this->urlUtility = $urlUtility;
+        $this->headlessMode = $headlessMode;
     }
 
     /**
