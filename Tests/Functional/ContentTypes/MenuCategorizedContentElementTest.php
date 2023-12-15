@@ -38,21 +38,17 @@ class MenuCategorizedContentElementTest extends BaseContentTypeTest
         self::assertIsArray($contentElement['content']['menu'][1]);
 
         $firstCategorizedContentElement = $contentElement['content']['menu'][0];
-        self::assertEquals('17', $firstCategorizedContentElement['uid']);
-        self::assertEquals('1', $firstCategorizedContentElement['pid']);
-        self::assertEquals('1', $firstCategorizedContentElement['sorting']);
-        self::assertEquals('header', $firstCategorizedContentElement['CType']);
-        self::assertEquals('default', $firstCategorizedContentElement['frame_class']);
+        self::assertEquals('17', $firstCategorizedContentElement['id']);
+        self::assertEquals('header', $firstCategorizedContentElement['type']);
+        self::assertEquals('default', $firstCategorizedContentElement['appearance']['frameClass']);
         self::assertEquals('1', $firstCategorizedContentElement['colPos']);
-        self::assertEquals('3', $firstCategorizedContentElement['categories']);
+        self::assertEquals('SysCategory3Title', $firstCategorizedContentElement['categories']);
 
         $secondCategorizedContentElement = $contentElement['content']['menu'][1];
-        self::assertEquals('18', $secondCategorizedContentElement['uid']);
-        self::assertEquals('1', $secondCategorizedContentElement['pid']);
-        self::assertEquals('1', $secondCategorizedContentElement['sorting']);
-        self::assertEquals('textpic', $secondCategorizedContentElement['CType']);
-        self::assertEquals('default', $secondCategorizedContentElement['frame_class']);
+        self::assertEquals('18', $secondCategorizedContentElement['id']);
+        self::assertEquals('textpic', $secondCategorizedContentElement['type']);
+        self::assertEquals('default', $secondCategorizedContentElement['appearance']['frameClass']);
         self::assertEquals('1', $secondCategorizedContentElement['colPos']);
-        self::assertEquals('3', $secondCategorizedContentElement['categories']);
+        self::assertEquals('SysCategory3Title', $secondCategorizedContentElement['categories']);
     }
 }
