@@ -40,6 +40,21 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *           }
  *       }
  *   }
+ *  Example usage (get categories by comma-separated-list of category ids from custom pid):
+ *
+ *    categories = JSON
+ *    categories {
+ *        dataProcessing {
+ *            10 = headless-categories
+ *            10 {
+ *                categoryIdList = 1,3,5
+ *                pidInList = leveluid:0
+ *                recursive = 250
+ *
+ *                as = categories
+ *            }
+ *        }
+ *    }
  *
  * @codeCoverageIgnore
  **/
@@ -66,7 +81,8 @@ class CategoriesProcessor implements DataProcessorInterface
         }
 
         $defaultQueryConfig = [
-            'pidInList' => 'root',
+            'pidInList' => (string)$cObj->stdWrapValue('pidInList', $processorConfiguration, 'root'),
+            'recursive' => (string)$cObj->stdWrapValue('recursive', $processorConfiguration, '0'),
             'selectFields' => '{#sys_category}.{#uid} AS id, {#sys_category}.{#title}',
         ];
         $queryConfig = [];
