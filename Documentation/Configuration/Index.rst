@@ -124,6 +124,15 @@ To enable headless support for `EXT:workspaces` please also add to you site(s) c
 
    headless: true
 
+**headless.pageTitleProviders**
+
+Enable support for PageTitle API
+
+.. code-block:: php
+
+   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.pageTitleProviders'] = true;
+
+
 **Availability of feature toggles by version**
 
 .. t3-field-list-table::
@@ -132,42 +141,57 @@ To enable headless support for `EXT:workspaces` please also add to you site(s) c
    -  :Header1:   Flag
       :Header2:   2.x
       :Header3:   3.x
+      :Header3:   4.x
 
    -  :Header1:   FrontendBaseUrlInPagePreview
       :Header2:   available
       :Header3:   removed
+      :Header4:   removed
 
    -  :Header1:   headless.frontendUrls
       :Header2:   >= 2.5
       :Header3:   available
+      :Header4:   removed
 
    -  :Header1:   headless.storageProxy
       :Header2:   >= 2.4
       :Header3:   available
+      :Header4:   available
 
    -  :Header1:   headless.redirectMiddlewares
       :Header2:   >= 2.5
       :Header3:   available
+      :Header4:   available
 
    -  :Header1:   headless.nextMajor
       :Header2:   >= 2.2
       :Header3:   currently not used
+      :Header4:   currently not used
 
    -  :Header1:   headless.elementBodyResponse
       :Header2:   >= 2.6
       :Header3:   available
+      :Header4:   available
 
    -  :Header1:   headless.simplifiedLinkTarget
       :Header2:   >= 2.6
       :Header3:   removed
+      :Header4:   not available
 
    -  :Header1:   headless.jsonViewModule
       :Header2:   not available
       :Header3:   >= 3.0
+      :Header4:   >= 3.0
 
    -  :Header1:   headless.workspaces
       :Header2:   not available
       :Header3:   >= 3.1
+      :Header4:   >= 3.1
+
+   -  :Header1:   headless.pageTitleProviders
+      :Header2:   not available
+      :Header3:   not available
+      :Header4:   >= 4.2.3
 
 .. _configuration-ext-form:
 

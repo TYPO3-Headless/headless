@@ -29,8 +29,7 @@
   "require": {
     "ext-json": "*",
     "typo3/cms-core": "^12.4",
-    "typo3/cms-install": "^12.4",
-    "typo3/coding-standards": "dev-main"
+    "typo3/cms-install": "^12.4"
   },
   "require-dev": {
     "ergebnis/composer-normalize": "^2.15.0",
@@ -46,7 +45,8 @@
     "seld/jsonlint": "^1.8",
     "symfony/yaml": "^6.1",
     "typo3/cms-form": "^12.4",
-    "typo3/testing-framework": "^7.0"
+    "typo3/testing-framework": "^7.0",
+    "typo3/coding-standards": "^0.7.1"
   },
   "conflict": {
     "typo3/cms-core": "<12.4.3"

@@ -62,12 +62,16 @@ class FileUtility
     }
 
     /**
-     * @param array<string,mixed> $dimensions
+     * @param FileInterface $fileReference
+     * @param array<string,mixed> $arguments
+     * @param string $cropVariant
+     * @param bool $delayProcessing
+     *
      * @return array<string, mixed>
      */
     public function processFile(
         FileInterface $fileReference,
-        array $dimensions = [],
+        array $arguments = [],
         string $cropVariant = 'default',
         bool $delayProcessing = false
     ): array {
@@ -95,7 +99,7 @@ class FileUtility
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
             if (!$delayProcessing && $fileReference->getMimeType() !== 'image/svg+xml') {
-                $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
+                $fileReference = $this->processImageFile($fileReference, $arguments, $cropVariant);
             }
             $publicUrl = $this->imageService->getImageUri($fileReference, true);
         } elseif ($fileRenderer !== null) {
@@ -155,10 +159,17 @@ class FileUtility
     }
 
     /**
+     * @param FileInterface $image
      * @param array<string, mixed> $arguments
+     * @param string $cropVariant
+     *
+     * @return ProcessedFile
      */
-    public function processImageFile(FileInterface $image, array $arguments = [], string $cropVariant = 'default'): ProcessedFile
-    {
+    public function processImageFile(
+        FileInterface $image,
+        array $arguments = [],
+        string $cropVariant = 'default'
+    ): ProcessedFile {
         try {
             $properties = $image->getProperties();
             $cropVariantCollection = $this->createCropVariant((string)$image->getProperty('crop'));

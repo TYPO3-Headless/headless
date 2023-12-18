@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Middleware;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -22,7 +23,6 @@ use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Routing\PageArguments;
-use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\ErrorController;
 
@@ -34,6 +34,9 @@ use function parse_url;
 class ShortcutAndMountPointRedirect implements MiddlewareInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
+
+    public function __construct(private readonly HeadlessMode $headlessMode) {}
+
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $queryParams = $request->getQueryParams();
@@ -137,17 +140,6 @@ class ShortcutAndMountPointRedirect implements MiddlewareInterface, LoggerAwareI
 
     private function isHeadlessEnabled(ServerRequestInterface $request): bool
     {
-        /**
-         * @var Site
-         */
-        $site = $request->getAttribute('site');
-
-        if (!($site instanceof Site)) {
-            return false;
-        }
-
-        $siteConf = $request->getAttribute('site')->getConfiguration();
-
-        return $siteConf['headless'] ?? false;
+        return $this->headlessMode->withRequest($request)->isEnabled();
     }
 }

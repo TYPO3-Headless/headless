@@ -55,6 +55,24 @@
             <trans-unit id="siteBaseVariant.columns.frontendFileApi.description" resname="siteBaseVariant.columns.frontendFileApi.description">
                 <source>Main URL to for proxy API files</source>
             </trans-unit>
+            <trans-unit approved="yes" id="site.columns.headless.label">
+                <source>Headless mode</source>
+            </trans-unit>
+            <trans-unit approved="yes" id="site.columns.headless.description">
+                <source>How site should behave in headless context</source>
+            </trans-unit>
+            <trans-unit approved="yes" id="mode">
+                <source>Headless mode</source>
+            </trans-unit>
+            <trans-unit approved="yes" id="site.headless.none">
+                <source>Headless disabled</source>
+            </trans-unit>
+            <trans-unit approved="yes" id="site.headless.full">
+                <source>Full headless mode</source>
+            </trans-unit>
+            <trans-unit approved="yes" id="site.headless.mixed">
+                <source>Mixed headless/fluid mode</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

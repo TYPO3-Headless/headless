@@ -15,6 +15,7 @@ use FriendsOfTYPO3\Headless\Form\CustomOptionsInterface;
 use FriendsOfTYPO3\Headless\Form\Decorator\DefinitionDecoratorInterface;
 use FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator;
 use FriendsOfTYPO3\Headless\Form\Translator;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\XClass\FormRuntime;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
@@ -23,7 +24,6 @@ use TYPO3\CMS\Extbase\Error\Error;
 use TYPO3\CMS\Extbase\Security\Cryptography\HashService;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 use function array_merge;
 use function array_pop;
@@ -62,11 +62,9 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      */
     public function renderAction(): ResponseInterface
     {
-        // check if headless not loaded & call original method in case of fluid configuration
-        $typoScriptSetup = $GLOBALS['TSFE'] instanceof TypoScriptFrontendController ? $GLOBALS['TSFE']->tmpl->setup : [];
-        if (!isset($typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'])
-            || (bool)$typoScriptSetup['plugin.']['tx_headless.']['staticTemplate'] === false
-        ) {
+        $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class);
+
+        if (!$headlessMode->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
             return parent::renderAction();
         }
 

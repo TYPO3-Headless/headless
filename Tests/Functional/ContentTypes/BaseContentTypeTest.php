@@ -54,12 +54,12 @@ abstract class BaseContentTypeTest extends BaseTest
         self::assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
     }
 
-    protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target)
+    protected function checkHeaderFieldsLink($contentElement, $linkText, $urlPrefix, $target)
     {
         $contentElementHeaderFieldsLink = $contentElement['content']['headerLink'];
 
         self::assertIsArray($contentElementHeaderFieldsLink, 'headerLink not an array');
-        self::assertEquals($link, $contentElementHeaderFieldsLink['linkText'], 'link mismatch');
+        self::assertEquals($linkText, $contentElementHeaderFieldsLink['linkText'], 'linkText mismatch');
         self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['href'], 'url mismatch');
         self::assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
     }

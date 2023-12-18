@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\SiteBaseRedirectResolver;
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -21,6 +23,7 @@ use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Routing\SiteRouteResult;
+use TYPO3\CMS\Core\Site\Entity\NullSite;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -66,7 +69,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
 
         GeneralUtility::setContainer($container);
 
-        $resolver = new SiteBaseRedirectResolver();
+        $resolver = new SiteBaseRedirectResolver(new HeadlessMode());
 
         $request = new ServerRequest();
         $request = $request->withAttribute('site', $site);
@@ -75,6 +78,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
 
         $request = $request->withUri($uri);
         $request = $request->withAttribute('routing', new SiteRouteResult($uri, $site));
+        $request = $request->withAttribute('headless', new Headless(HeadlessMode::FULL));
 
         $response = $resolver->process($request, $this->prophesize(RequestHandler::class)->reveal());
 
@@ -147,6 +151,19 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
 
         $handler = $this->prophesize(RequestHandler::class);
         $handler->handle($request)->willReturn(new JsonResponse(['nextMiddleware' => true]));
+
+        $response = $resolver->process($request, $handler->reveal());
+
+        self::assertSame(['ErrorController' => true], json_decode($response->getBody()->getContents(), true));
+
+        $uri = new Uri('https://www.typo3rocks.org/');
+
+        $request = new ServerRequest();
+        $request = $request->withUri($uri);
+        $request = $request->withAttribute('site', new NullSite());
+
+        $handler = $this->prophesize(RequestHandler::class);
+        $handler->handle($request)->willReturn(new JsonResponse(['ErrorController' => true]));
 
         $response = $resolver->process($request, $handler->reveal());
 

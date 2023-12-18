@@ -11,24 +11,31 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Middleware;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
+use TYPO3\CMS\Core\Site\Entity\NullSite;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class SiteBaseRedirectResolver extends \TYPO3\CMS\Frontend\Middleware\SiteBaseRedirectResolver
 {
+    public function __construct(private readonly HeadlessMode $headlessMode) {}
+
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = parent::process($request, $handler);
 
         $site = $request->getAttribute('site');
-        $siteConf = $site->getConfiguration();
 
-        if (!($siteConf['headless'] ?? false)) {
+        if ($site instanceof NullSite) {
+            return $response;
+        }
+
+        if (!$this->headlessMode->withRequest($request)->isEnabled()) {
             return $response;
         }
 

@@ -21,7 +21,6 @@ lib.contentElementWithHeader {
                 }
                 headerLink = TEXT
                 headerLink {
-                    field = header_link
                     htmlSpecialChars = 1
                     typolink {
                         parameter {

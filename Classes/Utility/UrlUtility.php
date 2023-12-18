@@ -38,16 +38,19 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private SiteFinder $siteFinder;
     private array $conf = [];
     private array $variants = [];
+    private HeadlessMode $headlessMode;
 
     public function __construct(
         ?Features $features = null,
         ?Resolver $resolver = null,
         ?SiteFinder $siteFinder = null,
-        ?ServerRequestInterface $serverRequest = null
+        ?ServerRequestInterface $serverRequest = null,
+        ?HeadlessMode $headlessMode = null
     ) {
         $this->features = $features ?? GeneralUtility::makeInstance(Features::class);
         $this->resolver = $resolver ?? GeneralUtility::makeInstance(Resolver::class, 'site', []);
         $this->siteFinder = $siteFinder ?? GeneralUtility::makeInstance(SiteFinder::class);
+        $this->headlessMode = $headlessMode ?? GeneralUtility::makeInstance(HeadlessMode::class);
         $request = $serverRequest ?? ($GLOBALS['TYPO3_REQUEST'] ?? null);
 
         if ($request instanceof ServerRequestInterface) {
@@ -72,9 +75,9 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
     public function getFrontendUrlWithSite($url, SiteInterface $site, string $returnField = 'frontendBase'): string
     {
-        $configuration = $site->getConfiguration();
+        $this->handleSiteConfiguration($site, $this);
 
-        if (!($configuration['headless'] ?? false)) {
+        if (!$this->headlessMode->isEnabled()) {
             return $url;
         }
 
@@ -82,8 +85,8 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             $base = $site->getBase()->getHost();
             $port = $site->getBase()->getPort();
             $frontendBaseUrl = $this->resolveWithVariants(
-                $configuration[$returnField] ?? '',
-                $configuration['baseVariants'] ?? [],
+                $this->conf[$returnField] ?? '',
+                $this->variants,
                 $returnField
             );
 
@@ -260,6 +263,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private function extractConfigurationFromRequest(ServerRequestInterface $request, HeadlessFrontendUrlInterface $object): HeadlessFrontendUrlInterface
     {
         $site = $request->getAttribute('site');
+
         if ($site instanceof Site) {
             $object->handleSiteConfiguration($site, $object);
         }
@@ -268,6 +272,8 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         if ($language instanceof SiteLanguage) {
             $object->handleLanguageConfiguration($language, $object);
         }
+
+        $object->headlessMode = $object->headlessMode->withRequest($request);
 
         return $object;
     }

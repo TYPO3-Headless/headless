@@ -76,11 +76,14 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $urlUtility->getFrontendUrlForPage(Argument::is('/'), Argument::is(2))->willReturn('https://frontend-domain.tld/page');
         $urlUtility->getFrontendUrlWithSite(Argument::is('/'), Argument::any())->willReturn('https://frontend-domain.tld/page');
 
-        $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $this->prophesize(LinkService::class)->reveal());
-
         $site = new Site('test', 1, []);
         $cObj = $this->prophesize(ContentObjectRenderer::class);
-        $cObj->getRequest()->willReturn((new ServerRequest())->withAttribute('site', $site));
+        $request = (new ServerRequest())->withAttribute('site', $site);
+        $cObj->getRequest()->willReturn($request);
+
+        $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
+
+        $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $this->prophesize(LinkService::class)->reveal());
 
         $linkResult = new LinkResult('page', '/');
         $linkResult = $linkResult->withLinkText('t3://page?uid=2');
@@ -101,11 +104,13 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $urlUtility = $this->prophesize(UrlUtility::class);
         $urlUtility->getFrontendUrlWithSite(Argument::is('/'), Argument::is($site))->willReturn('https://front.typo3.tld');
 
-        $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $this->prophesize(LinkService::class)->reveal());
-
         $cObj = $this->prophesize(ContentObjectRenderer::class);
-        $cObj->getRequest()->willReturn((new ServerRequest())->withAttribute('site', $site));
+        $request = (new ServerRequest())->withAttribute('site', $site);
+        $cObj->getRequest()->willReturn($request);
 
+        $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
+
+        $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $this->prophesize(LinkService::class)->reveal());
         $linkResult = new LinkResult('page', '/');
         $linkResult = $linkResult->withLinkText('|');
 
@@ -128,11 +133,13 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $linkService = $this->prophesize(LinkService::class);
         $linkService->resolve(Argument::any())->willReturn(['pageuid' => 5]);
 
-        $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $linkService->reveal());
-
         $cObj = $this->prophesize(ContentObjectRenderer::class);
-        $cObj->getRequest()->willReturn((new ServerRequest())->withAttribute('site', $site));
+        $request = (new ServerRequest())->withAttribute('site', $site);
+        $cObj->getRequest()->willReturn($request);
 
+        $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
+
+        $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $linkService->reveal());
         $linkResult = new LinkResult('page', '/');
         $linkResult = $linkResult->withLinkConfiguration(['parameter.' => ['data' => 'parameters:href']]);
         $linkResult = $linkResult->withLinkText('|');

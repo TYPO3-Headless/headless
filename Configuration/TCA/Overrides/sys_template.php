@@ -20,4 +20,13 @@ call_user_func(static function () {
         'Configuration/TypoScript',
         'Headless'
     );
+
+    /**
+     * Mixed-Mode TypoScript for Headless
+     */
+    ExtensionManagementUtility::addStaticFile(
+        'headless',
+        'Configuration/TypoScript/Mixed',
+        'Headless - Mixed mode JSON response'
+    );
 });
