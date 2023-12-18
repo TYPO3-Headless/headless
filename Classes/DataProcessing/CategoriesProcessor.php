@@ -88,7 +88,7 @@ class CategoriesProcessor implements DataProcessorInterface
         $queryConfig = [];
 
         $uidInList = (string)$cObj->stdWrapValue('uidInList', $processorConfiguration, '');
-        if (empty($uidInList) === false) {
+        if (!empty($uidInList)) {
             $queryConfig = [
                 'uidInList' => $uidInList,
                 'languageField' => 0,
