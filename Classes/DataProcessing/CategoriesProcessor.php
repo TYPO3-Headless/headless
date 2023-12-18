@@ -15,33 +15,34 @@ use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 
-/*
+/**
  * Example usage (get categories by relation field):
-    categories = JSON
-    categories {
-        dataProcessing {
-            10 = headless-categories
-            10 {
-                relation.fieldName = categories
-
-                as = categories
-            }
-        }
-    }
+ *  categories = JSON
+ *  categories {
+ *      dataProcessing {
+ *          10 = headless-categories
+ *          10 {
+ *              relation.fieldName = categories
+ *              as = categories
+ *          }
+ *      }
+ *  }
  * Example usage (get categories by comma-separated-list of category ids):
-
-    categories = JSON
-    categories {
-        dataProcessing {
-            10 = headless-categories
-            10 {
-                categoryIdList = 1,3,5
-
-                as = categories
-            }
-        }
-    }
- */
+ *
+ *   categories = JSON
+ *   categories {
+ *       dataProcessing {
+ *           10 = headless-categories
+ *           10 {
+ *               categoryIdList = 1,3,5
+ *
+ *               as = categories
+ *           }
+ *       }
+ *   }
+ *
+ * @codeCoverageIgnore
+ **/
 
 class CategoriesProcessor implements DataProcessorInterface
 {
