@@ -34,7 +34,7 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *       dataProcessing {
  *           10 = headless-categories
  *           10 {
- *               categoryIdList = 1,3,5
+ *               uidInList = 1,3,5
  *
  *               as = categories
  *           }
@@ -47,7 +47,7 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *        dataProcessing {
  *            10 = headless-categories
  *            10 {
- *                categoryIdList = 1,3,5
+ *                uidInList = 1,3,5
  *                pidInList = leveluid:0
  *                recursive = 250
  *
@@ -87,10 +87,10 @@ class CategoriesProcessor implements DataProcessorInterface
         ];
         $queryConfig = [];
 
-        $categoryIdList = (string)$cObj->stdWrapValue('categoryIdList', $processorConfiguration, '');
-        if (empty($categoryIdList) === false) {
+        $uidInList = (string)$cObj->stdWrapValue('uidInList', $processorConfiguration, '');
+        if (empty($uidInList) === false) {
             $queryConfig = [
-                'where' => '{#sys_category.uid} IN (' . $categoryIdList . ')',
+                'uidInList' => $uidInList,
                 'languageField' => 0,
             ];
         }
