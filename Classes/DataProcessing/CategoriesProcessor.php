@@ -43,7 +43,6 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *
  * @codeCoverageIgnore
  **/
-
 class CategoriesProcessor implements DataProcessorInterface
 {
     /**
