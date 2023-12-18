@@ -30,6 +30,7 @@ return (static function (): array {
             'headless/mode-setter' => [
                 'before' => [
                     'typo3/cms-frontend/base-redirect-resolver',
+                    'headless/cms-redirects/redirecthandler',
                 ],
                 'target' => HeadlessModeSetter::class,
             ],

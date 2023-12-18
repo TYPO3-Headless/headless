@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\SiteBaseRedirectResolver;
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -67,7 +69,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
 
         GeneralUtility::setContainer($container);
 
-        $resolver = new SiteBaseRedirectResolver();
+        $resolver = new SiteBaseRedirectResolver(new HeadlessMode());
 
         $request = new ServerRequest();
         $request = $request->withAttribute('site', $site);
@@ -76,6 +78,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
 
         $request = $request->withUri($uri);
         $request = $request->withAttribute('routing', new SiteRouteResult($uri, $site));
+        $request = $request->withAttribute('headless', new Headless(HeadlessMode::FULL));
 
         $response = $resolver->process($request, $this->prophesize(RequestHandler::class)->reveal());
 
