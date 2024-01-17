@@ -44,7 +44,7 @@ jobs:
       - name: "Show Composer version"
         run: composer --version
       - name: "Cache dependencies installed with composer"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: "php${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
           path: ~/.cache/composer
@@ -84,7 +84,7 @@ jobs:
           extensions: intl, mbstring, pdo_sqlite
 
       - name: "Cache composer dependencies"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.composer/cache
           key: php-${{ matrix.php-versions }}
