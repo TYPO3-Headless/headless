@@ -28,7 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - 8.1
+          - 8.2
   code-quality:
     name: "Code quality checks"
     runs-on: ubuntu-20.04
@@ -62,7 +62,7 @@ jobs:
           - "ts:lint"
           - "php:cs-fixer"
         php-version:
-          - 8.1
+          - 8.2
   tests:
     runs-on: ubuntu-latest
     strategy:
