@@ -1,5 +1,6 @@
 tt_content.textmedia =< lib.contentElementWithHeader
 tt_content.textmedia {
+    dataProcessing >
     fields {
         content {
             fields {

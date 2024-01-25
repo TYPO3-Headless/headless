@@ -1,5 +1,6 @@
 tt_content.table =< lib.contentElementWithHeader
 tt_content.table {
+    dataProcessing >
     fields {
         content {
             fields {

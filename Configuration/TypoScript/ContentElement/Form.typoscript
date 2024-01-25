@@ -1,5 +1,6 @@
 tt_content.form_formframework =< lib.contentElement
 tt_content.form_formframework {
+    dataProcessing >
     fields {
         content {
             fields {
