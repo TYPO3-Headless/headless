@@ -1,5 +1,6 @@
 tt_content.div =< lib.contentElement
 tt_content.div {
+    dataProcessing >
     fields {
         content {
             fields {
