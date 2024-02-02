@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Utility;
 
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Site\Entity\SiteInterface;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 
 final class HeadlessMode
 {
@@ -40,5 +42,23 @@ final class HeadlessMode
 
         return $headless->getMode() === self::FULL ||
             ($headless->getMode() === self::MIXED && ($this->request->getHeader('Accept')[0] ?? '') === 'application/json');
+    }
+
+    public function overrideBackendRequestBySite(SiteInterface $site, ?SiteLanguage $language = null): ServerRequestInterface
+    {
+        $mode = (int)($site->getConfiguration()['headless'] ?? self::NONE);
+
+        if ($mode === self::MIXED) {
+            // in BE context we override
+            $mode = self::NONE;
+        }
+
+        $request = clone $this->request;
+
+        if ($language) {
+            $request = $request->withAttribute('language', $language);
+        }
+
+        return $request->withAttribute('headless', new Headless($mode));
     }
 }
