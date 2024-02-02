@@ -33,7 +33,10 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $resolver->evaluate(Argument::any())->willReturn(true);
         $siteFinder = $this->prophesize(SiteFinder::class);
 
-        $listener = new AfterLinkIsGeneratedListener(new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()), $this->prophesize(LinkService::class)->reveal());
+        $listener = new AfterLinkIsGeneratedListener(
+            new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()),
+            $this->prophesize(LinkService::class)->reveal()
+        );
 
         self::assertInstanceOf(AfterLinkIsGeneratedListener::class, $listener);
     }
@@ -44,7 +47,10 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $resolver->evaluate(Argument::any())->willReturn(true);
         $siteFinder = $this->prophesize(SiteFinder::class);
 
-        $listener = new AfterLinkIsGeneratedListener(new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()), $this->prophesize(LinkService::class)->reveal());
+        $listener = new AfterLinkIsGeneratedListener(
+            new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()),
+            $this->prophesize(LinkService::class)->reveal()
+        );
 
         $site = new Site('test', 1, []);
         $cObj = $this->prophesize(ContentObjectRenderer::class);
@@ -73,8 +79,15 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $resolver->evaluate(Argument::any())->willReturn(true);
 
         $urlUtility = $this->prophesize(UrlUtility::class);
-        $urlUtility->getFrontendUrlForPage(Argument::is('/'), Argument::is(2))->willReturn('https://frontend-domain.tld/page');
-        $urlUtility->getFrontendUrlWithSite(Argument::is('/'), Argument::any())->willReturn('https://frontend-domain.tld/page');
+        $urlUtility->getFrontendUrlForPage(
+            Argument::is('/'),
+            Argument::is(2)
+        )->willReturn('https://frontend-domain.tld/page');
+        $urlUtility->getFrontendUrlWithSite(
+            Argument::is('/'),
+            Argument::any(),
+            Argument::is('frontendBase')
+        )->willReturn('https://frontend-domain.tld/page');
 
         $site = new Site('test', 1, []);
         $cObj = $this->prophesize(ContentObjectRenderer::class);
@@ -83,7 +96,10 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
         $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
 
-        $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $this->prophesize(LinkService::class)->reveal());
+        $listener = new AfterLinkIsGeneratedListener(
+            $urlUtility->reveal(),
+            $this->prophesize(LinkService::class)->reveal()
+        );
 
         $linkResult = new LinkResult('page', '/');
         $linkResult = $linkResult->withLinkText('t3://page?uid=2');
@@ -102,7 +118,11 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $site = new Site('test', 1, []);
 
         $urlUtility = $this->prophesize(UrlUtility::class);
-        $urlUtility->getFrontendUrlWithSite(Argument::is('/'), Argument::is($site))->willReturn('https://front.typo3.tld');
+        $urlUtility->getFrontendUrlWithSite(
+            Argument::is('/'),
+            Argument::is($site),
+            Argument::is('frontendBase')
+        )->willReturn('https://front.typo3.tld');
 
         $cObj = $this->prophesize(ContentObjectRenderer::class);
         $request = (new ServerRequest())->withAttribute('site', $site);
@@ -110,7 +130,10 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
         $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
 
-        $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $this->prophesize(LinkService::class)->reveal());
+        $listener = new AfterLinkIsGeneratedListener(
+            $urlUtility->reveal(),
+            $this->prophesize(LinkService::class)->reveal()
+        );
         $linkResult = new LinkResult('page', '/');
         $linkResult = $linkResult->withLinkText('|');
 
@@ -148,5 +171,47 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $listener($event);
 
         self::assertSame('https://front.typo3.tld', $event->getLinkResult()->getUrl());
+    }
+
+    public function test__SitemapLink()
+    {
+        $resolver = $this->prophesize(Resolver::class);
+        $resolver->evaluate(Argument::any())->willReturn(true);
+
+        $site = new Site('test', 1, []);
+
+        $urlUtility = $this->prophesize(UrlUtility::class);
+        $urlUtility->getFrontendUrlWithSite(
+            Argument::is('https://typo3.tld/sitemap-type/pages/sitemap.xml'),
+            Argument::is($site),
+            Argument::is('frontendApiProxy')
+        )
+            ->willReturn('https://front.typo3.tld/headless/sitemap-type/pages/sitemap.xml');
+
+        $linkService = $this->prophesize(LinkService::class);
+        $linkService->resolve(Argument::any())->willReturn(['pageuid' => 5]);
+
+        $cObj = $this->prophesize(ContentObjectRenderer::class);
+        $request = (new ServerRequest())->withAttribute('site', $site);
+        $cObj->getRequest()->willReturn($request);
+
+        $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
+
+        $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $linkService->reveal());
+
+        $linkResult = new LinkResult('page', 'https://typo3.tld/sitemap-type/pages/sitemap.xml');
+        $linkResult = $linkResult->withLinkConfiguration([
+            'parameter' => 't3://page?uid=current&type=1533906435&sitemap=pages',
+            'forceAbsoluteUrl' => true,
+            'additionalParams' => '&sitemap=pages',
+        ]);
+
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj->reveal(), []);
+        $listener($event);
+
+        self::assertSame(
+            'https://front.typo3.tld/headless/sitemap-type/pages/sitemap.xml',
+            $event->getLinkResult()->getUrl()
+        );
     }
 }

@@ -101,6 +101,8 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->prophesize(SiteFinder::class);
 
+        $site->getBase()->shouldBeCalled(2)->willReturn(new Uri('https://test-backend3-api.tld'));
+
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), null, $headlessMode);
         $urlUtility = $urlUtility->withSite($site->reveal());
 
@@ -108,6 +110,7 @@ class UrlUtilityTest extends UnitTestCase
         self::assertSame('https://test-frontend-api3.tld/headless', $urlUtility->getProxyUrl());
         self::assertSame('https://test-frontend-api3.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
         self::assertSame('https://test-frontend3.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
+        self::assertSame('https://test-frontend-api3.tld/headless', $urlUtility->getFrontendUrlWithSite('https://test-backend3-api.tld', $site->reveal(), 'frontendApiProxy'));
     }
 
     public function testFrontendUrlsWithBaseProductionAndLocalOverride(): void
