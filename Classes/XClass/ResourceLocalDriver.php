@@ -26,19 +26,22 @@ class ResourceLocalDriver extends LocalDriver
 {
     protected function determineBaseUrl(): void
     {
-        $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
+        $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
 
-        if ((($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
-            && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isBackend()) ||
-            !$headlessMode->isEnabled()) {
+        if (!$request instanceof ServerRequestInterface) {
+            return;
+        }
+
+        $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($request);
+
+        if (!$headlessMode->isEnabled() || ApplicationType::fromRequest($request)->isBackend()) {
             parent::determineBaseUrl();
 
             return;
         }
 
-        if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface &&
-            $this->hasCapability(ResourceStorage::CAPABILITY_PUBLIC)) {
-            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
+        if ($this->hasCapability(ResourceStorage::CAPABILITY_PUBLIC)) {
+            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request);
             $this->configuration['baseUri'] = $urlUtility->getStorageProxyUrl();
         }
 
