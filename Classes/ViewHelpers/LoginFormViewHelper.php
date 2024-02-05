@@ -263,7 +263,7 @@ class LoginFormViewHelper extends FormViewHelper
         // basically "request token, yes" - uses form-action URI as scope
         if ($isTrulyRequestToken || $requestToken === '@nonce') {
             $requestToken = RequestToken::create($formAction);
-        // basically "request token with 'my-scope'" - uses 'my-scope'
+            // basically "request token with 'my-scope'" - uses 'my-scope'
         } elseif (is_string($requestToken) && $requestToken !== '') {
             $requestToken = RequestToken::create($requestToken);
         }

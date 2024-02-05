@@ -1,5 +1,6 @@
 tt_content.menu_subpages =< lib.contentElementWithHeader
 tt_content.menu_subpages {
+    dataProcessing >
     fields {
         content {
             fields {

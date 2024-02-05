@@ -49,7 +49,7 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
         $siteFinder = $this->prophesize(SiteFinder::class);
-        $siteFinder->getSiteByPageId(Argument::any())->willReturn($site = new Site('test', 1, ['headless' => HeadlessMode::MIXED, 'frontendBase' => 'https://front.test.tld']));
+        $siteFinder->getSiteByPageId(Argument::any())->willReturn($site = new Site('test', 1, ['headless' => HeadlessMode::MIXED, 'frontendBase' => 'https://front.test.tld', 'base' => 'https://test.tld']));
 
         $listener = new AfterPagePreviewUriGeneratedListener(new UrlUtility(
             null,
@@ -71,11 +71,11 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
         $GLOBALS['TYPO3_REQUEST'] =  new ServerRequest();
         $listener->__invoke($event);
 
-        self::assertSame('https://front.test.tld/page', (string)$event->getPreviewUri());
+        self::assertSame('https://test.tld/page', (string)$event->getPreviewUri());
 
         $GLOBALS['BE_USER'] =  new BackendUserAuthentication();
         $listener->__invoke($event);
-        self::assertSame('https://front.test.tld/page', (string)$event->getPreviewUri());
+        self::assertSame('https://test.tld/page', (string)$event->getPreviewUri());
     }
 
     public function testSiteNotFound()
