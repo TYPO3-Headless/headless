@@ -185,7 +185,7 @@ class FileUtility
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
             ];
             if (!empty($arguments['fileExtension'])) {
-                if(!GeneralUtility::inList($GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'], (string)$arguments['fileExtension'])) {
+                if (!GeneralUtility::inList($GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'], (string)$arguments['fileExtension'])) {
                     throw new Exception('The extension ' . $arguments['fileExtension'] . ' is not specified in $GLOBALS[\'TYPO3_CONF_VARS\'][\'GFX\'][\'imagefile_ext\'] as a valid image file extension and can not be processed.', 1701250543);
                 }
                 $processingInstructions['fileExtension'] = $arguments['fileExtension'];
