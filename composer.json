@@ -127,7 +127,12 @@
     ],
     "ci:yaml:lint": "find . ! -path '*.Build/*' -name '*.yml' | xargs php ./.Build/vendor/bin/yaml-lint",
     "docs:generate": [
-      "docker run --rm t3docs/render-documentation show-shell-commands > tempfile.sh; echo 'dockrun_t3rd makehtml' >> tempfile.sh; bash tempfile.sh; rm tempfile.sh"
+      "@docs:generate:pullimage",
+      "docker run --rm ghcr.io/t3docs/render-documentation show-shell-commands > tempfile.sh; echo 'dockrun_t3rd makehtml' >> tempfile.sh; bash tempfile.sh; rm tempfile.sh"
+    ],
+    "docs:generate:pullimage": [
+      "docker pull ghcr.io/t3docs/render-documentation",
+      "docker tag ghcr.io/t3docs/render-documentation t3docs/render-documentation"
     ],
     "fix:php:cs-fixer": [
       "php-cs-fixer fix -v --using-cache no --config .php-cs-fixer.php"

@@ -1,5 +1,6 @@
 tt_content.bullets =< lib.contentElementWithHeader
 tt_content.bullets {
+    dataProcessing >
     fields {
         content {
             fields {

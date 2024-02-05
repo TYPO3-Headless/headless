@@ -1,5 +1,6 @@
 tt_content.shortcut =< lib.contentElement
 tt_content.shortcut {
+    dataProcessing >
     fields {
         content {
             fields {

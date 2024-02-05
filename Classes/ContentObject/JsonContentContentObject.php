@@ -138,6 +138,10 @@ class JsonContentContentObject extends ContentContentObject
 
             $element = json_decode($element);
 
+            if (!isset($element->colPos)) {
+                continue;
+            }
+
             if ($this->isColPolsGroupingEnabled($conf) && $element->colPos >= 0) {
                 $data['colPos' . $element->colPos][] = $element;
             } else {
@@ -209,7 +213,8 @@ class JsonContentContentObject extends ContentContentObject
                         $cObj->parentRecordNumber = $this->cObj->currentRecordNumber;
                         $frontendController->currentRecord = $registerField;
                         $this->cObj->lastChanged($row['tstamp'] ?? 0);
-                        $cObj->start($row, $conf['table'], $this->request);
+                        $cObj->setRequest($this->request);
+                        $cObj->start($row, $conf['table']);
                         $tmpValue = $cObj->cObjGetSingle($renderObjName, $renderObjConf, $renderObjKey);
                         $cobjValue[] = $tmpValue;
                     }

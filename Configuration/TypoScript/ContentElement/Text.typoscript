@@ -1,5 +1,6 @@
 tt_content.text =< lib.contentElementWithHeader
 tt_content.text {
+    dataProcessing >
     fields {
         content {
             fields {

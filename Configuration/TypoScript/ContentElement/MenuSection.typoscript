@@ -1,5 +1,6 @@
 tt_content.menu_section =< lib.contentElementWithHeader
 tt_content.menu_section {
+    dataProcessing >
     fields {
         content {
             fields {
