@@ -35,6 +35,7 @@ class UrlUtilityTest extends UnitTestCase
         $headlessMode = $this->createHeadlessMode();
 
         $site = $this->prophesize(Site::class);
+        $site->getBase()->shouldBeCalled(2)->willReturn(new Uri('https://test-backend-api.tld'));
         $site->getConfiguration()->shouldBeCalled(3)->willReturn([
             'base' => 'https://www.typo3.org',
             'languages' => [],
@@ -108,6 +109,7 @@ class UrlUtilityTest extends UnitTestCase
         self::assertSame('https://test-frontend-api3.tld/headless', $urlUtility->getProxyUrl());
         self::assertSame('https://test-frontend-api3.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
         self::assertSame('https://test-frontend3.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
+        self::assertSame('#fragment-123', $urlUtility->getFrontendUrlWithSite('#fragment-123', $site->reveal()));
     }
 
     public function testFrontendUrlsWithBaseProductionAndLocalOverride(): void
