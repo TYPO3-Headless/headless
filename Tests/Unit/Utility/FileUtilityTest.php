@@ -290,17 +290,19 @@ class FileUtilityTest extends UnitTestCase
     {
         $fileReference = $this->createPartialMock(
             FileReference::class,
-            ['getPublicUrl', 'getUid', 'getProperty', 'hasProperty', 'toArray', 'getType', 'getMimeType', 'getProperties', 'getSize']
+            ['getPublicUrl', 'getUid', 'getProperty', 'hasProperty', 'toArray', 'getType', 'getMimeType', 'getProperties', 'getSize', 'getExtension']
         );
         $fileReference->method('getUid')->willReturn(103);
         if ($type === 'video') {
             $fileReference->method('getMimeType')->willReturn('video/youtube');
             $fileReference->method('getType')->willReturn(AbstractFile::FILETYPE_VIDEO);
             $fileReference->method('getPublicUrl')->willReturn('https://www.youtube.com/watch?v=123456789');
+            $fileReference->method('getExtension')->willReturn('youtube');
         } else {
             $fileReference->method('getType')->willReturn(AbstractFile::FILETYPE_IMAGE);
             $fileReference->method('getPublicUrl')->willReturn('/fileadmin/test-file.jpg');
             $fileReference->method('getMimeType')->willReturn('image/jpeg');
+            $fileReference->method('getExtension')->willReturn('jpg');
         }
 
         $fileReference->method('getProperty')->willReturnCallback(static function ($key) use ($data) {
@@ -321,10 +323,11 @@ class FileUtilityTest extends UnitTestCase
     {
         $processedFile = $this->createPartialMock(
             ProcessedFile::class,
-            ['getProperty', 'getMimeType', 'getSize', 'hasProperty', 'getPublicUrl']
+            ['getProperty', 'getMimeType', 'getSize', 'hasProperty', 'getPublicUrl', 'getExtension']
         );
         $processedFile->method('getMimeType')->willReturn('image/jpeg');
         $processedFile->method('getSize')->willReturn($data['size']);
+        $processedFile->method('getExtension')->willReturn('jpg');
         $processedFile->method('getProperty')->willReturnCallback(static function ($key) use ($data) {
             return $data[$key] ?? null;
         });
