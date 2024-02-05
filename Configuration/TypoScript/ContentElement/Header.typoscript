@@ -1,2 +1,4 @@
-tt_content.header =< lib.contentElementWithHeader
-tt_content.header.dataProcessing >
+tt_content {
+    header =< lib.contentElementWithHeader
+    header.dataProcessing >
+}
