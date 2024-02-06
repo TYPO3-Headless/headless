@@ -26,6 +26,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_merge;
+use function ltrim;
 use function rtrim;
 use function str_contains;
 
@@ -96,11 +97,15 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
             $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
             $frontBase = $frontendBase->getHost();
+            $frontExtraPath = $frontendBase->getPath();
             $frontPort = $frontendBase->getPort();
             $targetUri = new Uri($this->sanitizeBaseUrl($url));
 
             if (str_contains($url, $base)) {
                 $targetUri = $targetUri->withHost($frontBase);
+                if ($frontExtraPath) {
+                    $targetUri = $targetUri->withPath($frontExtraPath . ($targetUri->getPath() !== '' ? '/' . ltrim($targetUri->getPath(), '/') : ''));
+                }
             }
 
             if ($port === $frontPort) {
