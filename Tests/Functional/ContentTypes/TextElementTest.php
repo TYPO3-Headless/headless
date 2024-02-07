@@ -26,8 +26,12 @@ class TextElementTest extends BaseContentTypeTest
         $fullTree = json_decode((string)$response->getBody(), true);
 
         $contentElement = $fullTree['content']['colPos0'][0];
+        $categories = [
+            ['id' => 1, 'title' => 'SysCategory1Title'],
+            ['id' => 2, 'title' => 'SysCategory2Title'],
+        ];
 
-        $this->checkDefaultContentFields($contentElement, 1, 1, 'text', 0, 'SysCategory1Title,SysCategory2Title');
+        $this->checkDefaultContentFields($contentElement, 1, 1, 'text', 0, $categories);
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 1, 2);
         $this->checkHeaderFieldsLink($contentElement, 'Page 1', '/page1?parameter=999&cHash=', '_blank');
