@@ -99,16 +99,15 @@ class FlexFormProcessor implements DataProcessorInterface
             $fieldName = 'pi_flexform';
         }
 
-        if (!$processedData['data'][$fieldName] && !$processedData[$fieldName]) {
+        // processing the flexform data
+        $originalValue = $processedData['data'][$fieldName] ?? $processedData[$fieldName] ?? null;
+        if ($originalValue === null) {
             return $processedData;
         }
 
-        // processing the flexform data
-        $originalValue = $processedData['data'][$fieldName] ?? $processedData[$fieldName];
-
         if (\is_array($originalValue)) {
             $flexformData = $originalValue;
-        } elseif (\is_string($originalValue)) {
+        } elseif (\is_string($originalValue) && !empty($originalValue)) {
             $flexformData = $this->flexFormService->convertFlexFormContentToArray($originalValue);
         } else {
             return $processedData;
