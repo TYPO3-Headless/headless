@@ -136,14 +136,14 @@ class JsonContentContentObject extends ContentContentObject
                 $element = $this->headlessUserInt->wrap($element);
             }
 
-            $element = json_decode($element);
+            $element = json_decode($element, true);
 
-            if (!isset($element->colPos)) {
+            if ($element === []) {
                 continue;
             }
 
-            if ($this->isColPolsGroupingEnabled($conf) && $element->colPos >= 0) {
-                $data['colPos' . $element->colPos][] = $element;
+            if ($this->isColPolsGroupingEnabled($conf) && ($element['colPos'] ?? 0) >= 0) {
+                $data['colPos' . $element['colPos']][] = $element;
             } else {
                 $data[] = $element;
             }
