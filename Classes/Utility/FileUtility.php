@@ -18,7 +18,6 @@ use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
-use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
@@ -97,7 +96,7 @@ class FileUtility
             'linkData' => $linkData ?? null,
         ];
 
-        if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
+        if ($fileRenderer === null && GeneralUtility::inList($GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'], $fileReference->getExtension())) {
             if (!$delayProcessing && $fileReference->getMimeType() !== 'image/svg+xml') {
                 $fileReference = $this->processImageFile($fileReference, $arguments, $cropVariant);
             }
@@ -185,6 +184,9 @@ class FileUtility
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
             ];
             if (!empty($arguments['fileExtension'])) {
+                if (!GeneralUtility::inList($GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'], (string)$arguments['fileExtension'])) {
+                    throw new Exception('The extension ' . $arguments['fileExtension'] . ' is not specified in $GLOBALS[\'TYPO3_CONF_VARS\'][\'GFX\'][\'imagefile_ext\'] as a valid image file extension and can not be processed.', 1701250543);
+                }
                 $processingInstructions['fileExtension'] = $arguments['fileExtension'];
             }
             return $this->imageService->applyProcessingInstructions($image, $processingInstructions);
