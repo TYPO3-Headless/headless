@@ -56,10 +56,8 @@ final class AfterLinkIsGeneratedListener
             $site = $event->getContentObjectRenderer()->getRequest()->getAttribute('site');
             $key = 'frontendBase';
 
-            $sitemapConfig = $site->getConfiguration()['settings']['headless']['sitemap'] ?? [];
-
-            if (is_string($pageId) && str_starts_with($pageId, 't3://page?uid=current&type=' . ($sitemapConfig['type'] ?? '1533906435'))) {
-                $key = $sitemapConfig['key'] ?? 'frontendApiProxy';
+            if (is_string($pageId) && str_starts_with($pageId, 't3://page?uid=current&type=' . $site->getSettings()->get('headless.sitemap.type', '1533906435'))) {
+                $key = $site->getSettings()->get('headless.sitemap.key', 'frontendApiProxy');
             }
 
             if (!$site instanceof NullSite) {
