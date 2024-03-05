@@ -85,9 +85,10 @@ The rendering configuration can be set via the property `processingConfiguration
 * `returnFlattenObject`: without that flag an array of (multiple) images is rendered. Set this if you're only rendering 1 image and want to reduce nesting.
 * `delayProcessing`: can be used to skip processing of images (and have them simply collected with the `FilesProcessor`), in order to have them processed by the next processor in line (which is generally `GalleryProcessor`).
 * `fileExtension`: can be used to convert the images to any desired format, e.g. `webp`.
-* `autogenerate`:
+* `autogenerate` (deprecated)
   * `retina2x`: set this to render an additional image URI in high quality (200%).
   * `lqip`: set this to render an additional image URI with low quality (10%).
+* `formats`: to defined additional "publicUrls", with different sizes and file extensions.
 
 GalleryProcessor
 ================
@@ -102,6 +103,32 @@ The rendering configuration can be set directly. No `processingConfiguration` pr
 * `columnSpacing`: set to the core constant `{$styles.content.textmedia.columnSpacing}`
 * `borderWidth`: set to the core constant `{$styles.content.textmedia.borderWidth}`
 * `borderPadding`: set to the core constant `{$styles.content.textmedia.borderPadding}`
-* `autogenerate`
+* `autogenerate` (deprecated)
   * `retina2x`
   * `lqip`
+* `formats`: to defined additional "publicUrls", with different sizes and file extensions, see example below.
+
+.. code-block:: typoscript
+
+   10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+   10 {
+      ...
+      processingConfiguration {
+         delayProcessing = 1
+      }
+   }
+
+   20 = FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor
+   20 {
+      ...
+      formats {
+         publicUrl_webp {
+            fileExtension = webp
+            factor = 1.0
+         }
+         publicUrl_tinyJpg {
+            fileExtension = jpg
+            factor = 0.2
+         }
+      }
+   }
