@@ -73,8 +73,9 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
             $galleryWidthMinusBorderAndSpacing = $galleryWidthMinusBorderAndSpacing - $borderPaddingTotal - $borderWidthTotal;
         }
 
-        // User entered a predefined height
         if ($this->equalMediaHeight) {
+            // User entered a predefined height
+
             $mediaScalingCorrection = 1;
             $maximumRowWidth = 0;
 
@@ -108,9 +109,9 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
 
             // Recalculate gallery width
             $this->galleryData['width'] = floor($maximumRowWidth / $mediaScalingCorrection);
-
-            // User entered a predefined width
         } elseif ($this->equalMediaWidth) {
+            // User entered a predefined width
+
             $mediaScalingCorrection = 1;
 
             // Calculate the scaling correction when the total of media elements is wider than the gallery width
@@ -132,9 +133,9 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
 
             // Recalculate gallery width
             $this->galleryData['width'] = floor($totalRowWidth / $mediaScalingCorrection);
-
-            // Automatic setting of width and height
         } else {
+            // Automatic setting of width and height
+
             $maxMediaWidth = (int)($galleryWidthMinusBorderAndSpacing / $this->galleryData['count']['columns']);
             foreach ($this->fileObjects as $key => $fileObject) {
                 $croppedWidth = $this->getCroppedDimensionalPropertyFromProcessedFile($fileObject, 'width');
@@ -178,6 +179,23 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      */
     protected function prepareGalleryData()
     {
+        $formats = $this->processorConfiguration['formats.'] ?? [];
+
+        // Legacy workaround
+        $autogenerateConfig = $this->processorConfiguration['autogenerate.'] ?? null;
+        if ($autogenerateConfig) {
+            if (($autogenerateConfig['retina2x'] ?? 0) == 1) {
+                $formats['urlRetina'] = [
+                    'factor' => FileUtility::RETINA_RATIO,
+                ];
+            }
+            if (($autogenerateConfig['lqip'] ?? 0) == 1) {
+                $formats['urlLqip'] = [
+                    'factor' => FileUtility::LQIP_RATIO,
+                ];
+            }
+        }
+
         for ($row = 1; $row <= $this->galleryData['count']['rows']; $row++) {
             for ($column = 1; $column <= $this->galleryData['count']['columns']; $column++) {
                 $fileKey = (($row - 1) * $this->galleryData['count']['columns']) + $column - 1;
@@ -188,6 +206,8 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
 
                     if ($fileObj['properties']['type'] === 'image') {
                         $image = $this->getImageService()->getImage((string)$fileObj['properties']['fileReferenceUid'], null, true);
+
+                        // 1. render image as usual
                         $fileObj = $this->getFileUtility()->processFile(
                             $image,
                             array_merge(
@@ -196,28 +216,23 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                             )
                         );
 
-                        if (isset($this->processorConfiguration['autogenerate.']['retina2x'],
-                            $fileObj['properties']['dimensions']['width']) &&
-                            (int)$this->processorConfiguration['autogenerate.']['retina2x'] === 1) {
-                            $fileObj['urlRetina'] = $this->getFileUtility()->processFile(
-                                $image,
-                                [
-                                    'fileExtension' => $fileExtension,
-                                    'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::RETINA_RATIO,
-                                    'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::RETINA_RATIO,
-                                ]
-                            )['publicUrl'];
-                        }
+                        // 2. render additional formats
+                        $originalWidth = $image->getProperty('width');
+                        $originalHeight = $image->getProperty('height');
+                        $targetWidth = $fileObj['properties']['dimensions']['width'];
+                        $targetHeight = $fileObj['properties']['dimensions']['height'];
+                        foreach ($formats ?? [] as $formatKey => $formatConf) {
+                            $formatKey = rtrim($formatKey, '.');
+                            $factor = (float)($formatConf['factor'] ?? 1.0);
 
-                        if (isset($this->processorConfiguration['autogenerate.']['lqip'],
-                            $fileObj['properties']['dimensions']['width']) &&
-                                (int)$this->processorConfiguration['autogenerate.']['lqip'] === 1) {
-                            $fileObj['urlLqip'] = $this->getFileUtility()->processFile(
+                            $fileObj[$formatKey] = $this->getFileUtility()->processFile(
                                 $image,
                                 [
-                                    'fileExtension' => $fileExtension,
-                                    'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::LQIP_RATIO,
-                                    'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::LQIP_RATIO,
+                                    'fileExtension' => $formatConf['fileExtension'] ?? null,
+                                    // multiply width/height by factor,
+                                    // but don't stretch image beyond its original dimensions!
+                                    'width' => min($targetWidth * $factor, $originalWidth),
+                                    'height' => min($targetHeight * $factor, $originalHeight),
                                 ]
                             )['publicUrl'];
                         }
