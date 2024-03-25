@@ -68,6 +68,40 @@ To build and render a JSON object into your page output.
     }
   }
 
+The JSON cObjects comes with a bunch of properties: `if`, `fields`, `dataProcessing` and `stdWrap`.
+
+**Property `if`**
+
+Can be used to decide whether or not to render the object.
+
+**Property `fields`**
+
+Array of cObjects. With special properties per item:
+
+* `intval`/`floatval`/`boolval` to cast the result to int, float or bool.
+* `ifEmptyReturnNull` to return null in case it's empty
+* `ifEmptyUnsetKey` to remove the item in case it's empty
+* `dataProcessing` to render data processors (have a look at `lib.meta.ogImage` for example)
+
+**Property `dataProcessing`**
+
+This property can be used to render data processors such as MenuProcessors.
+
+Have a look at `lib.breadcrumbs` for example:
+
+.. code-block:: typoscript
+
+  lib.breadcrumbs = JSON
+  lib.breadcrumbs {
+    dataProcessing {
+      10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+    }
+  }
+
+**Property `stdWrap`**
+
+This property can be used to run `stdWrap` to the already rendered JSON output.
+
 CONTENT_JSON
 ------------
 
