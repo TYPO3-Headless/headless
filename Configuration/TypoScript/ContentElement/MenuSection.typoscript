@@ -49,6 +49,14 @@ tt_content.menu_section {
                                             as = media
                                         }
                                     }
+                                    # Only render the required fields (and not the entire
+                                    # tt_content record with its bloated rendering instructions)
+                                    fields {
+                                        uid = TEXT
+                                        uid.field = uid
+                                        header = TEXT
+                                        header.field = header
+                                    }
                                 }
                             }
                         }
