@@ -99,7 +99,7 @@ class FlexFormProcessor implements DataProcessorInterface
             $fieldName = 'pi_flexform';
         }
 
-        if (!$processedData['data'][$fieldName] && !$processedData[$fieldName]) {
+        if (!isset($processedData['data'][$fieldName]) && !isset($processedData[$fieldName])) {
             return $processedData;
         }
 
