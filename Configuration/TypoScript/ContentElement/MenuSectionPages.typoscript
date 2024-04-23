@@ -7,29 +7,41 @@ tt_content.menu_section_pages {
                 menu = TEXT
                 menu {
                     dataProcessing {
-                        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+                        10 = headless-menu
                         10 {
                             appendData = 1
                             special = directory
                             special.value.field = pages
                             as = menu
                             dataProcessing {
-                                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                                10 = headless-files
                                 10 {
                                     references.fieldName = media
                                     as = media
                                 }
-                                20 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
+                                20 = headless-database-query
                                 20 {
                                     table = tt_content
                                     pidInList.field = uid
                                     orderBy = sorting
                                     as = content
                                     dataProcessing {
-                                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                                        10 = headless-files
                                         10 {
                                             references.fieldName = image
                                             as = media
+                                        }
+                                    }
+
+                                    fields {
+                                        uid = INT
+                                        uid {
+                                            field = uid
+                                        }
+
+                                        header = TEXT
+                                        header {
+                                            field = header
                                         }
                                     }
                                 }
