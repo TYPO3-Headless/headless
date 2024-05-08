@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
+use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\Resource\FileInterface;
@@ -36,6 +37,8 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      */
     protected $fileObjects = [];
 
+    protected ProcessingConfiguration $processorConfigurationObject;
+
     /**
      * @inheritDoc
      */
@@ -45,6 +48,8 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
         array $processorConfiguration,
         array $processedData
     ) {
+        $this->processorConfigurationObject = ProcessingConfiguration::fromOptions($processorConfiguration);
+
         $processedData = parent::process(
             $cObj,
             $contentObjectConfiguration,
@@ -159,11 +164,20 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      */
     private function getCroppedDimensionalPropertyFromProcessedFile(array $processedFile, string $property): int
     {
-        if (empty($processedFile['properties']['crop'])) {
-            return (int)$processedFile['properties']['dimensions'][$property];
+        if ($this->processorConfigurationObject->legacyReturn) {
+            if (empty($processedFile['properties']['crop'])) {
+                return (int)($this->processorConfigurationObject->flattenProperties ? ($processedFile['properties'][$property] ?? 0) : ($processedFile['properties']['dimensions'][$property] ?? 0));
+            }
+
+            $croppingConfiguration = $processedFile['properties']['crop'];
+        } else {
+            if (empty($processedFile['crop'])) {
+                return (int)($this->processorConfigurationObject->flattenProperties ? ($processedFile[$property] ?? 0) : ($processedFile['dimensions'][$property] ?? 0));
+            }
+
+            $croppingConfiguration = $processedFile['crop'];
         }
 
-        $croppingConfiguration = $processedFile['properties']['crop'];
         $cropVariantCollection = CropVariantCollection::create((string)$croppingConfiguration);
 
         return (int)$cropVariantCollection->getCropArea($this->cropVariant)
@@ -184,43 +198,15 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 $fileObj = $this->fileObjects[$fileKey] ?? null;
 
                 if ($fileObj) {
-                    $fileExtension = $this->processorConfiguration['fileExtension'] ?? null;
-
-                    if ($fileObj['properties']['type'] === 'image') {
-                        $image = $this->getImageService()->getImage((string)$fileObj['properties']['fileReferenceUid'], null, true);
-                        $fileObj = $this->getFileUtility()->processFile(
+                    if ((($fileObj['properties']['type'] ?? '') === 'image' || ($fileObj['type'] ?? '') === 'image')) {
+                        $src = $this->processorConfigurationObject->legacyReturn ? $fileObj['properties']['fileReferenceUid'] : $fileObj['fileReferenceUid'];
+                        $image = $this->getImageService()->getImage((string)$src, null, true);
+                        $fileObj = $this->getFileUtility()->process(
                             $image,
-                            array_merge(
-                                ['fileExtension' => $fileExtension],
-                                $this->mediaDimensions[$fileKey] ?? []
-                            )
+                            $this->processorConfigurationObject->withOptions($this->mediaDimensions[$fileKey] ?? [])
                         );
 
-                        if (isset($this->processorConfiguration['autogenerate.']['retina2x'],
-                            $fileObj['properties']['dimensions']['width']) &&
-                            (int)$this->processorConfiguration['autogenerate.']['retina2x'] === 1) {
-                            $fileObj['urlRetina'] = $this->getFileUtility()->processFile(
-                                $image,
-                                [
-                                    'fileExtension' => $fileExtension,
-                                    'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::RETINA_RATIO,
-                                    'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::RETINA_RATIO,
-                                ]
-                            )['publicUrl'];
-                        }
-
-                        if (isset($this->processorConfiguration['autogenerate.']['lqip'],
-                            $fileObj['properties']['dimensions']['width']) &&
-                                (int)$this->processorConfiguration['autogenerate.']['lqip'] === 1) {
-                            $fileObj['urlLqip'] = $this->getFileUtility()->processFile(
-                                $image,
-                                [
-                                    'fileExtension' => $fileExtension,
-                                    'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::LQIP_RATIO,
-                                    'height' => $fileObj['properties']['dimensions']['height'] * FileUtility::LQIP_RATIO,
-                                ]
-                            )['publicUrl'];
-                        }
+                        $fileObj = $this->getFileUtility()->processCropVariants($image, $this->processorConfigurationObject, $fileObj);
                     }
 
                     $this->galleryData['rows'][$row]['columns'][$column] = $fileObj;

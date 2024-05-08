@@ -11,21 +11,19 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Event;
 
+use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use TYPO3\CMS\Core\Resource\FileInterface;
 
 final class EnrichFileDataEvent
 {
-    private FileInterface $original;
-    private FileInterface $processed;
     private array $properties;
 
     public function __construct(
-        FileInterface $originalFileReference,
-        FileInterface $processedFileReference,
+        private readonly FileInterface $originalFileReference,
+        private readonly FileInterface $processedFileReference,
+        private readonly ProcessingConfiguration $processingConfiguration,
         array $properties = []
     ) {
-        $this->original = $originalFileReference;
-        $this->processed = $processedFileReference;
         $this->properties = $properties;
     }
 
@@ -41,11 +39,16 @@ final class EnrichFileDataEvent
 
     public function getProcessed(): FileInterface
     {
-        return $this->processed;
+        return $this->processedFileReference;
     }
 
     public function getOriginal(): FileInterface
     {
-        return $this->original;
+        return $this->originalFileReference;
+    }
+
+    public function getProcessingConfiguration(): ProcessingConfiguration
+    {
+        return $this->processingConfiguration;
     }
 }
