@@ -126,9 +126,9 @@ class TranslatorTest extends UnitTestCase
                                 'identifier' => 'testfield',
                                 'label' => 'translatedValue',
                                 'properties' => [
-                                        'validationErrorMessages' => [
-                                            ['code' => 111, 'message' => 'translatedError'],
-                                        ],
+                                    'validationErrorMessages' => [
+                                        ['code' => 111, 'message' => 'translatedError'],
+                                    ],
                                 ],
                                 'value' => null,
                                 'defaultValue' => 'translatedValue',
