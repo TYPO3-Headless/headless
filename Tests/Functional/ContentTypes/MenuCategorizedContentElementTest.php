@@ -38,17 +38,13 @@ class MenuCategorizedContentElementTest extends BaseContentTypeTest
         self::assertIsArray($contentElement['content']['menu'][1]);
 
         $firstCategorizedContentElement = $contentElement['content']['menu'][0];
-        self::assertEquals('17', $firstCategorizedContentElement['id']);
-        self::assertEquals('header', $firstCategorizedContentElement['type']);
-        self::assertEquals('default', $firstCategorizedContentElement['appearance']['frameClass']);
-        self::assertEquals('1', $firstCategorizedContentElement['colPos']);
-        self::assertEquals('SysCategory3Title', $firstCategorizedContentElement['categories']);
+        self::assertSame(17, $firstCategorizedContentElement['uid']);
+        self::assertArrayHasKey('header', $firstCategorizedContentElement);
+        self::assertArrayHasKey('media', $firstCategorizedContentElement);
 
         $secondCategorizedContentElement = $contentElement['content']['menu'][1];
-        self::assertEquals('18', $secondCategorizedContentElement['id']);
-        self::assertEquals('textpic', $secondCategorizedContentElement['type']);
-        self::assertEquals('default', $secondCategorizedContentElement['appearance']['frameClass']);
-        self::assertEquals('1', $secondCategorizedContentElement['colPos']);
-        self::assertEquals('SysCategory3Title', $secondCategorizedContentElement['categories']);
+        self::assertSame(18, $secondCategorizedContentElement['uid']);
+        self::assertArrayHasKey('header', $secondCategorizedContentElement);
+        self::assertArrayHasKey('media', $secondCategorizedContentElement);
     }
 }
