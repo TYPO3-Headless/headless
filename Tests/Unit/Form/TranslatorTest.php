@@ -127,7 +127,7 @@ class TranslatorTest extends UnitTestCase
                                 'label' => 'translatedValue',
                                 'properties' => [
                                     'validationErrorMessages' => [
-                                        ['code' => 111, 'message' => 'translatedError'],
+                                        ['code' => 111, 'message' => 'translatedError', 'customMessage' => 'translateMe'],
                                     ],
                                 ],
                                 'value' => null,

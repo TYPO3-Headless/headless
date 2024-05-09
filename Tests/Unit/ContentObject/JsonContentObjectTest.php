@@ -52,6 +52,8 @@ class JsonContentObjectTest extends UnitTestCase
 {
     use ProphecyTrait;
 
+    private JsonContentObject $contentObject;
+
     protected function setUp(): void
     {
         $this->resetSingletonInstances = true;
