@@ -93,27 +93,12 @@ class DatabaseQueryProcessor implements DataProcessorInterface
         $targetVariableName = $cObj->stdWrapValue('as', $processorConfiguration, 'records');
 
         $records = $cObj->getRecords($tableName, $processorConfiguration);
-        $processedRecordVariables = $this->processRecordVariables($cObj, $records, $tableName, $processorConfiguration);
-
-        $processedData[$targetVariableName] = $processedRecordVariables;
-
-        return $processedData;
-    }
-
-    /**
-     * @param array $records
-     * @param string $tableName
-     * @param array $processorConfiguration
-     *
-     * @return array
-     */
-    private function processRecordVariables(ContentObjectRenderer $cObj, array $records, string $tableName, array $processorConfiguration): array
-    {
+        $request = $cObj->getRequest();
         $processedRecordVariables = [];
         foreach ($records as $key => $record) {
             $recordContentObjectRenderer = $this->createContentObjectRenderer();
+            $recordContentObjectRenderer->setRequest($request);
             $recordContentObjectRenderer->start($record, $tableName);
-            $recordContentObjectRenderer->setRequest($cObj->getRequest());
 
             $objConf = [];
             $objName = '< ' . $tableName;
@@ -124,7 +109,7 @@ class DatabaseQueryProcessor implements DataProcessorInterface
                 $objConf = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON']);
             }
 
-            $processedRecordVariables[$key] = \json_decode($recordContentObjectRenderer->cObjGetSingle($objName, $objConf), true);
+            $processedRecordVariables[$key] = $objConf !== [] ? \json_decode($recordContentObjectRenderer->cObjGetSingle($objName, $objConf), true) : $record;
             $processedRecordVariables[$key] = $this->contentDataProcessor->process($recordContentObjectRenderer, $processorConfiguration, $processedRecordVariables[$key]);
 
             if (isset($processorConfiguration['overrideFields.'])) {
@@ -142,7 +127,9 @@ class DatabaseQueryProcessor implements DataProcessorInterface
             }
         }
 
-        return $processedRecordVariables;
+        $processedData[$targetVariableName] = $processedRecordVariables;
+
+        return $processedData;
     }
 
     protected function createContentObjectRenderer(): ContentObjectRenderer
