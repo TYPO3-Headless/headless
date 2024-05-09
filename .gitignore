@@ -24,5 +24,10 @@ nbproject
 .Build/
 public/
 vendor/
+build/
+coverage/
+functional/
+reports/
+unit/
 composer.lock
 **/.phpunit.result.cache

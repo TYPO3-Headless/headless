@@ -69,7 +69,7 @@ class ExtractPropertyProcessor implements DataProcessorInterface
         } while (count($key));
 
         return [
-            $targetFieldName => $processedData
+            $targetFieldName => $processedData,
         ];
     }
 }
