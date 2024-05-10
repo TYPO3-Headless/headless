@@ -128,7 +128,7 @@ class JsonContentContentObject extends ContentContentObject
         $data = [];
 
         foreach ($contentElements as $element) {
-            if (str_contains($element, 'Oops, an error occurred!')) {
+            if ($element === '' || str_contains($element, 'Oops, an error occurred!')) {
                 continue;
             }
 
