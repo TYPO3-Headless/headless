@@ -137,7 +137,7 @@ class FileUtility
         );
 
         if ($processingConfiguration->propertiesByType) {
-            $processedProperties = $this->filterProperties($processedProperties);
+            $processedProperties = $this->filterProperties($processingConfiguration, $processedProperties);
         }
 
         $event = $this->eventDispatcher->dispatch(
@@ -219,11 +219,11 @@ class FileUtility
         return array_merge($processed, $props);
     }
 
-    private function filterProperties(array $properties): array
+    private function filterProperties(ProcessingConfiguration $processingConfiguration, array $properties): array
     {
-        $allowedDefault = ['type', 'size', 'title', 'alternative', 'description', 'uidLocal', 'fileReferenceUid', 'mimeType'];
-        $allowedForImages = array_merge($allowedDefault, ['dimensions', 'link', 'linkData']);
-        $allowedForVideo = array_merge($allowedDefault, ['dimensions', 'autoplay', 'originalUrl']);
+        $allowedDefault = $processingConfiguration->defaultFieldsByType !== [] ? $processingConfiguration->defaultFieldsByType : ['type', 'size', 'title', 'alternative', 'description', 'uidLocal', 'fileReferenceUid', 'mimeType'];
+        $allowedForImages = array_merge($allowedDefault, $processingConfiguration->defaultImageFields !== [] ? $processingConfiguration->defaultImageFields : ['dimensions', 'link', 'linkData']);
+        $allowedForVideo = array_merge($allowedDefault, $processingConfiguration->defaultVideoFields !== [] ? $processingConfiguration->defaultVideoFields : ['dimensions', 'autoplay', 'originalUrl']);
 
         $allowed = match ($properties['type']) {
             'video' => $allowedForVideo,

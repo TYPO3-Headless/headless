@@ -41,14 +41,12 @@ class ProcessingConfiguration
             (int)($options['properties.']['flatten'] ?? 0) > 0,
             ((int)($options['properties.']['byType'] ?? 0)) > 0,
             GeneralUtility::trimExplode(',', $options['properties.']['includeOnly'] ?? '', true),
+            GeneralUtility::trimExplode(',', $options['properties.']['defaultFieldsByType'] ?? '', true),
+            GeneralUtility::trimExplode(',', $options['properties.']['defaultImageFields'] ?? '', true),
+            GeneralUtility::trimExplode(',', $options['properties.']['defaultVideoFields'] ?? '', true),
             self::handleLegacyOptions($options['autogenerate.'] ?? []),
             $options
         );
-    }
-
-    public static function legacy(bool $delayProcessing): static
-    {
-        return new static(legacyReturn: true, delayProcessing: $delayProcessing);
     }
 
     private function __construct(
@@ -69,6 +67,9 @@ class ProcessingConfiguration
         public readonly bool $flattenProperties = false,
         public readonly bool $propertiesByType = false,
         public readonly array $includeProperties = [],
+        public readonly array $defaultFieldsByType = [],
+        public readonly array $defaultImageFields = [],
+        public readonly array $defaultVideoFields = [],
         public readonly array $autogenerate = [],
         public readonly array $rawOptions = [],
     ) {}
