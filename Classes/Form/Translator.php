@@ -73,17 +73,22 @@ class Translator
      */
     private function translateRenderables(array $renderables, array $formRuntime, array $sentValues): array
     {
-        foreach ($renderables as &$element) {
+        $translated = [];
+
+        foreach ($renderables as $element) {
             $properties = [];
 
             if (isset($element['renderables']) && is_array($element['renderables'])) {
                 $element['renderables'] = $this->translateRenderables($element['renderables'], $formRuntime, $sentValues);
             }
 
+            $validators = [];
+
             if (isset($element['validators']) &&
                 is_array($element['validators'])) {
-                foreach ($element['validators'] as &$validator) {
+                foreach ($element['validators'] as $validator) {
                     if (!isset($validator['errorMessage'])) {
+                        $validators[] = $validator;
                         continue;
                     }
 
@@ -93,7 +98,11 @@ class Translator
                         $formRuntime,
                         is_array($validator['options'] ?? null) ? $validator['options'] : []
                     );
+
+                    $validators[] = $validator;
                 }
+
+                $element['validators'] = $validators;
             }
 
             if (isset($element['properties']) && is_array($element['properties'])) {
@@ -118,6 +127,7 @@ class Translator
                             $error['code'],
                             $formRuntime
                         ),
+                        'customMessage' => $error['message'],
                     ];
                 }
             }
@@ -137,8 +147,10 @@ class Translator
             $element['defaultValue'] = $translatedDefaultValue !== '' && $translatedDefaultValue !== null ? $translatedDefaultValue : ($element['defaultValue'] ?? '');
             $element['value'] = $sentValues[$element['identifier']] ?? null;
             $element['properties'] = $properties;
+
+            $translated[] = $element;
         }
 
-        return $renderables;
+        return $translated;
     }
 }

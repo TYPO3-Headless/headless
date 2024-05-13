@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Form\Decorator;
 
-use function count;
 use function in_array;
 
 abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInterface
@@ -55,8 +54,8 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
     {
         foreach ($renderables as &$element) {
             if (in_array($element['type'], ['Fieldset', 'GridRow'], true) &&
-                is_array($element['renderables']) &&
-                count($element['renderables'])) {
+                is_array($element['renderables'] ?? []) &&
+                ($element['renderables'] ?? []) !== []) {
                 $element['elements'] = $this->handleRenderables($element['renderables']);
                 unset($element['renderables']);
             } else {
