@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
+use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -174,89 +175,25 @@ class FilesProcessor implements DataProcessorInterface
     protected function processFiles(array $properties = []): ?array
     {
         $data = [];
-        $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
+
+        $processingConfiguration = ProcessingConfiguration::fromOptions($properties);
 
         foreach ($this->fileObjects as $key => $fileObject) {
-            if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
-                $file = $this->getFileUtility()->processFile(
-                    $fileObject,
-                    $properties,
-                    $cropVariant,
-                    (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1
-                );
+            $data[$key] = $this->getFileUtility()->process(
+                $fileObject,
+                $processingConfiguration,
+            );
 
-                $targetWidth = (int)($properties['width'] ?: $file['properties']['dimensions']['width']);
-                $targetHeight = (int)($properties['height'] ?: $file['properties']['dimensions']['height']);
-
-                if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x']) &&
-                    (int)$this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x'] === 1 &&
-                    ($targetWidth || $targetHeight)) {
-                    $file['urlRetina'] = $this->getFileUtility()->processFile(
-                        $fileObject,
-                        array_merge(
-                            $properties,
-                            [
-                                'width' => $targetWidth * FileUtility::RETINA_RATIO,
-                                'height' => $targetHeight * FileUtility::RETINA_RATIO,
-                            ]
-                        ),
-                        $cropVariant,
-                        (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1
-                    )['publicUrl'];
-                }
-
-                if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.']['lqip']) &&
-                    (int)$this->processorConfiguration['processingConfiguration.']['autogenerate.']['lqip'] === 1 &&
-                    ($targetWidth || $targetHeight)) {
-                    $file['urlLqip'] = $this->getFileUtility()->processFile(
-                        $fileObject,
-                        array_merge(
-                            $properties,
-                            [
-                                'width' => $targetWidth * FileUtility::LQIP_RATIO,
-                                'height' => $targetHeight * FileUtility::LQIP_RATIO,
-                            ]
-                        ),
-                        $cropVariant,
-                        (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1
-                    )['publicUrl'];
-                }
-
-                $data[] = $file;
-            } else {
-                $data[$key] = $this->getFileUtility()->processFile(
-                    $fileObject,
-                    $properties,
-                    $cropVariant,
-                    (int)($this->processorConfiguration['processingConfiguration.']['delayProcessing'] ?? 0) === 1
-                );
-
-                $crop = $fileObject->getProperty('crop');
-
-                if ($crop !== null) {
-                    $cropVariants = json_decode($fileObject->getProperty('crop'), true);
-
-                    if (is_array($cropVariants) && count($cropVariants) > 1) {
-                        foreach (array_keys($cropVariants) as $cropVariantName) {
-                            $file = $this->getFileUtility()->processFile($fileObject, $properties, $cropVariantName);
-                            $data[$key]['cropVariants'][$cropVariantName] = $file;
-                        }
-                    }
-                }
-            }
+            $data[$key] = $this->getFileUtility()->processCropVariants($fileObject, $processingConfiguration, $data[$key]);
         }
 
-        if (isset($this->processorConfiguration['processingConfiguration.']['returnFlattenObject']) &&
-            (int)$this->processorConfiguration['processingConfiguration.']['returnFlattenObject'] === 1) {
+        if ($processingConfiguration->flattenObject) {
             return $data[0] ?? null;
         }
 
         return $data;
     }
 
-    /**
-     * @return FileUtility
-     */
     protected function getFileUtility(): FileUtility
     {
         return GeneralUtility::makeInstance(FileUtility::class);

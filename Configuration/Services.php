@@ -25,6 +25,7 @@ use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterPagePreviewUriGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\LoginConfirmedEventListener;
 use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
+use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use FriendsOfTYPO3\Headless\XClass\TemplateView;
@@ -72,6 +73,7 @@ return static function (ContainerConfigurator $configurator): void {
     $toLoad->set(IntegerContentObject::class)->tag('frontend.contentobject', ['identifier' => 'INT']);
     $toLoad->set(FloatContentObject::class)->tag('frontend.contentobject', ['identifier' => 'FLOAT']);
 
+    $services->set(FileUtility::class)->public();
     $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
     $services->set(AfterLinkIsGeneratedListener::class)->tag(
         'event.listener',

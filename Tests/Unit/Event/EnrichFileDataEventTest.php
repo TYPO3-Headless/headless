@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Event;
 
 use FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent;
+use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\FileReference;
@@ -27,12 +28,16 @@ class EnrichFileDataEventTest extends UnitTestCase
             'prop-1' => 'value-1',
             'prop-2' => 'value-2',
         ];
+
+        $propsConfig = ProcessingConfiguration::fromOptions($properties);
+
         $fileReferenceMock = $this->getMockFileReferenceForData($this->getFileReferenceBaselineData());
-        $enrichFileDataEvent = new EnrichFileDataEvent(clone $fileReferenceMock, $fileReferenceMock, $properties);
+        $enrichFileDataEvent = new EnrichFileDataEvent(clone $fileReferenceMock, $fileReferenceMock, $propsConfig, $properties);
 
         self::assertEquals($fileReferenceMock, $enrichFileDataEvent->getOriginal());
         self::assertSame($fileReferenceMock, $enrichFileDataEvent->getProcessed());
         self::assertSame($properties, $enrichFileDataEvent->getProperties());
+        self::assertSame($propsConfig, $enrichFileDataEvent->getProcessingConfiguration());
 
         $overwriteProperties = $enrichFileDataEvent->getProperties();
         $overwriteProperties['prop-1'] = 'value-overwritten';
