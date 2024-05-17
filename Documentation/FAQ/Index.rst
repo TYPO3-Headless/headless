@@ -1,5 +1,3 @@
-.. include:: ../Includes.txt
-
 .. _faq:
 
 ===============

@@ -1,15 +1,11 @@
-.. include:: ../Includes.txt
-
 .. _introduction:
 
 ==============
 Introduction
 ==============
 
-.. Info::
-
-   This extension is part of the `TYPO3 PWA Initiative <https://typo3.org/community/teams/typo3-development/initiatives/pwa/>`__
-   and is still in an early stage of development.
+This extension is part of the `TYPO3 PWA Initiative <https://typo3.org/community/teams/typo3-development/initiatives/pwa/>`__
+and is still in an early stage of development.
 
 .. _what-it-does:
 
