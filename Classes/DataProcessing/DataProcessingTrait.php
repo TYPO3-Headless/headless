@@ -23,7 +23,7 @@ trait DataProcessingTrait
         if (!isset($processorConfiguration['appendData']) ||
             (int)$processorConfiguration['appendData'] === 0) {
             unset($processedData['data']);
-            if (isset($processedData[$processorConfiguration['as']])
+            if (isset($processorConfiguration['as'], $processedData[$processorConfiguration['as']])
                 && is_array($processedData[$processorConfiguration['as']])) {
                 foreach ($processedData[$processorConfiguration['as']] as &$item) {
                     if (isset($item['data'])) {
