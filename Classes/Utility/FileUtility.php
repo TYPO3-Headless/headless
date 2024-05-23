@@ -85,7 +85,8 @@ class FileUtility
 
         if (!$processingConfiguration->legacyReturn) {
             unset($originalProperties['linkData']);
-            $originalProperties['link'] = $processingConfiguration->linkResult ? $linkData : $link;
+            $linkValue = $processingConfiguration->linkResult ? $linkData : $link;
+            $originalProperties['link'] = $linkValue === '' ? null : $linkValue;
         }
 
         if ($fileRenderer === null && GeneralUtility::inList(
