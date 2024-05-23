@@ -22,4 +22,11 @@ styles.content {
         # cat=content/cTextmedia/i3; type=int+; label= Media element border, padding: Padding left and right to the media element, around the border
         borderPadding = 0
     }
+
+    links {
+        # cat=content/links/l2; type=small; label= Target for external links
+        extTarget = _blank
+        # cat=content/links/l3; type=string; label= Parts to keep when building links: Comma separated list of the link parts to show when building the link-text: scheme,path,query. Example: "" (empty) => www.example.com, "scheme,path" => http://www.example.com
+        keep = path
+    }
 }
