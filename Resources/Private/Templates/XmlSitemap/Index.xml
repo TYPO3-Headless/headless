@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="{headless:domain(return: 'proxyUrl')}{xslFile}"?>
 
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <f:variable name="frontendBase" value="{headless:domain(return: 'frontendBase')}" />
     <f:for each="{sitemaps}" as="sitemap">
         <sitemap>
             <f:spaceless>
                 <f:if condition="{sitemap.page}">
-                    <f:then><loc><f:uri.typolink parameter="t3://page?uid=current&type={type}&sitemap={sitemap.key}&page={sitemap.page}" absolute="true" /></loc></f:then>
-                    <f:else><loc><f:uri.typolink parameter="t3://page?uid=current&type={type}&sitemap={sitemap.key}" absolute="true" /></loc></f:else>
+                    <f:then><loc>{frontendBase}<f:uri.typolink parameter="t3://page?uid=current&type={type}&sitemap={sitemap.key}&page={sitemap.page}" /></loc></f:then>
+                    <f:else><loc>{frontendBase}<f:uri.typolink parameter="t3://page?uid=current&type={type}&sitemap={sitemap.key}" /></loc></f:else>
                 </f:if>
             </f:spaceless>
             <lastmod>{sitemap.lastMod -> f:format.date(format: 'c')}</lastmod>
