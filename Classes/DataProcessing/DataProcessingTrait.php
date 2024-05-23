@@ -26,7 +26,7 @@ trait DataProcessingTrait
             if (isset($processorConfiguration['as'], $processedData[$processorConfiguration['as']])
                 && is_array($processedData[$processorConfiguration['as']])) {
                 foreach ($processedData[$processorConfiguration['as']] as &$item) {
-                    if (isset($item['data'])) {
+                    if (is_array($item) && isset($item['data'])) {
                         unset($item['data']);
                     }
 
