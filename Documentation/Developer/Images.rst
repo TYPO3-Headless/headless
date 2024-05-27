@@ -133,7 +133,12 @@ The rendering configuration can be set via the property `processingConfiguration
 * `linkResult` (0|1): Allows to define if file object should return only url of defined link or whole LinkResult object
 * `cacheBusting` (0|1): Allows to enable cacheBusting urls for processed files
 * `conditionalCropVariant` (0|1): Allows conditionally autogenerate files with defined variants if set (if not all variants are returned)
+* `processPdfAsImage` (0|1): Enabled optional processing pdf files as image (default off)
+* `processSvg` (0|1): Enabled optional processing svg files (default off)
 * `properties.byType` (0|1): Allows filter file properties by type (i.e. do not return video properties on images)
+* `properties.defaultFieldsByType` (coma separated list of fields): Default fields for when enabled option `properties.byType`
+* `properties.defaultImageFields` (coma separated list of fields): Default fields for image type when enabled option `properties.byType`
+* `properties.defaultVideoFields` (coma separated list of fields): Default fields for video type when enabled option `properties.byType`
 * `properties.includeOnly` (string, comma separated): Configure what file properties to return
 * `properties.flatten` (0|1): Flatten nested properties (dimensions array) to use with `properties.includeOnly`
 * `returnFlattenObject`: without that flag an array of (multiple) images is rendered. Set this if you're only rendering 1 image and want to reduce nesting.

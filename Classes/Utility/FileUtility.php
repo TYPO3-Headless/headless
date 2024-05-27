@@ -93,7 +93,17 @@ class FileUtility
             $GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'],
             $fileReference->getExtension()
         )) {
-            if (!$processingConfiguration->delayProcessing && $fileReference->getMimeType() !== 'image/svg+xml') {
+            $disableProcessingFor = [];
+
+            if (!$processingConfiguration->processPdfAsImage) {
+                $disableProcessingFor[] = 'application/pdf';
+            }
+
+            if (!$processingConfiguration->processSvg) {
+                $disableProcessingFor[] = 'image/svg+xml';
+            }
+
+            if (!$processingConfiguration->delayProcessing && !in_array($fileReference->getMimeType(), $disableProcessingFor, true)) {
                 $fileReference = $this->processImageFile($fileReference, $processingConfiguration);
             }
             $publicUrl = $this->imageService->getImageUri($fileReference, true);
