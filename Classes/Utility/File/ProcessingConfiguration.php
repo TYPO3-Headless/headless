@@ -24,8 +24,8 @@ class ProcessingConfiguration
     public static function fromOptions(array $options): static
     {
         return new static(
-            (int)($options['width'] ?? 0),
-            (int)($options['height'] ?? 0),
+            (string)($options['width'] ?? ''),
+            (string)($options['height'] ?? ''),
             (int)($options['minWidth'] ?? 0),
             (int)($options['minHeight'] ?? 0),
             (int)($options['maxWidth'] ?? 0),
@@ -52,8 +52,8 @@ class ProcessingConfiguration
     }
 
     private function __construct(
-        public readonly int $width = 0,
-        public readonly int $height = 0,
+        public readonly string $width = '',
+        public readonly string $height = '',
         public readonly int $minWidth = 0,
         public readonly int $minHeight = 0,
         public readonly int $maxWidth = 0,
