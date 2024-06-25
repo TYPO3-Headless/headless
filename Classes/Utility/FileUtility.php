@@ -347,8 +347,8 @@ class FileUtility
     {
         $originalWidth = $originalReference->getProperty('width');
         $originalHeight = $originalReference->getProperty('height');
-        $targetWidth = $processingConfiguration->width > 0 ? $processingConfiguration->width : $fileReference->getProperty('width');
-        $targetHeight = $processingConfiguration->height > 0 ? $processingConfiguration->height : $fileReference->getProperty('height');
+        $targetWidth = (int)($processingConfiguration->width !== '' ? $processingConfiguration->width : $fileReference->getProperty('width'));
+        $targetHeight = (int)($processingConfiguration->height !== '' ? $processingConfiguration->height : $fileReference->getProperty('height'));
 
         if ($targetWidth || $targetHeight) {
             foreach ($processingConfiguration->autogenerate as $autogenerateKey => $conf) {
