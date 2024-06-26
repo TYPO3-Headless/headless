@@ -8,12 +8,18 @@
  */
 
 use FriendsOfTYPO3\Headless\Hooks\FileOrFolderLinkBuilder;
+use FriendsOfTYPO3\Headless\Seo\MetaTag\EdgeMetaTagManager;
+use FriendsOfTYPO3\Headless\Seo\MetaTag\Html5MetaTagManager;
+use FriendsOfTYPO3\Headless\Seo\MetaTag\OpenGraphMetaTagManager;
+use FriendsOfTYPO3\Headless\Seo\MetaTag\TwitterCardMetaTagManager;
 use FriendsOfTYPO3\Headless\Resource\Rendering\AudioTagRenderer;
 use FriendsOfTYPO3\Headless\Resource\Rendering\VideoTagRenderer;
 use FriendsOfTYPO3\Headless\Resource\Rendering\VimeoRenderer;
 use FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer;
+use FriendsOfTYPO3\Headless\Seo\CanonicalGenerator;
 use FriendsOfTYPO3\Headless\XClass\ResourceLocalDriver;
 use TYPO3\CMS\Core\Configuration\Features;
+use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
 use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
@@ -72,6 +78,28 @@ call_user_func(
                 'className' => FriendsOfTYPO3\Headless\XClass\Preview\PreviewUriBuilder::class
             ];
         }
+
+        $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['TYPO3\CMS\Frontend\Page\PageGenerator']['generateMetaTags']['canonical'] =
+            CanonicalGenerator::class . '->handle';
+
+        $metaTagManagerRegistry = GeneralUtility::makeInstance(MetaTagManagerRegistry::class);
+        $metaTagManagerRegistry->registerManager(
+            'html5',
+            Html5MetaTagManager::class
+        );
+        $metaTagManagerRegistry->registerManager(
+            'edge',
+            EdgeMetaTagManager::class
+        );
+        $metaTagManagerRegistry->registerManager(
+            'opengraph',
+            OpenGraphMetaTagManager::class
+        );
+        $metaTagManagerRegistry->registerManager(
+            'twitter',
+            TwitterCardMetaTagManager::class
+        );
+        unset($metaTagManagerRegistry);
 
         $rendererRegistry = GeneralUtility::makeInstance(RendererRegistry::class);
         $rendererRegistry->registerRendererClass(YouTubeRenderer::class);

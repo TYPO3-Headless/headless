@@ -1,6 +1,11 @@
 page < lib.headlessPage
 page {
     typeNum = 0
+    meta {
+        keywords.data = page:keywords
+        generator = TYPO3 CMS x T3Headless
+        generator.replace = 1
+    }
 
     10 {
         fields {
@@ -8,6 +13,7 @@ page {
             id {
                 field = uid
             }
+
             type = CASE
             type {
                 key.field = doktype
@@ -36,10 +42,12 @@ page {
                 default = TEXT
                 default.value = Standard
             }
+
             slug = TEXT
             slug {
                 field = slug
             }
+
             media = TEXT
             media {
                 dataProcessing {
@@ -50,6 +58,19 @@ page {
                     }
                 }
             }
+
+            # placeholder only, overridden later on via event
+            seo = JSON
+            seo {
+                fields {
+                    title = TEXT
+                    title {
+                        field = title
+                    }
+                }
+            }
+
+            # backwards compatibility legacy handling of meta tags, to be removed in future major releases
             meta =< lib.meta
             categories =< lib.categories
             breadcrumbs =< lib.breadcrumbs

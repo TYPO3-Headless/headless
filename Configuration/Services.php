@@ -79,15 +79,10 @@ return static function (ContainerConfigurator $configurator): void {
         'event.listener',
         ['identifier' => 'headless/AfterLinkIsGenerated']
     );
-
-    $features = GeneralUtility::makeInstance(Features::class);
-
-    if ($features->isFeatureEnabled('headless.pageTitleProviders')) {
-        $services->set(AfterCacheableContentIsGeneratedListener::class)->tag(
-            'event.listener',
-            ['identifier' => 'headless/AfterCacheableContentIsGenerated']
-        );
-    }
+    $services->set(AfterCacheableContentIsGeneratedListener::class)->tag(
+        'event.listener',
+        ['identifier' => 'headless/AfterCacheableContentIsGenerated']
+    );
 
     if ($feloginInstalled) {
         $services->set(LoginConfirmedEventListener::class)->tag(
@@ -105,6 +100,7 @@ return static function (ContainerConfigurator $configurator): void {
         $services->set(FormTranslationService::class)->arg('$runtimeCache', service('cache.runtime'))->public();
     }
 
+    $features = GeneralUtility::makeInstance(Features::class);
     if ($features->isFeatureEnabled('headless.overrideFluidTemplates')) {
         $templateService = $services->alias(
             \TYPO3\CMS\Fluid\View\TemplateView::class,
