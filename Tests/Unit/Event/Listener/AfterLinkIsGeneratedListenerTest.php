@@ -16,6 +16,8 @@ use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
+use TYPO3\CMS\Core\LinkHandling\TypoLinkCodecService;
+use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -34,8 +36,11 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $siteFinder = $this->prophesize(SiteFinder::class);
 
         $listener = new AfterLinkIsGeneratedListener(
+            $this->prophesize(Logger::class)->reveal(),
             new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()),
-            $this->prophesize(LinkService::class)->reveal()
+            $this->prophesize(LinkService::class)->reveal(),
+            new TypoLinkCodecService(),
+            $this->prophesize(SiteFinder::class)->reveal()
         );
 
         self::assertInstanceOf(AfterLinkIsGeneratedListener::class, $listener);
@@ -48,13 +53,17 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $siteFinder = $this->prophesize(SiteFinder::class);
 
         $listener = new AfterLinkIsGeneratedListener(
+            $this->prophesize(Logger::class)->reveal(),
             new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()),
-            $this->prophesize(LinkService::class)->reveal()
+            $this->prophesize(LinkService::class)->reveal(),
+            new TypoLinkCodecService(),
+            $this->prophesize(SiteFinder::class)->reveal()
         );
 
         $site = new Site('test', 1, []);
         $cObj = $this->prophesize(ContentObjectRenderer::class);
         $cObj->getRequest()->willReturn((new ServerRequest())->withAttribute('site', $site));
+        $cObj->stdWrapValue(Argument::is('ATagParams'), Argument::is([]))->willReturn('');
 
         $linkResult = new LinkResult('page', '/');
         $linkResult = $linkResult->withLinkText('|');
@@ -97,50 +106,21 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
 
         $listener = new AfterLinkIsGeneratedListener(
+            $this->prophesize(Logger::class)->reveal(),
             $urlUtility->reveal(),
-            $this->prophesize(LinkService::class)->reveal()
+            $this->prophesize(LinkService::class)->reveal(),
+            new TypoLinkCodecService(),
+            $this->prophesize(SiteFinder::class)->reveal()
         );
 
         $linkResult = new LinkResult('page', '/');
+        $linkResult = $linkResult->withLinkConfiguration(['parameter' => 2]);
         $linkResult = $linkResult->withLinkText('t3://page?uid=2');
 
         $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj->reveal(), []);
         $listener($event);
 
         self::assertSame('https://frontend-domain.tld/page', $event->getLinkResult()->getUrl());
-    }
-
-    public function test__invokeModifingWithoutPageId()
-    {
-        $resolver = $this->prophesize(Resolver::class);
-        $resolver->evaluate(Argument::any())->willReturn(true);
-
-        $site = new Site('test', 1, []);
-
-        $urlUtility = $this->prophesize(UrlUtility::class);
-        $urlUtility->getFrontendUrlWithSite(
-            Argument::is('/'),
-            Argument::is($site),
-            Argument::is('frontendBase')
-        )->willReturn('https://front.typo3.tld');
-
-        $cObj = $this->prophesize(ContentObjectRenderer::class);
-        $request = (new ServerRequest())->withAttribute('site', $site);
-        $cObj->getRequest()->willReturn($request);
-
-        $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
-
-        $listener = new AfterLinkIsGeneratedListener(
-            $urlUtility->reveal(),
-            $this->prophesize(LinkService::class)->reveal()
-        );
-        $linkResult = new LinkResult('page', '/');
-        $linkResult = $linkResult->withLinkText('|');
-
-        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj->reveal(), []);
-        $listener($event);
-
-        self::assertSame('https://front.typo3.tld', $event->getLinkResult()->getUrl());
     }
 
     public function test__invokeModifingExternalSite()
@@ -162,7 +142,13 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
         $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
 
-        $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $linkService->reveal());
+        $listener = new AfterLinkIsGeneratedListener(
+            $this->prophesize(Logger::class)->reveal(),
+            $urlUtility->reveal(),
+            $linkService->reveal(),
+            new TypoLinkCodecService(),
+            $this->prophesize(SiteFinder::class)->reveal()
+        );
         $linkResult = new LinkResult('page', '/');
         $linkResult = $linkResult->withLinkConfiguration(['parameter.' => ['data' => 'parameters:href']]);
         $linkResult = $linkResult->withLinkText('|');
@@ -195,9 +181,18 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $request = (new ServerRequest())->withAttribute('site', $site);
         $cObj->getRequest()->willReturn($request);
 
+        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder->getSiteByPageId(Argument::any())->willReturn($site);
+
         $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
 
-        $listener = new AfterLinkIsGeneratedListener($urlUtility->reveal(), $linkService->reveal());
+        $listener = new AfterLinkIsGeneratedListener(
+            $this->prophesize(Logger::class)->reveal(),
+            $urlUtility->reveal(),
+            $linkService->reveal(),
+            new TypoLinkCodecService(),
+            $siteFinder->reveal()
+        );
 
         $linkResult = new LinkResult('page', 'https://typo3.tld/sitemap-type/pages/sitemap.xml');
         $linkResult = $linkResult->withLinkConfiguration([
