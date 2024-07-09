@@ -14,6 +14,7 @@ namespace FriendsOfTYPO3\Headless\ContentObject;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
+use TYPO3\CMS\Backend\View\BackendLayoutView;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -72,6 +73,18 @@ use const JSON_FORCE_OBJECT;
  *    }
  *    doNotGroupByColPos = 1
  * }
+ *
+ * * ** sortByBackendLayout = 0(default)|1 **
+ * This option allows to return sorted CE by colPos with order by used backendLayout
+ *
+ * lib.content = CONTENT_JSON
+ * lib.content {
+ *    table = tt_content
+ *    select {
+ *        orderBy = sorting
+ *    }
+ *    sortByBackendLayout = 1
+ * }
  */
 class JsonContentContentObject extends ContentContentObject
 {
@@ -127,6 +140,8 @@ class JsonContentContentObject extends ContentContentObject
     {
         $data = [];
 
+        $groupingEnabled = $this->isColPolsGroupingEnabled($conf);
+
         foreach ($contentElements as $element) {
             if ($element === '' || str_contains($element, 'Oops, an error occurred!')) {
                 continue;
@@ -142,11 +157,23 @@ class JsonContentContentObject extends ContentContentObject
                 continue;
             }
 
-            if ($this->isColPolsGroupingEnabled($conf) && ($element['colPos'] ?? 0) >= 0) {
+            if ($groupingEnabled && ($element['colPos'] ?? 0) >= 0) {
                 $data['colPos' . $element['colPos']][] = $element;
             } else {
                 $data[] = $element;
             }
+        }
+
+        if ($groupingEnabled && $this->isSortByBackendLayoutEnabled($conf)) {
+            $backendLayoutView = GeneralUtility::makeInstance(BackendLayoutView::class);
+            $backendLayout = $backendLayoutView->getSelectedBackendLayout($this->request->getAttribute('routing')->getPageId());
+
+            $sorted = [];
+            foreach ($backendLayout['__colPosList'] ?? [] as $value) {
+                $sorted['colPos' . $value] = $data['colPos' . $value];
+            }
+
+            $data = $sorted;
         }
 
         return $data;
@@ -251,6 +278,11 @@ class JsonContentContentObject extends ContentContentObject
         }
 
         return $theValue;
+    }
+
+    private function isSortByBackendLayoutEnabled(array $conf): bool
+    {
+        return isset($conf['sortByBackendLayout']) && (int)$conf['sortByBackendLayout'] === 1;
     }
 
     private function isColPolsGroupingEnabled(array $conf): bool
