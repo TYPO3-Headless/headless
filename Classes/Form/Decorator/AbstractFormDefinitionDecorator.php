@@ -89,7 +89,9 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
             return $element;
         }
 
-        foreach ($element['validators'] as &$validator) {
+        $validators = [];
+
+        foreach ($element['validators'] as $validator) {
             if ($validator['identifier'] === 'RegularExpression') {
                 $jsRegex = $validator['FERegularExpression'] ?? null;
 
@@ -98,7 +100,17 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
                     unset($validator['FERegularExpression']);
                 }
             }
+
+            if ((int)($validator['backendOnly'] ?? 0)) {
+                unset($validator);
+            }
+
+            if (isset($validator)) {
+                $validators[] = $validator;
+            }
         }
+
+        $element['validators'] = $validators;
 
         return $element;
     }
