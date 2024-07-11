@@ -74,7 +74,7 @@ use const JSON_FORCE_OBJECT;
  *    doNotGroupByColPos = 1
  * }
  *
- * * ** sortByBackendLayout = 0(default)|1 **
+ * ** sortByBackendLayout = 0(default)|1 **
  * This option allows to return sorted CE by colPos with order by used backendLayout
  *
  * lib.content = CONTENT_JSON
@@ -84,6 +84,18 @@ use const JSON_FORCE_OBJECT;
  *        orderBy = sorting
  *    }
  *    sortByBackendLayout = 1
+ * }
+ *
+ * ** returnSingleRow = 0(default)|1 **
+ * This option allows to return only one row instead of array with one element
+ *
+ * lib.content = CONTENT_JSON
+ * lib.content {
+ *    table = tt_content
+ *    select {
+ *        orderBy = sorting
+ *    }
+ *    returnSingleRow = 1
  * }
  */
 class JsonContentContentObject extends ContentContentObject
@@ -174,6 +186,8 @@ class JsonContentContentObject extends ContentContentObject
             }
 
             $data = $sorted;
+        } elseif (!$groupingEnabled && $this->returnSingleRowEnabled($conf)) {
+            return $data[0] ?? [];
         }
 
         return $data;
@@ -288,5 +302,10 @@ class JsonContentContentObject extends ContentContentObject
     private function isColPolsGroupingEnabled(array $conf): bool
     {
         return !isset($conf['doNotGroupByColPos']) || (int)$conf['doNotGroupByColPos'] === 0;
+    }
+
+    private function returnSingleRowEnabled(array $conf): bool
+    {
+        return isset($conf['returnSingleRow']) && (int)$conf['returnSingleRow'] === 1;
     }
 }
