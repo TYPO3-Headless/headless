@@ -97,6 +97,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     public function cObjGet(array $setup, string $addKey = ''): array
     {
         $content = [];
+        $nullableFieldsIfEmpty = GeneralUtility::trimExplode(',', $this->conf['nullableFieldsIfEmpty'] ?? '', true);
 
         $sKeyArray = $this->filterByStringKeys($setup);
         foreach ($sKeyArray as $theKey) {
@@ -117,7 +118,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ($theValue === 'USER_INT' || str_starts_with((string)$content[$theKey], '<!--INT_SCRIPT.')) {
                     $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey], (int)($conf['ifEmptyReturnNull'] ?? 0) === 1 ? HeadlessUserInt::STANDARD_NULLABLE : HeadlessUserInt::STANDARD);
                 }
-                if ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 && $content[$theKey] === '') {
+                if ($content[$theKey] === '' && ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 || in_array($theKey, $nullableFieldsIfEmpty, true))) {
                     $content[$theKey] = null;
                 }
                 if ((int)($conf['ifEmptyUnsetKey'] ?? 0) === 1 && ($content[$theKey] === '' || $content[$theKey] === false)) {
