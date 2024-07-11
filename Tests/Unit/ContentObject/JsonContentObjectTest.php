@@ -148,6 +148,7 @@ class JsonContentObjectTest extends UnitTestCase
             [[], '[]'],
             [null, '[]'],
             [['fields.' => ['test' => 'TEXT', 'test.' => ['value' => '', 'ifEmptyUnsetKey' => 1]]], json_encode([])],
+            [['nullableFieldsIfEmpty' => 'test,test3', 'fields.' => ['test' => 'TEXT', 'test.' => ['value' => ''], 'test2' => 'TEXT', 'test2.' => ['value' => '1'], 'test3' => 'TEXT', 'test3.' => ['value' => '']]], json_encode(['test' => null, 'test2' => '1', 'test3' => null])],
             [['fields.' => ['test' => 'INT', 'test.' => ['value' => '1', 'ifEmptyUnsetKey' => 1]]], json_encode(['test' => 1])],
             [['if.' => ['isTrue' => 0], 'fields.' => ['test' => 'TEXT', 'test.' => ['value' => '1']]], ''],
             [['if.' => ['isTrue' => 1], 'fields.' => ['test' => 'TEXT', 'test.' => ['value' => '1']]], json_encode(['test' => '1'])],
