@@ -62,6 +62,9 @@ call_user_func(
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][LoginController::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\Controller\LoginController::class
             ];
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][PasswordRecoveryController::class] = [
+                'className' => FriendsOfTYPO3\Headless\XClass\Controller\PasswordRecoveryController::class
+            ];
         }
 
         if (ExtensionManagementUtility::isLoaded('workspaces')) {
