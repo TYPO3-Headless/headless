@@ -40,10 +40,10 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
         $status = 'success';
 
         if ($this->isLogoutSuccessful()) {
-            $this->eventDispatcher->dispatch(new LogoutConfirmedEvent($this, $this->view));
+            $this->eventDispatcher->dispatch(new LogoutConfirmedEvent($this, $this->view, $this->request));
         } elseif ($this->hasLoginErrorOccurred()) {
             $status = 'failure';
-            $this->eventDispatcher->dispatch(new LoginErrorOccurredEvent());
+            $this->eventDispatcher->dispatch(new LoginErrorOccurredEvent($this->request));
         }
 
         if (($forwardResponse = $this->handleLoginForwards()) !== null) {
@@ -53,7 +53,7 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
             return $redirectResponse;
         }
 
-        $this->eventDispatcher->dispatch(new ModifyLoginFormViewEvent($this->view));
+        $this->eventDispatcher->dispatch(new ModifyLoginFormViewEvent($this->view, $this->request));
 
         $storagePageIds = ($GLOBALS['TYPO3_CONF_VARS']['FE']['checkFeUserPid'] ?? false)
             ? $this->pageRepository->getPageIdsRecursive(GeneralUtility::intExplode(',', (string)($this->settings['pages'] ?? ''), true), (int)($this->settings['recursive'] ?? 0))
