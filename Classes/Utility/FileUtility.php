@@ -386,7 +386,9 @@ class FileUtility
         $crop = $originalFileReference->getProperty('crop');
 
         if ($crop !== null) {
-            unset($processedFile['crop'], $processedFile['properties']['crop']);
+            if (!$processingConfiguration->legacyReturn) {
+                unset($processedFile['crop'], $processedFile['properties']['crop']);
+            }
 
             $cropVariants = json_decode($originalFileReference->getProperty('crop'), true);
 
@@ -398,8 +400,9 @@ class FileUtility
                         continue;
                     }
 
+                    $processingConfiguration = $processingConfiguration->withOptions(['cropVariant' => $cropVariantName]);
                     $file = $this->process($originalFileReference, $processingConfiguration);
-                    $processedFile['cropVariants'][$cropVariantName] = $this->cropVariant($processingConfiguration, $file);
+                    $processedFile['cropVariants'][$cropVariantName] = $this->cropVariant($processingConfiguration, $file, $cropVariants[$cropVariantName]);
                 }
             }
         }
@@ -407,7 +410,7 @@ class FileUtility
         return $processedFile;
     }
 
-    private function cropVariant(ProcessingConfiguration $processingConfiguration, array $file): array
+    private function cropVariant(ProcessingConfiguration $processingConfiguration, array $file, array $cropVariant = []): array
     {
         $url = $processingConfiguration->legacyReturn ? $file['publicUrl'] : $file['url'];
         $urlKey = $processingConfiguration->legacyReturn ? 'publicUrl' : 'url';
@@ -419,12 +422,18 @@ class FileUtility
         }
 
         if (!$processingConfiguration->flattenProperties) {
-            $path .= 'dimensions/';
+            $path .= 'cropDimensions/';
+        }
+
+        $additional = [];
+        if ($processingConfiguration->outputCropArea) {
+            $additional = ['crop' => $cropVariant];
         }
 
         $dimensions = [
             'width' => ArrayUtility::getValueByPath($file, $path . 'width'),
             'height' => ArrayUtility::getValueByPath($file, $path . 'height'),
+            ...$additional,
         ];
 
         if (!$processingConfiguration->legacyReturn && $processingConfiguration->flattenProperties) {

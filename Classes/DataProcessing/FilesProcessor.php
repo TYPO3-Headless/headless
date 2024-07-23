@@ -184,7 +184,9 @@ class FilesProcessor implements DataProcessorInterface
                 $processingConfiguration,
             );
 
-            $data[$key] = $this->getFileUtility()->processCropVariants($fileObject, $processingConfiguration, $data[$key]);
+            if (!$processingConfiguration->delayProcessing) {
+                $data[$key] = $this->getFileUtility()->processCropVariants($fileObject, $processingConfiguration, $data[$key]);
+            }
         }
 
         if ($processingConfiguration->flattenObject) {
