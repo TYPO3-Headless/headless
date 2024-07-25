@@ -365,7 +365,6 @@ To use JsonRedirect, define it in the setup.yaml of your extension form's setup:
 .. image:: ../Images/Configuration/JsonViewModule.png
     :alt: JsonView Module icon with label
 
-|
 
 The JsonView module is an experimental approach for previewing JSON responses of a page in different contexts like pageType, page arguments, usergroup, language, and show/hide hidden content.
 
@@ -377,7 +376,6 @@ The JsonView module is an experimental approach for previewing JSON responses of
 .. image:: ../Images/Configuration/JsonViewModule-example.png
   :alt: Root page for the API endpoint
 
-|
 
 **PageTypeModes**
 
@@ -389,7 +387,6 @@ By default, there are 3 settings available:
 - *initialData* - standard response from pageType=834
 - *detailNews* (commented out) - example of calling the detail action of the news extension for test purposes
 
-|
 
 .. code-block:: yaml
 
@@ -416,8 +413,7 @@ By default, there are 3 settings available:
     #        action: detail
     #        controller: News
     #        news: 1
-
-|
+..
 
 **Custom YAML Configuration**
 
@@ -425,3 +421,31 @@ You can always create your own YAML configuration and set it in the extension co
 
 .. image:: ../Images/Configuration/JsonViewModule-extconf.png
   :alt: Root page for the API endpoint
+
+Content element categories
+==========================
+
+Headless default configuration for content element categories in TypoScript `lib.contentElement` is to look in root (`page uid=0`). However depending on your project needs this may not ideal.
+
+(as of TYPO3 v12 you cannot use together `pidInList = root` and `recursive = 99`)
+
+Alternative approach for categories may be to use categories from current rootPage which mitigates this problem.
+
+To begin you need to unset previous `pidInList` value
+
+.. code-block:: text
+      lib.contentElement.fields.categories.10.select.pidInList >
+
+If you need categories from current rootPage
+
+.. code-block:: text
+      lib.contentElement.fields.categories.10.select.pidInList >
+      lib.contentElement.fields.categories.10.select.pidInList.data = leveluid : 0
+
+You can add 'recursive' if categories may be stored under current rootPage
+
+.. code-block:: text
+      lib.contentElement.fields.categories.10.select.pidInList >
+      lib.contentElement.fields.categories.10.select.pidInList.data = leveluid : 0
+      lib.contentElement.fields.categories.10.select.recursive = 99
+
