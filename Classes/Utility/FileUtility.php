@@ -294,16 +294,21 @@ class FileUtility
             $cropVariantCollection = $this->createCropVariant((string)$fileReference->getProperty('crop'));
             $cropArea = $cropVariantCollection->getCropArea($processingConfiguration->cropVariant);
 
-            return $this->imageService->applyProcessingInstructions($fileReference, [
-                'width' => $processingConfiguration->width,
-                'height' => $processingConfiguration->height,
-                'minWidth' => $processingConfiguration->minWidth,
-                'minHeight' => $processingConfiguration->minHeight,
-                'maxWidth' => $processingConfiguration->maxWidth,
-                'maxHeight' => $processingConfiguration->maxWidth,
+            $instructions = [
+                'width' => $processingConfiguration->width !== '' ? $processingConfiguration->width : null,
+                'height' => $processingConfiguration->height !== '' ? $processingConfiguration->height : null ,
+                'minWidth' => $processingConfiguration->minWidth > 0 ? $processingConfiguration->minWidth : null,
+                'minHeight' => $processingConfiguration->minHeight > 0 ? $processingConfiguration->minHeight : null,
+                'maxWidth' => $processingConfiguration->maxWidth > 0 ? $processingConfiguration->maxWidth : null,
+                'maxHeight' => $processingConfiguration->maxHeight > 0 ? $processingConfiguration->maxHeight : null,
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($fileReference),
-                'fileExtension' => $processingConfiguration->fileExtension,
-            ]);
+            ];
+
+            if ($processingConfiguration->fileExtension) {
+                $instructions['fileExtension'] = $processingConfiguration->fileExtension;
+            }
+
+            return $this->imageService->applyProcessingInstructions($fileReference, $instructions);
         } catch (\UnexpectedValueException|\RuntimeException|\InvalidArgumentException $e) {
             $type = lcfirst(get_class($fileReference));
             $status = get_class($e);
