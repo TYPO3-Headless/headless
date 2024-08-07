@@ -169,8 +169,8 @@ class SiteProvider implements SiteProviderInterface
             ->select('uid')
             ->from('pages')
             ->andWhere(
-                $queryBuilder->expr()->eq('is_siteroot', $queryBuilder->createNamedParameter(1, \PDO::PARAM_INT)),
-                $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($pid, \PDO::PARAM_INT)),
+                $queryBuilder->expr()->eq('is_siteroot', $queryBuilder->createNamedParameter(1, Connection::PARAM_INT)),
+                $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($pid, Connection::PARAM_INT)),
             )
             ->executeQuery()
             ->fetchAllAssociative();
