@@ -109,7 +109,7 @@ final class AfterLinkIsGeneratedListener
             throw new UnableToLinkException('Could not resolve link details from ' . $linkParameter, 1642001442, null, $event->getLinkResult()->getLinkText());
         }
 
-        if (($linkDetails['pageuid'] ?? '') === 'current') {
+        if (($linkDetails['pageuid'] ?? 'current') === 'current') {
             return $event->getContentObjectRenderer()->getRequest()->getAttribute('site');
         }
 
