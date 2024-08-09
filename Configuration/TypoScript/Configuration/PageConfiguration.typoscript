@@ -72,7 +72,16 @@ page {
 
             # backwards compatibility legacy handling of meta tags, to be removed in future major releases
             meta =< lib.meta
-            categories =< lib.categories
+            categories = JSON
+            categories {
+                dataProcessing {
+                    10 = headless-categories
+                    10 {
+                        relation.fieldName = categories
+                        as = categories
+                    }
+                }
+            }
             breadcrumbs =< lib.breadcrumbs
             appearance =< lib.pageAppearance
             content =< lib.content

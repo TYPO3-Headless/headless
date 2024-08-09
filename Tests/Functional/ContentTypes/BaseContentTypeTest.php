@@ -25,7 +25,7 @@ abstract class BaseContentTypeTest extends BaseTest
         $this->importDataSet(__DIR__ . '/../Fixtures/content.xml');
     }
 
-    protected function checkDefaultContentFields($contentElement, $id, $pid, $type, $colPos = 0, $categories = '')
+    protected function checkDefaultContentFields($contentElement, $id, $pid, $type, $colPos = 0, $categories = [])
     {
         self::assertEquals($id, $contentElement['id'], 'id mismatch');
         self::assertEquals($type, $contentElement['type'], 'type mismatch');

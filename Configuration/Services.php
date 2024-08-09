@@ -14,6 +14,7 @@ use FriendsOfTYPO3\Headless\ContentObject\FloatContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
+use FriendsOfTYPO3\Headless\DataProcessing\CategoriesProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FlexFormProcessor;
@@ -118,6 +119,7 @@ return static function (ContainerConfigurator $configurator): void {
             GalleryProcessor::class => ['identifier' => 'headless-gallery', 'share' => false, 'public' => false],
             DatabaseQueryProcessor::class => ['identifier' => 'headless-database-query', 'share' => false, 'public' => true],
             FlexFormProcessor::class => ['identifier' => 'headless-flex-form', 'share' => false, 'public' => false],
+            CategoriesProcessor::class => ['identifier' => 'headless-categories', 'share' => false, 'public' => false],
         ] as $class => $processorConfig
     ) {
         $service = $services->set($class)
