@@ -232,9 +232,9 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                         $this->processorConfigurationObject,
                         $fileObj
                     );
-
-                    $this->galleryData['rows'][$row]['columns'][$column] = $fileObj;
                 }
+
+                $this->galleryData['rows'][$row]['columns'][$column] = $fileObj;
             }
         }
 
