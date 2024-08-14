@@ -31,10 +31,12 @@ final class AfterPagePreviewUriGeneratedListener
 
         try {
             $site = $this->siteFinder->getSiteByPageId($event->getPageId());
+            $languageUid = $event->getLanguageId();
+            $language = $languageUid === -1 ? null : $site->getLanguageById($languageUid);
 
             $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class);
             $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
-            $request = $headlessMode->overrideBackendRequestBySite($site, $site->getLanguageById($event->getLanguageId()));
+            $request = $headlessMode->overrideBackendRequestBySite($site, $language);
 
             $urlUtility = $this->urlUtility->withRequest($request);
             $event->setPreviewUri(new Uri($urlUtility->getFrontendUrlWithSite($event->getPreviewUri()->__toString(), $site)));
