@@ -17,7 +17,7 @@ class ImageElementTest extends BaseContentTypeTest
 {
     public function testImageContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

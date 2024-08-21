@@ -17,7 +17,7 @@ class TextpicElementTest extends BaseContentTypeTest
 {
     public function testTextpicContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

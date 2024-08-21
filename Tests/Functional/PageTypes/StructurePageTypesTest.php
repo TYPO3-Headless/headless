@@ -20,7 +20,7 @@ class StructurePageTypesTest extends BasePageTypesTest
      */
     public function getMenuStructure()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/?type=834')
         );
 

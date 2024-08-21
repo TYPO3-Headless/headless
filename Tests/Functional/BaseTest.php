@@ -129,4 +129,9 @@ abstract class BaseTest extends FunctionalTestCase
         self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['href'], 'url mismatch');
         self::assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
     }
+
+    protected function importDataSet(string $string): void
+    {
+        // @TODO move data into CSV
+    }
 }

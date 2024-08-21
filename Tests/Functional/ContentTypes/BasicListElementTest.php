@@ -17,7 +17,7 @@ class BasicListElementTest extends BaseContentTypeTest
 {
     public function testBasicListContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 
