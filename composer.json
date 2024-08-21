@@ -28,24 +28,24 @@
   ],
   "require": {
     "ext-json": "*",
-    "typo3/cms-core": "^12.4",
-    "typo3/cms-install": "^12.4"
+    "typo3/cms-core": "^12.4 || ^13.3",
+    "typo3/cms-install": "^12.4 || ^13.3"
   },
   "require-dev": {
-    "ergebnis/composer-normalize": "^2.15.0",
-    "friendsofphp/php-cs-fixer": "^3.1",
+    "ergebnis/composer-normalize": "^2.43",
+    "friendsofphp/php-cs-fixer": "^v3",
     "helmich/typo3-typoscript-lint": "^v3",
-    "justinrainbow/json-schema": "^5.2",
-    "php-coveralls/php-coveralls": "^2.5.2",
-    "phpspec/prophecy-phpunit": "^2.0",
+    "justinrainbow/json-schema": "^5",
+    "php-coveralls/php-coveralls": "^2",
+    "phpspec/prophecy-phpunit": "^2",
     "phpstan/extension-installer": "^1.1",
-    "phpstan/phpstan": "^1.9",
-    "phpunit/phpcov": "^8.2",
+    "phpstan/phpstan": "^1.12",
+    "phpunit/phpcov": "^8 || ^9 || ^10",
     "saschaegerer/phpstan-typo3": "^1.1",
-    "seld/jsonlint": "^1.8",
-    "symfony/yaml": "^6.1",
-    "typo3/cms-form": "^12.4",
-    "typo3/testing-framework": "^7.0",
+    "seld/jsonlint": "^1.11",
+    "symfony/yaml": "^6.1 || ^7.1",
+    "typo3/cms-form": "^12.4 || ^13.3",
+    "typo3/testing-framework": "^8.0",
     "typo3/coding-standards": "^0.8"
   },
   "conflict": {

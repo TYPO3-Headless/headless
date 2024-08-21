@@ -20,7 +20,7 @@ class SchemaPageTypesTest extends BasePageTypesTest
      */
     public function getMenu()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/?type=834')
         );
 
@@ -32,7 +32,7 @@ class SchemaPageTypesTest extends BasePageTypesTest
      */
     public function getPage()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

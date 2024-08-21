@@ -50,7 +50,7 @@ class BooleanContentObjectTest extends UnitTestCase
         self::assertEquals($result, $contentObject->render($argument));
     }
 
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             ['test', false],

@@ -17,7 +17,7 @@ use JsonSchema\Uri\UriRetriever;
 use JsonSchema\Validator;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
-abstract class BasePageTypesTest extends BaseTest
+class BasePageTypesTest extends BaseTest
 {
     /**
      * @param string $jsonString

@@ -13,7 +13,6 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Hooks;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Prophecy\PhpUnit\ProphecyTrait;
-use TYPO3\CMS\Core\TypoScript\TemplateService;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -31,15 +30,7 @@ class HeadlessUserIntTest extends UnitTestCase
         $testProcessed = 'PlainText' . PHP_EOL . 'NextLine';
         $testContent = 'HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -57,15 +48,7 @@ class HeadlessUserIntTest extends UnitTestCase
         $testProcessed = '"PlainText' . PHP_EOL . 'NextLine"';
         $testContent = 'HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -84,14 +67,8 @@ class HeadlessUserIntTest extends UnitTestCase
         $testContent = '"HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END"';
 
         $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -113,15 +90,7 @@ class HeadlessUserIntTest extends UnitTestCase
         );
         $testContent = '"HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END"';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -141,15 +110,7 @@ class HeadlessUserIntTest extends UnitTestCase
         );
         $testContent = '"HEADLESS_INT_NULL_START<<' . $testProcessed . '>>HEADLESS_INT_NULL_END"';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -163,15 +124,7 @@ class HeadlessUserIntTest extends UnitTestCase
         );
         $testContent = '"NESTED_HEADLESS_INT_NULL_START<<' . $testProcessed . '>>NESTED_HEADLESS_INT_NULL_END"';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -217,12 +170,7 @@ class HeadlessUserIntTest extends UnitTestCase
         $setup = [];
         $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
 
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -276,15 +224,7 @@ class HeadlessUserIntTest extends UnitTestCase
 
         $testContent = '["HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END","HEADLESS_INT_START<<' . $testProcessed2 . '>>HEADLESS_INT_END"]';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();

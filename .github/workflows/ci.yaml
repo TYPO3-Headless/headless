@@ -63,14 +63,69 @@ jobs:
           - "php:cs-fixer"
         php-version:
           - 8.2
-  tests:
+  testV12:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 2
       matrix:
-        php-versions: [8.1]
+        php-versions: [ 8.1, 8.2 ]
         typo3-versions:
-          - {typo3: 12, testing: ^7.0@dev}
+          - { typo3: 12, testing: ^7.0, phpunit: ^10, phpcov: ^9, yaml: ^6 }
+
+    name: "Run tests with PHP ${{ matrix.php-versions }}
+          using TYPO3 ${{ matrix.typo3-versions.typo3 }}
+          with testing framework version ${{ matrix.typo3-versions.testing }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: intl, mbstring, pdo_sqlite
+
+      - name: "Cache composer dependencies"
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: php-${{ matrix.php-versions }}
+            -typo3-${{ matrix.typo3-versions.typo3 }}
+            -phpunit-${{ matrix.typo3-versions.phpunit }}
+            -phpcov-${{ matrix.typo3-versions.phpcov }}
+            -yaml-${{ matrix.typo3-versions.yaml }}
+            -testing-${{ matrix.typo3-versions.testing }}
+            -composer-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            php-${{ matrix.php-versions }}
+            -typo3-${{ matrix.typo3-versions.typo3 }}
+            -phpunit-${{ matrix.typo3-versions.phpunit }}
+            -phpcov-${{ matrix.typo3-versions.phpcov }}
+            -yaml-${{ matrix.typo3-versions.yaml }}
+            -testing-${{ matrix.typo3-versions.testing }}composer-
+            php-${{ matrix.php-versions }}-typo3-
+
+      - name: "Install composer dependencies"
+        run: composer require typo3/minimal
+          "^${{ matrix.typo3-versions.typo3 }}"
+          typo3/testing-framework "${{ matrix.typo3-versions.testing }}"
+          phpunit/phpunit "${{ matrix.typo3-versions.phpunit }}"
+          phpunit/phpcov "${{ matrix.typo3-versions.phpcov }}"
+          symfony/yaml "${{ matrix.typo3-versions.yaml }}"
+          --prefer-dist --no-progress --no-suggest
+
+      - name: "Run Unit tests"
+        run: composer ci:test:unit
+
+      - name: "Functional tests"
+        run: composer ci:test:functional
+
+  testsV13:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 2
+      matrix:
+        php-versions: [8.2, 8.3]
+        typo3-versions:
+          - {typo3: 13, testing: ^8.0, phpunit: ^11, phpcov: ^10, yaml: ^7 }
 
     name: "Run tests with PHP ${{ matrix.php-versions }}
           using TYPO3 ${{ matrix.typo3-versions.typo3 }}
@@ -89,19 +144,28 @@ jobs:
           path: ~/.composer/cache
           key: php-${{ matrix.php-versions }}
                -typo3-${{ matrix.typo3-versions.typo3 }}
+               -phpunit-${{ matrix.typo3-versions.phpunit }}
+               -phpcov-${{ matrix.typo3-versions.phpcov }}
+               -yaml-${{ matrix.typo3-versions.yaml }}
                -testing-${{ matrix.typo3-versions.testing }}
                -composer-${{ hashFiles('composer.json') }}
           restore-keys: |
             php-${{ matrix.php-versions }}
             -typo3-${{ matrix.typo3-versions.typo3 }}
+            -phpunit-${{ matrix.typo3-versions.phpunit }}
+            -phpcov-${{ matrix.typo3-versions.phpcov }}
+            -yaml-${{ matrix.typo3-versions.yaml }}
             -testing-${{ matrix.typo3-versions.testing }}composer-
             php-${{ matrix.php-versions }}-typo3-
 
       - name: "Install composer dependencies"
-        run: composer require typo3/minimal
+        run: composer remove php-coveralls/php-coveralls --dev --no-progress && composer require typo3/minimal
              "^${{ matrix.typo3-versions.typo3 }}"
              typo3/testing-framework "${{ matrix.typo3-versions.testing }}"
-             --prefer-dist --no-progress --no-suggest
+             phpunit/phpunit "${{ matrix.typo3-versions.phpunit }}"
+             phpunit/phpcov "${{ matrix.typo3-versions.phpcov }}"
+             symfony/yaml "${{ matrix.typo3-versions.yaml }}"
+             --prefer-dist --no-progress
 
       - name: "Run Unit tests"
         run: composer ci:test:unit

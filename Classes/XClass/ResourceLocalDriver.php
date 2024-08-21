@@ -16,6 +16,8 @@ use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Http\Uri;
+use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -41,7 +43,7 @@ class ResourceLocalDriver extends LocalDriver
             return;
         }
 
-        if ($this->hasCapability(ResourceStorage::CAPABILITY_PUBLIC)) {
+        if ($this->hasCapability(((new Typo3Version())->getMajorVersion() < 13) ? ResourceStorage::CAPABILITY_PUBLIC : Capabilities::CAPABILITY_PUBLIC)) {
             $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request);
 
             $basePath = match (true) {

@@ -17,7 +17,7 @@ class ShortcutElementTest extends BaseContentTypeTest
 {
     public function testShortcutContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

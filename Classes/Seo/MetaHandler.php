@@ -36,7 +36,7 @@ class MetaHandler
             GeneralUtility::callUserFunction($_funcRef, $_params, $_ref);
         }
 
-        $content['seo']['title'] = $controller->generatePageTitle();
+        $content['seo']['title'] = $controller->generatePageTitle($request);
 
         $this->generateMetaTagsFromTyposcript(
             $controller->pSetup['meta.'] ?? [],

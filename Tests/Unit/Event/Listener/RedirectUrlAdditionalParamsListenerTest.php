@@ -19,6 +19,7 @@ use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use InvalidArgumentException;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -40,8 +41,11 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
      */
     public function invokeTest()
     {
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+
         $listener = new RedirectUrlAdditionalParamsListener(
-            new TypoLinkCodecService(),
+            new TypoLinkCodecService($eventDispatcher->reveal()),
             new LinkService(),
             $this->getUrlUtility()
         );
@@ -119,7 +123,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $mockListener->method('getPageRouterForSite')
             ->willReturn($pageRouter->reveal());
         $mockListener->__construct(
-            new TypoLinkCodecService(),
+            new TypoLinkCodecService($eventDispatcher->reveal()),
             new LinkService(),
             $this->getUrlUtility()
         );
@@ -133,6 +137,9 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
      */
     public function invokeWithLanguageTest()
     {
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+
         $targetUrl = 'https://test.domain2.tld/123';
         $additionalParams = 'tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123';
         $expectedUri = new Uri($targetUrl . '&' . $additionalParams);
@@ -180,7 +187,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
             ->willReturn($pageRouter->reveal());
 
         $mockListener->__construct(
-            new TypoLinkCodecService(),
+            new TypoLinkCodecService($eventDispatcher->reveal()),
             new LinkService(),
             $this->getUrlUtility($site)
         );
