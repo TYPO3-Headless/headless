@@ -12,8 +12,10 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Utility;
 
 use FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent;
+use FriendsOfTYPO3\Headless\Event\FileDataAfterCropVariantProcessingEvent;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Throwable;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
@@ -103,7 +105,11 @@ class FileUtility
                 $disableProcessingFor[] = 'image/svg+xml';
             }
 
-            if (!$processingConfiguration->delayProcessing && !in_array($fileReference->getMimeType(), $disableProcessingFor, true)) {
+            if (!$processingConfiguration->delayProcessing && !in_array(
+                $fileReference->getMimeType(),
+                $disableProcessingFor,
+                true
+            )) {
                 $fileReference = $this->processImageFile($fileReference, $processingConfiguration);
             }
             $publicUrl = $this->imageService->getImageUri($fileReference, true);
@@ -188,7 +194,12 @@ class FileUtility
         $processedFile = array_merge($processedFile, $processedProperties);
 
         if ($processingConfiguration->autogenerate !== []) {
-            $processedFile = $this->processAutogenerate($originalFileReference, $fileReference, $processedFile, $processingConfiguration);
+            $processedFile = $this->processAutogenerate(
+                $originalFileReference,
+                $fileReference,
+                $processedFile,
+                $processingConfiguration
+            );
         }
 
         return $processedFile;
@@ -232,9 +243,32 @@ class FileUtility
 
     private function filterProperties(ProcessingConfiguration $processingConfiguration, array $properties): array
     {
-        $allowedDefault = $processingConfiguration->defaultFieldsByType !== [] ? $processingConfiguration->defaultFieldsByType : ['type', 'size', 'title', 'alternative', 'description', 'uidLocal', 'fileReferenceUid', 'mimeType'];
-        $allowedForImages = array_merge($allowedDefault, $processingConfiguration->defaultImageFields !== [] ? $processingConfiguration->defaultImageFields : ['dimensions', 'link', 'linkData']);
-        $allowedForVideo = array_merge($allowedDefault, $processingConfiguration->defaultVideoFields !== [] ? $processingConfiguration->defaultVideoFields : ['dimensions', 'autoplay', 'originalUrl']);
+        $allowedDefault = $processingConfiguration->defaultFieldsByType !== [] ? $processingConfiguration->defaultFieldsByType : [
+            'type',
+            'size',
+            'title',
+            'alternative',
+            'description',
+            'uidLocal',
+            'fileReferenceUid',
+            'mimeType',
+        ];
+        $allowedForImages = array_merge(
+            $allowedDefault,
+            $processingConfiguration->defaultImageFields !== [] ? $processingConfiguration->defaultImageFields : [
+                'dimensions',
+                'link',
+                'linkData',
+            ]
+        );
+        $allowedForVideo = array_merge(
+            $allowedDefault,
+            $processingConfiguration->defaultVideoFields !== [] ? $processingConfiguration->defaultVideoFields : [
+                'dimensions',
+                'autoplay',
+                'originalUrl',
+            ]
+        );
 
         $allowed = match ($properties['type']) {
             'video' => $allowedForVideo,
@@ -260,16 +294,21 @@ class FileUtility
             $cropVariantCollection = $this->createCropVariant((string)$fileReference->getProperty('crop'));
             $cropArea = $cropVariantCollection->getCropArea($processingConfiguration->cropVariant);
 
-            return $this->imageService->applyProcessingInstructions($fileReference, [
-                'width' => $processingConfiguration->width,
-                'height' => $processingConfiguration->height,
-                'minWidth' => $processingConfiguration->minWidth,
-                'minHeight' => $processingConfiguration->minHeight,
-                'maxWidth' => $processingConfiguration->maxWidth,
-                'maxHeight' => $processingConfiguration->maxWidth,
+            $instructions = [
+                'width' => $processingConfiguration->width !== '' ? $processingConfiguration->width : null,
+                'height' => $processingConfiguration->height !== '' ? $processingConfiguration->height : null ,
+                'minWidth' => $processingConfiguration->minWidth > 0 ? $processingConfiguration->minWidth : null,
+                'minHeight' => $processingConfiguration->minHeight > 0 ? $processingConfiguration->minHeight : null,
+                'maxWidth' => $processingConfiguration->maxWidth > 0 ? $processingConfiguration->maxWidth : null,
+                'maxHeight' => $processingConfiguration->maxHeight > 0 ? $processingConfiguration->maxHeight : null,
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($fileReference),
-                'fileExtension' => $processingConfiguration->fileExtension,
-            ]);
+            ];
+
+            if ($processingConfiguration->fileExtension) {
+                $instructions['fileExtension'] = $processingConfiguration->fileExtension;
+            }
+
+            return $this->imageService->applyProcessingInstructions($fileReference, $instructions);
         } catch (\UnexpectedValueException|\RuntimeException|\InvalidArgumentException $e) {
             $type = lcfirst(get_class($fileReference));
             $status = get_class($e);
@@ -343,8 +382,12 @@ class FileUtility
         return LocalizationUtility::translate($key, $extensionName);
     }
 
-    private function processAutogenerate(FileInterface $originalReference, FileInterface $fileReference, array $processedFile, ProcessingConfiguration $processingConfiguration): array
-    {
+    private function processAutogenerate(
+        FileInterface $originalReference,
+        FileInterface $fileReference,
+        array $processedFile,
+        ProcessingConfiguration $processingConfiguration
+    ): array {
         $originalWidth = $originalReference->getProperty('width');
         $originalHeight = $originalReference->getProperty('height');
         $targetWidth = (int)($processingConfiguration->width !== '' ? $processingConfiguration->width : $fileReference->getProperty('width'));
@@ -386,29 +429,48 @@ class FileUtility
         $crop = $originalFileReference->getProperty('crop');
 
         if ($crop !== null) {
-            unset($processedFile['crop'], $processedFile['properties']['crop']);
+            if (!$processingConfiguration->legacyReturn) {
+                unset($processedFile['crop'], $processedFile['properties']['crop']);
+            }
 
             $cropVariants = json_decode($originalFileReference->getProperty('crop'), true);
 
             $collection = CropVariantCollection::create($originalFileReference->getProperty('crop'));
 
-            if (is_array($cropVariants) && count($cropVariants) > 1 && str_starts_with($originalFileReference->getMimeType(), 'image/')) {
+            if (is_array($cropVariants) && count($cropVariants) > 1 && str_starts_with(
+                $originalFileReference->getMimeType(),
+                'image/'
+            )) {
                 foreach (array_keys($cropVariants) as $cropVariantName) {
                     if ($processingConfiguration->conditionalCropVariant && $collection->getCropArea($cropVariantName)->isEmpty()) {
                         continue;
                     }
 
+                    $processingConfiguration = $processingConfiguration->withOptions(['cropVariant' => $cropVariantName]);
                     $file = $this->process($originalFileReference, $processingConfiguration);
-                    $processedFile['cropVariants'][$cropVariantName] = $this->cropVariant($processingConfiguration, $file);
+                    $processedFile['cropVariants'][$cropVariantName] = $this->cropVariant(
+                        $processingConfiguration,
+                        $file,
+                        $cropVariants[$cropVariantName]
+                    );
                 }
             }
         }
 
-        return $processedFile;
+        return $this->eventDispatcher->dispatch(
+            new FileDataAfterCropVariantProcessingEvent(
+                $originalFileReference,
+                $processingConfiguration,
+                $processedFile
+            )
+        )->getProcessedFile();
     }
 
-    private function cropVariant(ProcessingConfiguration $processingConfiguration, array $file): array
-    {
+    private function cropVariant(
+        ProcessingConfiguration $processingConfiguration,
+        array $file,
+        array $cropVariant = []
+    ): array {
         $url = $processingConfiguration->legacyReturn ? $file['publicUrl'] : $file['url'];
         $urlKey = $processingConfiguration->legacyReturn ? 'publicUrl' : 'url';
 
@@ -422,9 +484,24 @@ class FileUtility
             $path .= 'dimensions/';
         }
 
+        $additional = [];
+
+        if ($processingConfiguration->outputCropArea) {
+            $additional = ['crop' => $cropVariant];
+        }
+
+        try {
+            $width = ArrayUtility::getValueByPath($file, $path . 'width');
+            $height = ArrayUtility::getValueByPath($file, $path . 'height');
+        } catch (Throwable) {
+            $width = 0;
+            $height = 0;
+        }
+
         $dimensions = [
-            'width' => ArrayUtility::getValueByPath($file, $path . 'width'),
-            'height' => ArrayUtility::getValueByPath($file, $path . 'height'),
+            'width' => $width,
+            'height' => $height,
+            ...$additional,
         ];
 
         if (!$processingConfiguration->legacyReturn && $processingConfiguration->flattenProperties) {

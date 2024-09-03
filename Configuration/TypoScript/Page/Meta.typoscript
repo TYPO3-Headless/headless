@@ -1,3 +1,4 @@
+# legacy meta handling, to be removed in future major releases.
 lib.meta = JSON
 lib.meta {
     fields {
