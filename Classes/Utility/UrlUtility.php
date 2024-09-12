@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Utility;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
@@ -29,6 +30,8 @@ use function array_merge;
 use function ltrim;
 use function rtrim;
 use function str_contains;
+use function strlen;
+use function substr;
 
 class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 {
@@ -83,8 +86,6 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         }
 
         try {
-            $base = $site->getBase()->getHost();
-            $port = $site->getBase()->getPort();
             $frontendBaseUrl = $this->resolveWithVariants(
                 $this->conf[$returnField] ?? '',
                 $this->variants,
@@ -101,14 +102,14 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             $frontPort = $frontendBase->getPort();
             $targetUri = new Uri($this->sanitizeBaseUrl($url));
 
-            if (str_contains($url, $base)) {
+            if (str_contains($url, $site->getBase()->getHost())) {
                 $targetUri = $targetUri->withHost($frontBase);
                 if ($frontExtraPath) {
-                    $targetUri = $targetUri->withPath($frontExtraPath . ($targetUri->getPath() !== '' ? '/' . ltrim($targetUri->getPath(), '/') : ''));
+                    $targetUri = $targetUri->withPath($this->handleFrontendAndBackendPaths($frontExtraPath, $targetUri, $site->getBase()->getPath()));
                 }
             }
 
-            if ($port === $frontPort) {
+            if ($site->getBase()->getPort() === $frontPort) {
                 return (string)$targetUri;
             }
 
@@ -285,5 +286,10 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $object->headlessMode = $object->headlessMode->withRequest($request);
 
         return $object;
+    }
+
+    private function handleFrontendAndBackendPaths(string $frontendPath, UriInterface $targetUri, string $baseBackendPath = ''): string
+    {
+        return rtrim($frontendPath, '/') . ($targetUri->getPath() !== '' ? '/' . ltrim(substr($targetUri->getPath(), strlen($baseBackendPath)), '/') : '');
     }
 }
