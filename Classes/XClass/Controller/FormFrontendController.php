@@ -241,7 +241,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         $parsedErrors = [];
 
         foreach ($errors as $key => $errorObj) {
-            $parsedErrors[str_replace($formIdentifier . '.', '', $key)] = $errorObj[0]->getMessage();
+            $parsedErrors[str_replace($formIdentifier . '.', '', $key)] = $errorObj[0]->render();
         }
 
         return count($parsedErrors) ? $parsedErrors : null;
