@@ -54,7 +54,7 @@ lib {
     parseFunc_RTE < lib.parseFunc
     parseFunc_RTE {
         # Processing <ol>, <ul> and <table> blocks separately
-        externalBlocks = article, aside, blockquote, div, dd, dl, footer, header, nav, ol, section, table, ul, pre, figure
+        externalBlocks = article, aside, blockquote, div, dd, dl, footer, header, nav, ol, section, table, ul, pre, figure, figcaption
         externalBlocks {
             ol {
                 stripNL = 1
@@ -108,6 +108,9 @@ lib {
             article < .div
             aside < .div
             figure < .div
+            figcaption {
+                stripNL = 1
+            }
             blockquote < .div
             footer < .div
             header < .div
@@ -115,6 +118,7 @@ lib {
             section < .div
             dl < .div
             dd < .div
+
         }
 
         nonTypoTagStdWrap {
