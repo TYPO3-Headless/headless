@@ -15,6 +15,7 @@ use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\ApplicationType;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -42,7 +43,21 @@ class ResourceLocalDriver extends LocalDriver
 
         if ($this->hasCapability(ResourceStorage::CAPABILITY_PUBLIC)) {
             $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request);
-            $this->configuration['baseUri'] = $urlUtility->getStorageProxyUrl();
+
+            $basePath = match (true) {
+                (($this->configuration['baseUri'] ?? '') !== '') => $this->configuration['baseUri'],
+                (($this->configuration['basePath'] ?? '') !== '' && $this->configuration['pathType'] === 'relative') => $this->configuration['basePath'],
+                default => '',
+            };
+
+            if ($basePath !== '') {
+                $frontendUri = (new Uri($urlUtility->getFrontendUrl()));
+
+                $path = new Uri(trim($basePath, '/'));
+                $this->configuration['baseUri'] = (string)$frontendUri->withPath('/' . trim((new Uri($urlUtility->getProxyUrl()))->getPath(), '/') . '/' . trim($path->getPath(), '/'));
+            } else {
+                $this->configuration['baseUri'] = $urlUtility->getStorageProxyUrl();
+            }
         }
 
         parent::determineBaseUrl();
