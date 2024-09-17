@@ -37,6 +37,11 @@ class HeadlessUserInt
         );
     }
 
+    public function hasNonCacheableContent(string $content): bool
+    {
+        return str_contains($content, self::STANDARD);
+    }
+
     public function unwrap(string $content): string
     {
         if (str_contains($content, self::NESTED)) {

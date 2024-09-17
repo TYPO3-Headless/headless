@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Middleware;
 
+use FriendsOfTYPO3\Headless\Seo\MetaHandler;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Psr\Http\Message\ResponseInterface;
@@ -18,20 +19,16 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\Stream;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+
+use function json_decode;
 
 class UserIntMiddleware implements MiddlewareInterface
 {
-    private HeadlessUserInt $headlessUserInt;
-    private HeadlessMode $headlessMode;
-
     public function __construct(
-        HeadlessUserInt $headlessUserInt = null,
-        HeadlessMode $headlessMode
-    ) {
-        $this->headlessUserInt = $headlessUserInt ?? GeneralUtility::makeInstance(HeadlessUserInt::class);
-        $this->headlessMode = $headlessMode;
-    }
+        private readonly HeadlessUserInt $headlessUserInt,
+        private readonly HeadlessMode $headlessMode,
+        private readonly MetaHandler $metaHandler
+    ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -41,11 +38,26 @@ class UserIntMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        $body = $this->headlessUserInt->unwrap($response->getBody()->__toString());
+        $jsonContent = $response->getBody()->__toString();
+
+        if (!$this->headlessUserInt->hasNonCacheableContent($jsonContent)) {
+            return $response;
+        }
+
+        $jsonContent = $this->headlessUserInt->unwrap($jsonContent);
+        $responseBody = json_decode($jsonContent, true);
+
+        if (($responseBody['seo']['title'] ?? null) !== null) {
+            $responseBody = $this->metaHandler->process(
+                $request,
+                $request->getAttribute('frontend.controller'),
+                $responseBody
+            );
+            $jsonContent = json_encode($responseBody);
+        }
 
         $stream = new Stream('php://temp', 'r+');
-        $stream->write($body);
-
+        $stream->write($jsonContent);
         return $response->withBody($stream);
     }
 }
