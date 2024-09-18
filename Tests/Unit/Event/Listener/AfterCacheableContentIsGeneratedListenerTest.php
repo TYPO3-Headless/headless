@@ -13,9 +13,11 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Event\Listener\AfterCacheableContentIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Seo\MetaHandler;
 use FriendsOfTYPO3\Headless\Seo\MetaTag\Html5MetaTagManager;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -40,7 +42,9 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
 
     public function testNotModifiedWithInvalidOrDisabledJsonContent(): void
     {
-        $listener = new AfterCacheableContentIsGeneratedListener(new JsonEncoder(), $this->prophesize(MetaTagManagerRegistry::class)->reveal(), $this->prophesize(EventDispatcherInterface::class)->reveal());
+        $metaHandler = new MetaHandler($this->prophesize(MetaTagManagerRegistry::class)->reveal(), $this->prophesize(EventDispatcherInterface::class)->reveal());
+
+        $listener = new AfterCacheableContentIsGeneratedListener(new JsonEncoder(), $metaHandler, new HeadlessUserInt());
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::NONE));
@@ -69,9 +73,33 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
 
     public function testNotModifiedWhileValidJson(): void
     {
-        $listener = new AfterCacheableContentIsGeneratedListener(new JsonEncoder(), $this->prophesize(MetaTagManagerRegistry::class)->reveal(), $this->prophesize(EventDispatcherInterface::class)->reveal());
+        $metaHandler = new MetaHandler($this->prophesize(MetaTagManagerRegistry::class)->reveal(), $this->prophesize(EventDispatcherInterface::class)->reveal());
+
+        $listener = new AfterCacheableContentIsGeneratedListener(new JsonEncoder(), $metaHandler, new HeadlessUserInt());
 
         $content = json_encode(['someCustomPageWithoutMeta' => ['title' => 'test before event']]);
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::FULL));
+
+        $controller = $this->prophesize(TypoScriptFrontendController::class);
+        $controller->content = $content;
+        $controller->generatePageTitle()->willReturn('Modified title via PageTitleManager');
+
+        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $controller->reveal(), 'abc', false);
+
+        $listener($event);
+
+        self::assertSame($content, $event->getController()->content);
+    }
+
+    public function testNotModifiedWhenUserIntContent(): void
+    {
+        $metaHandler = new MetaHandler($this->prophesize(MetaTagManagerRegistry::class)->reveal(), $this->prophesize(EventDispatcherInterface::class)->reveal());
+
+        $listener = new AfterCacheableContentIsGeneratedListener(new JsonEncoder(), $metaHandler, new HeadlessUserInt());
+
+        $content = json_encode(['someCustomPageWithoutMeta' => ['title' => HeadlessUserInt::NESTED . '_START<<<!--INT_SCRIPT.d53df2a300e62171a7b4882c4b88a153-->>>' . HeadlessUserInt::NESTED . '_END']]);
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::FULL));
@@ -92,9 +120,11 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $listenerProvider = $this->prophesize(ListenerProvider::class);
         $listenerProvider->getListenersForEvent(Argument::any())->willReturn([]);
 
-        $eventDispatcher = GeneralUtility::makeInstance(\TYPO3\CMS\Core\EventDispatcher\EventDispatcher::class, $listenerProvider->reveal());
+        $eventDispatcher = GeneralUtility::makeInstance(EventDispatcher::class, $listenerProvider->reveal());
 
-        $listener = new AfterCacheableContentIsGeneratedListener(new JsonEncoder(), $this->prophesize(MetaTagManagerRegistry::class)->reveal(), $eventDispatcher);
+        $metaHandler = new MetaHandler($this->prophesize(MetaTagManagerRegistry::class)->reveal(), $eventDispatcher);
+
+        $listener = new AfterCacheableContentIsGeneratedListener(new JsonEncoder(), $metaHandler, new HeadlessUserInt());
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::FULL));
@@ -122,7 +152,9 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $eventDispatcher = $this->prophesize(EventDispatcher::class);
         $eventDispatcher->dispatch(Argument::any())->willReturn($event);
 
-        $listener = new AfterCacheableContentIsGeneratedListener(new JsonEncoder(), $this->prophesize(MetaTagManagerRegistry::class)->reveal(), $eventDispatcher->reveal());
+        $metaHandler = new MetaHandler($this->prophesize(MetaTagManagerRegistry::class)->reveal(), $eventDispatcher->reveal());
+
+        $listener = new AfterCacheableContentIsGeneratedListener(new JsonEncoder(), $metaHandler, new HeadlessUserInt());
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::FULL));
