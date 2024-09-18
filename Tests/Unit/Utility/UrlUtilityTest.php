@@ -29,13 +29,12 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 class UrlUtilityTest extends UnitTestCase
 {
     use ProphecyTrait;
-
     public function testFrontendUrls(): void
     {
         $headlessMode = $this->createHeadlessMode();
 
         $site = $this->prophesize(Site::class);
-        $site->getBase()->shouldBeCalled(2)->willReturn(new Uri('https://test-backend-api.tld'));
+        $site->getBase()->shouldBeCalled(2)->willReturn(new Uri('https://test-backend-api.tld/'));
         $site->getConfiguration()->shouldBeCalled(3)->willReturn([
             'base' => 'https://www.typo3.org',
             'languages' => [],
@@ -102,7 +101,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->prophesize(SiteFinder::class);
 
-        $site->getBase()->shouldBeCalled(2)->willReturn(new Uri('https://test-backend3-api.tld'));
+        $site->getBase()->shouldBeCalled(2)->willReturn(new Uri('https://test-backend3-api.tld/'));
 
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), null, $headlessMode);
         $urlUtility = $urlUtility->withSite($site->reveal());
@@ -113,6 +112,35 @@ class UrlUtilityTest extends UnitTestCase
         self::assertSame('https://test-frontend3.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
         self::assertSame('https://test-frontend-api3.tld/headless', $urlUtility->getFrontendUrlWithSite('https://test-backend3-api.tld', $site->reveal(), 'frontendApiProxy'));
         self::assertSame('#fragment-123', $urlUtility->getFrontendUrlWithSite('#fragment-123', $site->reveal()));
+    }
+
+    public function testFrontendUrlsWithDifferentPaths(): void
+    {
+        $headlessMode = $this->createHeadlessMode();
+
+        $site = $this->prophesize(Site::class);
+        $site->getBase()->shouldBeCalled(1)->willReturn(new Uri('https://test-backend-api.tld/dev-path/'));
+        $site->getConfiguration()->shouldBeCalled(3)->willReturn([
+            'base' => 'https://www.typo3.org',
+            'languages' => [],
+            'baseVariants' => [
+                [
+                    'base' => 'https://test-backend-api.tld/dev-path/',
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendBase' => 'https://test-frontend.tld/frontend',
+                ],
+            ],
+        ]);
+
+        $resolver = $this->prophesize(Resolver::class);
+        $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);
+
+        $siteFinder = $this->prophesize(SiteFinder::class);
+
+        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), null, $headlessMode);
+        $urlUtility = $urlUtility->withSite($site->reveal());
+
+        self::assertSame('https://test-frontend.tld/frontend/content-page', $urlUtility->getFrontendUrlWithSite('https://test-backend-api.tld/dev-path/content-page', $site->reveal()));
     }
 
     public function testFrontendUrlsWithBaseProductionAndLocalOverride(): void
