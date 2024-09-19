@@ -34,6 +34,8 @@ lib.meta {
                 parameter {
                     field = canonical_link
                 }
+
+                forceAbsoluteUrl = 1
                 returnLast = result
             }
         }
