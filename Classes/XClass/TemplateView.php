@@ -12,9 +12,11 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\XClass;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use Throwable;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
+
 use TYPO3Fluid\Fluid\View\Exception\InvalidTemplateResourceException;
 
 use function extract;
@@ -63,7 +65,7 @@ class TemplateView extends \TYPO3\CMS\Fluid\View\TemplateView
             ob_start();
             include $templateFile;
             $__jsonContent = ob_get_clean();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             ob_end_clean();
             throw $e;
         }

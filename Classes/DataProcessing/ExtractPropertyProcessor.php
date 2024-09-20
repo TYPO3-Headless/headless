@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
+use Exception;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
@@ -49,11 +50,11 @@ class ExtractPropertyProcessor implements DataProcessorInterface
         array $processedData
     ) {
         if (empty($processorConfiguration['as'])) {
-            throw new \Exception('Please specify property \'as\'');
+            throw new Exception('Please specify property \'as\'');
         }
 
         if (empty($processorConfiguration['key'])) {
-            throw new \Exception('Please specify property \'key\'');
+            throw new Exception('Please specify property \'key\'');
         }
 
         $targetFieldName = (string)$cObj->stdWrapValue(

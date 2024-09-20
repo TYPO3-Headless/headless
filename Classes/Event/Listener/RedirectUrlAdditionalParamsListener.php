@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Event\Listener;
 
+use Exception;
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -22,6 +23,7 @@ use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Routing\PageRouter;
 use TYPO3\CMS\Core\Site\Entity\Site;
+
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function parse_str;
@@ -82,7 +84,7 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
                 );
 
                 $event->setTargetUrl($frontendUrl);
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 $this->logError(
                     'Error during action redirect',
                     ['record' => $event->getRedirectRecord(), 'uri' => $url]

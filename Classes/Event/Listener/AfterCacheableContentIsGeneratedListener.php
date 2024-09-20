@@ -15,7 +15,9 @@ use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Seo\MetaHandler;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
+use Throwable;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 
 use function json_decode;
@@ -51,7 +53,7 @@ class AfterCacheableContentIsGeneratedListener
             $content = $this->metaHandler->process($event->getRequest(), $event->getController(), $content);
 
             $event->getController()->content = $this->encoder->encode($content);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return;
         }
     }

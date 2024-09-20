@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\Json\JsonDecoder;
+use stdClass;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function array_fill;
@@ -45,7 +47,7 @@ class JsonDecoderTest extends UnitTestCase
     {
         $jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
 
-        $class = new \stdClass();
+        $class = new stdClass();
         $class->test = 1;
         $class->testProp = true;
 

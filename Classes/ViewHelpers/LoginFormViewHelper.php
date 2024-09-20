@@ -11,17 +11,20 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ViewHelpers;
 
+use LogicException;
 use Psr\Http\Message\RequestInterface;
+use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\SecurityAspect;
 use TYPO3\CMS\Core\Security\RequestToken;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
+
 use TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy;
+
 use TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper;
 
 use function base64_encode;
-
 use function is_int;
 use function is_object;
 use function is_string;
@@ -84,7 +87,7 @@ class LoginFormViewHelper extends FormViewHelper
         $renderingContext = $this->renderingContext;
         $request = $renderingContext->getRequest();
         if (!$request instanceof RequestInterface) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'ViewHelper f:form can be used only in extbase context and needs a request implementing extbase RequestInterface.',
                 1639821904
             );
@@ -271,7 +274,7 @@ class LoginFormViewHelper extends FormViewHelper
             return '';
         }
         if (strtolower((string)($this->arguments['method'] ?? '')) === 'get') {
-            throw new \LogicException('Cannot apply request token for forms sent via HTTP GET', 1651775963);
+            throw new LogicException('Cannot apply request token for forms sent via HTTP GET', 1651775963);
         }
 
         $context = GeneralUtility::makeInstance(Context::class);
@@ -280,7 +283,7 @@ class LoginFormViewHelper extends FormViewHelper
         $signingType = $signingType ?: 'nonce';
         $signingProvider = $securityAspect->getSigningSecretResolver()->findByType($signingType);
         if ($signingProvider === null) {
-            throw new \LogicException(sprintf('Cannot find request token signing type "%s"', $signingType), 1664260307);
+            throw new LogicException(sprintf('Cannot find request token signing type "%s"', $signingType), 1664260307);
         }
 
         $signingSecret = $signingProvider->provideSigningSecret();

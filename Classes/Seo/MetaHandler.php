@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Seo;
 
+use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
@@ -121,7 +122,7 @@ class MetaHandler
         $type = strtolower($type);
         $name = strtolower($name);
         if (!in_array($type, ['property', 'name', 'http-equiv'], true)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'When setting a meta tag the only types allowed are property, name or http-equiv. "' . $type . '" given.',
                 1496402460
             );

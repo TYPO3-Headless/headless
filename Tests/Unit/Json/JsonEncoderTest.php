@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use stdClass;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_encode;
@@ -53,7 +55,7 @@ class JsonEncoderTest extends UnitTestCase
         return [
             [[], '[]'],
             [['test' => 1], '{"test":1}'],
-            [new \stdClass(), '{}'],
+            [new stdClass(), '{}'],
             ["\xB1\x31", '[]'], // exception caught, return empty array instead
         ];
     }
