@@ -16,6 +16,7 @@ use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use InvalidArgumentException;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\UriInterface;
@@ -188,7 +189,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         self::assertSame((string)$expectedUri, $newRedirectEvent->getTargetUrl());
 
         $site = $this->createPartialMock(Site::class, ['getLanguageById']);
-        $site->method('getLanguageById')->willThrowException(new \InvalidArgumentException('test'));
+        $site->method('getLanguageById')->willThrowException(new InvalidArgumentException('test'));
         $request = $request->withAttribute('site', $site);
 
         $redirectEvent = new RedirectUrlEvent(

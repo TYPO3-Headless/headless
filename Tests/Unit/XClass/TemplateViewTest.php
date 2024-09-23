@@ -14,6 +14,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\XClass;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\XClass\TemplateView;
+use RuntimeException;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Fluid\Core\Rendering\RenderingContext;
 use TYPO3\CMS\Fluid\Core\ViewHelper\ViewHelperResolver;
@@ -21,6 +22,7 @@ use TYPO3\CMS\Fluid\View\TemplatePaths;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use TYPO3Fluid\Fluid\Core\Cache\FluidCacheInterface;
 use TYPO3Fluid\Fluid\Core\Variables\StandardVariableProvider;
+
 use TYPO3Fluid\Fluid\View\Exception\InvalidTemplateResourceException;
 
 use function json_encode;
@@ -137,7 +139,7 @@ class TemplateViewTest extends UnitTestCase
 
         $context->setTemplatePaths($templatePaths);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Example exception in template');
 
         $view = new TemplateView($context);

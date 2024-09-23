@@ -9,6 +9,7 @@
 
 namespace FriendsOfTYPO3\Headless\ViewHelpers\Format\Json;
 
+use Exception;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
@@ -45,7 +46,7 @@ class DecodeViewHelper extends AbstractViewHelper
             return $object;
         }
         if ($GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] ?? false) {
-            throw new \Exception(sprintf(
+            throw new Exception(sprintf(
                 'Failure "%s" occured when running json_decode() for string: %s',
                 json_last_error_msg(),
                 $json

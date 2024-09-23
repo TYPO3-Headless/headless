@@ -13,6 +13,7 @@ namespace FriendsOfTYPO3\Headless\XClass\Preview;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use InvalidArgumentException;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Routing\InvalidRouteArgumentsException;
 use TYPO3\CMS\Core\Routing\UnableToLinkToPageException;
@@ -43,7 +44,7 @@ class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
             $site = $siteFinder->getSiteByPageId($uid);
             try {
                 $language = $site->getLanguageById($languageId);
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 $language = $site->getDefaultLanguage();
             }
 

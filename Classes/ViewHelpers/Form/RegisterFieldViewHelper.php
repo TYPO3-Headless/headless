@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ViewHelpers\Form;
 
+use Traversable;
 use TYPO3\CMS\Fluid\ViewHelpers\Form\AbstractFormFieldViewHelper;
 use TYPO3Fluid\Fluid\Core\ViewHelper\Exception;
 
@@ -59,7 +60,7 @@ class RegisterFieldViewHelper extends AbstractFormFieldViewHelper
             $propertyValue = $this->getPropertyValue();
         }
 
-        if ($propertyValue instanceof \Traversable) {
+        if ($propertyValue instanceof Traversable) {
             $propertyValue = iterator_to_array($propertyValue);
         }
         if (is_array($propertyValue)) {

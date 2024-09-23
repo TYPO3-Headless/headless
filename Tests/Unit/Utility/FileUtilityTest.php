@@ -14,10 +14,13 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Utility;
 use FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
+use InvalidArgumentException;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use RuntimeException;
 use Symfony\Component\DependencyInjection\Container;
+use Throwable;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
@@ -33,9 +36,11 @@ use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Extbase\Service\ImageService;
+
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Typolink\LinkResult;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use UnexpectedValueException;
 
 use function array_merge;
 
@@ -454,9 +459,9 @@ class FileUtilityTest extends UnitTestCase
 
     public function testExceptionCatching(): void
     {
-        $this->testProcessImageFileException(new \UnexpectedValueException('test'));
-        $this->testProcessImageFileException(new \RuntimeException('test'));
-        $this->testProcessImageFileException(new \InvalidArgumentException('test'));
+        $this->testProcessImageFileException(new UnexpectedValueException('test'));
+        $this->testProcessImageFileException(new RuntimeException('test'));
+        $this->testProcessImageFileException(new InvalidArgumentException('test'));
     }
 
     protected function getFileUtility(
@@ -803,7 +808,7 @@ class FileUtilityTest extends UnitTestCase
 
         try {
             $fileUtility->processImageFile($fileReference, ProcessingConfiguration::fromOptions([]));
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             if (!empty($fileUtility->getErrors()['processImageFile'])) {
                 $errors = $fileUtility->getErrors()['processImageFile'];
                 if (reset($errors) !== get_class($exception)) {

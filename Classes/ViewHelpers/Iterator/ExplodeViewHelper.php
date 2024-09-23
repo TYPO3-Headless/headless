@@ -65,7 +65,7 @@ class ExplodeViewHelper extends AbstractViewHelper
         $glue = $this->arguments['glue'];
         if (str_contains($glue, ':') && strlen($glue) > 1) {
             // glue contains a special type identifier, resolve the actual glue
-            list($type, $value) = explode(':', $glue);
+            [$type, $value] = explode(':', $glue);
             switch ($type) {
                 case 'constant':
                     $glue = constant($value);
