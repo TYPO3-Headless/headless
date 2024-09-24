@@ -79,27 +79,29 @@ call_user_func(
             ];
         }
 
-        $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['TYPO3\CMS\Frontend\Page\PageGenerator']['generateMetaTags']['canonical'] =
-            CanonicalGenerator::class . '->handle';
+        if (ExtensionManagementUtility::isLoaded('seo')) {
+            $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['TYPO3\CMS\Frontend\Page\PageGenerator']['generateMetaTags']['canonical'] =
+                CanonicalGenerator::class . '->handle';
 
-        $metaTagManagerRegistry = GeneralUtility::makeInstance(MetaTagManagerRegistry::class);
-        $metaTagManagerRegistry->registerManager(
-            'html5',
-            Html5MetaTagManager::class
-        );
-        $metaTagManagerRegistry->registerManager(
-            'edge',
-            EdgeMetaTagManager::class
-        );
-        $metaTagManagerRegistry->registerManager(
-            'opengraph',
-            OpenGraphMetaTagManager::class
-        );
-        $metaTagManagerRegistry->registerManager(
-            'twitter',
-            TwitterCardMetaTagManager::class
-        );
-        unset($metaTagManagerRegistry);
+            $metaTagManagerRegistry = GeneralUtility::makeInstance(MetaTagManagerRegistry::class);
+            $metaTagManagerRegistry->registerManager(
+                'html5',
+                Html5MetaTagManager::class
+            );
+            $metaTagManagerRegistry->registerManager(
+                'edge',
+                EdgeMetaTagManager::class
+            );
+            $metaTagManagerRegistry->registerManager(
+                'opengraph',
+                OpenGraphMetaTagManager::class
+            );
+            $metaTagManagerRegistry->registerManager(
+                'twitter',
+                TwitterCardMetaTagManager::class
+            );
+            unset($metaTagManagerRegistry);
+        }
 
         $rendererRegistry = GeneralUtility::makeInstance(RendererRegistry::class);
         $rendererRegistry->registerRendererClass(YouTubeRenderer::class);
