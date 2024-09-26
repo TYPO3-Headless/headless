@@ -17,7 +17,7 @@ class DivElementTest extends BaseContentTypeTest
 {
     public function testDivContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

@@ -17,7 +17,7 @@ class DefaultContentsTest extends BaseContentTypeTest
 {
     public function testContentStructure()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

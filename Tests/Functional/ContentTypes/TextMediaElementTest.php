@@ -17,7 +17,7 @@ class TextMediaElementTest extends BaseContentTypeTest
 {
     public function testTextMediaContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

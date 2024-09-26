@@ -19,7 +19,7 @@ class BulletsElementTest extends BaseContentTypeTest
     {
         $testBulletsContent = ['Top1', 'Top2', 'Top3'];
 
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

@@ -17,7 +17,7 @@ class MenuSubpagesElementTest extends BaseContentTypeTest
 {
     public function testMenuSubpagesContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

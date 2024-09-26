@@ -50,7 +50,7 @@ class JsonEncoderTest extends UnitTestCase
         self::assertSame(json_encode($encodeValue, JSON_PRETTY_PRINT), $encoder->encode($encodeValue));
     }
 
-    public function jsonProvider(): array
+    public static function jsonProvider(): array
     {
         return [
             [[], '[]'],

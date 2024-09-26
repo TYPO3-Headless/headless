@@ -113,7 +113,7 @@ class UserIntMiddlewareTest extends UnitTestCase
 
     protected function getMockHandlerWithResponse($response)
     {
-        $handler = $this->createPartialMock(RequestHandler::class, ['handle']);
+        $handler = $this->createMock(RequestHandler::class, ['handle']);
         $handler->method('handle')->willReturn($response);
         return $handler;
     }

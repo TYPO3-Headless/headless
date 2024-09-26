@@ -17,7 +17,7 @@ class TextElementTest extends BaseContentTypeTest
 {
     public function testTextContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

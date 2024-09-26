@@ -17,7 +17,7 @@ class HtmlElementTest extends BaseContentTypeTest
 {
     public function testHtmlContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

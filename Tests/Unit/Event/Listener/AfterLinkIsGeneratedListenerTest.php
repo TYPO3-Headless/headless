@@ -13,6 +13,7 @@ use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
@@ -39,7 +40,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $this->prophesize(Logger::class)->reveal(),
             new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()),
             $this->prophesize(LinkService::class)->reveal(),
-            new TypoLinkCodecService(),
+            new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
             $this->prophesize(SiteFinder::class)->reveal()
         );
 
@@ -56,7 +57,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $this->prophesize(Logger::class)->reveal(),
             new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()),
             $this->prophesize(LinkService::class)->reveal(),
-            new TypoLinkCodecService(),
+            new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
             $this->prophesize(SiteFinder::class)->reveal()
         );
 
@@ -109,7 +110,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $this->prophesize(Logger::class)->reveal(),
             $urlUtility->reveal(),
             $this->prophesize(LinkService::class)->reveal(),
-            new TypoLinkCodecService(),
+            new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
             $this->prophesize(SiteFinder::class)->reveal()
         );
 
@@ -146,7 +147,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $this->prophesize(Logger::class)->reveal(),
             $urlUtility->reveal(),
             $linkService->reveal(),
-            new TypoLinkCodecService(),
+            new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
             $this->prophesize(SiteFinder::class)->reveal()
         );
         $linkResult = new LinkResult('page', '/');
@@ -186,11 +187,14 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
         $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
 
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+
         $listener = new AfterLinkIsGeneratedListener(
             $this->prophesize(Logger::class)->reveal(),
             $urlUtility->reveal(),
             $linkService->reveal(),
-            new TypoLinkCodecService(),
+            new TypoLinkCodecService($eventDispatcher->reveal()),
             $siteFinder->reveal()
         );
 

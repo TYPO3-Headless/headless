@@ -71,7 +71,7 @@ class JsonDecoderTest extends UnitTestCase
         self::assertEquals(json_decode($encoded), $jsonDecoder->decode(['teststring']));
     }
 
-    public function possibleJsonProvider(): array
+    public static function possibleJsonProvider(): array
     {
         return [
             ['  "12"', false],

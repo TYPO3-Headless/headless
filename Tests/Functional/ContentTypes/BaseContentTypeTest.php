@@ -13,7 +13,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
 use FriendsOfTYPO3\Headless\Tests\Functional\BaseTest;
 
-abstract class BaseContentTypeTest extends BaseTest
+class BaseContentTypeTest extends BaseTest
 {
     /**
      * set up objects

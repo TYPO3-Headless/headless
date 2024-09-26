@@ -17,7 +17,7 @@ class MenuPagesElementTest extends BaseContentTypeTest
 {
     public function testMenuContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

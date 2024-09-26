@@ -17,7 +17,7 @@ class HeaderElementTest extends BaseContentTypeTest
 {
     public function testHeaderContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 
