@@ -176,6 +176,8 @@ class FilesProcessor implements DataProcessorInterface
         $data = [];
         $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
 
+        $this->getFileUtility()->setAllowSvgProcessing((int)($this->processorConfiguration['processingConfiguration.']['processSvg'] ?? 0) === 1);
+
         foreach ($this->fileObjects as $key => $fileObject) {
             if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
                 $file = $this->getFileUtility()->processFile(
@@ -245,6 +247,8 @@ class FilesProcessor implements DataProcessorInterface
                 }
             }
         }
+
+        $this->getFileUtility()->setAllowSvgProcessing(false);
 
         if (isset($this->processorConfiguration['processingConfiguration.']['returnFlattenObject']) &&
             (int)$this->processorConfiguration['processingConfiguration.']['returnFlattenObject'] === 1) {

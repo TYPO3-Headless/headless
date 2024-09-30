@@ -178,6 +178,8 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      */
     protected function prepareGalleryData()
     {
+        $this->getFileUtility()->setAllowSvgProcessing((int)($this->processorConfiguration['processingConfiguration.']['processSvg'] ?? 0) === 1);
+
         for ($row = 1; $row <= $this->galleryData['count']['rows']; $row++) {
             for ($column = 1; $column <= $this->galleryData['count']['columns']; $column++) {
                 $fileKey = (($row - 1) * $this->galleryData['count']['columns']) + $column - 1;
@@ -217,6 +219,8 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 }
             }
         }
+
+        $this->getFileUtility()->setAllowSvgProcessing(false);
 
         $this->galleryData['columnSpacing'] = $this->columnSpacing;
         $this->galleryData['border']['enabled'] = $this->borderEnabled;
