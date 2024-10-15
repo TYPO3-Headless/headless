@@ -211,7 +211,7 @@ class LoginFormViewHelper extends FormViewHelper
      * @return string A hidden field containing the Identity (UID in TYPO3 Flow, uid in Extbase) of the given object or NULL if the object is unknown to the persistence framework
      * @see \TYPO3\CMS\Extbase\Mvc\Controller\Argument::setValue()
      */
-    protected function renderHiddenIdentityField(?object $object, ?string $name): string
+    protected function renderHiddenIdentityField(mixed $object, ?string $name): string
     {
         if ($object instanceof LazyLoadingProxy) {
             $object = $object->_loadRealInstance();
