@@ -36,10 +36,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
-    public function invokeTest()
+    public function testInvoke(): void
     {
         $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
         $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
@@ -132,10 +129,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         self::assertSame((string)$expectedUri, $newRedirectEvent->getTargetUrl());
     }
 
-    /**
-     * @test
-     */
-    public function invokeWithLanguageTest()
+    public function testInvokeWithLanguaget(): void
     {
         $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
         $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
@@ -246,14 +240,14 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
 
-        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
 
         if ($site === null) {
             $site = $this->getSiteWithBase($uri);
         }
 
-        $siteFinder->getSiteByPageId(Argument::is(1))->willReturn($site);
+        $siteFinder->method('getSiteByPageId')->willReturn($site);
 
-        return new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), null, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
+        return new UrlUtility(null, $resolver->reveal(), $siteFinder, null, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
     }
 }

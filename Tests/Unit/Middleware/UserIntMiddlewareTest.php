@@ -16,6 +16,7 @@ use FriendsOfTYPO3\Headless\Seo\MetaHandler;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
+use PHPUnit\Framework\Attributes\Test;
 use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -29,10 +30,8 @@ class UserIntMiddlewareTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
-    public function processTest()
+    #[Test]
+    public function process(): void
     {
         $middleware = new UserIntMiddleware(new HeadlessUserInt(), new HeadlessMode(), $this->createMock(MetaHandler::class));
 

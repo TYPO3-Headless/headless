@@ -13,7 +13,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class TextMediaElementTest extends BaseContentTypeTest
+class TextMediaElementTest extends BaseContentTypeTesting
 {
     public function testTextMediaContentElement()
     {

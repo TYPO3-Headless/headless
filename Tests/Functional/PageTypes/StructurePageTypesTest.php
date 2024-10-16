@@ -13,12 +13,9 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\PageTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class StructurePageTypesTest extends BasePageTypesTest
+class StructurePageTypesTest extends BasePageTypesHeadlessTesting
 {
-    /**
-     * @test
-     */
-    public function getMenuStructure()
+    public function testGetMenuStructure()
     {
         $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/?type=834')

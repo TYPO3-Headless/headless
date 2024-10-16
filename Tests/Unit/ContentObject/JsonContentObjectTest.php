@@ -16,6 +16,7 @@ use FriendsOfTYPO3\Headless\ContentObject\FloatContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -140,19 +141,13 @@ class JsonContentObjectTest extends UnitTestCase
         $this->contentObject->setContentObjectRenderer($contentObjectRenderer);
     }
 
-    /**
-     * @test
-     */
-    public function renderTest()
+    public function testRender()
     {
         self::assertEquals('[]', $this->contentObject->render());
     }
 
-    /**
-     * @test
-     * @dataProvider dataProvider
-     */
-    public function renderWithProviderTest($argument, $result)
+    #[DataProvider('dataProvider')]
+    public function testRenderWithProvider($argument, $result)
     {
         self::assertEquals($result, $this->contentObject->render($argument));
     }

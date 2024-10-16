@@ -16,7 +16,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class MenuRecentlyUpdatedPagesElementTest extends BaseContentTypeTest
+class MenuRecentlyUpdatedPagesElementTest extends BaseContentTypeTesting
 {
     public function setUp(): void
     {
@@ -26,9 +26,17 @@ class MenuRecentlyUpdatedPagesElementTest extends BaseContentTypeTest
         $modifiedSevenDayAgo = (clone $currentDate)->modify('-7 day');
         $modifiedEightDayAgo = (clone $currentDate)->modify('-8 day');
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('pages');
-        $connection->prepare('update pages set SYS_LASTCHANGED = ? WHERE uid = 2')->execute([$modifiedOneDayAgo->getTimestamp()]);
-        $connection->prepare('update pages set SYS_LASTCHANGED = ? WHERE uid = 3')->execute([$modifiedSevenDayAgo->getTimestamp()]);
-        $connection->prepare('update pages set SYS_LASTCHANGED = ? WHERE uid = 4')->execute([$modifiedEightDayAgo->getTimestamp()]);
+        $sql = $connection->prepare('update pages set SYS_LASTCHANGED = :change WHERE uid = 2');
+        $sql->bindValue(':change', $modifiedOneDayAgo->getTimestamp());
+        $sql->executeStatement();
+
+        $sql = $connection->prepare('update pages set SYS_LASTCHANGED = :change WHERE uid = 3');
+        $sql->bindValue(':change', $modifiedSevenDayAgo->getTimestamp());
+        $sql->executeStatement();
+
+        $sql = $connection->prepare('update pages set SYS_LASTCHANGED = :change WHERE uid = 4');
+        $sql->bindValue(':change', $modifiedEightDayAgo->getTimestamp());
+        $sql->executeStatement();
     }
 
     public function testMenuContentElement()

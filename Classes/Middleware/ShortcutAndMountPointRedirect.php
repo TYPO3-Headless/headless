@@ -20,6 +20,9 @@ use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * @codeCoverageIgnore
+ */
 class ShortcutAndMountPointRedirect extends \TYPO3\CMS\Frontend\Middleware\ShortcutAndMountPointRedirect
 {
     public function __construct(private readonly HeadlessMode $headlessMode) {}

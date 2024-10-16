@@ -22,10 +22,7 @@ class HeadlessUserIntTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
-    public function processingOnPlainTextWithNewline()
+    public function testProcessingOnPlainTextWithNewline()
     {
         $testProcessed = 'PlainText' . PHP_EOL . 'NextLine';
         $testContent = 'HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END';
@@ -40,10 +37,7 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals(json_encode($testProcessed), '"' . $tsfe->content . '"');
     }
 
-    /**
-     * @test
-     */
-    public function processingOnQuotedText()
+    public function testProcessingOnQuotedText()
     {
         $testProcessed = '"PlainText' . PHP_EOL . 'NextLine"';
         $testContent = 'HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END';
@@ -58,10 +52,7 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals(json_encode($testProcessed), '"' . $tsfe->content . '"');
     }
 
-    /**
-     * @test
-     */
-    public function processingOnQuotedContent()
+    public function testProcessingOnQuotedContent()
     {
         $testProcessed = '"PlainText' . PHP_EOL . 'NextLine"';
         $testContent = '"HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END"';
@@ -78,10 +69,7 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals(json_encode($testProcessed), $tsfe->content);
     }
 
-    /**
-     * @test
-     */
-    public function processingOnQuotedJsonContent()
+    public function testProcessingOnQuotedJsonContent()
     {
         $testProcessed = json_encode(
             [
@@ -100,10 +88,7 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals($testProcessed, $tsfe->content);
     }
 
-    /**
-     * @test
-     */
-    public function processingEmptyPluginResponse()
+    public function testProcessingEmptyPluginResponse()
     {
         $testProcessed = json_encode(
             ''
@@ -134,10 +119,7 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals(json_encode(null), $tsfe->content);
     }
 
-    /**
-     * @test
-     */
-    public function processingOnNestedJsonContent()
+    public function testProcessingOnNestedJsonContent()
     {
         $nestedProcessed = json_encode(
             [
@@ -180,10 +162,7 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals($finalOutput, $tsfe->content);
     }
 
-    /**
-     * @test
-     */
-    public function processingOnMultipleUserIntOnPageJsonContent()
+    public function testProcessingOnMultipleUserIntOnPageJsonContent()
     {
         $nestedProcessed = json_encode(
             [
@@ -234,10 +213,7 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals($finalOutput, $tsfe->content);
     }
 
-    /**
-     * @test
-     */
-    public function wrapTest()
+    public function testWrapTest()
     {
         $headlessUserInt = new HeadlessUserInt();
 

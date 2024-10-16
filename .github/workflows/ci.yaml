@@ -70,7 +70,7 @@ jobs:
       matrix:
         php-versions: [ 8.1, 8.2 ]
         typo3-versions:
-          - { typo3: 12, testing: ^7.0, phpunit: ^10, phpcov: ^9, yaml: ^6 }
+          - { typo3: 12, testing: ^8.0, phpunit: ^10, phpcov: ^9, yaml: ^6 }
 
     name: "Run tests with PHP ${{ matrix.php-versions }}
           using TYPO3 ${{ matrix.typo3-versions.typo3 }}
@@ -110,7 +110,7 @@ jobs:
           phpunit/phpunit "${{ matrix.typo3-versions.phpunit }}"
           phpunit/phpcov "${{ matrix.typo3-versions.phpcov }}"
           symfony/yaml "${{ matrix.typo3-versions.yaml }}"
-          --prefer-dist --no-progress --no-suggest
+          --prefer-dist --no-progress
 
       - name: "Run Unit tests"
         run: composer ci:test:unit
@@ -125,7 +125,7 @@ jobs:
       matrix:
         php-versions: [8.2, 8.3]
         typo3-versions:
-          - {typo3: 13, testing: ^8.0, phpunit: ^11, phpcov: ^10, yaml: ^7 }
+          - {typo3: 13, testing: ^9.0, phpunit: ^11, phpcov: ^10, yaml: ^7 }
 
     name: "Run tests with PHP ${{ matrix.php-versions }}
           using TYPO3 ${{ matrix.typo3-versions.typo3 }}

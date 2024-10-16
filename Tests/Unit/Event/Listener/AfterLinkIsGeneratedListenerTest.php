@@ -34,14 +34,14 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
     {
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
-        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder = $this->createPartialMock(SiteFinder::class, []);
 
         $listener = new AfterLinkIsGeneratedListener(
             $this->prophesize(Logger::class)->reveal(),
-            new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()),
+            new UrlUtility(null, $resolver->reveal(), $siteFinder),
             $this->prophesize(LinkService::class)->reveal(),
             new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
-            $this->prophesize(SiteFinder::class)->reveal()
+            $siteFinder
         );
 
         self::assertInstanceOf(AfterLinkIsGeneratedListener::class, $listener);
@@ -51,14 +51,14 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
     {
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
-        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder = $this->createMock(SiteFinder::class);
 
         $listener = new AfterLinkIsGeneratedListener(
             $this->prophesize(Logger::class)->reveal(),
-            new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal()),
+            new UrlUtility(null, $resolver->reveal(), $siteFinder),
             $this->prophesize(LinkService::class)->reveal(),
             new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
-            $this->prophesize(SiteFinder::class)->reveal()
+            $siteFinder
         );
 
         $site = new Site('test', 1, []);
@@ -111,7 +111,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $urlUtility->reveal(),
             $this->prophesize(LinkService::class)->reveal(),
             new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
-            $this->prophesize(SiteFinder::class)->reveal()
+            $this->createMock(SiteFinder::class)
         );
 
         $linkResult = new LinkResult('page', '/');
@@ -148,7 +148,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $urlUtility->reveal(),
             $linkService->reveal(),
             new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
-            $this->prophesize(SiteFinder::class)->reveal()
+            $this->createMock(SiteFinder::class)
         );
         $linkResult = new LinkResult('page', '/');
         $linkResult = $linkResult->withLinkConfiguration(['parameter.' => ['data' => 'parameters:href']]);
@@ -182,8 +182,8 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $request = (new ServerRequest())->withAttribute('site', $site);
         $cObj->getRequest()->willReturn($request);
 
-        $siteFinder = $this->prophesize(SiteFinder::class);
-        $siteFinder->getSiteByPageId(Argument::any())->willReturn($site);
+        $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
+        $siteFinder->method('getSiteByPageId')->willReturn($site);
 
         $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
 
@@ -195,7 +195,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $urlUtility->reveal(),
             $linkService->reveal(),
             new TypoLinkCodecService($eventDispatcher->reveal()),
-            $siteFinder->reveal()
+            $siteFinder
         );
 
         $linkResult = new LinkResult('page', 'https://typo3.tld/sitemap-type/pages/sitemap.xml');

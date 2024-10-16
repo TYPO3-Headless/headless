@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use stdClass;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -27,12 +29,7 @@ class JsonEncoderTest extends UnitTestCase
         parent::setUp();
     }
 
-    /**
-     * @param $testValue
-     * @param $expectedValue
-     *
-     * @dataProvider jsonProvider
-     */
+    #[Test, DataProvider('jsonProvider')]
     public function testEncoding($testValue, $expectedValue): void
     {
         $encoder = GeneralUtility::makeInstance(JsonEncoder::class);
@@ -40,7 +37,8 @@ class JsonEncoderTest extends UnitTestCase
         self::assertSame($expectedValue, $encoder->encode($testValue));
     }
 
-    public function testPrettyEncoding(): void
+    #[Test]
+    public function prettyEncoding(): void
     {
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.prettyPrint'] = true;
         $encoder = GeneralUtility::makeInstance(JsonEncoder::class);

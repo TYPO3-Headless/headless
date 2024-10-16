@@ -13,7 +13,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class MenuSubpagesElementTest extends BaseContentTypeTest
+class MenuSubpagesElementTest extends BaseContentTypeTesting
 {
     public function testMenuSubpagesContentElement()
     {

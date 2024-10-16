@@ -28,8 +28,8 @@
   ],
   "require": {
     "ext-json": "*",
-    "typo3/cms-core": "^12.4 || ^13.3",
-    "typo3/cms-install": "^12.4 || ^13.3"
+    "typo3/cms-core": "^12.4 || ^13.4",
+    "typo3/cms-install": "^12.4 || ^13.4"
   },
   "require-dev": {
     "ergebnis/composer-normalize": "^2.43",
@@ -91,7 +91,7 @@
   ],
     "ci:coverage:functional": [
       "@coverage:create-directories",
-      ".Build/vendor/bin/phpunit -c Tests/Functional/phpunit.xml --whitelist Classes --coverage-php=.Build/coverage/functional.cov Tests/Functional"
+      ".Build/vendor/bin/phpunit -c Tests/Functional/phpunit.xml Classes --coverage-php=.Build/coverage/functional.cov Tests/Functional"
     ],
     "ci:coverage:merge": [
       "@coverage:create-directories",
@@ -99,7 +99,7 @@
     ],
     "ci:coverage:unit": [
       "@coverage:create-directories",
-      ".Build/vendor/bin/phpunit -c Tests/Unit/phpunit.xml --whitelist Classes --coverage-php=.Build/coverage/unit.cov Tests/Unit"
+      ".Build/vendor/bin/phpunit -c Tests/Unit/phpunit.xml Classes --coverage-php=.Build/coverage/unit.cov Tests/Unit"
     ],
     "coverage:create-directories": "mkdir -p build/logs .Build/coverage",
     "ci:json:lint": [

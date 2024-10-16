@@ -12,15 +12,13 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing;
 
 use FriendsOfTYPO3\Headless\DataProcessing\DataProcessingTrait;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class DataProcessingTraitTest extends TestCase
 {
-    /**
-     * @test
-     * @dataProvider dataProvider
-     */
-    public function removeDataIfnotAppendInConfigurationTest(
+    #[DataProvider('dataProvider')]
+    public function testRemoveDataIfnotAppendInConfiguration(
         $expected,
         array $processorConfiguration,
         array $processedData
@@ -37,10 +35,7 @@ class DataProcessingTraitTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     */
-    public function removeDataIfnotAppendInConfigurationAsMenuProcessorTest()
+    public function testRemoveDataIfnotAppendInConfigurationAsMenuProcessor()
     {
         $trait = new class () {
             use DataProcessingTrait {

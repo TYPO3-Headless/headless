@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Event;
 
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
+use PHPUnit\Framework\Attributes\Test;
 use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
@@ -21,9 +22,7 @@ class RedirectUrlEventTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
+    #[Test]
     public function eventTest()
     {
         $request = (new ServerRequest())->withAttribute('test', 1);

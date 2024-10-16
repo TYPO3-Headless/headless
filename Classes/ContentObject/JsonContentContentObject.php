@@ -101,6 +101,8 @@ use const JSON_FORCE_OBJECT;
  *    }
  *    returnSingleRow = 1
  * }
+ *
+ * @codeCoverageIgnore
  */
 class JsonContentContentObject extends ContentContentObject
 {

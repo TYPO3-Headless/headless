@@ -26,10 +26,7 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
-    public function processTest()
+    public function testProcess(): void
     {
         $middleware = new ElementBodyResponseMiddleware(new JsonEncoder(), new HeadlessMode());
 
