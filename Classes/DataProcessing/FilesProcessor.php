@@ -176,9 +176,13 @@ class FilesProcessor implements DataProcessorInterface
         $data = [];
         $cropVariant = $this->processorConfiguration['processingConfiguration.']['cropVariant'] ?? 'default';
 
+        $fileUtility = $this->getFileUtility();
+
+        $fileUtility->setAllowSvgProcessing((int)($this->processorConfiguration['processingConfiguration.']['processSvg'] ?? 0) === 1);
+
         foreach ($this->fileObjects as $key => $fileObject) {
             if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.'])) {
-                $file = $this->getFileUtility()->processFile(
+                $file = $fileUtility->processFile(
                     $fileObject,
                     $properties,
                     $cropVariant,
@@ -191,7 +195,7 @@ class FilesProcessor implements DataProcessorInterface
                 if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x']) &&
                     (int)$this->processorConfiguration['processingConfiguration.']['autogenerate.']['retina2x'] === 1 &&
                     ($targetWidth || $targetHeight)) {
-                    $file['urlRetina'] = $this->getFileUtility()->processFile(
+                    $file['urlRetina'] = $fileUtility->processFile(
                         $fileObject,
                         array_merge(
                             $properties,
@@ -208,7 +212,7 @@ class FilesProcessor implements DataProcessorInterface
                 if (isset($this->processorConfiguration['processingConfiguration.']['autogenerate.']['lqip']) &&
                     (int)$this->processorConfiguration['processingConfiguration.']['autogenerate.']['lqip'] === 1 &&
                     ($targetWidth || $targetHeight)) {
-                    $file['urlLqip'] = $this->getFileUtility()->processFile(
+                    $file['urlLqip'] = $fileUtility->processFile(
                         $fileObject,
                         array_merge(
                             $properties,
@@ -224,7 +228,7 @@ class FilesProcessor implements DataProcessorInterface
 
                 $data[] = $file;
             } else {
-                $data[$key] = $this->getFileUtility()->processFile(
+                $data[$key] = $fileUtility->processFile(
                     $fileObject,
                     $properties,
                     $cropVariant,
@@ -238,13 +242,15 @@ class FilesProcessor implements DataProcessorInterface
 
                     if (is_array($cropVariants) && count($cropVariants) > 1) {
                         foreach (array_keys($cropVariants) as $cropVariantName) {
-                            $file = $this->getFileUtility()->processFile($fileObject, $properties, $cropVariantName);
+                            $file = $fileUtility->processFile($fileObject, $properties, $cropVariantName);
                             $data[$key]['cropVariants'][$cropVariantName] = $file;
                         }
                     }
                 }
             }
         }
+
+        $fileUtility->setAllowSvgProcessing(false);
 
         if (isset($this->processorConfiguration['processingConfiguration.']['returnFlattenObject']) &&
             (int)$this->processorConfiguration['processingConfiguration.']['returnFlattenObject'] === 1) {
