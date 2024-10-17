@@ -18,7 +18,7 @@ use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
-abstract class BaseTest extends FunctionalTestCase
+abstract class BaseHeadlessTesting extends FunctionalTestCase
 {
     protected array $coreExtensionsToLoad = [
         'install',
@@ -34,7 +34,7 @@ abstract class BaseTest extends FunctionalTestCase
     {
         parent::setUp();
 
-        $this->importDataSet(__DIR__ . '/Fixtures/pages.xml');
+        $this->importCSVDataSet(__DIR__ . '/Fixtures/pages.csv');
 
         $this->setUpFrontendRootPage(
             1,
@@ -128,5 +128,10 @@ abstract class BaseTest extends FunctionalTestCase
         self::assertEquals($link, $contentElementHeaderFieldsLink['linkText'], 'link mismatch');
         self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['href'], 'url mismatch');
         self::assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
+    }
+
+    protected function importDataSet(string $string): void
+    {
+        // @TODO move data into CSV
     }
 }

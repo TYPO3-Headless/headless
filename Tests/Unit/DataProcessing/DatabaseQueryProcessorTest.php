@@ -61,10 +61,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         parent::setUp();
     }
 
-    /**
-     * @test
-     */
-    public function returnEarlyDueToIfStatementReturnsFalse(): void
+    public function testReturnEarlyDueToIfStatementReturnsFalse(): void
     {
         $processorConfiguration = [
             'if.' => [
@@ -77,10 +74,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
     }
 
-    /**
-     * @test
-     */
-    public function returnEarlyNoTableIsGiven(): void
+    public function testReturnEarlyNoTableIsGiven(): void
     {
         $processorConfiguration = [
             'if.' => [
@@ -93,10 +87,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
     }
 
-    /**
-     * @test
-     */
-    public function processWithoutAdditionalFields(): void
+    public function testProcessWithoutAdditionalFields(): void
     {
         $processorConfiguration = [
             'table' => 'tt_content',
@@ -131,10 +122,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
     }
 
-    /**
-     * @test
-     */
-    public function processWithAdditionalFields(): void
+    public function testProcessWithAdditionalFields(): void
     {
         $processorConfiguration = [
             'table' => 'tt_content',

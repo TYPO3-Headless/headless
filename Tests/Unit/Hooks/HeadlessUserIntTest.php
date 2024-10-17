@@ -13,7 +13,6 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Hooks;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Prophecy\PhpUnit\ProphecyTrait;
-use TYPO3\CMS\Core\TypoScript\TemplateService;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -23,23 +22,12 @@ class HeadlessUserIntTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
-    public function processingOnPlainTextWithNewline()
+    public function testProcessingOnPlainTextWithNewline()
     {
         $testProcessed = 'PlainText' . PHP_EOL . 'NextLine';
         $testContent = 'HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -49,23 +37,12 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals(json_encode($testProcessed), '"' . $tsfe->content . '"');
     }
 
-    /**
-     * @test
-     */
-    public function processingOnQuotedText()
+    public function testProcessingOnQuotedText()
     {
         $testProcessed = '"PlainText' . PHP_EOL . 'NextLine"';
         $testContent = 'HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -75,23 +52,14 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals(json_encode($testProcessed), '"' . $tsfe->content . '"');
     }
 
-    /**
-     * @test
-     */
-    public function processingOnQuotedContent()
+    public function testProcessingOnQuotedContent()
     {
         $testProcessed = '"PlainText' . PHP_EOL . 'NextLine"';
         $testContent = '"HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END"';
 
         $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -101,10 +69,7 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals(json_encode($testProcessed), $tsfe->content);
     }
 
-    /**
-     * @test
-     */
-    public function processingOnQuotedJsonContent()
+    public function testProcessingOnQuotedJsonContent()
     {
         $testProcessed = json_encode(
             [
@@ -113,15 +78,7 @@ class HeadlessUserIntTest extends UnitTestCase
         );
         $testContent = '"HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END"';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -131,25 +88,14 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals($testProcessed, $tsfe->content);
     }
 
-    /**
-     * @test
-     */
-    public function processingEmptyPluginResponse()
+    public function testProcessingEmptyPluginResponse()
     {
         $testProcessed = json_encode(
             ''
         );
         $testContent = '"HEADLESS_INT_NULL_START<<' . $testProcessed . '>>HEADLESS_INT_NULL_END"';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -163,15 +109,7 @@ class HeadlessUserIntTest extends UnitTestCase
         );
         $testContent = '"NESTED_HEADLESS_INT_NULL_START<<' . $testProcessed . '>>NESTED_HEADLESS_INT_NULL_END"';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -181,10 +119,7 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals(json_encode(null), $tsfe->content);
     }
 
-    /**
-     * @test
-     */
-    public function processingOnNestedJsonContent()
+    public function testProcessingOnNestedJsonContent()
     {
         $nestedProcessed = json_encode(
             [
@@ -217,12 +152,7 @@ class HeadlessUserIntTest extends UnitTestCase
         $setup = [];
         $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
 
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -232,10 +162,7 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals($finalOutput, $tsfe->content);
     }
 
-    /**
-     * @test
-     */
-    public function processingOnMultipleUserIntOnPageJsonContent()
+    public function testProcessingOnMultipleUserIntOnPageJsonContent()
     {
         $nestedProcessed = json_encode(
             [
@@ -276,15 +203,7 @@ class HeadlessUserIntTest extends UnitTestCase
 
         $testContent = '["HEADLESS_INT_START<<' . $testProcessed . '>>HEADLESS_INT_END","HEADLESS_INT_START<<' . $testProcessed2 . '>>HEADLESS_INT_END"]';
 
-        $setup = [];
-        $setup['plugin.']['tx_headless.']['staticTemplate'] = '1';
-
-        $tmpl = $this->prophesize(TemplateService::class);
-        $tmpl->setup = $setup;
-
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->tmpl = $tmpl->reveal();
-
         $tsfe->content = $testContent;
 
         $classUnderTest = new HeadlessUserInt();
@@ -294,10 +213,7 @@ class HeadlessUserIntTest extends UnitTestCase
         self::assertEquals($finalOutput, $tsfe->content);
     }
 
-    /**
-     * @test
-     */
-    public function wrapTest()
+    public function testWrapTest()
     {
         $headlessUserInt = new HeadlessUserInt();
 

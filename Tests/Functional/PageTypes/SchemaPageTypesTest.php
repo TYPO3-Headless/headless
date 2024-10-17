@@ -13,26 +13,20 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\PageTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class SchemaPageTypesTest extends BasePageTypesTest
+class SchemaPageTypesTest extends BasePageTypesHeadlessTesting
 {
-    /**
-     * @test
-     */
-    public function getMenu()
+    public function testGetMenu()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/?type=834')
         );
 
         self::assertEquals(200, $response->getStatusCode());
     }
 
-    /**
-     * @test
-     */
-    public function getPage()
+    public function testGetPage()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

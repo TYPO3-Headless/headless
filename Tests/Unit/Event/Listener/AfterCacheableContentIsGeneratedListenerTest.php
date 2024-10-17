@@ -84,7 +84,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
 
         $controller = $this->prophesize(TypoScriptFrontendController::class);
         $controller->content = $content;
-        $controller->generatePageTitle()->willReturn('Modified title via PageTitleManager');
+        $controller->generatePageTitle($request)->willReturn('Modified title via PageTitleManager');
 
         $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $controller->reveal(), 'abc', false);
 
@@ -106,7 +106,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
 
         $controller = $this->prophesize(TypoScriptFrontendController::class);
         $controller->content = $content;
-        $controller->generatePageTitle()->willReturn('Modified title via PageTitleManager');
+        $controller->generatePageTitle($request)->willReturn('Modified title via PageTitleManager');
 
         $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $controller->reveal(), 'abc', false);
 
@@ -131,7 +131,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $controller = $this->prophesize(TypoScriptFrontendController::class);
         $controller->content = json_encode(['meta' => ['title' => 'test before event'], 'seo' => ['title' => 'test before event']]);
         $controller->cObj = $this->prophesize(ContentObjectRenderer::class)->reveal();
-        $controller->generatePageTitle()->willReturn('Modified title via PageTitleProviderManager');
+        $controller->generatePageTitle($request)->willReturn('Modified title via PageTitleProviderManager');
 
         $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $controller->reveal(), 'abc', false);
 
@@ -162,7 +162,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $controller = $this->prophesize(TypoScriptFrontendController::class);
         $controller->content = json_encode(['meta' => ['title' => 'test before event'], 'seo' => ['title' => 'test before event']]);
         $controller->cObj = $this->prophesize(ContentObjectRenderer::class)->reveal();
-        $controller->generatePageTitle()->willReturn('Modified title via PageTitleProviderManager');
+        $controller->generatePageTitle($request)->willReturn('Modified title via PageTitleProviderManager');
 
         $registry = GeneralUtility::makeInstance(MetaTagManagerRegistry::class);
         $registry->registerManager('html5', Html5MetaTagManager::class);

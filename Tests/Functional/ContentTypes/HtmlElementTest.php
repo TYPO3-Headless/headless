@@ -13,11 +13,11 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class HtmlElementTest extends BaseContentTypeTest
+class HtmlElementTest extends BaseContentTypeTesting
 {
     public function testHtmlContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

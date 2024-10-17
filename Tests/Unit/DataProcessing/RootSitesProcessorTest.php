@@ -33,10 +33,7 @@ class RootSitesProcessorTest extends UnitTestCase
         parent::setUp();
     }
 
-    /**
-     * @test
-     */
-    public function customImplementation(): void
+    public function testCustomImplementation(): void
     {
         $processor = new RootSitesProcessor();
 
@@ -72,10 +69,7 @@ class RootSitesProcessorTest extends UnitTestCase
         ], $processor->process($contentObjectRenderer, [], $conf, []));
     }
 
-    /**
-     * @test
-     */
-    public function objectNotSet()
+    public function testObjectNotSet()
     {
         $processor = new RootSitesProcessor();
 
@@ -87,10 +81,7 @@ class RootSitesProcessorTest extends UnitTestCase
         self::assertEquals([], $processor->process($contentObjectRenderer, [], $conf, []));
     }
 
-    /**
-     * @test
-     */
-    public function featureEnabledButWrongSiteProvider(): void
+    public function testFeatureEnabledButWrongSiteProvider(): void
     {
         $processor = new RootSitesProcessor();
 
@@ -104,10 +95,7 @@ class RootSitesProcessorTest extends UnitTestCase
         self::assertEquals([], $processor->process($contentObjectRenderer, [], $conf, []));
     }
 
-    /**
-     * @test
-     */
-    public function featureEnabledButWrongSiteSchema(): void
+    public function testFeatureEnabledButWrongSiteSchema(): void
     {
         $processor = new RootSitesProcessor();
 

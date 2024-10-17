@@ -16,28 +16,24 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class AbstractFormDefinitionDecoratorTest extends UnitTestCase
 {
-    /**
-     * @test
-     */
-    public function basicOutput(): void
+    public function testBasicOutput(): void
     {
-        $stub = $this->getMockForAbstractClass(AbstractFormDefinitionDecorator::class, [['api' => 'test']]);
+        $class = new class () extends AbstractFormDefinitionDecorator {};
+        $classUnderTest = new $class(['api' => 'test']);
 
         $definition = [
             'identifier' => 'test-123',
             'renderables' => [0 => ['renderables' => []]],
             'i18n' => ['properties' => []],
         ];
-        $test = $stub($definition, 1);
+        $test = $classUnderTest($definition, 1);
         self::assertSame(['id' => 'test-123', 'api' => ['api' => 'test'], 'i18n' => [], 'elements' => []], $test);
     }
 
-    /**
-     * @test
-     */
-    public function renderElements(): void
+    public function testRenderElements(): void
     {
-        $stub = $this->getMockForAbstractClass(AbstractFormDefinitionDecorator::class, [['api' => 'test']]);
+        $class = new class () extends AbstractFormDefinitionDecorator {};
+        $classUnderTest = new $class(['api' => 'test']);
 
         $definition = [
             'identifier' => 'test-123',
@@ -91,7 +87,7 @@ class AbstractFormDefinitionDecoratorTest extends UnitTestCase
             ],
             'i18n' => ['properties' => []],
         ];
-        $test = $stub($definition, 0);
+        $test = $classUnderTest($definition, 0);
 
         self::assertSame([
             'id' => 'test-123',

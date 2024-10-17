@@ -33,13 +33,13 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
     {
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
-        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder = $this->createMock(SiteFinder::class);
 
         $listener = new AfterPagePreviewUriGeneratedListener(new UrlUtility(
             null,
             $resolver->reveal(),
-            $siteFinder->reveal()
-        ), $siteFinder->reveal());
+            $siteFinder
+        ), $siteFinder);
 
         self::assertInstanceOf(AfterPagePreviewUriGeneratedListener::class, $listener);
     }
@@ -48,14 +48,14 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
     {
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
-        $siteFinder = $this->prophesize(SiteFinder::class);
-        $siteFinder->getSiteByPageId(Argument::any())->willReturn($site = new Site('test', 1, ['headless' => HeadlessMode::MIXED, 'frontendBase' => 'https://front.test.tld', 'base' => 'https://test.tld']));
+        $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
+        $siteFinder->method('getSiteByPageId')->willReturn($site = new Site('test', 1, ['headless' => HeadlessMode::MIXED, 'frontendBase' => 'https://front.test.tld', 'base' => 'https://test.tld']));
 
         $listener = new AfterPagePreviewUriGeneratedListener(new UrlUtility(
             null,
             $resolver->reveal(),
-            $siteFinder->reveal()
-        ), $siteFinder->reveal());
+            $siteFinder
+        ), $siteFinder);
 
         $event = new AfterPagePreviewUriGeneratedEvent(
             new Uri('https://test.tld/page'),
@@ -82,14 +82,14 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
     {
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
-        $siteFinder = $this->prophesize(SiteFinder::class);
-        $siteFinder->getSiteByPageId(Argument::any())->willThrow(new SiteNotFoundException());
+        $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
+        $siteFinder->method('getSiteByPageId')->willThrowException(new SiteNotFoundException());
 
         $listener = new AfterPagePreviewUriGeneratedListener(new UrlUtility(
             null,
             $resolver->reveal(),
-            $siteFinder->reveal()
-        ), $siteFinder->reveal());
+            $siteFinder
+        ), $siteFinder);
 
         $event = new AfterPagePreviewUriGeneratedEvent(
             new Uri('https://test.tld/page'),

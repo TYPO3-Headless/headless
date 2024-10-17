@@ -33,10 +33,7 @@ class DomainSchemaTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
-    public function processTest()
+    public function testProcess(): void
     {
         $testUri = new Uri('https://test.domain.tld');
         $cObj = $this->prophesize(ContentObjectRenderer::class);
@@ -133,17 +130,20 @@ class DomainSchemaTest extends UnitTestCase
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
 
-        $siteFinder = $this->prophesize(SiteFinder::class);
+        $mock = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
+        $mock->method('getSiteByPageId')->willReturn($site);
 
         if ($site === null) {
             $site = $this->getSiteWithBase($uri);
         }
 
-        $siteFinder->getSiteByPageId(Argument::is(1))->willReturn($site);
+        $mock->method('getSiteByPageId')->willReturn($site);
+
+        //$siteFinder->getSiteByPageId(Argument::is(1))->willReturn($site);
         $dummyRequest = (new ServerRequest())->withAttribute('site', $site);
         $dummyRequest = $dummyRequest->withAttribute('headless', new Headless());
 
-        return new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), $dummyRequest, (new HeadlessMode())->withRequest($dummyRequest));
+        return new UrlUtility(null, $resolver->reveal(), $mock, $dummyRequest, (new HeadlessMode())->withRequest($dummyRequest));
     }
 
     protected function getSiteWithBase(UriInterface $uri, $withLanguage = null)

@@ -7,7 +7,6 @@
  * LICENSE.md file that was distributed with this source code.
  */
 
-use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
