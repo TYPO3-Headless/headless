@@ -23,6 +23,7 @@ use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterCacheableContentIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterPagePreviewUriGeneratedListener;
+use FriendsOfTYPO3\Headless\Event\Listener\HeadlessHreflangGeneratorListener;
 use FriendsOfTYPO3\Headless\Event\Listener\LoginConfirmedEventListener;
 use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
@@ -96,6 +97,16 @@ return static function (ContainerConfigurator $configurator): void {
         ['identifier' => 'headless/AfterPagePreviewUriGenerated']
     );
 
+    if (class_exists(\TYPO3\CMS\Seo\HrefLang\HrefLangGenerator::class)) {
+        $services->set(HeadlessHreflangGeneratorListener::class)->tag(
+            'event.listener',
+            [
+                'identifier' => 'headless/hreflangGenerator',
+                'after' => 'typo3-seo/hreflangGenerator',
+            ]
+        );
+    }
+
     if ($cmsFormsInstalled) {
         $services->set(FormTranslationService::class)->arg('$runtimeCache', service('cache.runtime'))->public();
     }
@@ -116,7 +127,11 @@ return static function (ContainerConfigurator $configurator): void {
             RootSitesProcessor::class => ['identifier' => 'headless-root-sites', 'share' => true, 'public' => false],
             MenuProcessor::class => ['identifier' => 'headless-menu', 'share' => false, 'public' => true],
             GalleryProcessor::class => ['identifier' => 'headless-gallery', 'share' => false, 'public' => false],
-            DatabaseQueryProcessor::class => ['identifier' => 'headless-database-query', 'share' => false, 'public' => true],
+            DatabaseQueryProcessor::class => [
+                'identifier' => 'headless-database-query',
+                'share' => false,
+                'public' => true,
+            ],
             FlexFormProcessor::class => ['identifier' => 'headless-flex-form', 'share' => false, 'public' => false],
         ] as $class => $processorConfig
     ) {
