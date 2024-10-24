@@ -32,6 +32,7 @@ class ResourceLocalDriver extends LocalDriver
         $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
 
         if (!$request instanceof ServerRequestInterface) {
+            parent::determineBaseUrl();
             return;
         }
 
