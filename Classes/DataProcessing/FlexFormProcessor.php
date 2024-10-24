@@ -108,7 +108,11 @@ class FlexFormProcessor implements DataProcessorInterface
         }
 
         // processing the flexform data
-        $originalValue = $processedData['data'][$fieldName] ?? $processedData[$fieldName];
+        $originalValue = $processedData['data'][$fieldName] ?? $processedData[$fieldName] ?? null;
+
+        if ($originalValue === null || $originalValue === '' || $originalValue === []) {
+            return $processedData;
+        }
 
         if (is_array($originalValue)) {
             $flexformData = $originalValue;
