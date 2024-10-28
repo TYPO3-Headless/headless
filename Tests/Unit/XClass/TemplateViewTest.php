@@ -14,6 +14,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\XClass;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\XClass\TemplateView;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use RuntimeException;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Fluid\Core\Rendering\RenderingContext;
@@ -27,6 +28,7 @@ use TYPO3Fluid\Fluid\View\Exception\InvalidTemplateResourceException;
 
 use function json_encode;
 
+#[IgnoreDeprecations]
 class TemplateViewTest extends UnitTestCase
 {
     public function testTemplateNotFoundRender(): void

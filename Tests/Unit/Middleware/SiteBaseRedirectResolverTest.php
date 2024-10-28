@@ -60,11 +60,11 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
                 ],
             ]]);
 
-        $siteFinder  = $this->prophesize(SiteFinder::class);
-        $siteFinder->getSiteByPageId(1)->willReturn($site);
+        $siteFinder  = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
+        $siteFinder->method('getSiteByPageId')->willReturn($site);
 
         $container = new Container();
-        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->prophesize(Resolver::class)->reveal(), $siteFinder->reveal());
+        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->prophesize(Resolver::class)->reveal(), $siteFinder);
         $container->set(UrlUtility::class, $urlUtility);
 
         GeneralUtility::setContainer($container);
@@ -131,11 +131,11 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
                 ],
             ]]);
 
-        $siteFinder  = $this->prophesize(SiteFinder::class);
-        $siteFinder->getSiteByPageId(1)->willReturn($site);
+        $siteFinder  = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
+        $siteFinder->method('getSiteByPageId')->willReturn($site);
 
         $container = new Container();
-        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->prophesize(Resolver::class)->reveal(), $siteFinder->reveal());
+        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->prophesize(Resolver::class)->reveal(), $siteFinder);
         $container->set(UrlUtility::class, $urlUtility);
         $errorController = $this->prophesize(ErrorController::class);
         $errorController->pageNotFoundAction(Argument::any(), Argument::any(), Argument::any())->willReturn(new JsonResponse(['ErrorController' => true]));

@@ -13,11 +13,11 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class DefaultContentsTest extends BaseContentTypeTest
+class DefaultContentsTest extends BaseContentTypeTesting
 {
     public function testContentStructure()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 

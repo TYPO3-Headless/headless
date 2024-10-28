@@ -13,13 +13,13 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class TableElementTest extends BaseContentTypeTest
+class TableElementTest extends BaseContentTypeTesting
 {
     public function testTableContentElement()
     {
         $testTableContent = json_decode('[["Cell1.1","Cell1.2","Cell1.3","Cell1.4","",""],["Cell2.1","","","","",""],["Cell3.1","","","","",""],["\"","","","","",""]]', true);
 
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 
