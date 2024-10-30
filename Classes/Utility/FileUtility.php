@@ -43,6 +43,7 @@ class FileUtility
      */
     protected array $errors = [];
     protected Features $features;
+    protected bool $allowSvgProcessing = false;
 
     public function __construct(
         ?ContentObjectRenderer $contentObjectRenderer = null,
@@ -59,6 +60,11 @@ class FileUtility
         $this->serverRequest = $serverRequest ?? ($GLOBALS['TYPO3_REQUEST'] ?? null);
         $this->eventDispatcher = $eventDispatcher ?? GeneralUtility::makeInstance(EventDispatcher::class);
         $this->features = $features ?? GeneralUtility::makeInstance(Features::class);
+    }
+
+    public function setAllowSvgProcessing(bool $allowSvgProcessing): void
+    {
+        $this->allowSvgProcessing = $allowSvgProcessing;
     }
 
     /**
@@ -94,7 +100,7 @@ class FileUtility
         ];
 
         if ($fileRenderer === null && $fileReference->getType() === AbstractFile::FILETYPE_IMAGE) {
-            if (!$delayProcessing && $fileReference->getMimeType() !== 'image/svg+xml') {
+            if (!$delayProcessing && ($this->allowSvgProcessing || $fileReference->getMimeType() !== 'image/svg+xml')) {
                 $fileReference = $this->processImageFile($fileReference, $dimensions, $cropVariant);
             }
             $publicUrl = $this->imageService->getImageUri($fileReference, true);

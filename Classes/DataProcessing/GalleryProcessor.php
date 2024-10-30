@@ -178,6 +178,10 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      */
     protected function prepareGalleryData()
     {
+        $fileUtility = $this->getFileUtility();
+
+        $fileUtility->setAllowSvgProcessing((int)($this->processorConfiguration['processingConfiguration.']['processSvg'] ?? 0) === 1);
+
         for ($row = 1; $row <= $this->galleryData['count']['rows']; $row++) {
             for ($column = 1; $column <= $this->galleryData['count']['columns']; $column++) {
                 $fileKey = (($row - 1) * $this->galleryData['count']['columns']) + $column - 1;
@@ -186,12 +190,12 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 if ($fileObj) {
                     if ($fileObj['properties']['type'] === 'image') {
                         $image = $this->getImageService()->getImage((string)$fileObj['properties']['fileReferenceUid'], null, true);
-                        $fileObj = $this->getFileUtility()->processFile($image, $this->mediaDimensions[$fileKey] ?? []);
+                        $fileObj = $fileUtility->processFile($image, $this->mediaDimensions[$fileKey] ?? []);
 
                         if (isset($this->processorConfiguration['autogenerate.']['retina2x'],
                             $fileObj['properties']['dimensions']['width']) &&
                             (int)$this->processorConfiguration['autogenerate.']['retina2x'] === 1) {
-                            $fileObj['urlRetina'] = $this->getFileUtility()->processFile(
+                            $fileObj['urlRetina'] = $fileUtility->processFile(
                                 $image,
                                 [
                                     'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::RETINA_RATIO,
@@ -203,7 +207,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                         if (isset($this->processorConfiguration['autogenerate.']['lqip'],
                             $fileObj['properties']['dimensions']['width']) &&
                                 (int)$this->processorConfiguration['autogenerate.']['lqip'] === 1) {
-                            $fileObj['urlLqip'] = $this->getFileUtility()->processFile(
+                            $fileObj['urlLqip'] = $fileUtility->processFile(
                                 $image,
                                 [
                                         'width' => $fileObj['properties']['dimensions']['width'] * FileUtility::LQIP_RATIO,
@@ -217,6 +221,8 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 }
             }
         }
+
+        $fileUtility->setAllowSvgProcessing(false);
 
         $this->galleryData['columnSpacing'] = $this->columnSpacing;
         $this->galleryData['border']['enabled'] = $this->borderEnabled;
