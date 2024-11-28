@@ -53,10 +53,12 @@ class ResourceLocalDriver extends LocalDriver
             };
 
             if ($basePath !== '') {
-                $frontendUri = (new Uri($urlUtility->getFrontendUrl()));
+                $frontendUri = new Uri($urlUtility->getFrontendUrl());
+                $proxyUri = new Uri($urlUtility->getProxyUrl());
+                $baseUri = new Uri($basePath);
 
-                $path = new Uri(trim($basePath, '/'));
-                $this->configuration['baseUri'] = (string)$frontendUri->withPath('/' . trim((new Uri($urlUtility->getProxyUrl()))->getPath(), '/') . '/' . trim($path->getPath(), '/'));
+                $path = trim($proxyUri->getPath(), '/') . '/' . trim($baseUri->getPath(), '/');
+                $this->configuration['baseUri'] = (string)$frontendUri->withPath('/' . trim($path, '/'));
             } else {
                 $this->configuration['baseUri'] = $urlUtility->getStorageProxyUrl();
             }
