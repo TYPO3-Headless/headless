@@ -25,7 +25,11 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Core\TypoScript\AST\Node\RootNode;
+use TYPO3\CMS\Core\TypoScript\FrontendTypoScript;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
@@ -128,6 +132,19 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::FULL));
+        $request->getAttribute(Argument::is('language'))->willReturn(new SiteLanguage(
+            0,
+            'en',
+            new Uri('/en'),
+            []
+        ));
+
+        $frontendTyposcript = new FrontendTypoScript(new RootNode(), [], [], []);
+        $frontendTyposcript->setSetupTree(new RootNode());
+        $frontendTyposcript->setSetupArray([]);
+
+        $request->getAttribute(Argument::is('frontend.typoscript'))->willReturn($frontendTyposcript);
+
         $controller = $this->prophesize(TypoScriptFrontendController::class);
         $controller->content = json_encode(['meta' => ['title' => 'test before event'], 'seo' => ['title' => 'test before event']]);
         $controller->cObj = $this->prophesize(ContentObjectRenderer::class)->reveal();
@@ -137,7 +154,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
 
         $listener($event);
 
-        self::assertSame(json_encode(['meta' => ['title' => 'test before event'], 'seo' => ['title' => 'Modified title via PageTitleProviderManager', 'meta' => []]]), $event->getController()->content);
+        self::assertSame(json_encode(['meta' => ['title' => 'test before event'], 'seo' => ['title' => 'Modified title via PageTitleProviderManager', 'meta' => [], 'htmlAttrs' => ['lang' => 'en', 'dir' => null]]]), $event->getController()->content);
     }
 
     public function testHreflangs(): void
@@ -158,6 +175,19 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::FULL));
+        $request->getAttribute(Argument::is('language'))->willReturn(new SiteLanguage(
+            0,
+            'en',
+            new Uri('/en'),
+            []
+        ));
+
+        $frontendTyposcript = new FrontendTypoScript(new RootNode(), [], [], []);
+        $frontendTyposcript->setSetupTree(new RootNode());
+        $frontendTyposcript->setSetupArray([]);
+
+        $request->getAttribute(Argument::is('frontend.typoscript'))->willReturn($frontendTyposcript);
+
         $GLOBALS['TYPO3_REQUEST'] = $request->reveal();
         $controller = $this->prophesize(TypoScriptFrontendController::class);
         $controller->content = json_encode(['meta' => ['title' => 'test before event'], 'seo' => ['title' => 'test before event']]);
@@ -184,6 +214,6 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
             ['rel' => 'alternate', 'hreflang' => 'pl-PL', 'href' => 'https://example.com/pl'],
             ['rel' => 'alternate', 'hreflang' => 'en-US', 'href' => 'https://example.com/us'],
             ['rel' => 'alternate', 'hreflang' => 'en-UK', 'href' => 'https://example.com/uk'],
-        ]]]), $event->getController()->content);
+        ], 'htmlAttrs' => ['lang' => 'en', 'dir' => null]]]), $event->getController()->content);
     }
 }
