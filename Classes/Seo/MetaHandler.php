@@ -22,7 +22,10 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent;
 
+use function array_merge;
+use function array_merge_recursive;
 use function htmlspecialchars;
+use function implode;
 
 class MetaHandler
 {
@@ -31,8 +34,11 @@ class MetaHandler
         private readonly EventDispatcherInterface $eventDispatcher,
     ) {}
 
-    public function process(ServerRequestInterface $request, TypoScriptFrontendController $controller, array $content): array
-    {
+    public function process(
+        ServerRequestInterface $request,
+        TypoScriptFrontendController $controller,
+        array $content
+    ): array {
         $_params = ['page' => $controller->page, 'request' => $request, '_seoLinks' => []];
         $_ref = null;
         foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['TYPO3\CMS\Frontend\Page\PageGenerator']['generateMetaTags'] ?? [] as $_funcRef) {
@@ -78,19 +84,36 @@ class MetaHandler
         $language = $request->getAttribute('language');
 
         $rawHtmlTagAttrs = $controller->config['config']['htmlTag.']['attributes.'] ?? [];
+        $overwriteBodyTag = (int)($controller->config['config']['headless.']['overwriteBodyTag'] ?? 0);
         $htmlTagAttrs = $this->normalizeAttr($rawHtmlTagAttrs);
 
+        $defaultBodyAttrs = [
+            'class' => implode(' ', [
+                'pid-' . $request->getAttribute('routing')->getPageId(),
+                'layout-' . $content['appearance']['layout'] ?? '',
+            ]),
+        ];
+
         $rawBodyTagAttrs = GeneralUtility::get_tag_attributes(trim($request->getAttribute('frontend.typoscript')->getSetupArray()['page.']['bodyTagAdd'] ?? ''));
-        $bodyTagAttrs = $this->normalizeAttr($rawBodyTagAttrs);
+
+        if ($overwriteBodyTag) {
+            $bodyTagAttrs = array_merge($defaultBodyAttrs, $rawBodyTagAttrs);
+        } else {
+            $bodyTagAttrs = array_map(static function (string|array $attr) {
+                if (is_array($attr)) {
+                    return implode(' ', $attr);
+                }
+
+                return $attr;
+            }, array_merge_recursive($defaultBodyAttrs, $rawBodyTagAttrs));
+        }
 
         $content['seo']['htmlAttrs'] = array_merge([
             'lang' => $language->getLocale()->getLanguageCode(),
             'dir' => $language->getLocale()->isRightToLeftLanguageDirection() ? 'rtl' : null,
         ], $htmlTagAttrs);
 
-        if ($bodyTagAttrs !== []) {
-            $content['seo']['bodyAttrs'] = $bodyTagAttrs;
-        }
+        $content['seo']['bodyAttrs'] = $this->normalizeAttr($bodyTagAttrs);
 
         return $content;
     }
@@ -140,8 +163,13 @@ class MetaHandler
     /**
      * @codeCoverageIgnore
      */
-    private function setMetaTag(string $type, string $name, string $content, array $subProperties = [], $replace = true): void
-    {
+    private function setMetaTag(
+        string $type,
+        string $name,
+        string $content,
+        array $subProperties = [],
+        $replace = true
+    ): void {
         $type = strtolower($type);
         $name = strtolower($name);
         if (!in_array($type, ['property', 'name', 'http-equiv'], true)) {
