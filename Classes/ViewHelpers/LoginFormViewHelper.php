@@ -19,9 +19,7 @@ use TYPO3\CMS\Core\Context\SecurityAspect;
 use TYPO3\CMS\Core\Security\RequestToken;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
-
 use TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy;
-
 use TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper;
 
 use function base64_encode;
@@ -183,11 +181,17 @@ class LoginFormViewHelper extends FormViewHelper
         );
         $this->addHiddenField(
             '__referrer[arguments]',
-            $this->hashService->appendHmac(base64_encode(serialize($request->getArguments())))
+            $this->hashService->appendHmac(
+                base64_encode(serialize($request->getArguments())),
+                class_exists(\TYPO3\CMS\Extbase\Security\HashScope::class) ? \TYPO3\CMS\Extbase\Security\HashScope::class::ReferringArguments->prefix() : ''
+            )
         );
         $this->addHiddenField(
             '__referrer[@request]',
-            $this->hashService->appendHmac(json_encode($actionRequest))
+            $this->hashService->appendHmac(
+                json_encode($actionRequest),
+                class_exists(\TYPO3\CMS\Extbase\Security\HashScope::class) ? \TYPO3\CMS\Extbase\Security\HashScope::class::ReferringRequest->prefix() : ''
+            )
         );
 
         return '';
