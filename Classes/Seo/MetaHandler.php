@@ -15,11 +15,14 @@ use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent;
+
+use function htmlspecialchars;
 
 class MetaHandler
 {
@@ -67,6 +70,26 @@ class MetaHandler
 
         if ($seoLinks !== []) {
             $content['seo']['link'] = $seoLinks;
+        }
+
+        /**
+         * @var SiteLanguage $language
+         */
+        $language = $request->getAttribute('language');
+
+        $rawHtmlTagAttrs = $controller->config['config']['htmlTag.']['attributes.'] ?? [];
+        $htmlTagAttrs = $this->normalizeAttr($rawHtmlTagAttrs);
+
+        $rawBodyTagAttrs = GeneralUtility::get_tag_attributes(trim($request->getAttribute('frontend.typoscript')->getSetupArray()['page.']['bodyTagAdd'] ?? ''));
+        $bodyTagAttrs = $this->normalizeAttr($rawBodyTagAttrs);
+
+        $content['seo']['htmlAttrs'] = array_merge([
+            'lang' => $language->getLocale()->getLanguageCode(),
+            'dir' => $language->getLocale()->isRightToLeftLanguageDirection() ? 'rtl' : null,
+        ], $htmlTagAttrs);
+
+        if ($bodyTagAttrs !== []) {
+            $content['seo']['bodyAttrs'] = $bodyTagAttrs;
         }
 
         return $content;
@@ -129,5 +152,18 @@ class MetaHandler
         }
         $manager = $this->metaTagRegistry->getManagerForProperty($name);
         $manager->addProperty($name, $content, $subProperties, $replace, $type);
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    private function normalizeAttr(array $rawHtmlAttrs): array
+    {
+        $htmlAttrs = [];
+
+        foreach ($rawHtmlAttrs as $attr => $value) {
+            $htmlAttrs[htmlspecialchars((string)$attr)] = htmlspecialchars((string)$value);
+        }
+        return $htmlAttrs;
     }
 }
