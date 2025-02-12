@@ -15,6 +15,7 @@ use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use RuntimeException;
 use TYPO3\CMS\Backend\View\BackendLayoutView;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\TimeTracker\TimeTracker;
@@ -182,8 +183,10 @@ class JsonContentContentObject extends ContentContentObject
                 continue;
             }
 
-            if ($groupingEnabled && ($element['colPos'] ?? 0) >= 0) {
-                $data['colPos' . $element['colPos']][] = $element;
+            $colPos = $this->getColPosFromElement($groupingEnabled, $element);
+
+            if ($groupingEnabled && $colPos >= 0) {
+                $data['colPos' . $colPos][] = $element;
             } else {
                 $data[] = $element;
             }
@@ -346,5 +349,14 @@ class JsonContentContentObject extends ContentContentObject
     private function returnSingleRowEnabled(array $conf): bool
     {
         return isset($conf['returnSingleRow']) && (int)$conf['returnSingleRow'] === 1;
+    }
+
+    private function getColPosFromElement(bool $groupingEnabled, array $element): int
+    {
+        if ($groupingEnabled && !array_key_exists('colPos', $element)) {
+            throw new RuntimeException('Content element by ID: "' . ($element['id'] ?? 0) . '" does not have "colPos" field defined. Disable grouping or fix TypoScript definition of the element.', 1739347200);
+        }
+
+        return (int)($element['colPos'] ?? 0);
     }
 }
