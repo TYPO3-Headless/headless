@@ -97,6 +97,9 @@ class DatabaseQueryProcessor implements DataProcessorInterface
         $records = $cObj->getRecords($tableName, $processorConfiguration);
         $request = $cObj->getRequest();
         $processedRecordVariables = [];
+
+        $flattenRow = null;
+
         foreach ($records as $key => $record) {
             $recordContentObjectRenderer = $this->createContentObjectRenderer();
             $recordContentObjectRenderer->setRequest($request);
@@ -124,12 +127,21 @@ class DatabaseQueryProcessor implements DataProcessorInterface
                 }
             }
 
-            if ($processorConfiguration['returnFlattenObject'] ?? false) {
-                return array_shift($processedRecordVariables);
+            if ((int)($processorConfiguration['returnFlattenObject'] ?? 0)) {
+                $flattenRow = array_shift($processedRecordVariables);
+                break;
             }
         }
 
-        $processedData[$targetVariableName] = $processedRecordVariables;
+        if ($flattenRow !== null && (int)($processorConfiguration['returnFlattenLegacy'] ?? 1)) {
+            return $flattenRow;
+        }
+
+        if ($processorConfiguration['returnFlattenObject'] ?? 0) {
+            $processedData[$targetVariableName] = (int)($processorConfiguration['returnFlattenLegacy'] ?? 1) ? $processedRecordVariables : $flattenRow;
+        } else {
+            $processedData[$targetVariableName] = $processedRecordVariables;
+        }
 
         return $processedData;
     }
