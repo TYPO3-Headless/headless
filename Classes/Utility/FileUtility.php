@@ -14,7 +14,9 @@ namespace FriendsOfTYPO3\Headless\Utility;
 use FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent;
 use FriendsOfTYPO3\Headless\Event\FileDataAfterCropVariantProcessingEvent;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
+use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use RuntimeException;
 use Throwable;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Http\NormalizedParams;
@@ -28,8 +30,10 @@ use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Typolink\LinkResultInterface;
+use UnexpectedValueException;
 
 use function array_key_exists;
 use function array_merge;
@@ -311,7 +315,7 @@ class FileUtility
             }
 
             return $this->imageService->applyProcessingInstructions($fileReference, $instructions);
-        } catch (\UnexpectedValueException|\RuntimeException|\InvalidArgumentException $e) {
+        } catch (UnexpectedValueException|RuntimeException|InvalidArgumentException $e) {
             $type = lcfirst(get_class($fileReference));
             $status = get_class($e);
             $this->errors['processImageFile'][$type . '-' . $fileReference->getUid()] = $status;

@@ -14,8 +14,10 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing\TestDomainSchema;
 use FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing\TestSiteProvider;
+use InvalidArgumentException;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\ServerRequestInterface;
+use stdClass;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
@@ -31,10 +33,7 @@ class RootSitesProcessorTest extends UnitTestCase
         parent::setUp();
     }
 
-    /**
-     * @test
-     */
-    public function customImplementation(): void
+    public function testCustomImplementation(): void
     {
         $processor = new RootSitesProcessor();
 
@@ -70,10 +69,7 @@ class RootSitesProcessorTest extends UnitTestCase
         ], $processor->process($contentObjectRenderer, [], $conf, []));
     }
 
-    /**
-     * @test
-     */
-    public function objectNotSet()
+    public function testObjectNotSet()
     {
         $processor = new RootSitesProcessor();
 
@@ -85,10 +81,7 @@ class RootSitesProcessorTest extends UnitTestCase
         self::assertEquals([], $processor->process($contentObjectRenderer, [], $conf, []));
     }
 
-    /**
-     * @test
-     */
-    public function featureEnabledButWrongSiteProvider(): void
+    public function testFeatureEnabledButWrongSiteProvider(): void
     {
         $processor = new RootSitesProcessor();
 
@@ -97,15 +90,12 @@ class RootSitesProcessorTest extends UnitTestCase
         $contentObjectRenderer->start([], 'tt_content');
         $contentObjectRenderer->data['uid'] = 1;
         $conf = [];
-        $conf['siteProvider'] = \stdClass::class;
-        $this->expectException(\InvalidArgumentException::class);
+        $conf['siteProvider'] = stdClass::class;
+        $this->expectException(InvalidArgumentException::class);
         self::assertEquals([], $processor->process($contentObjectRenderer, [], $conf, []));
     }
 
-    /**
-     * @test
-     */
-    public function featureEnabledButWrongSiteSchema(): void
+    public function testFeatureEnabledButWrongSiteSchema(): void
     {
         $processor = new RootSitesProcessor();
 
@@ -114,8 +104,8 @@ class RootSitesProcessorTest extends UnitTestCase
         $contentObjectRenderer->start([], 'tt_content');
         $contentObjectRenderer->data['uid'] = 1;
         $conf = [];
-        $conf['siteSchema'] = \stdClass::class;
-        $this->expectException(\InvalidArgumentException::class);
+        $conf['siteSchema'] = stdClass::class;
+        $this->expectException(InvalidArgumentException::class);
         self::assertEquals([], $processor->process($contentObjectRenderer, [], $conf, []));
     }
 }

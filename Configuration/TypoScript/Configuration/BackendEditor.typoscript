@@ -1,0 +1,14 @@
+lib.backendEditor = JSON
+lib.backendEditor {
+    fields {
+        record = USER_INT
+        record {
+            userFunc = FriendsOfTYPO3\Headless\Frontend\BackendEditorUrl->record
+        }
+
+        page = USER_INT
+        page {
+            userFunc = FriendsOfTYPO3\Headless\Frontend\BackendEditorUrl->page
+        }
+    }
+}

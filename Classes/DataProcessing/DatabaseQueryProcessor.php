@@ -17,6 +17,8 @@ use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 
+use function json_decode;
+
 /**
  * Fetch records from the database, using the default .select syntax from TypoScript.
  *
@@ -95,6 +97,9 @@ class DatabaseQueryProcessor implements DataProcessorInterface
         $records = $cObj->getRecords($tableName, $processorConfiguration);
         $request = $cObj->getRequest();
         $processedRecordVariables = [];
+
+        $flattenRow = null;
+
         foreach ($records as $key => $record) {
             $recordContentObjectRenderer = $this->createContentObjectRenderer();
             $recordContentObjectRenderer->setRequest($request);
@@ -109,25 +114,34 @@ class DatabaseQueryProcessor implements DataProcessorInterface
                 $objConf = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON']);
             }
 
-            $processedRecordVariables[$key] = $objConf !== [] ? \json_decode($recordContentObjectRenderer->cObjGetSingle($objName, $objConf), true) : $record;
+            $processedRecordVariables[$key] = $objConf !== [] ? json_decode($recordContentObjectRenderer->cObjGetSingle($objName, $objConf), true) : $record;
             $processedRecordVariables[$key] = $this->contentDataProcessor->process($recordContentObjectRenderer, $processorConfiguration, $processedRecordVariables[$key]);
 
             if (isset($processorConfiguration['overrideFields.'])) {
                 $overrideFields = $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['overrideFields.']);
                 $jsonCE = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $overrideFields, '_typoScriptNodeValue' => 'JSON']);
-                $record = \json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
+                $record = json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
 
                 foreach ($record as $fieldName => $overrideData) {
                     $processedRecordVariables[$key][$fieldName] = $overrideData;
                 }
             }
 
-            if ($processorConfiguration['returnFlattenObject'] ?? false) {
-                return array_shift($processedRecordVariables);
+            if ((int)($processorConfiguration['returnFlattenObject'] ?? 0)) {
+                $flattenRow = array_shift($processedRecordVariables);
+                break;
             }
         }
 
-        $processedData[$targetVariableName] = $processedRecordVariables;
+        if ($flattenRow !== null && (int)($processorConfiguration['returnFlattenLegacy'] ?? 1)) {
+            return $flattenRow;
+        }
+
+        if ($processorConfiguration['returnFlattenObject'] ?? 0) {
+            $processedData[$targetVariableName] = (int)($processorConfiguration['returnFlattenLegacy'] ?? 1) ? $processedRecordVariables : $flattenRow;
+        } else {
+            $processedData[$targetVariableName] = $processedRecordVariables;
+        }
 
         return $processedData;
     }

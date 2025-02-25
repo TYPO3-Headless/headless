@@ -1,8 +1,8 @@
 # TYPO3 Extension `headless` - JSON Content API for TYPO3 Headless solution
 
+[![TYPO3 13](https://img.shields.io/badge/TYPO3-13-orange.svg)](https://get.typo3.org/version/13)
 [![TYPO3 12](https://img.shields.io/badge/TYPO3-12-orange.svg)](https://get.typo3.org/version/12)
 [![TYPO3 11](https://img.shields.io/badge/TYPO3-11-orange.svg)](https://get.typo3.org/version/11)
-[![TYPO3 10](https://img.shields.io/badge/TYPO3-10-orange.svg)](https://get.typo3.org/version/10)
 [![CI Status](https://github.com/TYPO3-Initiatives/headless/workflows/CI/badge.svg)](https://github.com/TYPO3-Initiatives/headless/actions)
 [![Latest Stable Version](https://poser.pugx.org/friendsoftypo3/headless/v)](//packagist.org/packages/friendsoftypo3/headless)
 [![Total Downloads](https://poser.pugx.org/friendsoftypo3/headless/downloads)](//packagist.org/packages/friendsoftypo3/headless)
@@ -37,7 +37,6 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 - support for EXT:felogin
 - support for EXT:redirects
 - support for EXT:seo
-- [BETA] backend module for simulating page preview (with specific page type, lang, usergroup) see [headless_dev_tools](https://github.com/TYPO3-Headless/headless_dev_tools)
 
 ### Additional extensions and integrations
 
@@ -50,11 +49,11 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 
 ## Requirements and compatibility
 
-| EXT:headless version  	 | TYPO3 support | PHP support       | Status 	               |
-|-----------------------|--------------|-------------------|------------------------|
-| `>= 4.0`  	           | `12` 	       | `>= 8.1`  	       | Active development & support	 |
-| `>= 3.0`              | `11`	        | `>= 7.4, <= 8.2`	 | Active support	        |
-| `>= 2.0` 	            | `9`, `10`	 | `>= 7.2, <=7.4`	  | Critical bugfixes only	|
+| EXT:headless version  	 | TYPO3 support | PHP support       | Status 	                      |
+|-------------------------|---------------|-------------------|-------------------------------|
+| `>= 4.0`  	             | `12`, `13` 	  | `>= 8.1`  	       | Active development & support	 |
+| `>= 3.0`                | `11`	         | `>= 7.4, <= 8.2`	 | Critical bugfixes only 	      |
+| `>= 2.0` 	              | `9`, `10`	    | `>= 7.2, <=7.4`	  | Critical bugfixes only	       |
 
 
 ## Quickstart / Demo

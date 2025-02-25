@@ -12,10 +12,12 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
 use Doctrine\DBAL\Driver\Exception;
+use InvalidArgumentException;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
+
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_filter;
@@ -23,6 +25,7 @@ use function array_map;
 use function array_values;
 use function count;
 use function in_array;
+use function is_a;
 use function usort;
 
 class SiteProvider implements SiteProviderInterface
@@ -84,8 +87,8 @@ class SiteProvider implements SiteProviderInterface
         $pages = $this->fetchPageData($sites, $config);
 
         if ($customSorting !== null) {
-            if (!\is_a($customSorting, SiteSortingInterface::class, true)) {
-                throw new \InvalidArgumentException('Invalid implementation of SiteSortingInterface');
+            if (!is_a($customSorting, SiteSortingInterface::class, true)) {
+                throw new InvalidArgumentException('Invalid implementation of SiteSortingInterface');
             }
             /**
              * @var SiteSortingInterface $sorting

@@ -34,13 +34,18 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
     {
         $decorated = [];
 
-        $pageElements = $definition['renderables'][$currentPage]['renderables'] ?? [];
-
         $this->formId = $definition['identifier'];
+        $pageElements = $definition['renderables'][$currentPage]['renderables'] ?? [];
+        $submitLabel = $definition['renderingOptions']['submitButtonLabel'] ?? '';
+        $submitLabelFromEditor = [];
+
+        if ($submitLabel !== '') {
+            $submitLabelFromEditor = ['submitButtonLabel' => $submitLabel];
+        }
 
         $decorated['id'] = $this->formId;
         $decorated['api'] = $this->formStatus;
-        $decorated['i18n'] = $definition['i18n']['properties'] ?? [];
+        $decorated['i18n'] = [...$submitLabelFromEditor, ...($definition['i18n']['properties'] ?? [])];
         $decorated['elements'] = $this->handleRenderables($pageElements);
 
         return $this->overrideDefinition($decorated, $definition, $currentPage);

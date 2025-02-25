@@ -12,73 +12,42 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Seo;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
-use Psr\EventDispatcher\EventDispatcherInterface;
-use TYPO3\CMS\Core\Domain\Page;
-use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
-use TYPO3\CMS\Seo\Event\ModifyUrlForCanonicalTagEvent;
+use TYPO3\CMS\Seo\Canonical\CanonicalGenerator as CoreCanonicalGenerator;
 
 use function htmlspecialchars;
 use function json_encode;
 
 /**
- * Overridden core version with headless implementation
+ * Decorate Core version with headless flavor
  *
  * @codeCoverageIgnore
  */
-class CanonicalGenerator extends \TYPO3\CMS\Seo\Canonical\CanonicalGenerator
+class CanonicalGenerator
 {
-    protected TypoScriptFrontendController $typoScriptFrontendController;
-    protected PageRepository $pageRepository;
-    protected EventDispatcherInterface $eventDispatcher;
-
     public function handle(array &$params): string
     {
-        if ($this->typoScriptFrontendController->config['config']['disableCanonical'] ?? false) {
+        $canonical = GeneralUtility::makeInstance(CoreCanonicalGenerator::class)->generate($params);
+
+        if ($canonical === '') {
             return '';
         }
 
-        $event = new ModifyUrlForCanonicalTagEvent('', $params['request'], new Page($params['page']));
-        $event = $this->eventDispatcher->dispatch($event);
-        $href = $event->getUrl();
+        if (GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($params['request'])->isEnabled()) {
+            $canonical = [
+                'href' => $this->processCanonical($canonical),
+                'rel' => 'canonical',
+            ];
 
-        if (empty($href) && (int)$this->typoScriptFrontendController->page['no_index'] === 1) {
-            return '';
+            $params['_seoLinks'][] = $canonical;
+            $canonical = json_encode($canonical);
         }
 
-        if (empty($href)) {
-            // 1) Check if page has canonical URL set
-            $href = $this->checkForCanonicalLink();
-        }
-        if (empty($href)) {
-            // 2) Check if page show content from other page
-            $href = $this->checkContentFromPid();
-        }
-        if (empty($href)) {
-            // 3) Fallback, create canonical URL
-            $href = $this->checkDefaultCanonical();
-        }
+        return $canonical;
+    }
 
-        if (!empty($href)) {
-            if (GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($params['request'])->isEnabled()) {
-                $canonical = [
-                    'href' => htmlspecialchars($href),
-                    'rel' => 'canonical',
-                ];
-
-                $params['_seoLinks'][] = $canonical;
-                $canonical = json_encode($canonical);
-            } else {
-                $canonical = '<link ' . GeneralUtility::implodeAttributes([
-                    'rel' => 'canonical',
-                    'href' => $href,
-                ], true) . '/>' . LF;
-                $this->typoScriptFrontendController->additionalHeaderData[] = $canonical;
-            }
-
-            return $canonical;
-        }
-        return '';
+    protected function processCanonical(string $canonical): string
+    {
+        return htmlspecialchars(GeneralUtility::get_tag_attributes($canonical)['href'] ?? '');
     }
 }

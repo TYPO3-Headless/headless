@@ -11,7 +11,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ViewHelpers;
 
+use LogicException;
 use Psr\Http\Message\RequestInterface;
+use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\SecurityAspect;
 use TYPO3\CMS\Core\Security\RequestToken;
@@ -21,7 +23,6 @@ use TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy;
 use TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper;
 
 use function base64_encode;
-
 use function is_int;
 use function is_object;
 use function is_string;
@@ -84,7 +85,7 @@ class LoginFormViewHelper extends FormViewHelper
         $renderingContext = $this->renderingContext;
         $request = $renderingContext->getRequest();
         if (!$request instanceof RequestInterface) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'ViewHelper f:form can be used only in extbase context and needs a request implementing extbase RequestInterface.',
                 1639821904
             );
@@ -180,11 +181,17 @@ class LoginFormViewHelper extends FormViewHelper
         );
         $this->addHiddenField(
             '__referrer[arguments]',
-            $this->hashService->appendHmac(base64_encode(serialize($request->getArguments())))
+            $this->hashService->appendHmac(
+                base64_encode(serialize($request->getArguments())),
+                class_exists(\TYPO3\CMS\Extbase\Security\HashScope::class) ? \TYPO3\CMS\Extbase\Security\HashScope::class::ReferringArguments->prefix() : ''
+            )
         );
         $this->addHiddenField(
             '__referrer[@request]',
-            $this->hashService->appendHmac(json_encode($actionRequest))
+            $this->hashService->appendHmac(
+                json_encode($actionRequest),
+                class_exists(\TYPO3\CMS\Extbase\Security\HashScope::class) ? \TYPO3\CMS\Extbase\Security\HashScope::class::ReferringRequest->prefix() : ''
+            )
         );
 
         return '';
@@ -202,13 +209,12 @@ class LoginFormViewHelper extends FormViewHelper
     /**
      * Renders a hidden form field containing the technical identity of the given object.
      *
-     * @param object $object Object to create the identity field for
-     * @param string $name Name
-     *
-     * @return string A hidden field containing the Identity (UID in TYPO3 Flow, uid in Extbase) of the given object or NULL if the object is unknown to the persistence framework
+     * @param mixed $object Object to create the identity field for. Non-objects are ignored.
+     * @param string|null $name Name
+     * @return string A hidden field containing the Identity (uid) of the given object
      * @see \TYPO3\CMS\Extbase\Mvc\Controller\Argument::setValue()
      */
-    protected function renderHiddenIdentityField(?object $object, ?string $name): string
+    protected function renderHiddenIdentityField(mixed $object, ?string $name): string
     {
         if ($object instanceof LazyLoadingProxy) {
             $object = $object->_loadRealInstance();
@@ -271,7 +277,7 @@ class LoginFormViewHelper extends FormViewHelper
             return '';
         }
         if (strtolower((string)($this->arguments['method'] ?? '')) === 'get') {
-            throw new \LogicException('Cannot apply request token for forms sent via HTTP GET', 1651775963);
+            throw new LogicException('Cannot apply request token for forms sent via HTTP GET', 1651775963);
         }
 
         $context = GeneralUtility::makeInstance(Context::class);
@@ -280,7 +286,7 @@ class LoginFormViewHelper extends FormViewHelper
         $signingType = $signingType ?: 'nonce';
         $signingProvider = $securityAspect->getSigningSecretResolver()->findByType($signingType);
         if ($signingProvider === null) {
-            throw new \LogicException(sprintf('Cannot find request token signing type "%s"', $signingType), 1664260307);
+            throw new LogicException(sprintf('Cannot find request token signing type "%s"', $signingType), 1664260307);
         }
 
         $signingSecret = $signingProvider->provideSigningSecret();

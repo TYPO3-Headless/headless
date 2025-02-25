@@ -15,6 +15,8 @@ use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\ApplicationType;
+use TYPO3\CMS\Core\Http\Uri;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -29,6 +31,7 @@ class ResourceLocalDriver extends LocalDriver
         $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
 
         if (!$request instanceof ServerRequestInterface) {
+            parent::determineBaseUrl();
             return;
         }
 
@@ -40,9 +43,25 @@ class ResourceLocalDriver extends LocalDriver
             return;
         }
 
-        if ($this->hasCapability(ResourceStorage::CAPABILITY_PUBLIC)) {
+        if ($this->hasCapability(((new Typo3Version())->getMajorVersion() < 13) ? ResourceStorage::CAPABILITY_PUBLIC : \TYPO3\CMS\Core\Resource\Capabilities::CAPABILITY_PUBLIC)) {
             $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request);
-            $this->configuration['baseUri'] = $urlUtility->getStorageProxyUrl();
+
+            $basePath = match (true) {
+                (($this->configuration['baseUri'] ?? '') !== '') => $this->configuration['baseUri'],
+                (($this->configuration['basePath'] ?? '') !== '' && $this->configuration['pathType'] === 'relative') => $this->configuration['basePath'],
+                default => '',
+            };
+
+            if ($basePath !== '') {
+                $frontendUri = new Uri($urlUtility->getFrontendUrl());
+                $proxyUri = new Uri($urlUtility->getProxyUrl());
+                $baseUri = new Uri($basePath);
+
+                $path = trim($proxyUri->getPath(), '/') . '/' . trim($baseUri->getPath(), '/');
+                $this->configuration['baseUri'] = (string)$frontendUri->withPath('/' . trim($path, '/'));
+            } else {
+                $this->configuration['baseUri'] = $urlUtility->getStorageProxyUrl();
+            }
         }
 
         parent::determineBaseUrl();

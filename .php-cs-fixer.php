@@ -10,6 +10,11 @@ EOF;
 $config = \TYPO3\CodingStandards\CsFixerConfig::create();
 $config->getFinder()->in('Classes')->in('Configuration')->in('Tests');
 $rules = $config->getRules();
+$rules['global_namespace_import'] = [
+    'import_classes' => true,
+    'import_constants' => true,
+    'import_functions' => true
+];
 $rules['ordered_imports'] = [
     'imports_order' => [
         'class',

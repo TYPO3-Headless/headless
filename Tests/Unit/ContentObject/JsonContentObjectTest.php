@@ -16,9 +16,14 @@ use FriendsOfTYPO3\Headless\ContentObject\FloatContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use stdClass;
 use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
+use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Service\MarkerBasedTemplateService;
 use TYPO3\CMS\Core\TimeTracker\TimeTracker;
@@ -43,6 +48,7 @@ use TYPO3\CMS\Frontend\ContentObject\UserContentObject;
 use TYPO3\CMS\Frontend\ContentObject\UserInternalContentObject;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\DataProcessing\DataProcessorRegistry;
+
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_encode;
@@ -84,6 +90,18 @@ class JsonContentObjectTest extends UnitTestCase
             'BOOL' => BooleanContentObject::class,
         ];
 
+        $container = new Container();
+
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
+        $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+
+        $container->set(MarkerBasedTemplateService::class, new MarkerBasedTemplateService($this->prophesize(FrontendInterface::class)->reveal(), $this->prophesize(FrontendInterface::class)->reveal()));
+        $container->set(TimeTracker::class, new TimeTracker(false));
+        $container->set(EventDispatcherInterface::class, $eventDispatcher->reveal());
+        $container->set(RecordsContentObject::class, new RecordsContentObject($container->get(TimeTracker::class)));
+        $container->set(ContentContentObject::class, new ContentContentObject($container->get(TimeTracker::class), $container->get(EventDispatcherInterface::class)));
+        GeneralUtility::setContainer($container);
+
         $request = new ServerRequest();
         $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
         $contentObjectRenderer->setRequest($request);
@@ -99,7 +117,7 @@ class JsonContentObjectTest extends UnitTestCase
                 return $obj;
             });
 
-        $container = new Container();
+        $container = GeneralUtility::getContainer();
         $container->set(ContentObjectFactory::class, $factory->reveal());
 
         GeneralUtility::setContainer($container);
@@ -111,9 +129,7 @@ class JsonContentObjectTest extends UnitTestCase
         }
 
         GeneralUtility::makeInstance(JsonContentObject::class, $contentDataProcessor);
-        GeneralUtility::makeInstance(ImageContentObject::class, $this->prophesize(MarkerBasedTemplateService::class)->reveal());
-
-        GeneralUtility::makeInstance(TimeTracker::class, false);
+        //        GeneralUtility::makeInstance(ImageContentObject::class, $this->prophesize(MarkerBasedTemplateService::class)->reveal());
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->uniqueHash()->willReturn(md5('123'));
@@ -125,24 +141,18 @@ class JsonContentObjectTest extends UnitTestCase
         $this->contentObject->setContentObjectRenderer($contentObjectRenderer);
     }
 
-    /**
-     * @test
-     */
-    public function renderTest()
+    public function testRender()
     {
         self::assertEquals('[]', $this->contentObject->render());
     }
 
-    /**
-     * @test
-     * @dataProvider dataProvider
-     */
-    public function renderWithProviderTest($argument, $result)
+    #[DataProvider('dataProvider')]
+    public function testRenderWithProvider($argument, $result)
     {
         self::assertEquals($result, $this->contentObject->render($argument));
     }
 
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             [[], '[]'],
@@ -161,7 +171,7 @@ class JsonContentObjectTest extends UnitTestCase
             [['fields.' => ['test' => 'TEXT', 'test.' => ['value' => 'false', 'boolval' => 1]]], json_encode(['test' => false])],
             [['fields.' => ['test' => 'TEXT', 'test.' => ['value' => '', 'ifEmptyReturnNull' => 0]]], json_encode(['test' => ''])],
             [['fields.' => ['test' => 'TEXT', 'test.' => ['value' => '', 'ifEmptyReturnNull' => 1]]], json_encode(['test' => null])],
-            [['fields.' => ['test' => 'TEXT', 'test.' => ['value' => null, 'stdWrap.' => ['ifEmpty' => '{}']]]], json_encode(['test' => new \stdClass()])],
+            [['fields.' => ['test' => 'TEXT', 'test.' => ['value' => null, 'stdWrap.' => ['ifEmpty' => '{}']]]], json_encode(['test' => new stdClass()])],
             [['fields.' => ['test' => 'TEXT', 'test.' => ['value' => '1']]], json_encode(['test' => '1'])],
             [['fields.' => ['test' => 'TEXT', 'test.' => ['value' => '1', 'intval' => 1]]], json_encode(['test' => 1])],
             [['fields.' => ['test' => 'TEXT', 'test.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites'], '20' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '20.' => ['as' => 'sites']]]]], json_encode(['test' => ['SomeCustomProcessing']])],

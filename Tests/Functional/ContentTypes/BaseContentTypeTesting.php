@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
-use FriendsOfTYPO3\Headless\Tests\Functional\BaseTest;
+use FriendsOfTYPO3\Headless\Tests\Functional\BaseHeadlessTesting;
 
-abstract class BaseContentTypeTest extends BaseTest
+abstract class BaseContentTypeTesting extends BaseHeadlessTesting
 {
     /**
      * set up objects
@@ -22,7 +22,7 @@ abstract class BaseContentTypeTest extends BaseTest
     {
         parent::setUp();
 
-        $this->importDataSet(__DIR__ . '/../Fixtures/content.xml');
+        $this->importCSVDataSet(__DIR__ . '/../Fixtures/content.csv');
     }
 
     protected function checkDefaultContentFields($contentElement, $id, $pid, $type, $colPos = 0, $categories = '')
@@ -54,12 +54,12 @@ abstract class BaseContentTypeTest extends BaseTest
         self::assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
     }
 
-    protected function checkHeaderFieldsLink($contentElement, $linkText, $urlPrefix, $target)
+    protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target)
     {
         $contentElementHeaderFieldsLink = $contentElement['content']['headerLink'];
 
         self::assertIsArray($contentElementHeaderFieldsLink, 'headerLink not an array');
-        self::assertEquals($linkText, $contentElementHeaderFieldsLink['linkText'], 'linkText mismatch');
+        self::assertEquals($link, $contentElementHeaderFieldsLink['linkText'], 'linkText mismatch');
         self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['href'], 'url mismatch');
         self::assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
     }

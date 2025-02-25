@@ -14,6 +14,8 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
+use function is_array;
+
 /**
  * This menu processor utilizes HMENU to generate a json encoded menu
  * string that will be decoded again and assigned to JSON as
@@ -143,7 +145,7 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
     {
         // Before rendering the actual menu via HMENU we want to update $this->menuLevelConfig
         $overwriteMenuLevelConfig = $this->getConfigurationValue('overwriteMenuLevelConfig.');
-        if (\is_array($overwriteMenuLevelConfig)) {
+        if (is_array($overwriteMenuLevelConfig)) {
             ArrayUtility::mergeRecursiveWithOverrule($this->menuLevelConfig, $overwriteMenuLevelConfig);
         }
 
@@ -151,7 +153,7 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
 
         // override built configuration
         $overwriteMenuConfig = $this->getConfigurationValue('overwriteMenuConfig.');
-        if (\is_array($overwriteMenuConfig)) {
+        if (is_array($overwriteMenuConfig)) {
             ArrayUtility::mergeRecursiveWithOverrule($this->menuConfig, $overwriteMenuConfig);
         }
     }

@@ -18,39 +18,34 @@ use FriendsOfTYPO3\Headless\Form\Translator;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\XClass\FormRuntime;
 use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface as ExtbaseConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Error\Error;
-use TYPO3\CMS\Extbase\Security\Cryptography\HashService;
+use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 
 use function array_merge;
 use function array_pop;
 use function base64_encode;
+use function class_exists;
 use function count;
 use function in_array;
+use function is_array;
 use function json_decode;
 use function serialize;
 use function str_replace;
 
 /**
- * The frontend controller
+ * Overridden form implementation with headless flavor
  *
- * Scope: frontend
  * @internal
  * @codeCoverageIgnore
  */
 class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendController
 {
-    private Translator $jsonFormTranslator;
-
-    public function __construct()
-    {
-        $this->hashService = GeneralUtility::makeInstance(HashService::class);
-        $this->jsonFormTranslator = GeneralUtility::makeInstance(Translator::class);
-    }
-
     /**
      * Take the form which should be rendered from the plugin settings
      * and overlay the formDefinition with additional data from
@@ -64,13 +59,28 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
     {
         $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class);
 
-        if (!$headlessMode->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
+        if (!$headlessMode->withRequest($this->request)->isEnabled()) {
             return parent::renderAction();
         }
 
         $formDefinition = [];
         if (!empty($this->settings['persistenceIdentifier'])) {
-            $formDefinition = $this->formPersistenceManager->load($this->settings['persistenceIdentifier']);
+            $formSettings = [];
+            $typoScriptSettings = [];
+
+            if ((new Typo3Version())->getMajorVersion() >= 13) {
+                $typoScriptSettings = $this->configurationManager->getConfiguration(
+                    ExtbaseConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS,
+                    'form'
+                );
+                $formSettings = $this->extFormConfigurationManager->getYamlConfiguration($typoScriptSettings, true);
+            }
+
+            $formDefinition = $this->formPersistenceManager->load(
+                $this->settings['persistenceIdentifier'],
+                $formSettings,
+                $typoScriptSettings
+            );
             $formDefinition['persistenceIdentifier'] = $this->settings['persistenceIdentifier'];
             $formDefinition = $this->overrideByFlexFormSettings($formDefinition);
             $formDefinition = ArrayUtility::setValueByPath(
@@ -80,10 +90,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
                 '.'
             );
 
-            $formId = ($this->configurationManager->getContentObject() !== null ?
-                ($this->configurationManager->getContentObject()->data['uid'] ?? 0) : 0);
-
-            $formDefinition['identifier'] .= '-' . $formId;
+            $formDefinition['identifier'] .= '-' . ($this->request->getAttribute('currentContentObject')?->data['uid'] ?? '');
         }
 
         $i18n = [];
@@ -128,14 +135,21 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
             $honeyPot = array_pop($elements);
         }
 
-        $stateHash = $this->hashService->appendHmac(base64_encode(serialize($formState)));
+        $stateHash = $this->getHashService()->appendHmac(
+            base64_encode(serialize($formState)),
+            class_exists(\TYPO3\CMS\Form\Security\HashScope::class) ? \TYPO3\CMS\Form\Security\HashScope::FormState->prefix() : ''
+        );
 
         $currentPageIndex = $formRuntime->getCurrentPage() ? $formRuntime->getCurrentPage()->getIndex() : 0;
         $currentPageId = $currentPageIndex + 1;
         $formFields = $formDefinition['renderables'][$currentPageIndex]['renderables'] ?? [];
 
         // provides support for custom options providers (dynamic selects/radio/checkboxes)
-        $formFieldsNames = $this->generateFieldNamesAndReplaceCustomOptions($formFields, $formDefinition['identifier'], $formRuntime);
+        $formFieldsNames = $this->generateFieldNamesAndReplaceCustomOptions(
+            $formFields,
+            $formDefinition['identifier'],
+            $formRuntime
+        );
 
         if ($honeyPot) {
             $formFields[] = [
@@ -188,7 +202,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         $formDefinition['renderables'][$currentPageIndex]['renderables'] = $formFields;
 
         $formDefinition['i18n'] = count($i18n) ? $i18n : null;
-        $formDefinition = $this->jsonFormTranslator->translate(
+        $formDefinition = $this->getFormTranslator()->translate(
             $formDefinition,
             $formRuntime->getFormDefinition()->getRenderingOptions(),
             $formRuntime->getFormState() ? $formRuntime->getFormState()->getFormValues() : []
@@ -241,7 +255,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         $parsedErrors = [];
 
         foreach ($errors as $key => $errorObj) {
-            $parsedErrors[str_replace($formIdentifier . '.', '', $key)] = $errorObj[0]->getMessage();
+            $parsedErrors[str_replace($formIdentifier . '.', '', $key)] = $errorObj[0]->render();
         }
 
         return count($parsedErrors) ? $parsedErrors : null;
@@ -260,8 +274,11 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      * @param array<mixed> $formFields
      * @return array<int, string>
      */
-    private function generateFieldNamesAndReplaceCustomOptions(array &$formFields, string $identifier, FormRuntime $formRuntime): array
-    {
+    private function generateFieldNamesAndReplaceCustomOptions(
+        array &$formFields,
+        string $identifier,
+        FormRuntime $formRuntime
+    ): array {
         $formFieldsNames = [];
 
         foreach ($formFields as &$field) {
@@ -274,7 +291,13 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
                 );
             } else {
                 if (!empty($field['properties']['customOptions'])) {
-                    $customOptions = GeneralUtility::makeInstance($field['properties']['customOptions'], $field, $formFields, $identifier, $formRuntime);
+                    $customOptions = GeneralUtility::makeInstance(
+                        $field['properties']['customOptions'],
+                        $field,
+                        $formFields,
+                        $identifier,
+                        $formRuntime
+                    );
 
                     if ($customOptions instanceof CustomOptionsInterface) {
                         $field['properties']['options'] = $customOptions->get();
@@ -294,5 +317,19 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         }
 
         return $formFieldsNames;
+    }
+
+    private function getHashService(): \TYPO3\CMS\Extbase\Security\Cryptography\HashService|\TYPO3\CMS\Core\Crypto\HashService
+    {
+        if ((new Typo3Version())->getMajorVersion() >= 13) {
+            return GeneralUtility::makeInstance(\TYPO3\CMS\Core\Crypto\HashService::class);
+        }
+
+        return GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Security\Cryptography\HashService::class);
+    }
+
+    private function getFormTranslator(): Translator
+    {
+        return GeneralUtility::makeInstance(Translator::class);
     }
 }
