@@ -1,12 +1,13 @@
 tt_content.text =< lib.contentElementWithHeader
 tt_content.text {
+    dataProcessing >
     fields {
         content {
             fields {
                 bodytext = TEXT
                 bodytext {
                     field = bodytext
-                    parseFunc =< lib.parseFunc_links
+                    parseFunc =< lib.parseFunc_RTE
                 }
             }
         }

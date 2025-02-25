@@ -12,15 +12,21 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Utility;
 
 use FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer;
+use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
+use InvalidArgumentException;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use RuntimeException;
 use Symfony\Component\DependencyInjection\Container;
+use Throwable;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\File;
@@ -30,9 +36,11 @@ use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Extbase\Service\ImageService;
+
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Typolink\LinkResult;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use UnexpectedValueException;
 
 use function array_merge;
 
@@ -115,7 +123,7 @@ class FileUtilityTest extends UnitTestCase
             'title' => null,
             'alternative' => null,
             'description' => null,
-            'link' => 123
+            'link' => 123,
         ]);
         $processedFile = $this->getMockProcessedFileForData($fileData);
         $imageService = $this->getImageServiceWithProcessedFile($file, $processedFile);
@@ -135,7 +143,7 @@ class FileUtilityTest extends UnitTestCase
             'title' => null,
             'alternative' => null,
             'description' => null,
-            'link' => 123
+            'link' => 123,
         ]);
         $processedFile = $this->getMockProcessedFileForData($fileData);
         $imageService = $this->getImageServiceWithProcessedFile($file, $processedFile);
@@ -170,11 +178,290 @@ class FileUtilityTest extends UnitTestCase
         );
     }
 
+    public function testCustomProcessingOptions(): void
+    {
+        $fileData = [
+            'uid' => 103,
+            'pid' => 0,
+            'missing' => 0,
+            'type' => '2',
+            'storage' => 1,
+            'identifier' => '/test-file.jpg',
+            'extension' => 'jpg',
+            'mime_type' => 'image/jpeg',
+            'name' => 'test-file.jpg',
+            'size' => 72392,
+            'creation_date' => 1639061876,
+            'modification_date' => 1639061876,
+            'crop' => '',
+            'width' => 526,
+            'height' => 526,
+        ];
+
+        $fileReferenceData = $this->getFileReferenceBaselineData();
+
+        $file = $this->getMockFileForData($fileData);
+        $processedFile = $this->getMockProcessedFileForData($fileData);
+        $imageService = $this->getImageServiceWithProcessedFile($file, $processedFile);
+        $fileUtility = $this->getFileUtility(null, $imageService);
+
+        $options = ['legacyReturn' => 0, 'cacheBusting' => 1];
+
+        self::assertSame([
+            'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+            'title' => null,
+            'alternative' => null,
+            'description' => null,
+            'link' => null,
+            'mimeType' => 'image/jpeg',
+            'type' => 'image',
+            'filename' => 'test-file.jpg',
+            'originalUrl' => '/fileadmin/test-file.jpg',
+            'uidLocal' => null,
+            'fileReferenceUid' => 103,
+            'size' => '71 KB',
+            'dimensions' =>
+                [
+                    'width' => 526,
+                    'height' => 526,
+                ],
+            'cropDimensions' =>
+                [
+                    'width' => 526,
+                    'height' => 526,
+                ],
+            'crop' => null,
+            'autoplay' => null,
+            'extension' => 'jpg',
+        ], $fileUtility->process($file, ProcessingConfiguration::fromOptions($options)));
+
+        $options = ['legacyReturn' => 0, 'cacheBusting' => 1, 'properties.' => ['byType' => 1]];
+
+        self::assertSame([
+            'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+            'title' => null,
+            'alternative' => null,
+            'description' => null,
+            'link' => null,
+            'mimeType' => 'image/jpeg',
+            'type' => 'image',
+            'uidLocal' => null,
+            'fileReferenceUid' => 103,
+            'size' => '71 KB',
+            'dimensions' =>
+                [
+                    'width' => 526,
+                    'height' => 526,
+                ],
+        ], $fileUtility->process($file, ProcessingConfiguration::fromOptions($options)));
+
+        $options = [
+            'legacyReturn' => 0,
+            'cacheBusting' => 1,
+            'properties.' => ['byType' => 1, 'includeOnly' => 'alternative,type,width,height'],
+        ];
+
+        self::assertSame([
+            'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+            'alternative' => null,
+            'type' => 'image',
+            'dimensions' => [
+                'width' => 526,
+                'height' => 526,
+            ],
+        ], $fileUtility->process($file, ProcessingConfiguration::fromOptions($options)));
+
+        $options = [
+            'legacyReturn' => 0,
+            'cacheBusting' => 1,
+            'properties.' => ['byType' => 1, 'includeOnly' => 'alternative as alt,type,width,height', 'flatten' => 1],
+        ];
+
+        self::assertSame([
+            'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+            'alt' => null,
+            'type' => 'image',
+            'width' => 526,
+            'height' => 526,
+        ], $fileUtility->process($file, ProcessingConfiguration::fromOptions($options)));
+
+        $options = [
+            'legacyReturn' => 0,
+            'cacheBusting' => 1,
+            'properties.' => ['byType' => 1, 'includeOnly' => 'alternative as alt,type,width,height', 'flatten' => 1],
+            'autogenerate.' => [
+                'urlTest' => ['factor' => 2],
+            ],
+        ];
+
+        self::assertSame([
+            'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+            'alt' => null,
+            'type' => 'image',
+            'width' => 526,
+            'height' => 526,
+            'urlTest' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+        ], $fileUtility->process($file, ProcessingConfiguration::fromOptions($options)));
+
+        $options = [
+            'legacyReturn' => 0,
+            'cacheBusting' => 1,
+            'properties.' => ['byType' => 1, 'defaultFieldsByType' => 'width', 'height'],
+        ];
+
+        self::assertSame([
+            'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+            'link' => null,
+            'dimensions' => [
+                'width' => 526,
+                'height' => 526,
+            ],
+        ], $fileUtility->process($file, ProcessingConfiguration::fromOptions($options)));
+
+        $options = [
+            'legacyReturn' => 0,
+            'cacheBusting' => 1,
+            'properties.' => ['byType' => 1, 'defaultFieldsByType' => 'width,height', 'defaultImageFields' => 'dimensions,mimeType'],
+        ];
+
+        self::assertSame([
+            'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+            'mimeType' => 'image/jpeg',
+            'dimensions' => [
+                'width' => 526,
+                'height' => 526,
+            ],
+        ], $fileUtility->process($file, ProcessingConfiguration::fromOptions($options)));
+
+        $options = [
+            'legacyReturn' => 0,
+            'cacheBusting' => 1,
+            'properties.' => ['byType' => 1, 'includeOnly' => 'alternative as alt,type,width,height', 'flatten' => 1],
+            'conditionalCropVariant' => 1,
+            'autogenerate.' => [
+                'urlTest' => ['factor' => 2],
+            ],
+        ];
+
+        $processedFile = $fileUtility->process($file, ProcessingConfiguration::fromOptions($options));
+
+        $file = $this->getMockFileForData(
+            $fileData,
+            ['crop' => '{"default":{"cropArea":{"x":1,"y":1,"width":2,"height":2},"selectedRatio":"NaN","focusArea":null},"mobile":{"cropArea":{"x":0,"y":0,"width":1,"height":1},"selectedRatio":"NaN","focusArea":null}}']
+        );
+
+        $processedFileMock = $this->getMockProcessedFileForData($fileData);
+
+        $cropVariantCollection = CropVariantCollection::create((string)$file->getProperty('crop'));
+        $cropArea = $cropVariantCollection->getCropArea('default');
+
+        $imageService = $this->getImageServiceWithProcessedFile($file, $processedFileMock, [
+            [
+                'width' => 0,
+                'height' => 0,
+                'minWidth' => 0,
+                'minHeight' => 0,
+                'maxWidth' => 0,
+                'maxHeight' => 0,
+                'crop' => $cropArea,
+                'fileExtension' => null,
+            ],
+        ]);
+
+        $fileUtility = $this->getFileUtility(null, $imageService);
+
+        $processedFile = $fileUtility->processCropVariants(
+            $file,
+            ProcessingConfiguration::fromOptions($options),
+            $processedFile
+        );
+
+        self::assertSame([
+            'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+            'alt' => null,
+            'type' => 'image',
+            'width' => 526,
+            'height' => 526,
+            'urlTest' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+            'cropVariants' => [
+                'default' => [
+                    'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+                    'width' => 526,
+                    'height' => 526,
+                ],
+            ],
+        ], $processedFile);
+
+        $options = [
+            'legacyReturn' => 0,
+            'cacheBusting' => 1,
+            'properties.' => ['byType' => 1, 'includeOnly' => 'alternative as alt,type,width,height', 'flatten' => 1],
+            'conditionalCropVariant' => 0,
+            'autogenerate.' => [
+                'urlTest' => ['factor' => 2],
+            ],
+        ];
+
+        $processedFile = $fileUtility->process($file, ProcessingConfiguration::fromOptions($options));
+
+        $file = $this->getMockFileForData(
+            $fileData,
+            ['crop' => '{"default":{"cropArea":{"x":1,"y":1,"width":2,"height":2},"selectedRatio":"NaN","focusArea":null},"mobile":{"cropArea":{"x":0,"y":0,"width":1,"height":1},"selectedRatio":"NaN","focusArea":null}}']
+        );
+
+        $processedFileMock = $this->getMockProcessedFileForData($fileData);
+
+        $cropVariantCollection = CropVariantCollection::create((string)$file->getProperty('crop'));
+        $cropArea = $cropVariantCollection->getCropArea('default');
+
+        $imageService = $this->getImageServiceWithProcessedFile($file, $processedFileMock, [
+            [
+                'width' => 0,
+                'height' => 0,
+                'minWidth' => 0,
+                'minHeight' => 0,
+                'maxWidth' => 0,
+                'maxHeight' => 0,
+                'crop' => $cropArea,
+                'fileExtension' => null,
+            ],
+        ]);
+
+        $fileUtility = $this->getFileUtility(null, $imageService);
+
+        $processedFile = $fileUtility->processCropVariants(
+            $file,
+            ProcessingConfiguration::fromOptions($options),
+            $processedFile
+        );
+
+        self::assertSame([
+            'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+            'alt' => null,
+            'type' => 'image',
+            'width' => 526,
+            'height' => 526,
+            'urlTest' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+            'cropVariants' => [
+                'default' => [
+                    'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+                    'width' => 526,
+                    'height' => 526,
+                ],
+                'mobile' => [
+                    'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+                    'width' => 526,
+                    'height' => 526,
+                ],
+            ],
+        ], $processedFile);
+    }
+
     public function testExceptionCatching(): void
     {
-        $this->testProcessImageFileException(new \UnexpectedValueException('test'));
-        $this->testProcessImageFileException(new \RuntimeException('test'));
-        $this->testProcessImageFileException(new \InvalidArgumentException('test'));
+        $this->testProcessImageFileException(new UnexpectedValueException('test'));
+        $this->testProcessImageFileException(new RuntimeException('test'));
+        $this->testProcessImageFileException(new InvalidArgumentException('test'));
     }
 
     protected function getFileUtility(
@@ -204,6 +491,8 @@ class FileUtilityTest extends UnitTestCase
         $serverRequest = $this->prophesize(ServerRequest::class);
         $serverRequest->getAttribute('normalizedParams')->willReturn($normalizedParams->reveal());
 
+        $contentObjectRenderer->getRequest()->willReturn($serverRequest);
+
         if ($imageService instanceof ObjectProphecy) {
             $imageService = $imageService->reveal();
         }
@@ -217,15 +506,15 @@ class FileUtilityTest extends UnitTestCase
             $contentObjectRenderer->reveal(),
             $rendererRegistry->reveal(),
             $imageService,
-            $serverRequest->reveal(),
-            $eventDispatcher
+            $eventDispatcher,
+            new Features()
         );
 
         $fileUtility->method('translate')->willReturnCallback(static function ($key, $extension) {
             $translated = [
                 'fluid' => [
-                    'viewhelper.format.bytes.units' => 'B,KB,MB,GB,TB,PB,EB,ZB,YB'
-                ]
+                    'viewhelper.format.bytes.units' => 'B,KB,MB,GB,TB,PB,EB,ZB,YB',
+                ],
             ];
 
             return $translated[$extension][$key] ?? null;
@@ -244,7 +533,7 @@ class FileUtilityTest extends UnitTestCase
                 'toArray',
                 'getProperty',
                 'getUid',
-                'getPublicUrl'
+                'getPublicUrl',
             ]
         );
         $resourceStorage = $this->prophesize(ResourceStorage::class);
@@ -290,17 +579,30 @@ class FileUtilityTest extends UnitTestCase
     {
         $fileReference = $this->createPartialMock(
             FileReference::class,
-            ['getPublicUrl', 'getUid', 'getProperty', 'hasProperty', 'toArray', 'getType', 'getMimeType', 'getProperties', 'getSize']
+            [
+                'getPublicUrl',
+                'getUid',
+                'getProperty',
+                'hasProperty',
+                'toArray',
+                'getType',
+                'getMimeType',
+                'getProperties',
+                'getSize',
+                'getExtension',
+            ]
         );
         $fileReference->method('getUid')->willReturn(103);
         if ($type === 'video') {
             $fileReference->method('getMimeType')->willReturn('video/youtube');
             $fileReference->method('getType')->willReturn(AbstractFile::FILETYPE_VIDEO);
             $fileReference->method('getPublicUrl')->willReturn('https://www.youtube.com/watch?v=123456789');
+            $fileReference->method('getExtension')->willReturn('');
         } else {
             $fileReference->method('getType')->willReturn(AbstractFile::FILETYPE_IMAGE);
             $fileReference->method('getPublicUrl')->willReturn('/fileadmin/test-file.jpg');
             $fileReference->method('getMimeType')->willReturn('image/jpeg');
+            $fileReference->method('getExtension')->willReturn('jpg');
         }
 
         $fileReference->method('getProperty')->willReturnCallback(static function ($key) use ($data) {
@@ -340,13 +642,14 @@ class FileUtilityTest extends UnitTestCase
     {
         if ($processingInstruction === []) {
             $processingInstruction = [
-                'width' => null,
-                'height' => null,
-                'minWidth' => null,
-                'minHeight' => null,
-                'maxWidth' => null,
-                'maxHeight' => null,
+                'width' => 0,
+                'height' => 0,
+                'minWidth' => 0,
+                'minHeight' => 0,
+                'maxWidth' => 0,
+                'maxHeight' => 0,
                 'crop' => null,
+                'fileExtension' => null,
             ];
         }
         $imageService = $this->prophesize(ImageService::class);
@@ -354,7 +657,7 @@ class FileUtilityTest extends UnitTestCase
         $imageService->getImageUri($processedFile, true)->willReturn(
             'https://test-frontend.tld/fileadmin/test-file.jpg'
         );
-        $imageService->applyProcessingInstructions($file, $processingInstruction)->willReturn($processedFile);
+        $imageService->applyProcessingInstructions($file, Argument::any())->willReturn($processedFile);
 
         return $imageService;
     }
@@ -504,8 +807,8 @@ class FileUtilityTest extends UnitTestCase
         $fileUtility = $this->getFileUtility(null, $imageService);
 
         try {
-            $fileUtility->processImageFile($fileReference);
-        } catch (\Throwable $throwable) {
+            $fileUtility->processImageFile($fileReference, ProcessingConfiguration::fromOptions([]));
+        } catch (Throwable $throwable) {
             if (!empty($fileUtility->getErrors()['processImageFile'])) {
                 $errors = $fileUtility->getErrors()['processImageFile'];
                 if (reset($errors) !== get_class($exception)) {

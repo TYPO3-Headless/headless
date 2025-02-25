@@ -12,14 +12,16 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use TYPO3\CMS\Backend\Routing\Event\AfterPagePreviewUriGeneratedEvent;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Http\Uri;
+use TYPO3\CMS\Core\Site\SiteFinder;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class AfterPagePreviewUriGeneratedListener
 {
-    public function __construct(private readonly HeadlessFrontendUrlInterface $urlUtility)
-    {
-    }
+    public function __construct(private HeadlessFrontendUrlInterface $urlUtility, private readonly SiteFinder $siteFinder) {}
 
     public function __invoke(AfterPagePreviewUriGeneratedEvent $event): void
     {
@@ -27,6 +29,18 @@ final class AfterPagePreviewUriGeneratedListener
             return;
         }
 
-        $event->setPreviewUri(new Uri($this->urlUtility->getFrontendUrlForPage($event->getPreviewUri()->__toString(), $event->getPageId())));
+        try {
+            $site = $this->siteFinder->getSiteByPageId($event->getPageId());
+            $languageUid = $event->getLanguageId();
+            $language = $languageUid === -1 ? null : $site->getLanguageById($languageUid);
+
+            $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class);
+            $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
+            $request = $headlessMode->overrideBackendRequestBySite($site, $language);
+
+            $urlUtility = $this->urlUtility->withRequest($request);
+            $event->setPreviewUri(new Uri($urlUtility->getFrontendUrlWithSite($event->getPreviewUri()->__toString(), $site)));
+        } catch (SiteNotFoundException) {
+        }
     }
 }

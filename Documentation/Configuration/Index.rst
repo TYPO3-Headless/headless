@@ -1,23 +1,21 @@
-.. include:: ../Includes.txt
-
 .. _configuration:
 
 ===================
 Configuration
 ===================
 
-Feature flags
-========================
+Feature Flags
+=============
 
-To change the setting for this extension feature either use Localconfiguration.php: or AdditionalConfiguration.php:
+To modify the settings for this extension, you can use either `LocalConfiguration.php` or `AdditionalConfiguration.php`.
 
 **headless.storageProxy**
 
-Enable ability to set storage proxy in site configuration (and it's variants) & serve files via proxy from same domain
+Enables the ability to set a storage proxy in the site configuration (and its variants) & serve files via proxy from the same domain.
 
-Feature flag requires TYPO3 >= 10.4.10
+Feature flag requires TYPO3 >= 10.4.10.
 
-*WARNING* if you install `TYPO3 >= 10.4.18` please update also `ext:headless` to version `>= 2.5.3`
+*WARNING* If you install `TYPO3 >= 10.4.18`, please update `ext:headless` to version `>= 2.5.3`.
 
 .. code-block:: php
 
@@ -25,13 +23,13 @@ Feature flag requires TYPO3 >= 10.4.10
 
 **headless.redirectMiddlewares**
 
-Enable new & replace core middlewares for handling redirects. Headless mode requires redirects to be handled by frontend app.
+Enables new and replaces core middlewares for handling redirects. Headless mode requires redirects to be handled by the frontend app.
 
 .. code-block:: php
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.redirectMiddlewares'] = true;
 
-To enable headless support for `EXT:redirect` please also add to you site(s) configuration's yaml file following flag:
+To enable headless support for `EXT:redirect`, add the following flag to your site configuration's YAML file:
 
 .. code-block:: yaml
 
@@ -39,7 +37,7 @@ To enable headless support for `EXT:redirect` please also add to you site(s) con
 
 **headless.nextMajor**
 
-Enable new APIs/behaviors of ext:headless, but contains breaking changes & require upgrade path for you application. Use with caution.
+Enables new APIs/behaviors of `ext:headless`, which may contain breaking changes and require an upgrade path for your application. Use with caution.
 
 .. code-block:: php
 
@@ -47,10 +45,9 @@ Enable new APIs/behaviors of ext:headless, but contains breaking changes & requi
 
 **headless.elementBodyResponse**
 
-Available since `2.6`
+Available since `2.6`.
 
-Enable clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests.
-For getting clean for plugins on page, please enable this flag and add `headless` to the site configuration, then send `responseElementId` field with ID of plugin in body with plugin data.
+Enables clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests. To get clean output for plugins on a page, enable this flag and add `headless` to the site configuration, then send the `responseElementId` field with the ID of the plugin in the body with plugin data.
 
 `LocalConfiguration.php`
 
@@ -58,15 +55,15 @@ For getting clean for plugins on page, please enable this flag and add `headless
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.elementBodyResponse'] = true;
 
-`site configuration`:
+`Site configuration`:
 
-Please also add to you site(s) configuration's yaml file following flag:
+Add the following flag to your site configuration's YAML file:
 
 .. code-block:: yaml
 
    headless: true
 
-Example POST request with plugin form. Please #ELEMENT_ID# replace with id of plugin from page response
+Example POST request with plugin form. Replace `#ELEMENT_ID#` with the ID of the plugin from the page response.
 
 .. code-block:: php
 
@@ -75,8 +72,7 @@ Example POST request with plugin form. Please #ELEMENT_ID# replace with id of pl
 
    responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
 
-If you would like to find nested element please use new flag `responseElementRecursive`,
-where `responseElementId` is child (nested element) example request:
+To find a nested element, use the new flag `responseElementRecursive`, where `responseElementId` is the child (nested element). Example request:
 
 .. code-block:: php
 
@@ -87,24 +83,23 @@ where `responseElementId` is child (nested element) example request:
 
 **headless.simplifiedLinkTarget**
 
-Available since `2.6`
+Available since `2.6`.
 
-Enable simplified target links' property
+Enables simplified target links' property.
 
 .. code-block:: php
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.simplifiedLinkTarget'] = true;
 
-Simplified output return only value i.e. `_blank` for target attribute instead of html string ` target="_blank"`
+Simplified output returns only the value, e.g., `_blank` for the target attribute instead of the HTML string ` target="_blank"`.
 
 **headless.jsonViewModule**
 
-Available since `3.0`
+Available since `3.0`.
 
-Enable experimental JsonView backend module which allows preview in backend module of page json response
-when passing specific pageType, pageArguments, usergroups, language.
+Enables the experimental JsonView backend module, which allows previewing the page JSON response in the backend module when passing specific pageType, pageArguments, usergroups, language.
 
-This flag requires additional extension `friendsoftypo3/headless-dev-tools`
+This flag requires an additional extension `friendsoftypo3/headless-dev-tools`.
 
 .. code-block:: php
 
@@ -112,19 +107,28 @@ This flag requires additional extension `friendsoftypo3/headless-dev-tools`
 
 **headless.workspaces**
 
-Enable EXT:workspaces preview support.
+Enables `EXT:workspaces` preview support.
 
 .. code-block:: php
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.workspaces'] = true;
 
-To enable headless support for `EXT:workspaces` please also add to you site(s) configuration's yaml file following flag:
+To enable headless support for `EXT:workspaces`, add the following flag to your site configuration's YAML file:
 
 .. code-block:: yaml
 
    headless: true
 
-**Availability of feature toggles by version**
+**headless.pageTitleProviders**
+
+Enables support for the PageTitle API.
+
+.. code-block:: php
+
+   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.pageTitleProviders'] = true;
+
+Availability of Feature Toggles by Version
+------------------------------------------
 
 .. t3-field-list-table::
    :header-rows: 1
@@ -132,106 +136,112 @@ To enable headless support for `EXT:workspaces` please also add to you site(s) c
    -  :Header1:   Flag
       :Header2:   2.x
       :Header3:   3.x
+      :Header4:   4.x
 
    -  :Header1:   FrontendBaseUrlInPagePreview
       :Header2:   available
       :Header3:   removed
+      :Header4:   removed
 
    -  :Header1:   headless.frontendUrls
       :Header2:   >= 2.5
       :Header3:   available
+      :Header4:   removed
 
    -  :Header1:   headless.storageProxy
       :Header2:   >= 2.4
       :Header3:   available
+      :Header4:   available
 
    -  :Header1:   headless.redirectMiddlewares
       :Header2:   >= 2.5
       :Header3:   available
+      :Header4:   available
 
    -  :Header1:   headless.nextMajor
       :Header2:   >= 2.2
       :Header3:   currently not used
+      :Header4:   currently not used
 
    -  :Header1:   headless.elementBodyResponse
       :Header2:   >= 2.6
       :Header3:   available
+      :Header4:   available
 
    -  :Header1:   headless.simplifiedLinkTarget
       :Header2:   >= 2.6
       :Header3:   removed
+      :Header4:   not available
 
    -  :Header1:   headless.jsonViewModule
       :Header2:   not available
       :Header3:   >= 3.0
+      :Header4:   >= 3.0
 
    -  :Header1:   headless.workspaces
       :Header2:   not available
       :Header3:   >= 3.1
+      :Header4:   >= 3.1
+
+   -  :Header1:   headless.pageTitleProviders
+      :Header2:   not available
+      :Header3:   not available
+      :Header4:   >= 4.2.3
 
 .. _configuration-ext-form:
 
 EXT:form
-========================
+========
 
-If EXT:form is enabled in TYPO3 instance, EXT:headless provides support
-for handling form in headless mode.
+If `EXT:form` is enabled in the TYPO3 instance, `EXT:headless` provides support for handling forms in headless mode.
 
-Standard forms designed in form editor in TYPO3 backend should work out of box,
-but headless extension supports additional small tweaks/features to help frontend
-developers better handle form on their end.
+Standard forms designed in the form editor in TYPO3 backend should work out of the box, but the headless extension supports additional small tweaks/features to help frontend developers better handle forms on their end.
 
-All options are added in yaml files with standard form configuration in TYPO3.
+All options are added in YAML files with standard form configuration in TYPO3.
 
 **i18n**
 
-In many cases in headless mode, frontend developers need some translated strings
-for common elements like buttons, help messages etc.
+In many cases in headless mode, frontend developers need some translated strings for common elements like buttons, help messages, etc.
 
-With EXT:headless you can add additional configuration in root line of form config:
+With `EXT:headless`, you can add additional configuration in the root line of the form config:
 
 .. code-block:: yaml
 
- i18n:
-   identifier: 'i18n'
-   properties:
-      someButtonLabel: 'Submit or Cancel'
-      someHelpMessage: 'You need fill this form'
-      requiredFields: 'These fields are required'
+   i18n:
+     identifier: 'i18n'
+     properties:
+        someButtonLabel: 'Submit or Cancel'
+        someHelpMessage: 'You need to fill out this form'
+        requiredFields: 'These fields are required'
 
-Above block will be automatically translated by provided xlf files like standard form in fluid.
+The above block will be automatically translated by provided XLF files like a standard form in fluid.
 
-This block will be translated & available in "i18n" part of response.
-More about form output see in Form Decorator section.
+This block will be translated & available in the "i18n" part of the response. More about form output can be found in the Form Decorator section.
 
 **Form Decorator**
 
-Headless extensions provides out of box simple decorator for form definition output.
-Decorator simplifies response, and provides API to customize your response for your specific needs.
+The headless extension provides an out-of-the-box simple decorator for form definition output. The decorator simplifies the response and provides an API to customize your response for your specific needs.
 
-In rendering options of form you can define your custom project/form decorator
-If option is not defined, headless extension defaults to:
+In the rendering options of the form, you can define your custom project/form decorator. If the option is not defined, the headless extension defaults to:
 
 `FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator`
 
-You can override any time simply by put in form's config yaml:
+You can override this at any time by specifying it in the form's config YAML:
 
 .. code-block:: yaml
 
    renderingOptions:
      formDecorator: Your-Vendor\YourExtension\Form\CustomDefinitionDecorator
 
-More about form output decorator please see :ref:`customize form output <developer-ext-form>`
+More about form output decorators can be found in :ref:`customize form output <developer-ext-form>`.
 
 **Validators**
 
-To help frontend developers to create validation handling in frontend context,
-You can add small tweaks to form element definition to ease development for your frontend team.
+To help frontend developers create validation handling in a frontend context, you can add small tweaks to form element definitions to ease development for your frontend team.
 
-In form element definition you can add option to `errorMessage`  your defined validators
-with error code value. This code will be picked up and translated by standard TYPO3's xlf form files
+In the form element definition, you can add an option to `errorMessage` for your defined validators with the error code value. This code will be picked up and translated by standard TYPO3 XLF form files.
 
-i.e.
+For example:
 
 .. code-block:: yaml
 
@@ -249,18 +259,15 @@ i.e.
                   elementDescription: ''
                   fluidAdditionalAttributes:
                      required: required
-                type: 'RadioButton'
-                identifier: 'salutation'
-                label: 'Salutation'
-                validators:
-                    -
-                      identifier: 'NotEmpty'
-                      errorMessage: 1221560910
+               type: 'RadioButton'
+               identifier: 'salutation'
+               label: 'Salutation'
+               validators:
+                  -
+                    identifier: 'NotEmpty'
+                    errorMessage: 1221560910
 
-When creating RegexValidator, we have some differences
-when handling regular expressions by PHP & JS,
-to help frontend developers to create consistent frontend/backend validation
-we introduced small option for regex validators in TYPO3
+When creating a RegexValidator, there are some differences when handling regular expressions by PHP & JS. To help frontend developers create consistent frontend/backend validation, we introduced a small option for regex validators in TYPO3.
 
 For example:
 
@@ -268,7 +275,7 @@ For example:
 
    renderables:
       -
-         type: Page
+         type: 'Page'
          renderables:
             -
               type: 'Text'
@@ -276,43 +283,36 @@ For example:
               label: 'Test field'
               validators:
                 -
-                   identifier: RegularExpression
+                   identifier: 'RegularExpression'
                    options:
                      regularExpression: '/^[a-z]+$/'
                    FERegularExpression:
                      expression: '^[a-z]+$'
-                     flags: i
+                     flags: 'i'
                    errorMessage: 1221565130
 
-If Headless's form decorator finds option `FERegularExpression` in validator definition
-will override options.regularExpression by value of `regularExpression` option
-before sending output for frontend dev.
+If the headless form decorator finds the option `FERegularExpression` in the validator definition, it will override `options.regularExpression` with the value of the `FERegularExpression` option before sending the output to the frontend developer.
 
-**Custom options**
+**Custom Options**
 
-When you need a select/radio/checkboxes with custom options, fetched for example
-from database or other external source, you need to create Custom FormModel, but in
-headless mode we do not render html and render all the options, so we introduced small interface
+When you need a select/radio/checkbox with custom options fetched from, for example, a database or another external source, you need to create a Custom FormModel. In headless mode, we do not render HTML and render all the options, so we introduced a small interface:
 
 `FriendsOfTYPO3\Headless\Form\CustomOptionsInterface`
 
-and `customOptions` in definition of form element
+and `customOptions` in the definition of the form element:
 
 .. code-block:: yaml
 
- - defaultValue: ''
-   type: 'SingleSelectWithCountryList'
-   identifier: 'country'
-   label: 'Country'
-   properties:
-      customOptions: 'YourVendor\Your-Ext\Domain\Model\YourCustomOptionClassImplementingInterface'
+   - defaultValue: ''
+     type: 'SingleSelectWithCountryList'
+     identifier: 'country'
+     label: 'Country'
+     properties:
+        customOptions: 'YourVendor\Your-Ext\Domain\Model\YourCustomOptionClassImplementingInterface'
 
-When above option is set with class which implemented correct interface, options of select
-will be replaces by values returned by set class.
+When the above option is set with a class that implements the correct interface, the options of the select element will be replaced by the values returned by the specified class.
 
-To make rendering of element easier for frontend developers we introduced option
-to override type returned to the frontend developer for example when you
-set `FEOverrideType` in renderingOptions of custom element
+To make rendering of the element easier for frontend developers, we introduced the option to override the type returned to the frontend developer. For example, when you set `FEOverrideType` in the renderingOptions of a custom element:
 
 .. code-block:: yaml
 
@@ -320,7 +320,7 @@ set `FEOverrideType` in renderingOptions of custom element
    renderingOptions:
      FEOverrideType: 'Select'
 
-We use this value to override type, so response to the frontend dev will be
+We use this value to override the type, so the response to the frontend developer will be:
 
 .. code-block:: yaml
 
@@ -328,7 +328,7 @@ We use this value to override type, so response to the frontend dev will be
      "type": "Select"
    }
 
-instead of
+instead of:
 
 .. code-block:: yaml
 
@@ -336,22 +336,17 @@ instead of
      "type": "SingleSelectWithCountryList"
    }
 
-**JSON REDIRECT**
+**JSON Redirect**
 
-EXT:headless supports handling finishers, for example after handled correctly sent form data
-you can use TYPO3 core's RedirectFinisher to redirect to thank you page.
-But in order to have more control on frontend side we provide in headless extension
+`EXT:headless` supports handling finishers. For example, after handling correctly sent form data, you can use TYPO3 core's RedirectFinisher to redirect to a thank you page. To have more control on the frontend side, we provide in the headless extension:
 
 `JsonRedirectFinisher`
 
-Which is based on core RedirectFinisher, but instead of delay & statusCode option
-have option of message which can be handled by frontend dev
-to display message for user before redirect to defined page.
+This is based on the core RedirectFinisher but, instead of delay & statusCode options, has an option for a message that can be handled by the frontend developer to display a message for the user before redirecting to the defined page.
 
-Also JsonRedirect do not redirect by itself
-but generates message (default is null) and uri for redirection by frontend developer
+Also, JsonRedirect does not redirect by itself but generates a message (default is null) and URI for redirection by the frontend developer.
 
-To use JsonRedirect you have to define it in setup.yaml of your extension form's setup
+To use JsonRedirect, define it in the setup.yaml of your extension form's setup:
 
 .. code-block:: yaml
 
@@ -364,42 +359,34 @@ To use JsonRedirect you have to define it in setup.yaml of your extension form's
                JsonRedirect:
                  implementationClassName: 'FriendsOfTYPO3\Headless\Form\Finisher\JsonRedirectFinisher'
 
-
-[BETA] JsonView backend module
-========================
-
+[BETA] JsonView Backend Module
+==============================
 
 .. image:: ../Images/Configuration/JsonViewModule.png
     :alt: JsonView Module icon with label
 
-|
 
-JsonView module is experimental approach for previewing json response
-of a page in different contexts like pagetype, page arguments,
-usergroup, langauge, show/hide hidden content.
+The JsonView module is an experimental approach for previewing JSON responses of a page in different contexts like pageType, page arguments, usergroup, language, and show/hide hidden content.
 
-``!WARNING This is an experimental module, please don't use it on production environment at this time.``
+``!WARNING This is an experimental module, please don't use it on a production environment at this time.``
 
 .. image:: ../Images/Configuration/JsonViewModule-settings.png
   :alt: Root page for the API endpoint
 
-
 .. image:: ../Images/Configuration/JsonViewModule-example.png
   :alt: Root page for the API endpoint
 
-|
 
-``PageTypeModes``
+**PageTypeModes**
 
-You can set context in which you want to preview a page.
+You can set the context in which you want to preview a page.
 
-By default there are 3 settings available:
+By default, there are 3 settings available:
 
 - *default* - standard response with page data and content
 - *initialData* - standard response from pageType=834
-- *detailNews* (commented out) - example of calling detail action of news extension for test purposes
+- *detailNews* (commented out) - example of calling the detail action of the news extension for test purposes
 
-|
 
 .. code-block:: yaml
 
@@ -426,14 +413,39 @@ By default there are 3 settings available:
     #        action: detail
     #        controller: News
     #        news: 1
+..
 
-|
+**Custom YAML Configuration**
 
-
-``Custom YAML configuration``
-
-You can always create your own yaml configuration and set it in extension configuration.
+You can always create your own YAML configuration and set it in the extension configuration.
 
 .. image:: ../Images/Configuration/JsonViewModule-extconf.png
   :alt: Root page for the API endpoint
+
+Content element categories
+==========================
+
+Headless default configuration for content element categories in TypoScript `lib.contentElement` is to look in root (`page uid=0`). However depending on your project needs this may not ideal.
+
+(as of TYPO3 v12 you cannot use together `pidInList = root` and `recursive = 99`)
+
+Alternative approach for categories may be to use categories from current rootPage which mitigates this problem.
+
+To begin you need to unset previous `pidInList` value
+
+.. code-block:: text
+      lib.contentElement.fields.categories.10.select.pidInList >
+
+If you need categories from current rootPage
+
+.. code-block:: text
+      lib.contentElement.fields.categories.10.select.pidInList >
+      lib.contentElement.fields.categories.10.select.pidInList.data = leveluid : 0
+
+You can add 'recursive' if categories may be stored under current rootPage
+
+.. code-block:: text
+      lib.contentElement.fields.categories.10.select.pidInList >
+      lib.contentElement.fields.categories.10.select.pidInList.data = leveluid : 0
+      lib.contentElement.fields.categories.10.select.recursive = 99
 

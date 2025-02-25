@@ -21,7 +21,6 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
-use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
@@ -54,6 +53,10 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
      */
     public function render($conf = []): string
     {
+        if (!empty($conf['if.']) && !$this->cObj->checkIf($conf['if.'])) {
+            return '';
+        }
+
         $data = [];
 
         if (!is_array($conf)) {
@@ -94,11 +97,12 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     public function cObjGet(array $setup, string $addKey = ''): array
     {
         $content = [];
+        $nullableFieldsIfEmpty = GeneralUtility::trimExplode(',', $this->conf['nullableFieldsIfEmpty'] ?? '', true);
 
         $sKeyArray = $this->filterByStringKeys($setup);
         foreach ($sKeyArray as $theKey) {
             $theValue = $setup[$theKey];
-            if ((string)$theKey && strpos($theKey, '.') === false) {
+            if ((string)$theKey && !str_contains($theKey, '.')) {
                 $conf = $setup[$theKey . '.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
                 if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
@@ -110,14 +114,20 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ((isset($conf['boolval']) && $conf['boolval']) || $theValue === 'BOOL') {
                     $content[$theKey] = (bool)(int)$content[$theKey];
                 }
-                if ($theValue === 'USER_INT' || strpos((string)$content[$theKey], '<!--INT_SCRIPT.') === 0) {
+                if ($theValue === 'USER_INT' || str_starts_with((string)$content[$theKey], '<!--INT_SCRIPT.')) {
                     $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey], (int)($conf['ifEmptyReturnNull'] ?? 0) === 1 ? HeadlessUserInt::STANDARD_NULLABLE : HeadlessUserInt::STANDARD);
                 }
-                if ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 && $content[$theKey] === '') {
+                if ($content[$theKey] === '' && ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 || in_array($theKey, $nullableFieldsIfEmpty, true))) {
                     $content[$theKey] = null;
                 }
+                if ((int)($conf['ifEmptyUnsetKey'] ?? 0) === 1 && ($content[$theKey] === '' || $content[$theKey] === false)) {
+                    unset($content[$theKey]);
+                }
                 if (!empty($conf['dataProcessing.'] ?? [])) {
-                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($conf);
+                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing(
+                        $conf,
+                        $content[rtrim($theKey, '.')]
+                    );
                 }
             }
             if ((string)$theKey && strpos($theKey, '.') > 0 && !isset($setup[rtrim($theKey, '.')])) {
@@ -165,12 +175,11 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             $dataProcessing,
             [
                 'data' => $this->cObj->data,
-                'current' => $this->cObj->data[$this->cObj->currentValKey ?? null] ?? null
+                'current' => $this->cObj->data[$this->cObj->currentValKey ?? null] ?? null,
             ]
         );
 
         $dataProcessingData = null;
-        $features = GeneralUtility::makeInstance(Features::class);
 
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
             if (isset($data[$value])) {

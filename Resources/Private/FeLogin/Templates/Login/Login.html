@@ -5,7 +5,7 @@
                 title: '{f:translate(key:\'form.login.title\')}',
                 action: '{f:uri.action(action:\'login\')}',
                 method: 'POST',
-                elements: '{f:render(partial: \'LoginFields\', arguments: \'{_all}\') -> headless:format.json.decode()-> headless:loginForm(action:\'login\', name:\'field\') -> headless:format.json.decode()}'
+                elements: '{f:render(partial: \'LoginFields\', arguments: \'{_all}\') -> headless:format.json.decode()-> headless:loginForm(action:\'login\', name:\'field\', requestToken: requestToken) -> headless:format.json.decode()}'
             },
             message: {
                 header: '{f:render(partial: \'RenderLabelOrMessage\', arguments: \'{key: \\\'{messageKey}_header\\\'}\')}',

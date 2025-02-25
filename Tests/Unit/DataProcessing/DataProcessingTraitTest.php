@@ -12,15 +12,13 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing;
 
 use FriendsOfTYPO3\Headless\DataProcessing\DataProcessingTrait;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class DataProcessingTraitTest extends TestCase
 {
-    /**
-     * @test
-     * @dataProvider dataProvider
-     */
-    public function removeDataIfnotAppendInConfigurationTest(
+    #[DataProvider('dataProvider')]
+    public function testRemoveDataIfnotAppendInConfiguration(
         $expected,
         array $processorConfiguration,
         array $processedData
@@ -37,10 +35,7 @@ class DataProcessingTraitTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     */
-    public function removeDataIfnotAppendInConfigurationAsMenuProcessorTest()
+    public function testRemoveDataIfnotAppendInConfigurationAsMenuProcessor()
     {
         $trait = new class () {
             use DataProcessingTrait {
@@ -86,39 +81,39 @@ class DataProcessingTraitTest extends TestCase
                                 'children' => [
                                     ['data' => 123, 'uid' => 1],
                                     ['data' => 'asdasd', 'uid' => 2],
-                                    ['data' => false, 'uid' => 3]
-                                ]
+                                    ['data' => false, 'uid' => 3],
+                                ],
                             ],
-                        ]
-                    ]
-                ]
+                        ],
+                    ],
+                ],
             ]
         ));
     }
 
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             [
                 [],
                 ['appendData' => 1],
-                []
+                [],
             ],
             [
                 ['test' => []],
                 ['appendData' => 0, 'as' => 'test'],
-                ['test' => []]
+                ['test' => []],
             ],
             [
                 ['test' => [[123 => 'asd']]],
                 ['appendData' => 0, 'as' => 'test'],
-                ['test' => [[123 => 'asd']]]
+                ['test' => [[123 => 'asd']]],
             ],
             [
                 ['test' => [[123 => ['asd' => 1]]]],
                 ['appendData' => 0, 'as' => 'test'],
-                ['test' => [[123 => ['asd' => 1], 'data' => 'test']]]
-            ]
+                ['test' => [[123 => ['asd' => 1], 'data' => 'test']]],
+            ],
         ];
     }
 }

@@ -17,6 +17,8 @@ use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 
+use function json_decode;
+
 /**
  * Fetch records from the database, using the default .select syntax from TypoScript.
  *
@@ -37,7 +39,7 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  *      bodytext = TEXT
  *      bodytext {
  *          field = bodytext
- *          parseFunc =< lib.parseFunc_links
+ *          parseFunc =< lib.parseFunc_RTE
  *      }
  *      link = TEXT
  *      link {
@@ -58,15 +60,8 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
  */
 class DatabaseQueryProcessor implements DataProcessorInterface
 {
-    /**
-     * @var ContentDataProcessor
-     */
-    protected $contentDataProcessor;
-
-    /**
-     * @var TypoScriptService
-     */
-    private $typoScriptService;
+    private ContentDataProcessor $contentDataProcessor;
+    private TypoScriptService $typoScriptService;
 
     public function __construct(ContentDataProcessor $contentDataProcessor = null, TypoScriptService $typoScriptService = null)
     {
@@ -79,7 +74,7 @@ class DatabaseQueryProcessor implements DataProcessorInterface
      */
     public function process(ContentObjectRenderer $cObj, array $contentObjectConfiguration, array $processorConfiguration, array $processedData): array
     {
-        if (isset($processorConfiguration['if.']) && ! $cObj->checkIf($processorConfiguration['if.'])) {
+        if (isset($processorConfiguration['if.']) && !$cObj->checkIf($processorConfiguration['if.'])) {
             return $processedData;
         }
 
@@ -100,57 +95,57 @@ class DatabaseQueryProcessor implements DataProcessorInterface
         $targetVariableName = $cObj->stdWrapValue('as', $processorConfiguration, 'records');
 
         $records = $cObj->getRecords($tableName, $processorConfiguration);
-        $processedRecordVariables = $this->processRecordVariables($records, $tableName, $processorConfiguration);
-
-        $processedData[$targetVariableName] = $processedRecordVariables;
-
-        return $processedData;
-    }
-
-    /**
-     * @param array $records
-     * @param string $tableName
-     * @param array $processorConfiguration
-     *
-     * @return array
-     */
-    private function processRecordVariables(array $records, string $tableName, array $processorConfiguration): array
-    {
+        $request = $cObj->getRequest();
         $processedRecordVariables = [];
+
+        $flattenRow = null;
+
         foreach ($records as $key => $record) {
             $recordContentObjectRenderer = $this->createContentObjectRenderer();
+            $recordContentObjectRenderer->setRequest($request);
             $recordContentObjectRenderer->start($record, $tableName);
 
+            $objConf = [];
+            $objName = '< ' . $tableName;
+
             if (isset($processorConfiguration['fields.'])) {
+                $objName = 'JSON';
                 $fields = $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['fields.']);
-                $jsonCE = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON']);
-                $record = \json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
+                $objConf = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON']);
             }
 
-            $processedRecordVariables[$key] = $record;
+            $processedRecordVariables[$key] = $objConf !== [] ? json_decode($recordContentObjectRenderer->cObjGetSingle($objName, $objConf), true) : $record;
             $processedRecordVariables[$key] = $this->contentDataProcessor->process($recordContentObjectRenderer, $processorConfiguration, $processedRecordVariables[$key]);
 
             if (isset($processorConfiguration['overrideFields.'])) {
                 $overrideFields = $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['overrideFields.']);
                 $jsonCE = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $overrideFields, '_typoScriptNodeValue' => 'JSON']);
-                $record = \json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
+                $record = json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
 
                 foreach ($record as $fieldName => $overrideData) {
                     $processedRecordVariables[$key][$fieldName] = $overrideData;
                 }
             }
 
-            if ($processorConfiguration['returnFlattenObject'] ?? false) {
-                return array_shift($processedRecordVariables);
+            if ((int)($processorConfiguration['returnFlattenObject'] ?? 0)) {
+                $flattenRow = array_shift($processedRecordVariables);
+                break;
             }
         }
 
-        return $processedRecordVariables;
+        if ($flattenRow !== null && (int)($processorConfiguration['returnFlattenLegacy'] ?? 1)) {
+            return $flattenRow;
+        }
+
+        if ($processorConfiguration['returnFlattenObject'] ?? 0) {
+            $processedData[$targetVariableName] = (int)($processorConfiguration['returnFlattenLegacy'] ?? 1) ? $processedRecordVariables : $flattenRow;
+        } else {
+            $processedData[$targetVariableName] = $processedRecordVariables;
+        }
+
+        return $processedData;
     }
 
-    /**
-     * @return ContentObjectRenderer
-     */
     protected function createContentObjectRenderer(): ContentObjectRenderer
     {
         return GeneralUtility::makeInstance(ContentObjectRenderer::class);

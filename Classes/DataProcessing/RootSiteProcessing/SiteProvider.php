@@ -12,11 +12,12 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
 use Doctrine\DBAL\Driver\Exception;
-use Doctrine\DBAL\Driver\Result;
+use InvalidArgumentException;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
+
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_filter;
@@ -24,6 +25,7 @@ use function array_map;
 use function array_values;
 use function count;
 use function in_array;
+use function is_a;
 use function usort;
 
 class SiteProvider implements SiteProviderInterface
@@ -85,8 +87,8 @@ class SiteProvider implements SiteProviderInterface
         $pages = $this->fetchPageData($sites, $config);
 
         if ($customSorting !== null) {
-            if (!\is_a($customSorting, SiteSortingInterface::class, true)) {
-                throw new \InvalidArgumentException('Invalid implementation of SiteSortingInterface');
+            if (!is_a($customSorting, SiteSortingInterface::class, true)) {
+                throw new InvalidArgumentException('Invalid implementation of SiteSortingInterface');
             }
             /**
              * @var SiteSortingInterface $sorting
@@ -149,7 +151,7 @@ class SiteProvider implements SiteProviderInterface
 
         foreach ($allSites as $site) {
             if (in_array($site->getRootPageId(), $allowedSites, true) &&
-                $site->getConfiguration()['headless'] ?? false) {
+            $site->getConfiguration()['headless'] ?? false) {
                 $sites[] = $site;
             }
         }
@@ -166,18 +168,15 @@ class SiteProvider implements SiteProviderInterface
     {
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable('pages');
 
-        $stmt = $queryBuilder
+        $pagesData = $queryBuilder
             ->select('uid')
             ->from('pages')
-            ->where('is_siteroot = 1')
-            ->andWhere('hidden = 0')
-            ->andWhere('deleted = 0')->andWhere('pid = ' . $queryBuilder->createNamedParameter($pid, \PDO::PARAM_INT))->executeQuery();
-
-        $pagesData = [];
-
-        if ($stmt instanceof Result) {
-            $pagesData = $stmt->fetchAllAssociative();
-        }
+            ->andWhere(
+                $queryBuilder->expr()->eq('is_siteroot', $queryBuilder->createNamedParameter(1, Connection::PARAM_INT)),
+                $queryBuilder->expr()->eq('pid', $queryBuilder->createNamedParameter($pid, Connection::PARAM_INT)),
+            )
+            ->executeQuery()
+            ->fetchAllAssociative();
 
         return array_map(static function (array $item): int {
             return (int)$item['uid'];
@@ -206,14 +205,17 @@ class SiteProvider implements SiteProviderInterface
 
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable('pages');
 
-        $pagesData = [];
-        $stmt = $queryBuilder
+        $pagesData = $queryBuilder
             ->select(...$columns)
-            ->from('pages')->where('uid IN (' . $queryBuilder->createNamedParameter($rootPagesId, Connection::PARAM_INT_ARRAY) . ')')->executeQuery();
-
-        if ($stmt instanceof Result) {
-            $pagesData = $stmt->fetchAllAssociative();
-        }
+            ->from('pages')
+            ->where(
+                $queryBuilder->expr()->in(
+                    'uid',
+                    $queryBuilder->createNamedParameter($rootPagesId, Connection::PARAM_INT_ARRAY)
+                )
+            )
+            ->executeQuery()
+            ->fetchAllAssociative();
 
         $pages = [];
 

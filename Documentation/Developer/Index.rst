@@ -1,5 +1,3 @@
-.. include:: ../Includes.txt
-
 .. _developer:
 
 ===============
@@ -10,10 +8,149 @@ This chapter will explain different usecases for developer working with `headles
 
 .. _developer-plugin-extbase:
 
+New cObjects
+============
+
+EXT:headless comes with a bunch of new cObjects to be used via TypoScript:
+
+* BOOL
+* FLOAT
+* INT
+* JSON
+* CONTENT_JSON
+
+`BOOL`, `FLOAT` and `INT` are basically like `TEXT` (with `value` and `stdWrap` properties!) but make sure their result is being cast to bool, float or int.
+
+JSON
+----
+
+To build and render a JSON object into your page output.
+
+.. code-block:: typoscript
+
+  lib.meta = JSON
+  lib.meta {
+    if.isTrue = 1
+    fields {
+      title = TEXT
+      title {
+        field = seo_title
+        stdWrap.ifEmpty.cObject = TEXT
+        stdWrap.ifEmpty.cObject {
+          field = title
+        }
+      }
+      robots {
+        fields {
+          noIndex = BOOL
+          noIndex.field = no_index
+        }
+      }
+      ogImage = TEXT
+      ogImage {
+        dataProcessing {
+          10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+          10 {
+            as = media
+            references.fieldName = og_image
+            processingConfiguration {
+              returnFlattenObject = 1
+            }
+          }
+        }
+      }
+    }
+    dataProcessing {
+    }
+    stdWrap {
+    }
+  }
+
+The JSON cObjects comes with a bunch of properties: `if`, `fields`, `dataProcessing` and `stdWrap`.
+
+**Property `if`**
+
+Can be used to decide whether or not to render the object.
+
+**Property `fields`**
+
+Array of cObjects. With special properties per item:
+
+* `intval`/`floatval`/`boolval` to cast the result to int, float or bool.
+* `ifEmptyReturnNull` to return null in case it's empty
+* `ifEmptyUnsetKey` to remove the item in case it's empty
+* `dataProcessing` to render data processors (have a look at `lib.meta.ogImage` for example)
+
+**Property `dataProcessing`**
+
+This property can be used to render data processors such as MenuProcessors.
+
+Have a look at `lib.breadcrumbs` for example:
+
+.. code-block:: typoscript
+
+  lib.breadcrumbs = JSON
+  lib.breadcrumbs {
+    dataProcessing {
+      10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+    }
+  }
+
+**Property `stdWrap`**
+
+This property can be used to run `stdWrap` to the already rendered JSON output.
+
+CONTENT_JSON
+------------
+
+This cObject basically behaves like TYPO3's `CONTENT`, the main difference is that content elements are grouped by `colPol` & encoded into JSON by default.
+
+`CONTENT_JSON` has the same options as `CONTENT` but also offers two new options for edge cases in json context.
+
+**merge**
+
+This option allows to generate another `CONTENT_JSON` call in one definition & then merge both results into one dataset
+(useful for handling slide feature of CONTENT cObject).
+
+.. code-block:: typoscript
+
+  lib.content = CONTENT_JSON
+  lib.content {
+    table = tt_content
+    select {
+      orderBy = sorting
+      where = {#colPos} != 1
+    }
+    merge {
+      table = tt_content
+      select {
+        orderBy = sorting
+        where = {#colPos} = 1
+      }
+      slide = -1
+    }
+  }
+
+**doNotGroupByColPos = 0(default)|1**
+
+This option allows to return a flat array (without grouping by colPos) but still encoded into JSON.
+
+.. code-block:: typoscript
+
+  lib.content = CONTENT_JSON
+  lib.content {
+    table = tt_content
+    select {
+      orderBy = sorting
+      where = {#colPos} != 1
+    }
+    doNotGroupByColPos = 1
+  }
+
 Internal Extbase plugins
 ========================
 
-To integrate a custom frontend plugin which return its data inside the JSON object, we have to do the following:
+To integrate a custom frontend plugin which returns its data inside the JSON object, we have to do the following:
 
 Follow the standard proceeding to `register and configure extbase plugins <https://docs.typo3.org/m/typo3/book-extbasefluid/master/en-us/4-FirstExtension/7-configuring-the-plugin.html>`__:
 
@@ -122,7 +259,7 @@ Main part is a user function definition to run a plugin from TypoScript:
 For any other plugin, just change the `vendorName`, `extensionName`, `pluginName` and `controller` options,
 and import needed constant and setup values (like for view, persistence and settings in this case).
 
-Than use the constants of that extension to overwrite the paths to the fluid templates:
+Then use the constants of that extension to overwrite the paths to the fluid templates:
 
 .. code-block:: typoscript
 
@@ -192,7 +329,7 @@ object with a header definition `lib.contentElementWithHeader`:
           bodytext = TEXT
           bodytext {
             field = bodytext
-            parseFunc =< lib.parseFunc_links
+            parseFunc =< lib.parseFunc_RTE
           }
           demoSubfields {
             fields {
@@ -274,7 +411,7 @@ Here's an example of how to override the meta object by data from a DB record:
 
   lib.meta.stdWrap.override.cObject = JSON
   lib.meta.stdWrap.override.cObject {
-    stdWrap.if.isTrue.data = GP:tx_news_pi1|news
+    if.isTrue.data = GP:tx_news_pi1|news
     dataProcessing.10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
     dataProcessing.10 {
       table = tx_news_domain_model_news
@@ -294,6 +431,34 @@ Here's an example of how to override the meta object by data from a DB record:
       }
 
       returnFlattenObject = 1
+    }
+  }
+
+.. _developer-dataprocessors:
+
+TypoScript DataProcessors
+=========================
+
+This extension provides a couple of handy DataProcessors. Have a look into the default TypoScript to see them in action.
+
+Here's an example demonstrating their usage.
+
+.. code-block:: typoscript
+
+  lib.meta.fields.ogImage = TEXT
+  lib.meta.fields.ogImage {
+    dataProcessing {
+      # Use the column 'og_image' to render an array with all relevant
+      # information (such as the publicUrl)
+      10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+      10.as = media
+      10.references.fieldName = og_image
+      10.processingConfiguration.returnFlattenObject = 1
+
+      # Extract only property 'publicUrl' from the above created array
+      20 = FriendsOfTYPO3\Headless\DataProcessing\ExtractPropertyProcessor
+      20.key = media.publicUrl
+      20.as = media
     }
   }
 
@@ -328,13 +493,13 @@ EXT:headless out of box provides for developers:
     elements: []
   }
 
-You can anytime extend & customize for your needs simply by create custom
-decorator which implements `DefinitionDecoratorInterface` or extend provided
-`AbstractFormDefinitionDecorator` which provides you ability to override
-definition of each element or whole form definition.
+You can anytime extend & customize for your needs simply by creating a custom
+decorator which implements `DefinitionDecoratorInterface` or extend the provided
+`AbstractFormDefinitionDecorator` which provides the ability to override the
+definition of each element or the whole form definition.
 
-After creating custom decorator you can attach to your form simply by setting
-`formDecorator` in rendering options of form, :ref:`see more <configuration-ext-form>`
+After creating a custom decorator you can attach it to your form simply by setting
+`formDecorator` in the rendering options of the form, :ref:`see more <configuration-ext-form>`
 
 .. _developer-snippets:
 

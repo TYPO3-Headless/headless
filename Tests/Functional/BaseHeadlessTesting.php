@@ -18,13 +18,13 @@ use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
-abstract class BaseTest extends FunctionalTestCase
+abstract class BaseHeadlessTesting extends FunctionalTestCase
 {
     protected array $coreExtensionsToLoad = [
-        'install'
+        'install',
     ];
     protected array $testExtensionsToLoad = [
-        'typo3conf/ext/headless'
+        'typo3conf/ext/headless',
     ];
 
     /**
@@ -34,13 +34,13 @@ abstract class BaseTest extends FunctionalTestCase
     {
         parent::setUp();
 
-        $this->importDataSet(__DIR__ . '/Fixtures/pages.xml');
+        $this->importCSVDataSet(__DIR__ . '/Fixtures/pages.csv');
 
         $this->setUpFrontendRootPage(
             1,
             [
                 'constants' => ['EXT:headless/Configuration/TypoScript/constants.typoscript'],
-                'setup' => ['EXT:headless/Configuration/TypoScript/setup.typoscript']
+                'setup' => ['EXT:headless/Configuration/TypoScript/setup.typoscript'],
             ]
         );
 
@@ -70,7 +70,7 @@ abstract class BaseTest extends FunctionalTestCase
         );
         $validator = new Validator();
         $validator->check($data, $schema);
-        if (false === $validator->isValid()) {
+        if ($validator->isValid() === false) {
             foreach ($validator->getErrors() as $error) {
                 self::fail(sprintf('Property "%s" is not valid: %s in %s', $error['property'], $error['message'], $jsonString));
             }
@@ -109,7 +109,7 @@ abstract class BaseTest extends FunctionalTestCase
         self::assertEquals($spaceAfter, $contentElementAppearance['spaceAfter'], 'spaceAfter mismatch');
     }
 
-    protected function checkHeaderFields($contentElement, $header = '', $subheader = '', $headerLayout = 0, $headerPosition= '')
+    protected function checkHeaderFields($contentElement, $header = '', $subheader = '', $headerLayout = 0, $headerPosition = '')
     {
         $contentElementContent = $contentElement['content'];
 
@@ -128,5 +128,10 @@ abstract class BaseTest extends FunctionalTestCase
         self::assertEquals($link, $contentElementHeaderFieldsLink['linkText'], 'link mismatch');
         self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['href'], 'url mismatch');
         self::assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
+    }
+
+    protected function importDataSet(string $string): void
+    {
+        // @TODO move data into CSV
     }
 }

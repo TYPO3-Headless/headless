@@ -14,6 +14,11 @@ namespace FriendsOfTYPO3\Headless\ContentObject;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use RuntimeException;
+use TYPO3\CMS\Backend\View\BackendLayoutView;
+use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\TimeTracker\TimeTracker;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -22,20 +27,24 @@ use function array_merge;
 use function count;
 use function is_array;
 use function json_decode;
+use function json_encode;
 use function str_contains;
 use function trim;
 
 use const JSON_FORCE_OBJECT;
 
 /**
- * CONTENT_JSON Content object behaves & has the same options as standard TYPO3' Content
- * main difference is content is grouped by colPol field & encoded into JSON by default.
+ * This cObject basically behaves like TYPO3's CONTENT,
+ * the main difference is that content elements are
+ * grouped by colPol & encoded into JSON by default.
  *
- * CONTENT_JSON has the same options as CONTENT, also adds two new options for edge cases in json context
+ * CONTENT_JSON has the same options as CONTENT but also
+ * offers two new options for edge cases in json context.
  *
  * ** merge ** option
- * New option allows to generate another CONTENT_JSON call in one definition & then merge both results into one dataset
- * (useful for handling slide feature of CONTENT cObject)
+ * This option allows to generate another CONTENT_JSON call
+ * in one definition & then merge both results into one
+ * dataset (useful for handling slide feature of CONTENT cObject).
  *
  * for example:
  *
@@ -57,7 +66,8 @@ use const JSON_FORCE_OBJECT;
  *  }
  *
  * ** doNotGroupByColPos = 0(default)|1 **
- * Option allows return of flat array (without grouping by colPos) encoded into JSON
+ * This option allows to return a flat array (without grouping
+ * by colPos) but still encoded into JSON.
  *
  * lib.content = CONTENT_JSON
  * lib.content {
@@ -67,16 +77,50 @@ use const JSON_FORCE_OBJECT;
  *        where = {#colPos} != 1
  *    }
  *    doNotGroupByColPos = 1
+ * }
+ *
+ * ** sortByBackendLayout = 0(default)|1 **
+ * This option allows to return sorted CE by colPos with order by used backendLayout
+ *
+ * lib.content = CONTENT_JSON
+ * lib.content {
+ *    table = tt_content
+ *    select {
+ *        orderBy = sorting
+ *    }
+ *    sortByBackendLayout = 1
+ * }
+ *
+ * ** returnSingleRow = 0(default)|1 **
+ * This option allows to return only one row instead of array with one element
+ *
+ * lib.content = CONTENT_JSON
+ * lib.content {
+ *    table = tt_content
+ *    select {
+ *        orderBy = sorting
+ *    }
+ *    returnSingleRow = 1
+ * }
+ *
+ * @codeCoverageIgnore
  */
 class JsonContentContentObject extends ContentContentObject
 {
     private HeadlessUserInt $headlessUserInt;
     private JsonEncoderInterface $jsonEncoder;
+    /**
+     * @var mixed|object|\Psr\Log\LoggerAwareInterface|\TYPO3\CMS\Core\SingletonInterface|TimeTracker|(TimeTracker&\Psr\Log\LoggerAwareInterface)|(TimeTracker&\TYPO3\CMS\Core\SingletonInterface)|null
+     */
+    private TimeTracker $timeTracker;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct()
     {
         $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
         $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
+        $this->timeTracker = GeneralUtility::makeInstance(TimeTracker::class);
+        $this->eventDispatcher = GeneralUtility::makeInstance(EventDispatcherInterface::class);
     }
 
     /**
@@ -122,8 +166,10 @@ class JsonContentContentObject extends ContentContentObject
     {
         $data = [];
 
+        $groupingEnabled = $this->isColPolsGroupingEnabled($conf);
+
         foreach ($contentElements as $element) {
-            if (str_contains($element, 'Oops, an error occurred!')) {
+            if ($element === '' || str_contains($element, 'Oops, an error occurred!')) {
                 continue;
             }
 
@@ -131,13 +177,33 @@ class JsonContentContentObject extends ContentContentObject
                 $element = $this->headlessUserInt->wrap($element);
             }
 
-            $element = json_decode($element);
+            $element = json_decode($element, true);
 
-            if ($this->isColPolsGroupingEnabled($conf) && $element->colPos >= 0) {
-                $data['colPos' . $element->colPos][] = $element;
+            if ($element === []) {
+                continue;
+            }
+
+            $colPos = $this->getColPosFromElement($groupingEnabled, $element);
+
+            if ($groupingEnabled && $colPos >= 0) {
+                $data['colPos' . $colPos][] = $element;
             } else {
                 $data[] = $element;
             }
+        }
+
+        if ($groupingEnabled && $this->isSortByBackendLayoutEnabled($conf)) {
+            $backendLayoutView = GeneralUtility::makeInstance(BackendLayoutView::class);
+            $backendLayout = $backendLayoutView->getSelectedBackendLayout($this->request->getAttribute('routing')->getPageId());
+
+            $sorted = [];
+            foreach ($backendLayout['__colPosList'] ?? [] as $value) {
+                $sorted['colPos' . $value] = $data['colPos' . $value];
+            }
+
+            $data = $sorted;
+        } elseif (!$groupingEnabled && $this->returnSingleRowEnabled($conf)) {
+            return $data[0] ?? [];
         }
 
         return $data;
@@ -149,6 +215,8 @@ class JsonContentContentObject extends ContentContentObject
      */
     private function prepareValue(array $conf): array
     {
+        $t3v13andAbove = (new Typo3Version())->getMajorVersion() >= 13;
+
         $frontendController = $this->getTypoScriptFrontendController();
         $theValue = [];
         $originalRec = $frontendController->currentRecord;
@@ -183,20 +251,44 @@ class JsonContentContentObject extends ContentContentObject
         $tmpValue = '';
 
         do {
-            $records = $this->cObj->getRecords($conf['table'], $conf['select.']);
+            if ($t3v13andAbove) {
+                $modifyRecordsEvent = $this->eventDispatcher->dispatch(
+                    new \TYPO3\CMS\Frontend\ContentObject\Event\ModifyRecordsAfterFetchingContentEvent(
+                        $this->cObj->getRecords($conf['table'], $conf['select.']),
+                        json_encode($theValue, JSON_THROW_ON_ERROR),
+                        $slide,
+                        $slideCollect,
+                        $slideCollectReverse,
+                        $slideCollectFuzzy,
+                        $conf
+                    )
+                );
+
+                $records = $modifyRecordsEvent->getRecords();
+                $theValue = json_decode($modifyRecordsEvent->getFinalContent(), true, 512, JSON_THROW_ON_ERROR);
+                $slide = $modifyRecordsEvent->getSlide();
+                $slideCollect = $modifyRecordsEvent->getSlideCollect();
+                $slideCollectReverse = $modifyRecordsEvent->getSlideCollectReverse();
+                $slideCollectFuzzy = $modifyRecordsEvent->getSlideCollectFuzzy();
+                $conf = $modifyRecordsEvent->getConfiguration();
+            } else {
+                $records = $this->cObj->getRecords($conf['table'], $conf['select.']);
+            }
             $cobjValue = [];
             if (!empty($records)) {
-                $this->getTimeTracker()->setTSlogMessage('NUMROWS: ' . count($records));
+                $this->timeTracker->setTSlogMessage('NUMROWS: ' . count($records));
 
                 $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class, $frontendController);
                 $cObj->setParent($this->cObj->data, $this->cObj->currentRecord);
                 $this->cObj->currentRecordNumber = 0;
 
                 foreach ($records as $row) {
-                    // Call hook for possible manipulation of database row for cObj->data
-                    foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content_content.php']['modifyDBRow'] ?? [] as $className) {
-                        $_procObj = GeneralUtility::makeInstance($className);
-                        $_procObj->modifyDBRow($row, $conf['table']);
+                    if (!$t3v13andAbove) {
+                        // Call hook for possible manipulation of database row for cObj->data
+                        foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content_content.php']['modifyDBRow'] ?? [] as $className) {
+                            $_procObj = GeneralUtility::makeInstance($className);
+                            $_procObj->modifyDBRow($row, $conf['table']);
+                        }
                     }
                     $registerField = $conf['table'] . ':' . ($row['uid'] ?? 0);
                     if (!($frontendController->recordRegister[$registerField] ?? false)) {
@@ -204,7 +296,8 @@ class JsonContentContentObject extends ContentContentObject
                         $cObj->parentRecordNumber = $this->cObj->currentRecordNumber;
                         $frontendController->currentRecord = $registerField;
                         $this->cObj->lastChanged($row['tstamp'] ?? 0);
-                        $cObj->start($row, $conf['table'], $this->request);
+                        $cObj->setRequest($this->request);
+                        $cObj->start($row, $conf['table']);
                         $tmpValue = $cObj->cObjGetSingle($renderObjName, $renderObjConf, $renderObjKey);
                         $cobjValue[] = $tmpValue;
                     }
@@ -231,7 +324,7 @@ class JsonContentContentObject extends ContentContentObject
                 }
                 $again = (string)$conf['select.']['pidInList'] !== '';
             }
-        } while ($again && $slide && ((string)$tmpValue === '' && $slideCollectFuzzy || $slideCollect));
+        } while ($again && $slide && (((string)$tmpValue === '' && $slideCollectFuzzy) || $slideCollect));
 
         $theValue = $this->groupContentElementsByColPos($theValue, $conf);
         // Restore
@@ -243,8 +336,27 @@ class JsonContentContentObject extends ContentContentObject
         return $theValue;
     }
 
+    private function isSortByBackendLayoutEnabled(array $conf): bool
+    {
+        return isset($conf['sortByBackendLayout']) && (int)$conf['sortByBackendLayout'] === 1;
+    }
+
     private function isColPolsGroupingEnabled(array $conf): bool
     {
         return !isset($conf['doNotGroupByColPos']) || (int)$conf['doNotGroupByColPos'] === 0;
+    }
+
+    private function returnSingleRowEnabled(array $conf): bool
+    {
+        return isset($conf['returnSingleRow']) && (int)$conf['returnSingleRow'] === 1;
+    }
+
+    private function getColPosFromElement(bool $groupingEnabled, array $element): int
+    {
+        if ($groupingEnabled && !array_key_exists('colPos', $element)) {
+            throw new RuntimeException('Content element by ID: "' . ($element['id'] ?? 0) . '" does not have "colPos" field defined. Disable grouping or fix TypoScript definition of the element.', 1739347200);
+        }
+
+        return (int)($element['colPos'] ?? 0);
     }
 }

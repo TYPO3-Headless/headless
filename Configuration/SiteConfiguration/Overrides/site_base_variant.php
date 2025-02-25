@@ -21,10 +21,10 @@ $tempColumns = [
             'eval' => 'trim',
             'placeholder' => 'http://www.domain.local',
         ],
-    ]
+    ],
 ];
 
-$replaceShowItem = 'base, frontendBase, ';
+$replaceShowItem = 'base, frontendBase,';
 
 if ($features->isFeatureEnabled('headless.storageProxy')) {
     $tempColumns['frontendApiProxy'] = [

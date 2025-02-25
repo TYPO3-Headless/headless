@@ -11,10 +11,25 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ViewHelpers;
 
+use LogicException;
+use Psr\Http\Message\RequestInterface;
+use RuntimeException;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\SecurityAspect;
+use TYPO3\CMS\Core\Security\RequestToken;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
-use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy;
 use TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper;
+
+use function base64_encode;
+use function is_int;
+use function is_object;
+use function is_string;
+use function json_encode;
+use function serialize;
+use function sprintf;
+use function strtolower;
 
 /**
  * Form ViewHelper. Generates a :html:`<form>` Tag.
@@ -55,11 +70,10 @@ use TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper;
 class LoginFormViewHelper extends FormViewHelper
 {
     /**
-     * @var array
+     * @var array<int, array<string, mixed>>
      */
-    protected $data = [];
-
-    protected $i = 0;
+    protected array $data = [];
+    protected int $i = 0;
 
     /**
      * Render the form.
@@ -68,7 +82,18 @@ class LoginFormViewHelper extends FormViewHelper
      */
     public function render(): string
     {
+        $renderingContext = $this->renderingContext;
+        $request = $renderingContext->getRequest();
+        if (!$request instanceof RequestInterface) {
+            throw new RuntimeException(
+                'ViewHelper f:form can be used only in extbase context and needs a request implementing extbase RequestInterface.',
+                1639821904
+            );
+        }
+
         $this->setFormActionUri();
+
+        // Force 'method="get"' or 'method="post"', defaulting to "post".
         if (isset($this->arguments['method']) && strtolower($this->arguments['method']) === 'get') {
             $this->tag->addAttribute('method', 'get');
         } else {
@@ -83,11 +108,13 @@ class LoginFormViewHelper extends FormViewHelper
         $this->addFormObjectToViewHelperVariableContainer();
         $this->addFieldNamePrefixToViewHelperVariableContainer();
         $this->addFormFieldNamesToViewHelperVariableContainer();
+
         $this->data = $this->renderChildren();
 
         $this->renderHiddenIdentityField($this->arguments['object'] ?? null, $this->getFormObjectName());
         $this->renderAdditionalIdentityFields();
         $this->renderHiddenReferrerFields();
+        $this->renderRequestTokenHiddenField();
 
         // Render the trusted list of all properties after everything else has been rendered
         $this->renderTrustedPropertiesField();
@@ -102,49 +129,6 @@ class LoginFormViewHelper extends FormViewHelper
     }
 
     /**
-     * Sets the "action" attribute of the form tag
-     */
-    protected function setFormActionUri(): void
-    {
-        if ($this->hasArgument('actionUri')) {
-            $formActionUri = $this->arguments['actionUri'];
-        } else {
-            if (isset($this->arguments['noCacheHash'])) {
-                trigger_error(
-                    'Using the argument "noCacheHash" in <f:form> ViewHelper has no effect anymore. Remove the argument in your fluid template, as it will result in a fatal error.',
-                    E_USER_DEPRECATED
-                );
-            }
-            /** @var UriBuilder $uriBuilder */
-            $uriBuilder = $this->renderingContext->getControllerContext()->getUriBuilder();
-            $uriBuilder
-                ->reset()
-                ->setTargetPageType($this->arguments['pageType'] ?? 0)
-                ->setNoCache($this->arguments['noCache'] ?? false)
-                ->setSection($this->arguments['section'] ?? '')
-                ->setCreateAbsoluteUri($this->arguments['absolute'] ?? false)
-                ->setArguments(isset($this->arguments['additionalParams']) ? (array)$this->arguments['additionalParams'] : [])
-                ->setAddQueryString($this->arguments['addQueryString'] ?? false)
-                ->setArgumentsToBeExcludedFromQueryString(isset($this->arguments['argumentsToBeExcludedFromQueryString']) ? (array)$this->arguments['argumentsToBeExcludedFromQueryString'] : [])
-                ->setFormat($this->arguments['format'] ?? '');
-
-            $pageUid = (int)($this->arguments['pageUid'] ?? 0);
-            if ($pageUid > 0) {
-                $uriBuilder->setTargetPageUid($pageUid);
-            }
-
-            $formActionUri = $uriBuilder->uriFor(
-                $this->arguments['action'] ?? null,
-                $this->arguments['arguments'] ?? [],
-                $this->arguments['controller'] ?? null,
-                $this->arguments['extensionName'] ?? null,
-                $this->arguments['pluginName'] ?? null
-            );
-            $this->formActionUriArguments = $uriBuilder->getArguments();
-        }
-    }
-
-    /**
      * Render additional identity fields which were registered by form elements.
      * This happens if a form field is defined like property="bla.blubb" - then we might need an identity property for the sub-object "bla".
      *
@@ -154,7 +138,6 @@ class LoginFormViewHelper extends FormViewHelper
     {
         if ($this->viewHelperVariableContainer->exists(FormViewHelper::class, 'additionalIdentityProperties')) {
             $additionalIdentityProperties = $this->viewHelperVariableContainer->get(FormViewHelper::class, 'additionalIdentityProperties');
-            $output = '';
             foreach ($additionalIdentityProperties as $identity) {
                 $this->addHiddenField('identity', $identity);
             }
@@ -172,8 +155,9 @@ class LoginFormViewHelper extends FormViewHelper
      */
     protected function renderHiddenReferrerFields(): string
     {
-        $request = $this->renderingContext->getControllerContext()
-            ->getRequest();
+        $renderingContext = $this->renderingContext;
+        /** @var RequestInterface $request */
+        $request = $renderingContext->getRequest();
         $extensionName = $request->getControllerExtensionName();
         $controllerName = $request->getControllerName();
         $actionName = $request->getControllerActionName();
@@ -182,6 +166,7 @@ class LoginFormViewHelper extends FormViewHelper
             '@controller' => $controllerName,
             '@action' => $actionName,
         ];
+
         $this->addHiddenField(
             '__referrer[@extension]',
             $extensionName
@@ -195,9 +180,21 @@ class LoginFormViewHelper extends FormViewHelper
             $actionName
         );
         $this->addHiddenField(
-            '__referrer[@request]',
-            $this->hashService->appendHmac(json_encode($actionRequest))
+            '__referrer[arguments]',
+            $this->hashService->appendHmac(
+                base64_encode(serialize($request->getArguments())),
+                class_exists(\TYPO3\CMS\Extbase\Security\HashScope::class) ? \TYPO3\CMS\Extbase\Security\HashScope::class::ReferringArguments->prefix() : ''
+            )
         );
+        $this->addHiddenField(
+            '__referrer[@request]',
+            $this->hashService->appendHmac(
+                json_encode($actionRequest),
+                class_exists(\TYPO3\CMS\Extbase\Security\HashScope::class) ? \TYPO3\CMS\Extbase\Security\HashScope::class::ReferringRequest->prefix() : ''
+            )
+        );
+
+        return '';
     }
 
     /**
@@ -212,13 +209,12 @@ class LoginFormViewHelper extends FormViewHelper
     /**
      * Renders a hidden form field containing the technical identity of the given object.
      *
-     * @param object $object Object to create the identity field for
-     * @param string $name Name
-     *
-     * @return string A hidden field containing the Identity (UID in TYPO3 Flow, uid in Extbase) of the given object or NULL if the object is unknown to the persistence framework
+     * @param mixed $object Object to create the identity field for. Non-objects are ignored.
+     * @param string|null $name Name
+     * @return string A hidden field containing the Identity (uid) of the given object
      * @see \TYPO3\CMS\Extbase\Mvc\Controller\Argument::setValue()
      */
-    protected function renderHiddenIdentityField(?object $object, ?string $name): string
+    protected function renderHiddenIdentityField(mixed $object, ?string $name): string
     {
         if ($object instanceof LazyLoadingProxy) {
             $object = $object->_loadRealInstance();
@@ -257,9 +253,51 @@ class LoginFormViewHelper extends FormViewHelper
                 $this->getFieldNamePrefix()
             );
         $this->addHiddenField('__trustedProperties', $requestHash);
+
+        return '';
     }
 
-    protected function addHiddenField($name, $value)
+    protected function renderRequestTokenHiddenField(): string
+    {
+        $requestToken = $this->arguments['requestToken'] ?? null;
+        $signingType = $this->arguments['signingType'] ?? null;
+
+        $isTrulyRequestToken = is_int($requestToken) && $requestToken === 1
+            || is_string($requestToken) && strtolower($requestToken) === 'true';
+        $formAction = $this->tag->getAttribute('action');
+
+        // basically "request token, yes" - uses form-action URI as scope
+        if ($isTrulyRequestToken || $requestToken === '@nonce') {
+            $requestToken = RequestToken::create($formAction);
+            // basically "request token with 'my-scope'" - uses 'my-scope'
+        } elseif (is_string($requestToken) && $requestToken !== '') {
+            $requestToken = RequestToken::create($requestToken);
+        }
+        if (!$requestToken instanceof RequestToken) {
+            return '';
+        }
+        if (strtolower((string)($this->arguments['method'] ?? '')) === 'get') {
+            throw new LogicException('Cannot apply request token for forms sent via HTTP GET', 1651775963);
+        }
+
+        $context = GeneralUtility::makeInstance(Context::class);
+        $securityAspect = SecurityAspect::provideIn($context);
+        // @todo currently defaults to 'nonce', there might be a better strategy in the future
+        $signingType = $signingType ?: 'nonce';
+        $signingProvider = $securityAspect->getSigningSecretResolver()->findByType($signingType);
+        if ($signingProvider === null) {
+            throw new LogicException(sprintf('Cannot find request token signing type "%s"', $signingType), 1664260307);
+        }
+
+        $signingSecret = $signingProvider->provideSigningSecret();
+        $requestToken = $requestToken->withMergedParams(['request' => ['uri' => $formAction]]);
+
+        $this->addHiddenField(RequestToken::PARAM_NAME, $requestToken->toHashSignedJwt($signingSecret));
+
+        return '';
+    }
+
+    protected function addHiddenField(string $name, mixed $value): void
     {
         $tmp = [];
         $tmp['name'] = $name;

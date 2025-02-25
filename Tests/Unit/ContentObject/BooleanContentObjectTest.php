@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Prophecy\PhpUnit\ProphecyTrait;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -20,32 +22,30 @@ class BooleanContentObjectTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
-    public function renderTest()
+    public function testRender()
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->setRequest(new ServerRequest());
 
         $contentObject = new BooleanContentObject();
+        $contentObject->setRequest(new ServerRequest());
         $contentObject->setContentObjectRenderer($cObj);
 
         self::assertFalse($contentObject->render());
     }
 
-    /**
-     * @test
-     * @dataProvider dataProvider
-     */
-    public function renderWithProviderTest($argument, bool $result)
+    #[DataProvider('dataProvider')]
+    public function testRenderWithProvider($argument, bool $result): void
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->setRequest(new ServerRequest());
         $contentObject = new BooleanContentObject();
+        $contentObject->setRequest(new ServerRequest());
         $contentObject->setContentObjectRenderer($cObj);
         self::assertEquals($result, $contentObject->render($argument));
     }
 
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             ['test', false],

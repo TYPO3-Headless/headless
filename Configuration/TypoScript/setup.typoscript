@@ -6,7 +6,10 @@ plugin.tx_headless {
 
 ## Include page
 @import "EXT:headless/Configuration/TypoScript/Page/*.typoscript"
+## Include helpers
+@import "EXT:headless/Configuration/TypoScript/Helpers/*.typoscript"
 ## Include content elements
 @import "EXT:headless/Configuration/TypoScript/ContentElement/*.typoscript"
 ## Include configuration
 @import "EXT:headless/Configuration/TypoScript/Configuration/*.typoscript"
+@import "EXT:headless/Configuration/TypoScript/LoggedUser/*.typoscript"

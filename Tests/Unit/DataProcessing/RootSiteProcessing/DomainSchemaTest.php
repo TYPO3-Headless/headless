@@ -13,6 +13,8 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing;
 
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider;
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -31,10 +33,7 @@ class DomainSchemaTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
-    public function processTest()
+    public function testProcess(): void
     {
         $testUri = new Uri('https://test.domain.tld');
         $cObj = $this->prophesize(ContentObjectRenderer::class);
@@ -113,9 +112,9 @@ class DomainSchemaTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => $domainUri . ':3000',
                     'frontendApiProxy' => $domainUri . '/headless',
-                    'frontendFileApi' => $domainUri . '/headless/fileadmin'
-                ]
-            ]
+                    'frontendFileApi' => $domainUri . '/headless/fileadmin',
+                ],
+            ],
         ]);
 
         $site
@@ -131,16 +130,20 @@ class DomainSchemaTest extends UnitTestCase
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
 
-        $siteFinder = $this->prophesize(SiteFinder::class);
+        $mock = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
+        $mock->method('getSiteByPageId')->willReturn($site);
 
         if ($site === null) {
             $site = $this->getSiteWithBase($uri);
         }
 
-        $siteFinder->getSiteByPageId(Argument::is(1))->willReturn($site);
-        $dummyRequest = (new ServerRequest())->withAttribute('site', $site);
+        $mock->method('getSiteByPageId')->willReturn($site);
 
-        return new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal(), $dummyRequest);
+        //$siteFinder->getSiteByPageId(Argument::is(1))->willReturn($site);
+        $dummyRequest = (new ServerRequest())->withAttribute('site', $site);
+        $dummyRequest = $dummyRequest->withAttribute('headless', new Headless());
+
+        return new UrlUtility(null, $resolver->reveal(), $mock, $dummyRequest, (new HeadlessMode())->withRequest($dummyRequest));
     }
 
     protected function getSiteWithBase(UriInterface $uri, $withLanguage = null)
@@ -155,9 +158,9 @@ class DomainSchemaTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld:3000',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
-                ]
-            ]
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                ],
+            ],
         ]);
 
         $site->getBase()->willReturn($uri);

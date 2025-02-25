@@ -1,25 +1,19 @@
-page = PAGE
+page < lib.headlessPage
 page {
     typeNum = 0
-    config {
-        no_cache = 0
-        sendCacheHeaders = 1
-        debug = 0
-        admPanel = 0
-        disableAllHeaderCode = 1
-        additionalHeaders.10 {
-            header = Content-Type: application/json; charset=utf-8
-            replace = 1
-        }
+    meta {
+        keywords.data = page:keywords
+        generator = TYPO3 CMS x T3Headless
+        generator.replace = 1
     }
 
-    10 = JSON
     10 {
         fields {
             id = INT
             id {
                 field = uid
             }
+
             type = CASE
             type {
                 key.field = doktype
@@ -48,10 +42,12 @@ page {
                 default = TEXT
                 default.value = Standard
             }
+
             slug = TEXT
             slug {
                 field = slug
             }
+
             media = TEXT
             media {
                 dataProcessing {
@@ -62,6 +58,19 @@ page {
                     }
                 }
             }
+
+            # placeholder only, overridden later on via event
+            seo = JSON
+            seo {
+                fields {
+                    title = TEXT
+                    title {
+                        field = title
+                    }
+                }
+            }
+
+            # backwards compatibility legacy handling of meta tags, to be removed in future major releases
             meta =< lib.meta
             categories =< lib.categories
             breadcrumbs =< lib.breadcrumbs

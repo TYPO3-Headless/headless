@@ -13,6 +13,7 @@ namespace FriendsOfTYPO3\Headless\Middleware;
 
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -31,6 +32,7 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
 {
     private ServerRequestInterface $request;
     private HeadlessFrontendUrlInterface $urlUtility;
+    private HeadlessMode $headlessMode;
 
     public function __construct(
         RedirectService $redirectService,
@@ -38,9 +40,11 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
         ResponseFactoryInterface $responseFactory,
         LoggerInterface $logger,
         HeadlessFrontendUrlInterface $urlUtility,
+        HeadlessMode $headlessMode
     ) {
         parent::__construct($redirectService, $eventDispatcher, $responseFactory, $logger);
         $this->urlUtility = $urlUtility;
+        $this->headlessMode = $headlessMode;
     }
 
     /**
@@ -66,9 +70,7 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
             return parent::buildRedirectResponse($uri, $redirectRecord);
         }
 
-        $siteConf = $this->request->getAttribute('site')->getConfiguration();
-
-        if (!($siteConf['headless'] ?? false)) {
+        if (!$this->headlessMode->withRequest($this->request)->isEnabled()) {
             return parent::buildRedirectResponse($uri, $redirectRecord);
         }
 
@@ -86,7 +88,7 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
 
         return new JsonResponse([
             'redirectUrl' => $redirectUrlEvent->getTargetUrl(),
-            'statusCode' => $redirectUrlEvent->getTargetStatusCode()
+            'statusCode' => $redirectUrlEvent->getTargetStatusCode(),
         ]);
     }
 }

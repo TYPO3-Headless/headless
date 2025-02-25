@@ -13,9 +13,13 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Event\Listener\RedirectUrlAdditionalParamsListener;
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use InvalidArgumentException;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -32,13 +36,13 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
-    public function invokeTest()
+    public function testInvoke(): void
     {
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+
         $listener = new RedirectUrlAdditionalParamsListener(
-            new TypoLinkCodecService(),
+            new TypoLinkCodecService($eventDispatcher->reveal()),
             new LinkService(),
             $this->getUrlUtility()
         );
@@ -46,7 +50,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $request = (new ServerRequest())->withAttribute('test', 1)->withUri($uri);
         $redirectRecord = [
             'target_statuscode' => 307,
-            'target' => 'https://test.domain5.tld'
+            'target' => 'https://test.domain5.tld',
         ];
 
         $redirectEvent = new RedirectUrlEvent($request, $uri, 'https://test.domain2.tld', 301, $redirectRecord);
@@ -57,7 +61,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $request = (new ServerRequest())->withAttribute('test', 1)->withUri(new Uri('https://test.domain3.tld'));
         $redirectRecord = [
             'target_statuscode' => 307,
-            'target' => 'https://test.domain5.tld'
+            'target' => 'https://test.domain5.tld',
         ];
 
         $redirectEvent = new RedirectUrlEvent(
@@ -80,7 +84,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $additionalParams = 'tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123';
         $redirectRecord = [
             'target_statuscode' => 307,
-            'target' => 't3://page?uid=1 - - - tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123'
+            'target' => 't3://page?uid=1 - - - tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123',
         ];
 
         $newUri = new Uri('https://test.domain2.tld/123/123');
@@ -116,7 +120,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $mockListener->method('getPageRouterForSite')
             ->willReturn($pageRouter->reveal());
         $mockListener->__construct(
-            new TypoLinkCodecService(),
+            new TypoLinkCodecService($eventDispatcher->reveal()),
             new LinkService(),
             $this->getUrlUtility()
         );
@@ -125,11 +129,11 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         self::assertSame((string)$expectedUri, $newRedirectEvent->getTargetUrl());
     }
 
-    /**
-     * @test
-     */
-    public function invokeWithLanguageTest()
+    public function testInvokeWithLanguaget(): void
     {
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+
         $targetUrl = 'https://test.domain2.tld/123';
         $additionalParams = 'tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123';
         $expectedUri = new Uri($targetUrl . '&' . $additionalParams);
@@ -140,7 +144,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 
         $redirectRecord = [
             'target_statuscode' => 307,
-            'target' => 't3://page?uid=1&L=1 - - - tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123'
+            'target' => 't3://page?uid=1&L=1 - - - tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123',
         ];
 
         $newUri = new Uri('https://test.domain2.tld/123/123');
@@ -166,7 +170,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
                             'controller' => 'Test',
                             'test' => '123',
                         ],
-                    '_language' => $language
+                    '_language' => $language,
                 ]
             )
             ->shouldBeCalledOnce()
@@ -177,7 +181,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
             ->willReturn($pageRouter->reveal());
 
         $mockListener->__construct(
-            new TypoLinkCodecService(),
+            new TypoLinkCodecService($eventDispatcher->reveal()),
             new LinkService(),
             $this->getUrlUtility($site)
         );
@@ -186,7 +190,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         self::assertSame((string)$expectedUri, $newRedirectEvent->getTargetUrl());
 
         $site = $this->createPartialMock(Site::class, ['getLanguageById']);
-        $site->method('getLanguageById')->willThrowException(new \InvalidArgumentException('test'));
+        $site->method('getLanguageById')->willThrowException(new InvalidArgumentException('test'));
         $request = $request->withAttribute('site', $site);
 
         $redirectEvent = new RedirectUrlEvent(
@@ -212,9 +216,9 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
                     'condition' => 'applicationContext == "Development"',
                     'frontendBase' => 'https://test-frontend.tld:3000',
                     'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
-                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin'
-                ]
-            ]
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                ],
+            ],
         ]);
 
         $site->getBase()->willReturn($uri);
@@ -236,14 +240,14 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
 
-        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
 
         if ($site === null) {
             $site = $this->getSiteWithBase($uri);
         }
 
-        $siteFinder->getSiteByPageId(Argument::is(1))->willReturn($site);
+        $siteFinder->method('getSiteByPageId')->willReturn($site);
 
-        return new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
+        return new UrlUtility(null, $resolver->reveal(), $siteFinder, null, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
     }
 }

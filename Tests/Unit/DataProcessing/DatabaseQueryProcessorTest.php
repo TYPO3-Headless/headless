@@ -15,11 +15,14 @@ use FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+
+use function json_encode;
 
 class DatabaseQueryProcessorTest extends UnitTestCase
 {
@@ -50,6 +53,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         $this->typoScriptService = $this->prophesize(TypoScriptService::class);
         $this->contentDataProcessor = $this->prophesize(ContentDataProcessor::class);
         $this->contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
+        $this->contentObjectRenderer->getRequest()->willReturn(new ServerRequest());
         $this->subject = $this->getAccessibleMock(DatabaseQueryProcessor::class, ['createContentObjectRenderer'], [
             $this->contentDataProcessor->reveal(),
             $this->typoScriptService->reveal(),
@@ -57,10 +61,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         parent::setUp();
     }
 
-    /**
-     * @test
-     */
-    public function returnEarlyDueToIfStatementReturnsFalse(): void
+    public function testReturnEarlyDueToIfStatementReturnsFalse(): void
     {
         $processorConfiguration = [
             'if.' => [
@@ -73,10 +74,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
     }
 
-    /**
-     * @test
-     */
-    public function returnEarlyNoTableIsGiven(): void
+    public function testReturnEarlyNoTableIsGiven(): void
     {
         $processorConfiguration = [
             'if.' => [
@@ -89,10 +87,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
     }
 
-    /**
-     * @test
-     */
-    public function processWithoutAdditionalFields(): void
+    public function testProcessWithoutAdditionalFields(): void
     {
         $processorConfiguration = [
             'table' => 'tt_content',
@@ -114,6 +109,10 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         $this->contentObjectRenderer->stdWrapValue('as', $processorConfigurationWithoutTable, 'records')->shouldBeCalledOnce()->willReturn('records');
 
         $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
+        $contentObjectRenderer->getRequest()->willReturn(new ServerRequest());
+        $contentObjectRenderer->setRequest(Argument::type(ServerRequest::class))->shouldBeCalledOnce();
+        $contentObjectRenderer->cObjGetSingle(Argument::any(), [])->willReturn(json_encode([ 'uid' => 1]));
+        $contentObjectRenderer->start($records[0], 'tt_content')->shouldBeCalledOnce();
         $this->subject->expects(self::any())->method('createContentObjectRenderer')->willReturn($contentObjectRenderer->reveal());
 
         $this->contentDataProcessor->process($contentObjectRenderer, $processorConfigurationWithoutTable, $records[0])->shouldBeCalledOnce()->willReturn($records[0]);
@@ -123,10 +122,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
     }
 
-    /**
-     * @test
-     */
-    public function processWithAdditionalFields(): void
+    public function testProcessWithAdditionalFields(): void
     {
         $processorConfiguration = [
             'table' => 'tt_content',
@@ -158,6 +154,8 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         $this->contentObjectRenderer->stdWrapValue('as', $processorConfigurationWithoutTable, 'records')->shouldBeCalledOnce()->willReturn('records');
 
         $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
+        $contentObjectRenderer->getRequest()->willReturn(new ServerRequest());
+        $contentObjectRenderer->setRequest(Argument::type(ServerRequest::class))->shouldBeCalledOnce();
         $this->subject->expects(self::any())->method('createContentObjectRenderer')->willReturn($contentObjectRenderer->reveal());
 
         $expectedRecords = [
@@ -173,6 +171,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON'])->shouldBeCalledOnce()->willReturn($jsonCE);
 
         $contentObjectRenderer->start($records[0], $processorConfiguration['table'])->shouldBeCalledOnce();
+        $contentObjectRenderer->setRequest(Argument::type(ServerRequest::class))->shouldBeCalledOnce();
         $contentObjectRenderer->cObjGetSingle('JSON', $jsonCE)->willReturn('{"title":"title"}');
 
         $processedData['records'] = $expectedRecords;

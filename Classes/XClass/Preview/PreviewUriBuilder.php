@@ -11,7 +11,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass\Preview;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use InvalidArgumentException;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Routing\InvalidRouteArgumentsException;
 use TYPO3\CMS\Core\Routing\UnableToLinkToPageException;
@@ -42,22 +44,19 @@ class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
             $site = $siteFinder->getSiteByPageId($uid);
             try {
                 $language = $site->getLanguageById($languageId);
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 $language = $site->getDefaultLanguage();
             }
 
-            return $this->prepareHeadlessUrl((string)$site->getRouter()->generateUri($uid, ['ADMCMD_prev' => $previewKeyword, '_language' => $language], ''), $uid, $site->getConfiguration()['headless'] ?? false);
+            $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class);
+            $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
+            $request = $headlessMode->overrideBackendRequestBySite($site, $language);
+
+            return GeneralUtility::makeInstance(UrlUtility::class)
+                ->withRequest($request)
+                ->getFrontendUrlForPage((string)$site->getRouter()->generateUri($uid, ['ADMCMD_prev' => $previewKeyword, '_language' => $language], ''), $uid);
         } catch (SiteNotFoundException | InvalidRouteArgumentsException $e) {
             throw new UnableToLinkToPageException('The page ' . $uid . ' had no proper connection to a site, no link could be built.', 1559794916);
         }
-    }
-
-    protected function prepareHeadlessUrl(string $url, int $pageUid, bool $headlessMode): string
-    {
-        if ($headlessMode) {
-            return GeneralUtility::makeInstance(UrlUtility::class)->getFrontendUrlForPage($url, $pageUid);
-        }
-
-        return $url;
     }
 }

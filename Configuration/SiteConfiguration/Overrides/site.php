@@ -7,6 +7,7 @@
  * LICENSE.md file that was distributed with this source code.
  */
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -21,10 +22,24 @@ $tempColumns = [
             'eval' => 'trim',
             'placeholder' => 'http://www.domain.local',
         ],
-    ]
+    ],
+    'headless' => [
+        'label' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.columns.headless.label',
+        'description' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.columns.headless.description',
+        'config' => [
+            'type' => 'select',
+            'renderType' => 'selectSingle',
+            'default' => HeadlessMode::NONE,
+            'items' => [
+                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.none', HeadlessMode::NONE],
+                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.full', HeadlessMode::FULL],
+                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.mixed', HeadlessMode::MIXED],
+            ],
+        ],
+    ],
 ];
 
-$replaceShowItem = 'base, frontendBase, ';
+$replaceShowItem = 'base, frontendBase, headless,';
 
 if ($features->isFeatureEnabled('headless.storageProxy')) {
     $tempColumns['frontendApiProxy'] = [

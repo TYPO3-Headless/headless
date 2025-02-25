@@ -46,7 +46,7 @@ class TranslatorTest extends UnitTestCase
                                 'properties' => [
                                     'validationErrorMessages' => [
                                         ['code' => 111, 'message' => 'translateMe'],
-                                    ]
+                                    ],
                                 ],
                                 'value' => null,
                             ],
@@ -81,7 +81,7 @@ class TranslatorTest extends UnitTestCase
                                         'identifier' => 'RegularExpression',
                                         'options' => ['regularExpression' => '/a-b/'],
                                         'FERegularExpression' => '/a-z/',
-                                    ]
+                                    ],
                                 ],
                                 'value' => null,
                             ],
@@ -99,8 +99,8 @@ class TranslatorTest extends UnitTestCase
                                 'label' => 'Upload image',
                                 'properties' => ['saveToFileMount' => '/upload-dir'],
                                 'value' => null,
-                            ]
-                        ]
+                            ],
+                        ],
                     ],
                 1 => [],
             ],
@@ -108,7 +108,7 @@ class TranslatorTest extends UnitTestCase
 
         self::assertSame([
             'identifier' => 'testForm',
-            'i18n' => ['properties' => ['test' =>'translatedValue']],
+            'i18n' => ['properties' => ['test' => 'translatedValue']],
             'renderables' => [
                 0 =>
                     [
@@ -126,9 +126,9 @@ class TranslatorTest extends UnitTestCase
                                 'identifier' => 'testfield',
                                 'label' => 'translatedValue',
                                 'properties' => [
-                                        'validationErrorMessages' => [
-                                            ['code' => 111, 'message' => 'translatedError'],
-                                        ]
+                                    'validationErrorMessages' => [
+                                        ['code' => 111, 'message' => 'translatedError', 'customMessage' => 'translateMe'],
+                                    ],
                                 ],
                                 'value' => null,
                                 'defaultValue' => 'translatedValue',
@@ -167,7 +167,7 @@ class TranslatorTest extends UnitTestCase
                                         'identifier' => 'RegularExpression',
                                         'options' => ['regularExpression' => '/a-b/'],
                                         'FERegularExpression' => '/a-z/',
-                                    ]
+                                    ],
                                 ],
                                 'value' => null,
                                 'defaultValue' => 'translatedValue',
@@ -188,12 +188,12 @@ class TranslatorTest extends UnitTestCase
                                 'properties' => ['saveToFileMount' => 'translatedValue'],
                                 'value' => null,
                                 'defaultValue' => 'translatedValue',
-                            ]
+                            ],
                         ],
                         'label' => 'translatedValue',
 
                     ],
-            ]
+            ],
         ], $translator->translate($formDefinition, []));
     }
 }

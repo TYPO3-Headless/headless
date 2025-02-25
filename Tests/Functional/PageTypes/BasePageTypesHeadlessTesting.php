@@ -11,13 +11,13 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Tests\Functional\PageTypes;
 
-use FriendsOfTYPO3\Headless\Tests\Functional\BaseTest;
+use FriendsOfTYPO3\Headless\Tests\Functional\BaseHeadlessTesting;
 use JsonSchema\SchemaStorage;
 use JsonSchema\Uri\UriRetriever;
 use JsonSchema\Validator;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
-abstract class BasePageTypesTest extends BaseTest
+abstract class BasePageTypesHeadlessTesting extends BaseHeadlessTesting
 {
     /**
      * @param string $jsonString
@@ -36,7 +36,7 @@ abstract class BasePageTypesTest extends BaseTest
         );
         $validator = new Validator();
         $validator->check($data, $schema);
-        if (false === $validator->isValid()) {
+        if ($validator->isValid() === false) {
             foreach ($validator->getErrors() as $error) {
                 self::fail(sprintf('Property "%s" is not valid: %s in %s', $error['property'], $error['message'], $jsonString));
             }

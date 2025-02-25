@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Form\Decorator;
 
-use function count;
 use function in_array;
 
 abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInterface
@@ -35,13 +34,18 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
     {
         $decorated = [];
 
-        $pageElements = $definition['renderables'][$currentPage]['renderables'] ?? [];
-
         $this->formId = $definition['identifier'];
+        $pageElements = $definition['renderables'][$currentPage]['renderables'] ?? [];
+        $submitLabel = $definition['renderingOptions']['submitButtonLabel'] ?? '';
+        $submitLabelFromEditor = [];
+
+        if ($submitLabel !== '') {
+            $submitLabelFromEditor = ['submitButtonLabel' => $submitLabel];
+        }
 
         $decorated['id'] = $this->formId;
         $decorated['api'] = $this->formStatus;
-        $decorated['i18n'] = $definition['i18n']['properties'] ?? [];
+        $decorated['i18n'] = [...$submitLabelFromEditor, ...($definition['i18n']['properties'] ?? [])];
         $decorated['elements'] = $this->handleRenderables($pageElements);
 
         return $this->overrideDefinition($decorated, $definition, $currentPage);
@@ -55,8 +59,8 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
     {
         foreach ($renderables as &$element) {
             if (in_array($element['type'], ['Fieldset', 'GridRow'], true) &&
-                is_array($element['renderables']) &&
-                count($element['renderables'])) {
+                is_array($element['renderables'] ?? []) &&
+                ($element['renderables'] ?? []) !== []) {
                 $element['elements'] = $this->handleRenderables($element['renderables']);
                 unset($element['renderables']);
             } else {
@@ -90,7 +94,9 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
             return $element;
         }
 
-        foreach ($element['validators'] as &$validator) {
+        $validators = [];
+
+        foreach ($element['validators'] as $validator) {
             if ($validator['identifier'] === 'RegularExpression') {
                 $jsRegex = $validator['FERegularExpression'] ?? null;
 
@@ -99,7 +105,17 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
                     unset($validator['FERegularExpression']);
                 }
             }
+
+            if ((int)($validator['backendOnly'] ?? 0)) {
+                unset($validator);
+            }
+
+            if (isset($validator)) {
+                $validators[] = $validator;
+            }
         }
+
+        $element['validators'] = $validators;
 
         return $element;
     }

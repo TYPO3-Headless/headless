@@ -13,11 +13,11 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class MenuCategorizedContentElementTest extends BaseContentTypeTest
+class MenuCategorizedContentElementTest extends BaseContentTypeTesting
 {
     public function testMenuContentElement()
     {
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 
@@ -38,21 +38,13 @@ class MenuCategorizedContentElementTest extends BaseContentTypeTest
         self::assertIsArray($contentElement['content']['menu'][1]);
 
         $firstCategorizedContentElement = $contentElement['content']['menu'][0];
-        self::assertEquals('17', $firstCategorizedContentElement['uid']);
-        self::assertEquals('1', $firstCategorizedContentElement['pid']);
-        self::assertEquals('1', $firstCategorizedContentElement['sorting']);
-        self::assertEquals('header', $firstCategorizedContentElement['CType']);
-        self::assertEquals('default', $firstCategorizedContentElement['frame_class']);
-        self::assertEquals('1', $firstCategorizedContentElement['colPos']);
-        self::assertEquals('3', $firstCategorizedContentElement['categories']);
+        self::assertSame(17, $firstCategorizedContentElement['uid']);
+        self::assertArrayHasKey('header', $firstCategorizedContentElement);
+        self::assertArrayHasKey('media', $firstCategorizedContentElement);
 
         $secondCategorizedContentElement = $contentElement['content']['menu'][1];
-        self::assertEquals('18', $secondCategorizedContentElement['uid']);
-        self::assertEquals('1', $secondCategorizedContentElement['pid']);
-        self::assertEquals('1', $secondCategorizedContentElement['sorting']);
-        self::assertEquals('textpic', $secondCategorizedContentElement['CType']);
-        self::assertEquals('default', $secondCategorizedContentElement['frame_class']);
-        self::assertEquals('1', $secondCategorizedContentElement['colPos']);
-        self::assertEquals('3', $secondCategorizedContentElement['categories']);
+        self::assertSame(18, $secondCategorizedContentElement['uid']);
+        self::assertArrayHasKey('header', $secondCategorizedContentElement);
+        self::assertArrayHasKey('media', $secondCategorizedContentElement);
     }
 }

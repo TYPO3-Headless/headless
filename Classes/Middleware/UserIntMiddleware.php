@@ -11,52 +11,53 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Middleware;
 
+use FriendsOfTYPO3\Headless\Seo\MetaHandler;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\Stream;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+
+use function json_decode;
 
 class UserIntMiddleware implements MiddlewareInterface
 {
-    /**
-     * @var TypoScriptFrontendController
-     */
-    private $tsfe;
-    /**
-     * @var HeadlessUserInt
-     */
-    private $headlessUserInt;
-
     public function __construct(
-        HeadlessUserInt $headlessUserInt = null
-    ) {
-        $this->headlessUserInt = $headlessUserInt ?? GeneralUtility::makeInstance(HeadlessUserInt::class);
-    }
+        private readonly HeadlessUserInt $headlessUserInt,
+        private readonly HeadlessMode $headlessMode,
+        private readonly MetaHandler $metaHandler
+    ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = $handler->handle($request);
 
-        $this->tsfe = $request->getAttribute('frontend.controller');
-        if ($this->tsfe === null && isset($GLOBALS['TSFE'])) {
-            $this->tsfe = $GLOBALS['TSFE'];
-        }
-
-        if (!isset($this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'])
-            || (bool)$this->tsfe->tmpl->setup['plugin.']['tx_headless.']['staticTemplate'] === false
-        ) {
+        if (!$this->headlessMode->withRequest($request)->isEnabled()) {
             return $response;
         }
 
-        $body = $this->headlessUserInt->unwrap($response->getBody()->__toString());
+        $jsonContent = $response->getBody()->__toString();
+
+        if (!$this->headlessUserInt->hasNonCacheableContent($jsonContent)) {
+            return $response;
+        }
+
+        $jsonContent = $this->headlessUserInt->unwrap($jsonContent);
+        $responseBody = json_decode($jsonContent, true);
+
+        if (($responseBody['seo']['title'] ?? null) !== null) {
+            $responseBody = $this->metaHandler->process(
+                $request,
+                $request->getAttribute('frontend.controller'),
+                $responseBody
+            );
+            $jsonContent = json_encode($responseBody);
+        }
 
         $stream = new Stream('php://temp', 'r+');
-        $stream->write($body);
-
+        $stream->write($jsonContent);
         return $response->withBody($stream);
     }
 }

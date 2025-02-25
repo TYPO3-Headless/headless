@@ -12,7 +12,10 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Prophecy\PhpUnit\ProphecyTrait;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -20,32 +23,31 @@ class IntegerContentObjectTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
-    public function renderTest()
+    #[Test]
+    public function render(): void
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->setRequest(new ServerRequest());
 
         $contentObject = new IntegerContentObject();
+        $contentObject->setRequest(new ServerRequest());
         $contentObject->setContentObjectRenderer($cObj);
         self::assertEquals(0, $contentObject->render());
     }
 
-    /**
-     * @test
-     * @dataProvider dataProvider
-     */
-    public function renderWithProviderTest($argument, int $result)
+    #[Test, DataProvider('dataProvider')]
+    public function renderWithProvider($argument, int $result): void
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->setRequest(new ServerRequest());
 
         $contentObject = new IntegerContentObject();
+        $contentObject->setRequest(new ServerRequest());
         $contentObject->setContentObjectRenderer($cObj);
         self::assertEquals($result, $contentObject->render($argument));
     }
 
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             ['test', 0],

@@ -13,13 +13,13 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class BulletsElementTest extends BaseContentTypeTest
+class BulletsElementTest extends BaseContentTypeTesting
 {
     public function testBulletsContentElement()
     {
         $testBulletsContent = ['Top1', 'Top2', 'Top3'];
 
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 
@@ -32,7 +32,7 @@ class BulletsElementTest extends BaseContentTypeTest
         $this->checkDefaultContentFields($contentElement, 8, 1, 'bullets', 0);
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 1, 2);
-        $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 _blank LinkClass LinkTitle parameter=999', '/page1?parameter=999&cHash=', '_blank');
+        $this->checkHeaderFieldsLink($contentElement, 'Page 1', '/page1?parameter=999&cHash=', '_blank');
 
         self::assertEquals(1, $contentElement['content']['bulletsType']);
         self::assertTrue(is_array($contentElement['content']['bodytext']));

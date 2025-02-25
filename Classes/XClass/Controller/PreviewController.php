@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass\Controller;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -26,10 +27,14 @@ class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewControll
     {
         $url = (string)$site->getRouter()->generateUri($pageUid, $parameters);
 
-        if ($site->getConfiguration()['headless'] ?? false) {
-            return GeneralUtility::makeInstance(UrlUtility::class)->getFrontendUrlForPage($url, $pageUid);
+        if (!isset($GLOBALS['TYPO3_REQUEST'])) {
+            return $url;
         }
 
-        return $url;
+        $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class);
+        $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
+        $request = $headlessMode->overrideBackendRequestBySite($site, $parameters['_language'] ?? null);
+
+        return GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request)->getFrontendUrlForPage($url, $pageUid);
     }
 }

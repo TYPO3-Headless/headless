@@ -17,6 +17,10 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 
+use function is_array;
+use function is_string;
+use function json_decode;
+
 /**
  * Basic TypoScript configuration:
  * Processing the field pi_flexform and overrides the values stored in data
@@ -99,16 +103,20 @@ class FlexFormProcessor implements DataProcessorInterface
             $fieldName = 'pi_flexform';
         }
 
-        if (!$processedData['data'][$fieldName] && !$processedData[$fieldName]) {
+        if (!isset($processedData['data'][$fieldName]) && !isset($processedData[$fieldName])) {
             return $processedData;
         }
 
         // processing the flexform data
-        $originalValue = $processedData['data'][$fieldName] ?? $processedData[$fieldName];
+        $originalValue = $processedData['data'][$fieldName] ?? $processedData[$fieldName] ?? null;
 
-        if (\is_array($originalValue)) {
+        if ($originalValue === null || $originalValue === '' || $originalValue === []) {
+            return $processedData;
+        }
+
+        if (is_array($originalValue)) {
             $flexformData = $originalValue;
-        } elseif (\is_string($originalValue)) {
+        } elseif (is_string($originalValue)) {
             $flexformData = $this->flexFormService->convertFlexFormContentToArray($originalValue);
         } else {
             return $processedData;
@@ -149,7 +157,7 @@ class FlexFormProcessor implements DataProcessorInterface
         $typoScriptService = GeneralUtility::makeInstance(TypoScriptService::class);
         $overrideFields = $typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['overrideFields.']);
         $jsonCE = $typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $overrideFields, '_typoScriptNodeValue' => 'JSON']);
-        $record = \json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
+        $record = json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
 
         foreach ($record as $fieldName => $overrideData) {
             $flexformData[$fieldName] = $overrideData;

@@ -13,13 +13,13 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class TableElementTest extends BaseContentTypeTest
+class TableElementTest extends BaseContentTypeTesting
 {
     public function testTableContentElement()
     {
         $testTableContent = json_decode('[["Cell1.1","Cell1.2","Cell1.3","Cell1.4","",""],["Cell2.1","","","","",""],["Cell3.1","","","","",""],["\"","","","","",""]]', true);
 
-        $response = $this->executeFrontendRequest(
+        $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
         );
 
@@ -32,7 +32,7 @@ class TableElementTest extends BaseContentTypeTest
         $this->checkDefaultContentFields($contentElement, 7, 1, 'table', 0);
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 1, 2);
-        $this->checkHeaderFieldsLink($contentElement, 't3://page?uid=2 _blank LinkClass LinkTitle parameter=999', '/page1?parameter=999&cHash=', '_blank');
+        $this->checkHeaderFieldsLink($contentElement, 'Page 1', '/page1?parameter=999&cHash=', '_blank');
 
         self::assertEquals('TableCaption', $contentElement['content']['tableCaption']);
         self::assertEquals(1, $contentElement['content']['tableHeaderPosition']);

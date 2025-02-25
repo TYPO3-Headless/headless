@@ -12,7 +12,11 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use stdClass;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_encode;
@@ -25,12 +29,7 @@ class JsonEncoderTest extends UnitTestCase
         parent::setUp();
     }
 
-    /**
-     * @param $testValue
-     * @param $expectedValue
-     *
-     * @dataProvider jsonProvider
-     */
+    #[Test, DataProvider('jsonProvider')]
     public function testEncoding($testValue, $expectedValue): void
     {
         $encoder = GeneralUtility::makeInstance(JsonEncoder::class);
@@ -38,7 +37,8 @@ class JsonEncoderTest extends UnitTestCase
         self::assertSame($expectedValue, $encoder->encode($testValue));
     }
 
-    public function testPrettyEncoding(): void
+    #[Test]
+    public function prettyEncoding(): void
     {
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.prettyPrint'] = true;
         $encoder = GeneralUtility::makeInstance(JsonEncoder::class);
@@ -48,12 +48,12 @@ class JsonEncoderTest extends UnitTestCase
         self::assertSame(json_encode($encodeValue, JSON_PRETTY_PRINT), $encoder->encode($encodeValue));
     }
 
-    public function jsonProvider(): array
+    public static function jsonProvider(): array
     {
         return [
             [[], '[]'],
-            [['test'=>1], '{"test":1}'],
-            [new \stdClass(), '{}'],
+            [['test' => 1], '{"test":1}'],
+            [new stdClass(), '{}'],
             ["\xB1\x31", '[]'], // exception caught, return empty array instead
         ];
     }

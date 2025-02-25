@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ViewHelpers;
 
+use Closure;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -25,7 +26,7 @@ class DomainViewHelper extends AbstractViewHelper
 
     public static function renderStatic(
         array $arguments,
-        \Closure $renderChildrenClosure,
+        Closure $renderChildrenClosure,
         RenderingContextInterface $renderingContext
     ) {
         $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
@@ -38,7 +39,7 @@ class DomainViewHelper extends AbstractViewHelper
             case 'frontendBase':
                 return $urlUtility->getFrontendUrl();
             case 'proxyUrl':
-                return  $urlUtility->getProxyUrl();
+                return $urlUtility->getProxyUrl();
             case 'storageProxyUrl':
                 return $urlUtility->getStorageProxyUrl();
         }

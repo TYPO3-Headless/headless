@@ -1,5 +1,6 @@
 tt_content.textmedia =< lib.contentElementWithHeader
 tt_content.textmedia {
+    dataProcessing >
     fields {
         content {
             fields {
@@ -10,7 +11,7 @@ tt_content.textmedia {
                 bodytext = TEXT
                 bodytext {
                     field = bodytext
-                    parseFunc =< lib.parseFunc_links
+                    parseFunc =< lib.parseFunc_RTE
                 }
                 gallery = TEXT
                 gallery {

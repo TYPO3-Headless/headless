@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
-use FriendsOfTYPO3\Headless\Tests\Functional\BaseTest;
+use FriendsOfTYPO3\Headless\Tests\Functional\BaseHeadlessTesting;
 
-abstract class BaseContentTypeTest extends BaseTest
+abstract class BaseContentTypeTesting extends BaseHeadlessTesting
 {
     /**
      * set up objects
@@ -22,7 +22,7 @@ abstract class BaseContentTypeTest extends BaseTest
     {
         parent::setUp();
 
-        $this->importDataSet(__DIR__ . '/../Fixtures/content.xml');
+        $this->importCSVDataSet(__DIR__ . '/../Fixtures/content.csv');
     }
 
     protected function checkDefaultContentFields($contentElement, $id, $pid, $type, $colPos = 0, $categories = '')
@@ -43,7 +43,7 @@ abstract class BaseContentTypeTest extends BaseTest
         self::assertEquals($spaceAfter, $contentElementAppearance['spaceAfter'], 'spaceAfter mismatch');
     }
 
-    protected function checkHeaderFields($contentElement, $header = '', $subheader = '', $headerLayout = 0, $headerPosition= '')
+    protected function checkHeaderFields($contentElement, $header = '', $subheader = '', $headerLayout = 0, $headerPosition = '')
     {
         $contentElementContent = $contentElement['content'];
 
@@ -59,7 +59,7 @@ abstract class BaseContentTypeTest extends BaseTest
         $contentElementHeaderFieldsLink = $contentElement['content']['headerLink'];
 
         self::assertIsArray($contentElementHeaderFieldsLink, 'headerLink not an array');
-        self::assertEquals($link, $contentElementHeaderFieldsLink['linkText'], 'link mismatch');
+        self::assertEquals($link, $contentElementHeaderFieldsLink['linkText'], 'linkText mismatch');
         self::assertStringStartsWith($urlPrefix, $contentElementHeaderFieldsLink['href'], 'url mismatch');
         self::assertEquals($target, $contentElementHeaderFieldsLink['target'], 'target mismatch');
     }
@@ -90,7 +90,7 @@ abstract class BaseContentTypeTest extends BaseTest
         self::assertIsArray($contentElement['content']['gallery']['rows'][1]['columns'], 'rows.columns not set');
         self::assertCount(1, $contentElement['content']['gallery']['rows'][1]['columns'], 'rows.columns count mismatch');
 
-        $this->checkGalleryFile($contentElement['content']['gallery']['rows'][1]['columns'][1], '/typo3conf/ext/headless/ext_icon.gif', 'image/gif', 'MetadataTitle', 18, 16, 1);
+        $this->checkGalleryFile($contentElement['content']['gallery']['rows'][1]['columns'][1], '/typo3conf/ext/headless/ext_icon.gif', 'image/gif', 'MetadataTitle', 18, 16, null);
     }
 
     protected function checkGalleryFile($fileElement, $originalUrl, $mimeType, $title, $width, $height, $autoplay)

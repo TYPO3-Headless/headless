@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Utility;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
@@ -26,9 +27,11 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_merge;
+use function ltrim;
 use function rtrim;
 use function str_contains;
-use function strpos;
+use function strlen;
+use function substr;
 
 class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 {
@@ -39,16 +42,19 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private SiteFinder $siteFinder;
     private array $conf = [];
     private array $variants = [];
+    private HeadlessMode $headlessMode;
 
     public function __construct(
         ?Features $features = null,
         ?Resolver $resolver = null,
         ?SiteFinder $siteFinder = null,
-        ?ServerRequestInterface $serverRequest = null
+        ?ServerRequestInterface $serverRequest = null,
+        ?HeadlessMode $headlessMode = null
     ) {
         $this->features = $features ?? GeneralUtility::makeInstance(Features::class);
         $this->resolver = $resolver ?? GeneralUtility::makeInstance(Resolver::class, 'site', []);
         $this->siteFinder = $siteFinder ?? GeneralUtility::makeInstance(SiteFinder::class);
+        $this->headlessMode = $headlessMode ?? GeneralUtility::makeInstance(HeadlessMode::class);
         $request = $serverRequest ?? ($GLOBALS['TYPO3_REQUEST'] ?? null);
 
         if ($request instanceof ServerRequestInterface) {
@@ -73,18 +79,16 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
     public function getFrontendUrlWithSite($url, SiteInterface $site, string $returnField = 'frontendBase'): string
     {
-        $configuration = $site->getConfiguration();
+        $this->handleSiteConfiguration($site, $this);
 
-        if (!($configuration['headless'] ?? false)) {
+        if (!$this->headlessMode->isEnabled()) {
             return $url;
         }
 
         try {
-            $base = $site->getBase()->getHost();
-            $port = $site->getBase()->getPort();
             $frontendBaseUrl = $this->resolveWithVariants(
-                $configuration[$returnField] ?? '',
-                $configuration['baseVariants'] ?? [],
+                $this->conf[$returnField] ?? '',
+                $this->variants,
                 $returnField
             );
 
@@ -94,14 +98,18 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
             $frontendBase = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($frontendBaseUrl));
             $frontBase = $frontendBase->getHost();
+            $frontExtraPath = $frontendBase->getPath();
             $frontPort = $frontendBase->getPort();
             $targetUri = new Uri($this->sanitizeBaseUrl($url));
 
-            if (str_contains($url, $base)) {
+            if (str_contains($url, $site->getBase()->getHost())) {
                 $targetUri = $targetUri->withHost($frontBase);
+                if ($frontExtraPath) {
+                    $targetUri = $targetUri->withPath($this->handleFrontendAndBackendPaths($frontExtraPath, $targetUri, $site->getBase()->getPath()));
+                }
             }
 
-            if ($port === $frontPort) {
+            if ($site->getBase()->getPort() === $frontPort) {
                 return (string)$targetUri;
             }
 
@@ -180,13 +188,17 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
      */
     private function sanitizeBaseUrl(string $base): string
     {
+        if (str_starts_with($base, '#')) {
+            return $base;
+        }
+
         // no protocol ("//") and the first part is no "/" (path), means that this is a domain like
         // "www.domain.com/blabla", and we want to ensure that this one then gets a "no-scheme agnostic" part
-        if (!empty($base) && strpos($base, '//') === false && $base[0] !== '/') {
+        if (!empty($base) && !str_contains($base, '//')   && $base[0] !== '/') {
             // either a scheme is added, or no scheme but with domain, or a path which is not absolute
             // make the base prefixed with a slash, so it is recognized as path, not as domain
             // treat as path
-            if (strpos($base, '.') === false) {
+            if (!str_contains($base, '.')) {
                 $base = '/' . $base;
             } else {
                 // treat as domain name
@@ -201,6 +213,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         array $variants = [],
         string $returnField = 'frontendBase'
     ): string {
+        $frontendUrl = rtrim($frontendUrl, '/');
         if ($variants === []) {
             return $frontendUrl;
         }
@@ -260,6 +273,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private function extractConfigurationFromRequest(ServerRequestInterface $request, HeadlessFrontendUrlInterface $object): HeadlessFrontendUrlInterface
     {
         $site = $request->getAttribute('site');
+
         if ($site instanceof Site) {
             $object->handleSiteConfiguration($site, $object);
         }
@@ -269,6 +283,13 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             $object->handleLanguageConfiguration($language, $object);
         }
 
+        $object->headlessMode = $object->headlessMode->withRequest($request);
+
         return $object;
+    }
+
+    private function handleFrontendAndBackendPaths(string $frontendPath, UriInterface $targetUri, string $baseBackendPath = ''): string
+    {
+        return rtrim($frontendPath, '/') . ($targetUri->getPath() !== '' ? '/' . ltrim(substr($targetUri->getPath(), strlen($baseBackendPath)), '/') : '');
     }
 }

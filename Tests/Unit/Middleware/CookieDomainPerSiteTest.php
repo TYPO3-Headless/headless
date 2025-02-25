@@ -13,6 +13,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use PHPUnit\Framework\Attributes\Test;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Log\LoggerInterface;
@@ -29,9 +30,7 @@ class CookieDomainPerSiteTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @test
-     */
+    #[Test]
     public function emptyCookieDomain()
     {
         $site = $this->prophesize(Site::class);
@@ -55,22 +54,22 @@ class CookieDomainPerSiteTest extends UnitTestCase
                     'frontendFileApi' => 'https://test-frontend-api2.tld/headless/fileadmin',
                     'SpecialSitemapKey' => 'https://test-frontend2.tld/sitemap',
                 ],
-            ]
+            ],
         ]);
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);
 
-        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder = $this->createPartialMock(SiteFinder::class, ['getAllSites']);
 
-        $siteFinder->getAllSites()->willReturn([
-            $site
+        $siteFinder->method('getAllSites')->willReturn([
+            $site->reveal(),
         ]);
 
-        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
+        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder);
         $urlUtility = $urlUtility->withSite($site->reveal());
 
-        $middleware = new CookieDomainPerSite($urlUtility, $siteFinder->reveal(), $this->prophesize(LoggerInterface::class)->reveal());
+        $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->prophesize(LoggerInterface::class)->reveal());
 
         $request = new ServerRequest('https://test-backend-api.tld');
         $request = $request->withAttribute('normalizedParams', NormalizedParams::createFromRequest($request));
@@ -88,9 +87,7 @@ class CookieDomainPerSiteTest extends UnitTestCase
         );
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function cookieDomainIsSet()
     {
         $site = $this->prophesize(Site::class);
@@ -115,22 +112,22 @@ class CookieDomainPerSiteTest extends UnitTestCase
                     'frontendFileApi' => 'https://test-frontend-api2.tld/headless/fileadmin',
                     'SpecialSitemapKey' => 'https://test-frontend2.tld/sitemap',
                 ],
-            ]
+            ],
         ]);
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);
 
-        $siteFinder = $this->prophesize(SiteFinder::class);
+        $siteFinder = $this->createPartialMock(SiteFinder::class, ['getAllSites']);
 
-        $siteFinder->getAllSites()->willReturn([
-            $site
+        $siteFinder->method('getAllSites')->willReturn([
+            $site->reveal(),
         ]);
 
-        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder->reveal());
+        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder);
         $urlUtility = $urlUtility->withSite($site->reveal());
 
-        $middleware = new CookieDomainPerSite($urlUtility, $siteFinder->reveal(), $this->prophesize(LoggerInterface::class)->reveal());
+        $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->prophesize(LoggerInterface::class)->reveal());
 
         $request = new ServerRequest('https://test-backend-api.tld');
         $request = $request->withAttribute('normalizedParams', NormalizedParams::createFromRequest($request));

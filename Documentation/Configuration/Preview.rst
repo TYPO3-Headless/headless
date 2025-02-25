@@ -1,28 +1,28 @@
-.. include:: ../Includes.txt
-
 .. _preview:
 
 ===================
-Preview hidden pages
+Preview Hidden Pages
 ===================
 
 How to configure your application to preview hidden pages?
-----------
+----------------------------------------------------------
 
-Preview functionality is supported by headless extension, however you need to make sure that your application has expected configuration.
+The headless extension supports the preview functionality for hidden pages. However, proper configuration is required to ensure your application works as expected.
 
-As there is no concept of cross domain cookies you need to make sure that both of your servers share root domain (backend: api.domain.com, frontend: domain.com). Afterwards you set the root domain as cookieDomain (note dot at the beginning)
-
+Since there is no concept of cross-domain cookies, ensure that both your backend and frontend servers share the same root domain (e.g., backend: api.domain.com, frontend: domain.com). Then, set the root domain as `cookieDomain` (note the dot at the beginning).
 
 .. code-block:: php
 
-    $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieDomain'] = '.domain.com';
+   $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieDomain'] = '.domain.com';
 
-IMPORTANT If you are logged in to backend during this change (after deployment) you may need to remove be_typo_user cookie from your browser as it will collide with the new cookie and you won't be able to log in.
+.. important::
 
-If your frontend application passes all cookies from backend correctly you should be able to preview content associated with the root domain.
+   If you are logged into the backend during this change (after deployment), you may need to remove the `be_typo_user` cookie from your browser. The old cookie will conflict with the new configuration, preventing you from logging in.
 
-Please note that if you have multi domain setup ex. api.domain1.com, domain1.com and api.domain2.com, domain2.com this solution won't work.
-You will need to override TYPO3_CONF_VARS somewhere on fly. This hasn't been tested but overwriting it on custom middleware which would run as a first one could theoretically work.
+If your frontend application correctly passes all cookies from the backend, you should be able to preview content associated with the root domain.
 
-(optional) Make backend application is available by proxy ex. domain.com/headless (it may not be necessary to run application however it solves a lot of issues down the road)
+.. note::
+
+   If you have a multi-domain setup, e.g., `api.domain1.com`, `domain1.com` and `api.domain2.com`, `domain2.com`, this solution will not work out-of-the-box. You will need to override `TYPO3_CONF_VARS` dynamically. This hasn't been extensively tested, but theoretically, you could achieve this by running custom middleware as the first one in the stack.
+
+(Optional) Make the backend application available via a proxy, e.g., `domain.com/headless`. This step is not strictly necessary for the application to run but can help resolve various issues in the long run.

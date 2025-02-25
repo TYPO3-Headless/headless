@@ -9,10 +9,14 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
+namespace FriendsOfTYPO3\Headless\Tests\Unit\Json;
 
 use FriendsOfTYPO3\Headless\Json\JsonDecoder;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
+use stdClass;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function array_fill;
@@ -27,13 +31,7 @@ class JsonDecoderTest extends UnitTestCase
         parent::setUp();
     }
 
-    /**
-     * @param $testValue
-     * @param $expectedValue
-     *
-     * @test
-     * @dataProvider possibleJsonProvider
-     */
+    #[Test, DataProvider('possibleJsonProvider')]
     public function possibleFalsePositives($testValue, $expectedValue): void
     {
         $jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
@@ -41,11 +39,12 @@ class JsonDecoderTest extends UnitTestCase
         self::assertSame($expectedValue, $jsonDecoder->isJson($testValue));
     }
 
-    public function testDecoding(): void
+    #[Test]
+    public function decoding(): void
     {
         $jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
 
-        $class = new \stdClass();
+        $class = new stdClass();
         $class->test = 1;
         $class->testProp = true;
 
@@ -69,7 +68,7 @@ class JsonDecoderTest extends UnitTestCase
         self::assertEquals(json_decode($encoded), $jsonDecoder->decode(['teststring']));
     }
 
-    public function possibleJsonProvider(): array
+    public static function possibleJsonProvider(): array
     {
         return [
             ['  "12"', false],
@@ -87,7 +86,7 @@ class JsonDecoderTest extends UnitTestCase
             [true, false],
             [false, false],
             ['[]', true],
-            ['""', false]
+            ['""', false],
         ];
     }
 }

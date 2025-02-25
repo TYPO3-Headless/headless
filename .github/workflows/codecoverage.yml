@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
@@ -23,7 +23,7 @@ jobs:
       - name: "Show Composer version"
         run: composer --version
       - name: "Cache dependencies installed with composer"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: "php${{ matrix.php-version }}-typo3${{ matrix.typo3-version }}-${{ matrix.composer-dependencies }}-composer-${{ hashFiles('**/composer.json') }}"
           path: ~/.cache/composer
