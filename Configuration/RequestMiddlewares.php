@@ -14,6 +14,7 @@ use FriendsOfTYPO3\Headless\Middleware\ShortcutAndMountPointRedirect;
 use FriendsOfTYPO3\Headless\Middleware\SiteBaseRedirectResolver;
 use FriendsOfTYPO3\Headless\Middleware\UserIntMiddleware;
 use TYPO3\CMS\Core\Configuration\Features;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 return (static function (): array {
@@ -61,25 +62,13 @@ return (static function (): array {
         return $middlewares;
     }
 
-    return array_merge_recursive($middlewares, [
+    $middlewares = array_merge_recursive($middlewares, [
         'frontend' => [
-            'typo3/cms-redirects/redirecthandler' => [
-                'disabled' => true,
-            ],
             'typo3/cms-frontend/shortcut-and-mountpoint-redirect' => [
                 'disabled' => true,
             ],
             'typo3/cms-frontend/base-redirect-resolver' => [
                 'target' => SiteBaseRedirectResolver::class,
-            ],
-            'headless/cms-redirects/redirecthandler' => [
-                'target' => RedirectHandler::class,
-                'before' => [
-                    'typo3/cms-frontend/base-redirect-resolver',
-                ],
-                'after' => [
-                    'typo3/cms-frontend/authentication',
-                ],
             ],
             'headless/cms-frontend/shortcut-and-mountpoint-redirect' => [
                 'target' => ShortcutAndMountPointRedirect::class,
@@ -88,6 +77,27 @@ return (static function (): array {
                 ],
                 'before' => [
                     'typo3/cms-frontend/content-length-headers',
+                ],
+            ],
+        ],
+    ]);
+
+    if (!ExtensionManagementUtility::isLoaded('redirects')) {
+        return $middlewares;
+    }
+
+    return array_merge_recursive($middlewares, [
+        'frontend' => [
+            'typo3/cms-redirects/redirecthandler' => [
+                'disabled' => true,
+            ],
+            'headless/cms-redirects/redirecthandler' => [
+                'target' => RedirectHandler::class,
+                'before' => [
+                    'typo3/cms-frontend/base-redirect-resolver',
+                ],
+                'after' => [
+                    'typo3/cms-frontend/authentication',
                 ],
             ],
         ],
