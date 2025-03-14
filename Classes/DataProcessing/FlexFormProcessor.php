@@ -75,17 +75,9 @@ use function json_decode;
 class FlexFormProcessor implements DataProcessorInterface
 {
     /**
-     * @var FlexFormService
-     */
-    protected $flexFormService;
-
-    /**
      * Constructor
      */
-    public function __construct()
-    {
-        $this->flexFormService = GeneralUtility::makeInstance(FlexFormService::class);
-    }
+    public function __construct(protected FlexFormService $flexFormService) {}
 
     /**
      * @param ContentObjectRenderer $cObj The data of the content element or page

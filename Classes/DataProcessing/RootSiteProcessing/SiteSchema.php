@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
-use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -22,17 +21,10 @@ use function trim;
 
 class SiteSchema implements SiteSchemaInterface
 {
-    private HeadlessFrontendUrlInterface $urlUtitlity;
-    private ContentDataProcessor $contentDataProcessor;
-
     public function __construct(
-        HeadlessFrontendUrlInterface $urlUtitlity = null,
-        ContentDataProcessor $contentObjectRenderer = null
-    ) {
-        $this->urlUtitlity = $urlUtitlity ?? GeneralUtility::makeInstance(UrlUtility::class);
-        $this->contentDataProcessor = $contentObjectRenderer ??
-            GeneralUtility::makeInstance(ContentDataProcessor::class);
-    }
+        protected HeadlessFrontendUrlInterface $urlUtitlity,
+        protected ContentDataProcessor $contentDataProcessor
+    ) {}
 
     /**
      * @param array<string, mixed> $options

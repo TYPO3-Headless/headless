@@ -60,14 +60,7 @@ use function json_decode;
  */
 class DatabaseQueryProcessor implements DataProcessorInterface
 {
-    private ContentDataProcessor $contentDataProcessor;
-    private TypoScriptService $typoScriptService;
-
-    public function __construct(ContentDataProcessor $contentDataProcessor = null, TypoScriptService $typoScriptService = null)
-    {
-        $this->contentDataProcessor = $contentDataProcessor ?? GeneralUtility::makeInstance(ContentDataProcessor::class);
-        $this->typoScriptService = $typoScriptService ?? GeneralUtility::makeInstance(TypoScriptService::class);
-    }
+    public function __construct(protected ContentDataProcessor $contentDataProcessor, protected TypoScriptService $typoScriptService) {}
 
     /**
      * @inheritDoc

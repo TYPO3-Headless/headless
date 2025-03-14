@@ -11,10 +11,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
-use FriendsOfTYPO3\Headless\Json\JsonDecoder;
 use FriendsOfTYPO3\Headless\Json\JsonDecoderInterface;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
-use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Generator;
 use Psr\Log\LoggerAwareInterface;
@@ -32,19 +30,14 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
 {
     use LoggerAwareTrait;
 
-    private ContentDataProcessor $contentDataProcessor;
-    private HeadlessUserInt $headlessUserInt;
-    private JsonEncoderInterface $jsonEncoder;
-    private JsonDecoderInterface $jsonDecoder;
     private array $conf;
 
-    public function __construct(ContentDataProcessor $contentDataProcessor = null)
-    {
-        $this->contentDataProcessor = $contentDataProcessor ?? GeneralUtility::makeInstance(ContentDataProcessor::class);
-        $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
-        $this->jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
-        $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
-    }
+    public function __construct(
+        protected ContentDataProcessor $contentDataProcessor,
+        protected JsonEncoder $jsonEncoder,
+        protected JsonDecoderInterface $jsonDecoder,
+        protected HeadlessUserInt $headlessUserInt
+    ) {}
 
     /**
      * Rendering the cObject, JSON

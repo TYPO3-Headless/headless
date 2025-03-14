@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
-use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -22,22 +21,15 @@ use function str_replace;
 
 class DomainSchema implements SiteSchemaInterface
 {
-    private HeadlessFrontendUrlInterface $urlUtility;
-    private ContentDataProcessor $contentDataProcessor;
-
     /**
      * @codeCoverageIgnore
      * @param HeadlessFrontendUrlInterface|null $urlUtility
      * @param ContentDataProcessor|null $contentObjectRenderer
      */
     public function __construct(
-        HeadlessFrontendUrlInterface $urlUtility = null,
-        ContentDataProcessor $contentObjectRenderer = null
-    ) {
-        $this->urlUtility = $urlUtility ?? GeneralUtility::makeInstance(UrlUtility::class);
-        $this->contentDataProcessor = $contentObjectRenderer ??
-            GeneralUtility::makeInstance(ContentDataProcessor::class);
-    }
+        protected HeadlessFrontendUrlInterface $urlUtility,
+        protected ContentDataProcessor $contentDataProcessor
+    ) {}
 
     /**
      * @param SiteProviderInterface $provider

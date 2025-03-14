@@ -26,14 +26,7 @@ use function json_decode;
 
 class ElementBodyResponseMiddleware implements MiddlewareInterface
 {
-    private JsonEncoder $jsonEncoder;
-    private HeadlessMode $headlessMode;
-
-    public function __construct(JsonEncoder $jsonEncoder = null, HeadlessMode $headlessMode)
-    {
-        $this->jsonEncoder = $jsonEncoder;
-        $this->headlessMode = $headlessMode;
-    }
+    public function __construct(protected JsonEncoder $jsonEncoder, protected HeadlessMode $headlessMode) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {

@@ -16,6 +16,9 @@ use FriendsOfTYPO3\Headless\ContentObject\FloatContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
+use FriendsOfTYPO3\Headless\Json\JsonDecoder;
+use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -37,7 +40,6 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectFactory;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\FilesContentObject;
 use TYPO3\CMS\Frontend\ContentObject\HierarchicalMenuContentObject;
-use TYPO3\CMS\Frontend\ContentObject\ImageContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ImageResourceContentObject;
 use TYPO3\CMS\Frontend\ContentObject\LoadRegisterContentObject;
 use TYPO3\CMS\Frontend\ContentObject\RecordsContentObject;
@@ -95,9 +97,23 @@ class JsonContentObjectTest extends UnitTestCase
         $eventDispatcher = $this->prophesize(EventDispatcher::class);
         $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
 
+        $contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class, $container, $this->prophesize(DataProcessorRegistry::class)->reveal());
+
         $container->set(MarkerBasedTemplateService::class, new MarkerBasedTemplateService($this->prophesize(FrontendInterface::class)->reveal(), $this->prophesize(FrontendInterface::class)->reveal()));
         $container->set(TimeTracker::class, new TimeTracker(false));
         $container->set(EventDispatcherInterface::class, $eventDispatcher->reveal());
+        $container->set(JsonContentObject::class, new JsonContentObject(
+            $contentDataProcessor,
+            new JsonEncoder(),
+            new JsonDecoder(),
+            new HeadlessUserInt()
+        ));
+        $container->set(JsonContentContentObject::class, new JsonContentContentObject(
+            $container->get(TimeTracker::class),
+            $container->get(EventDispatcherInterface::class),
+            new JsonEncoder(),
+            new HeadlessUserInt()
+        ));
         $container->set(RecordsContentObject::class, new RecordsContentObject($container->get(TimeTracker::class)));
         $container->set(ContentContentObject::class, new ContentContentObject($container->get(TimeTracker::class), $container->get(EventDispatcherInterface::class)));
         GeneralUtility::setContainer($container);
@@ -122,21 +138,16 @@ class JsonContentObjectTest extends UnitTestCase
 
         GeneralUtility::setContainer($container);
 
-        $contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class, $container, $this->prophesize(DataProcessorRegistry::class)->reveal());
-
         foreach ($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] as $class) {
             GeneralUtility::makeInstance($class);
         }
-
-        GeneralUtility::makeInstance(JsonContentObject::class, $contentDataProcessor);
-        //        GeneralUtility::makeInstance(ImageContentObject::class, $this->prophesize(MarkerBasedTemplateService::class)->reveal());
 
         $tsfe = $this->prophesize(TypoScriptFrontendController::class);
         $tsfe->uniqueHash()->willReturn(md5('123'));
 
         $GLOBALS['TSFE'] = $tsfe->reveal();
 
-        $this->contentObject = new JsonContentObject($contentDataProcessor);
+        $this->contentObject = GeneralUtility::makeInstance(JsonContentObject::class);
         $this->contentObject->setRequest($request);
         $this->contentObject->setContentObjectRenderer($contentObjectRenderer);
     }
