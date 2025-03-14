@@ -55,6 +55,15 @@ return (static function (): array {
                 'target' => \FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite::class,
             ],
         ];
+        $middlewares['frontend'] = [
+            'headless/cms-backend/cookie-domain-middleware' => [
+                'before' => [
+                    'typo3/cms-frontend/backend-user-authentication',
+                    'typo3/cms-frontend/authentication',
+                ],
+                'target' => \FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite::class,
+            ],
+        ];
     }
 
     if (!$features->isFeatureEnabled('headless.redirectMiddlewares')) {
