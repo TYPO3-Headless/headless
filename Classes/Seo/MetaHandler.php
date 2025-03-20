@@ -90,7 +90,7 @@ class MetaHandler
         $defaultBodyAttrs = [
             'class' => implode(' ', [
                 'pid-' . $request->getAttribute('routing')->getPageId(),
-                'layout-' . $content['appearance']['layout'] ?? '',
+                'layout-' . ($content['appearance']['layout'] ?? ''),
             ]),
         ];
 
