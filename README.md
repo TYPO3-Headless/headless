@@ -30,6 +30,7 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 - JSON API for content elements
 - JSON API for page and meta data
 - JSON API for navigation, layouts
+- JSON API for Fluid form viewhelpers
 - taking into account all language and translation configuration (e.g. fallback)
 - easily extendable with custom fields or custom content elements
 - custom data processors directly for headless usage
