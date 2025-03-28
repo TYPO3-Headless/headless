@@ -7,7 +7,7 @@
  * LICENSE.md file that was distributed with this source code.
  */
 
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -29,11 +29,11 @@ $tempColumns = [
         'config' => [
             'type' => 'select',
             'renderType' => 'selectSingle',
-            'default' => HeadlessMode::NONE,
+            'default' => HeadlessModeInterface::NONE,
             'items' => [
-                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.none', HeadlessMode::NONE],
-                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.full', HeadlessMode::FULL],
-                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.mixed', HeadlessMode::MIXED],
+                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.none', HeadlessModeInterface::NONE],
+                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.full', HeadlessModeInterface::FULL],
+                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.mixed', HeadlessModeInterface::MIXED],
             ],
         ],
     ],

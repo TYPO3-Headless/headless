@@ -13,9 +13,12 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Utility;
 
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use ReflectionProperty;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
@@ -24,11 +27,28 @@ use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class UrlUtilityTest extends UnitTestCase
 {
     use ProphecyTrait;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        GeneralUtility::setContainer($container);
+    }
+
+    protected function tearDown(): void
+    {
+        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
+        parent::tearDown();
+    }
+
     public function testFrontendUrls(): void
     {
         $headlessMode = $this->createHeadlessMode();
@@ -824,7 +844,7 @@ class UrlUtilityTest extends UnitTestCase
         return $site->reveal();
     }
 
-    private function createHeadlessMode(int $mode =  HeadlessMode::FULL): HeadlessMode
+    private function createHeadlessMode(int $mode =  HeadlessModeInterface::FULL): HeadlessModeInterface
     {
         $headlessMode = new HeadlessMode();
 

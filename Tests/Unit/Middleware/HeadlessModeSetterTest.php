@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\HeadlessModeSetter;
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Site\Entity\Site;
@@ -31,7 +31,7 @@ class HeadlessModeSetterTest extends UnitTestCase
 
         $middleware->process($request, $handler);
 
-        self::assertTrue($GLOBALS['TYPO3_REQUEST']->getAttribute('headless')->getMode() === HeadlessMode::FULL);
+        self::assertTrue($GLOBALS['TYPO3_REQUEST']->getAttribute('headless')->getMode() === HeadlessModeInterface::FULL);
     }
     public function testNotSet(): void
     {
@@ -42,6 +42,6 @@ class HeadlessModeSetterTest extends UnitTestCase
 
         $middleware->process($request, $handler);
 
-        self::assertTrue($GLOBALS['TYPO3_REQUEST']->getAttribute('headless')->getMode() === HeadlessMode::NONE);
+        self::assertTrue($GLOBALS['TYPO3_REQUEST']->getAttribute('headless')->getMode() === HeadlessModeInterface::NONE);
     }
 }

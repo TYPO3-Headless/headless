@@ -15,6 +15,7 @@ use FriendsOfTYPO3\Headless\Middleware\UserIntMiddleware;
 use FriendsOfTYPO3\Headless\Seo\MetaHandler;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use PHPUnit\Framework\Attributes\Test;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -37,7 +38,7 @@ class UserIntMiddlewareTest extends UnitTestCase
 
         $request = new ServerRequest();
 
-        $request = $request->withAttribute('headless', new Headless(HeadlessMode::FULL));
+        $request = $request->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
         $intScript = '';
         $responseString = '';
@@ -89,7 +90,7 @@ class UserIntMiddlewareTest extends UnitTestCase
 
         $request = new ServerRequest();
 
-        $request = $request->withAttribute('headless', new Headless(HeadlessMode::FULL));
+        $request = $request->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
         $request = $request->withAttribute('frontend.controller', $this->createMock(TypoScriptFrontendController::class));
 
         $metaHandlerMock = $this->createMock(MetaHandler::class);

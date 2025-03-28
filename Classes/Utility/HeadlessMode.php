@@ -12,10 +12,12 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Utility;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 
-final class HeadlessMode
+#[AsAlias(public: true)]
+final class HeadlessMode implements HeadlessModeInterface
 {
     public const NONE = 0;
     public const FULL = 1;
@@ -50,7 +52,7 @@ final class HeadlessMode
 
         if ($mode === self::MIXED) {
             // in BE context we override
-            $mode = self::NONE;
+            $mode = $site->getSettings()->get('headless.preview.overrideMode', self::NONE);
         }
 
         $request = clone $this->request;

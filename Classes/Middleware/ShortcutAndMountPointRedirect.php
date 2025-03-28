@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Middleware;
 
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -25,7 +25,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class ShortcutAndMountPointRedirect extends \TYPO3\CMS\Frontend\Middleware\ShortcutAndMountPointRedirect
 {
-    public function __construct(private readonly HeadlessMode $headlessMode) {}
+    public function __construct(private readonly HeadlessModeInterface $headlessMode) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {

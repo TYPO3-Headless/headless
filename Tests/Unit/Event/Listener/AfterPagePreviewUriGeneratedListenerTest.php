@@ -11,10 +11,13 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Event\Listener\AfterPagePreviewUriGeneratedListener;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use ReflectionProperty;
+use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Backend\Routing\Event\AfterPagePreviewUriGeneratedEvent;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Context\Context;
@@ -24,10 +27,26 @@ use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class AfterPagePreviewUriGeneratedListenerTest extends TestCase
 {
     use ProphecyTrait;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        GeneralUtility::setContainer($container);
+    }
+
+    protected function tearDown(): void
+    {
+        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
+        parent::tearDown();
+    }
 
     public function test__construct()
     {
@@ -49,7 +68,7 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
         $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
-        $siteFinder->method('getSiteByPageId')->willReturn($site = new Site('test', 1, ['headless' => HeadlessMode::MIXED, 'frontendBase' => 'https://front.test.tld', 'base' => 'https://test.tld']));
+        $siteFinder->method('getSiteByPageId')->willReturn($site = new Site('test', 1, ['headless' => HeadlessModeInterface::MIXED, 'frontendBase' => 'https://front.test.tld', 'base' => 'https://test.tld']));
 
         $listener = new AfterPagePreviewUriGeneratedListener(new UrlUtility(
             null,
