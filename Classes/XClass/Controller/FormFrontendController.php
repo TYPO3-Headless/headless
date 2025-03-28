@@ -15,7 +15,7 @@ use FriendsOfTYPO3\Headless\Form\CustomOptionsInterface;
 use FriendsOfTYPO3\Headless\Form\Decorator\DefinitionDecoratorInterface;
 use FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator;
 use FriendsOfTYPO3\Headless\Form\Translator;
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\XClass\FormRuntime;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Information\Typo3Version;
@@ -57,7 +57,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      */
     public function renderAction(): ResponseInterface
     {
-        $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class);
+        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
 
         if (!$headlessMode->withRequest($this->request)->isEnabled()) {
             return parent::renderAction();

@@ -13,7 +13,7 @@ namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Seo\MetaHandler;
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Throwable;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -35,7 +35,7 @@ class AfterCacheableContentIsGeneratedListener
     public function __invoke(AfterCacheableContentIsGeneratedEvent $event)
     {
         try {
-            if (!GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($event->getRequest())->isEnabled()) {
+            if (!GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($event->getRequest())->isEnabled()) {
                 return;
             }
 

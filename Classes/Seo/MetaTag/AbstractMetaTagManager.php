@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Seo\MetaTag;
 
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_merge;
@@ -25,7 +25,7 @@ abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMe
 {
     public function renderAllProperties(): string
     {
-        if (GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
+        if (GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
             return $this->renderAllHeadlessProperties();
         }
 
@@ -34,7 +34,7 @@ abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMe
 
     public function renderProperty(string $property): string
     {
-        if (GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
+        if (GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
             return $this->renderHeadlessProperty($property);
         }
 

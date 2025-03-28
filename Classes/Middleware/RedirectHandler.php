@@ -13,7 +13,7 @@ namespace FriendsOfTYPO3\Headless\Middleware;
 
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -32,7 +32,7 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
 {
     private ServerRequestInterface $request;
     private HeadlessFrontendUrlInterface $urlUtility;
-    private HeadlessMode $headlessMode;
+    private HeadlessModeInterface $headlessMode;
 
     public function __construct(
         RedirectService $redirectService,
@@ -40,7 +40,7 @@ final class RedirectHandler extends \TYPO3\CMS\Redirects\Http\Middleware\Redirec
         ResponseFactoryInterface $responseFactory,
         LoggerInterface $logger,
         HeadlessFrontendUrlInterface $urlUtility,
-        HeadlessMode $headlessMode
+        HeadlessModeInterface $headlessMode
     ) {
         parent::__construct($redirectService, $eventDispatcher, $responseFactory, $logger);
         $this->urlUtility = $urlUtility;

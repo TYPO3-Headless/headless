@@ -11,19 +11,41 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Utility;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\PluginUtility;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
+use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\PropagateResponseException;
 use TYPO3\CMS\Core\Http\ServerRequest;
+
 use TYPO3\CMS\Core\Site\SiteFinder;
+
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function json_decode;
 
 class PluginUtilityTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        GeneralUtility::setContainer($container);
+    }
+
+    protected function tearDown(): void
+    {
+        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
+        parent::tearDown();
+    }
+
     public function testProperException(): void
     {
         $urlUtility = new UrlUtility(new Features(), $this->createMock(Resolver::class), $this->createMock(SiteFinder::class));
