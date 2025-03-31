@@ -83,18 +83,7 @@ Array of cObjects. With special properties per item:
 
 **Property `dataProcessing`**
 
-This property can be used to render data processors such as MenuProcessors.
-
-Have a look at `lib.breadcrumbs` for example:
-
-.. code-block:: typoscript
-
-  lib.breadcrumbs = JSON
-  lib.breadcrumbs {
-    dataProcessing {
-      10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
-    }
-  }
+This property can be used to render data processors such as :ref:`MenuProcessor <dataprocessors-menuprocessor>`.
 
 **Property `stdWrap`**
 
@@ -439,28 +428,17 @@ Here's an example of how to override the meta object by data from a DB record:
 TypoScript DataProcessors
 =========================
 
-This extension provides a couple of handy DataProcessors. Have a look into the default TypoScript to see them in action.
+This extension provides a couple of handy DataProcessors.
 
-Here's an example demonstrating their usage.
+* :ref:`DatabaseQueryProcessor <dataprocessors-databasequeryprocessor>`
+* :ref:`ExtractPropertyProcessor <dataprocessors-extractpropertyprocessor>`
+* :ref:`FilesProcessor <dataprocessors-filesprocessor>`
+* :ref:`FlexFormProcessor <dataprocessors-flexformprocessor>`
+* :ref:`GalleryProcessor <dataprocessors-galleryprocessor>`
+* :ref:`MenuProcessor <dataprocessors-menuprocessor>`
+* :ref:`RootSiteProcessor <dataprocessors-rootsiteprocessor>`
 
-.. code-block:: typoscript
-
-  lib.meta.fields.ogImage = TEXT
-  lib.meta.fields.ogImage {
-    dataProcessing {
-      # Use the column 'og_image' to render an array with all relevant
-      # information (such as the publicUrl)
-      10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
-      10.as = media
-      10.references.fieldName = og_image
-      10.processingConfiguration.returnFlattenObject = 1
-
-      # Extract only property 'publicUrl' from the above created array
-      20 = FriendsOfTYPO3\Headless\DataProcessing\ExtractPropertyProcessor
-      20.key = media.publicUrl
-      20.as = media
-    }
-  }
+For further information have a look into the default TypoScript to see them in action.
 
 .. _developer-ext-form:
 

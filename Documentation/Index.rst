@@ -74,6 +74,7 @@ or `report a problem <https://github.com/TYPO3-Initiatives/headless/issues/new>`
    Configuration/Preview
    Configuration/XmlSitemap
    Developer/Index
+   Developer/DataProcessors
    Developer/Images
    FAQ/Index
    Sitemap
