@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
-use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -107,21 +106,12 @@ use const JSON_FORCE_OBJECT;
  */
 class JsonContentContentObject extends ContentContentObject
 {
-    private HeadlessUserInt $headlessUserInt;
-    private JsonEncoderInterface $jsonEncoder;
-    /**
-     * @var mixed|object|\Psr\Log\LoggerAwareInterface|\TYPO3\CMS\Core\SingletonInterface|TimeTracker|(TimeTracker&\Psr\Log\LoggerAwareInterface)|(TimeTracker&\TYPO3\CMS\Core\SingletonInterface)|null
-     */
-    private TimeTracker $timeTracker;
-    private EventDispatcherInterface $eventDispatcher;
-
-    public function __construct()
-    {
-        $this->headlessUserInt = GeneralUtility::makeInstance(HeadlessUserInt::class);
-        $this->jsonEncoder = GeneralUtility::makeInstance(JsonEncoder::class);
-        $this->timeTracker = GeneralUtility::makeInstance(TimeTracker::class);
-        $this->eventDispatcher = GeneralUtility::makeInstance(EventDispatcherInterface::class);
-    }
+    public function __construct(
+        protected TimeTracker $timeTracker,
+        protected EventDispatcherInterface $eventDispatcher,
+        protected JsonEncoderInterface $jsonEncoder,
+        protected HeadlessUserInt $headlessUserInt
+    ) {}
 
     /**
      * @param array<string,mixed> $conf

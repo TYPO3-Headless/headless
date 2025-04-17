@@ -31,31 +31,16 @@ use function usort;
 class SiteProvider implements SiteProviderInterface
 {
     /**
-     * @var ConnectionPool
-     */
-    private $connectionPool;
-    /**
-     * @var SiteFinder
-     */
-    private $siteFinder;
-    /**
      * @var Site[]
      */
-    private $sites;
+    private array $sites;
     /**
      * @var array[]
      */
-    private $pagesData;
-    /**
-     * @var Site
-     */
-    private $currentRootPage;
+    private array $pagesData;
+    private Site $currentRootPage;
 
-    public function __construct(ConnectionPool $connectionPool = null, SiteFinder $siteFinder = null)
-    {
-        $this->connectionPool = $connectionPool ?? GeneralUtility::makeInstance(ConnectionPool::class);
-        $this->siteFinder = $siteFinder ?? GeneralUtility::makeInstance(SiteFinder::class);
-    }
+    public function __construct(protected ConnectionPool $connectionPool, protected SiteFinder $siteFinder) {}
 
     /**
      * @param array<string, mixed> $config

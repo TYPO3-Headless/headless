@@ -14,7 +14,7 @@ namespace FriendsOfTYPO3\Headless\Form\Finisher;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use JsonException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Mvc\Request;
+use TYPO3\CMS\Extbase\Mvc\RequestInterface;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
 
@@ -41,7 +41,7 @@ class JsonRedirectFinisher extends AbstractFinisher
         'message' => null,
     ];
 
-    protected Request $request;
+    protected RequestInterface $request;
     protected UriBuilder $uriBuilder;
 
     /**
