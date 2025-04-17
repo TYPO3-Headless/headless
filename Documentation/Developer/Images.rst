@@ -150,6 +150,7 @@ The rendering configuration can be set via the property `processingConfiguration
   * also custom defined size & file formats see example below
 
 .. code-block:: typoscript
+
    10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
    10 {
       ...
@@ -174,6 +175,7 @@ The rendering configuration can be set via the property `processingConfiguration
    }
 
 .. code-block:: typoscript
+
    10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
    10 {
       ...
@@ -196,10 +198,10 @@ The rendering configuration can be set via the property `processingConfiguration
             # with includeOnly you can use option `flatten` to flatten dimensions array
             flatten = 1
          }
-
       }
    }
 
+.. _images-galleryprocessor:
 
 GalleryProcessor
 ================
