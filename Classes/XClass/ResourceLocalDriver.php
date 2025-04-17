@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass;
 
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\ApplicationType;
@@ -35,7 +35,7 @@ class ResourceLocalDriver extends LocalDriver
             return;
         }
 
-        $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($request);
+        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($request);
 
         if (!$headlessMode->isEnabled() || ApplicationType::fromRequest($request)->isBackend()) {
             parent::determineBaseUrl();

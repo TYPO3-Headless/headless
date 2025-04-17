@@ -21,6 +21,8 @@ use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\UriInterface;
+use ReflectionProperty;
+use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
@@ -30,6 +32,7 @@ use TYPO3\CMS\Core\Routing\PageRouter;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
@@ -40,6 +43,10 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
     {
         $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
         $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+
+        $c = new Container();
+        $c->set(EventDispatcherInterface::class, $eventDispatcher->reveal());
+        GeneralUtility::setContainer($c);
 
         $listener = new RedirectUrlAdditionalParamsListener(
             new TypoLinkCodecService($eventDispatcher->reveal()),
@@ -129,10 +136,14 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         self::assertSame((string)$expectedUri, $newRedirectEvent->getTargetUrl());
     }
 
-    public function testInvokeWithLanguaget(): void
+    public function testInvokeWithLanguage(): void
     {
         $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
         $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+
+        $container = new Container();
+        $container->set(EventDispatcherInterface::class, $eventDispatcher->reveal());
+        GeneralUtility::setContainer($container);
 
         $targetUrl = 'https://test.domain2.tld/123';
         $additionalParams = 'tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123';
@@ -249,5 +260,11 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $siteFinder->method('getSiteByPageId')->willReturn($site);
 
         return new UrlUtility(null, $resolver->reveal(), $siteFinder, null, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
+    }
+
+    protected function tearDown(): void
+    {
+        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
+        parent::tearDown();
     }
 }

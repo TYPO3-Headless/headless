@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass;
 
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use Throwable;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -28,7 +28,7 @@ class TemplateView extends \TYPO3\CMS\Fluid\View\TemplateView
 {
     public function render($actionName = null)
     {
-        $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
+        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
 
         if (!ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend() || !$headlessMode->isEnabled()) {
             return parent::render($actionName);

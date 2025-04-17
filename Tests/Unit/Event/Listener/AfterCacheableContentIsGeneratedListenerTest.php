@@ -17,11 +17,14 @@ use FriendsOfTYPO3\Headless\Seo\MetaHandler;
 use FriendsOfTYPO3\Headless\Seo\MetaTag\Html5MetaTagManager;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use ReflectionProperty;
+use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -36,6 +39,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 use TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent;
+
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_encode;
@@ -60,7 +64,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         );
 
         $request = $this->prophesize(ServerRequestInterface::class);
-        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::NONE));
+        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::NONE));
 
         $controller = $this->prophesize(TypoScriptFrontendController::class);
         $controller->content = '';
@@ -72,7 +76,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         self::assertSame('', $event->getController()->content);
 
         $request = $this->prophesize(ServerRequestInterface::class);
-        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::FULL));
+        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::FULL));
 
         $controller = $this->prophesize(TypoScriptFrontendController::class);
         $controller->content = '';
@@ -100,7 +104,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $content = json_encode(['someCustomPageWithoutMeta' => ['title' => 'test before event']]);
 
         $request = $this->prophesize(ServerRequestInterface::class);
-        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::FULL));
+        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::FULL));
 
         $controller = $this->prophesize(TypoScriptFrontendController::class);
         $controller->content = $content;
@@ -129,7 +133,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $content = json_encode(['someCustomPageWithoutMeta' => ['title' => HeadlessUserInt::NESTED . '_START<<<!--INT_SCRIPT.d53df2a300e62171a7b4882c4b88a153-->>>' . HeadlessUserInt::NESTED . '_END']]);
 
         $request = $this->prophesize(ServerRequestInterface::class);
-        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::FULL));
+        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::FULL));
 
         $controller = $this->prophesize(TypoScriptFrontendController::class);
         $controller->content = $content;
@@ -151,6 +155,10 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
 
         $metaHandler = new MetaHandler($this->prophesize(MetaTagManagerRegistry::class)->reveal(), $eventDispatcher);
 
+        $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        GeneralUtility::setContainer($container);
+
         $listener = new AfterCacheableContentIsGeneratedListener(
             new JsonEncoder(),
             $metaHandler,
@@ -158,7 +166,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         );
 
         $request = $this->prophesize(ServerRequestInterface::class);
-        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::FULL));
+        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::FULL));
         $request->getAttribute(Argument::is('language'))->willReturn(new SiteLanguage(
             0,
             'en',
@@ -200,6 +208,10 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
 
     public function testHreflangs(): void
     {
+        $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        GeneralUtility::setContainer($container);
+
         $event = new ModifyHrefLangTagsEvent(new ServerRequest());
         $event->setHrefLangs([
             'pl-PL' => 'https://example.com/pl',
@@ -222,7 +234,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         );
 
         $request = $this->prophesize(ServerRequestInterface::class);
-        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessMode::FULL));
+        $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::FULL));
         $request->getAttribute(Argument::is('language'))->willReturn(new SiteLanguage(
             0,
             'en',
@@ -277,5 +289,11 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
                 'bodyAttrs' => ['class' => 'pid-2 layout-custom custom']],
             'appearance' => ['layout' => 'custom'],
         ]), $event->getController()->content);
+    }
+
+    protected function tearDown(): void
+    {
+        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
+        parent::tearDown();
     }
 }

@@ -15,6 +15,7 @@ use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Middleware\ElementBodyResponseMiddleware;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -184,7 +185,7 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             ]);
 
             $request = $request->withAttribute('site', $site->reveal());
-            $request = $request->withAttribute('headless', new Headless($headless ? HeadlessMode::FULL : HeadlessMode::NONE));
+            $request = $request->withAttribute('headless', new Headless($headless ? HeadlessModeInterface::FULL : HeadlessModeInterface::NONE));
         }
 
         return $request;
