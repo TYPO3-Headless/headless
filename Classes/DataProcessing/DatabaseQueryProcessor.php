@@ -126,19 +126,10 @@ class DatabaseQueryProcessor implements DataProcessorInterface
                     $processedRecordVariables[$key][$fieldName] = $overrideData;
                 }
             }
-
-            if ((int)($processorConfiguration['returnFlattenObject'] ?? 0)) {
-                $flattenRow = array_shift($processedRecordVariables);
-                break;
-            }
-        }
-
-        if ($flattenRow !== null && (int)($processorConfiguration['returnFlattenLegacy'] ?? 1)) {
-            return $flattenRow;
         }
 
         if ($processorConfiguration['returnFlattenObject'] ?? 0) {
-            $processedData[$targetVariableName] = (int)($processorConfiguration['returnFlattenLegacy'] ?? 1) ? $processedRecordVariables : $flattenRow;
+            $processedData[$targetVariableName] = array_shift($processedRecordVariables);
         } else {
             $processedData[$targetVariableName] = $processedRecordVariables;
         }
