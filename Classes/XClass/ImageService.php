@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass;
 
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\ApplicationType;
@@ -30,7 +30,7 @@ class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
      */
     protected function getImageFromSourceString(string $src, bool $treatIdAsReference): ?FileInterface
     {
-        $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
+        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
 
         if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
             && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend()

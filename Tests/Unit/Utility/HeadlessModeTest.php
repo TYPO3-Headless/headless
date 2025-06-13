@@ -11,6 +11,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Utility;
 
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use PHPUnit\Framework\TestCase;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
@@ -93,16 +94,16 @@ class HeadlessModeTest extends TestCase
 
         self::assertNull($request->getAttribute('headless'));
 
-        $request = $mode->overrideBackendRequestBySite(new Site('test', 1, ['headless' => HeadlessMode::FULL]));
+        $request = $mode->overrideBackendRequestBySite(new Site('test', 1, ['headless' => HeadlessModeInterface::FULL]));
 
-        self::assertSame(HeadlessMode::FULL, $request->getAttribute('headless')->getMode());
+        self::assertSame(HeadlessModeInterface::FULL, $request->getAttribute('headless')->getMode());
 
-        $request = $mode->overrideBackendRequestBySite(new Site('test', 1, ['headless' => HeadlessMode::MIXED]));
+        $request = $mode->overrideBackendRequestBySite(new Site('test', 1, ['headless' => HeadlessModeInterface::MIXED]));
 
-        self::assertSame(HeadlessMode::NONE, $request->getAttribute('headless')->getMode());
+        self::assertSame(HeadlessModeInterface::NONE, $request->getAttribute('headless')->getMode());
 
         $request = $mode->overrideBackendRequestBySite(
-            new Site('test', 1, ['headless' => HeadlessMode::MIXED]),
+            new Site('test', 1, ['headless' => HeadlessModeInterface::MIXED]),
             new SiteLanguage(
                 1,
                 'en_US',
@@ -111,6 +112,6 @@ class HeadlessModeTest extends TestCase
             )
         );
 
-        self::assertSame(HeadlessMode::NONE, $request->getAttribute('headless')->getMode());
+        self::assertSame(HeadlessModeInterface::NONE, $request->getAttribute('headless')->getMode());
     }
 }

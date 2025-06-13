@@ -15,7 +15,9 @@ use FriendsOfTYPO3\Headless\Seo\MetaTag\Html5MetaTagManager;
 use FriendsOfTYPO3\Headless\Seo\MetaTag\OpenGraphMetaTagManager;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use Prophecy\PhpUnit\ProphecyTrait;
+use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
@@ -34,6 +36,7 @@ class MetaTagTest extends UnitTestCase
         $pageRenderer = $this->prophesize(PageRenderer::class);
         $pageRenderer->getDocType()->willReturn(\TYPO3\CMS\Core\Type\DocType::html5);
 
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
         $container->set(PageRenderer::class, $pageRenderer->reveal());
 
         GeneralUtility::setContainer($container);
@@ -62,11 +65,17 @@ class MetaTagTest extends UnitTestCase
         self::assertSame('<meta name="generator" content="TYPO3 CMS x T3Headless">
 <meta http-equiv="content-language" content="pl-PL">', $htmlManager->renderAllProperties());
 
-        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('headless', new Headless(HeadlessMode::FULL));
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
         self::assertSame('[{"http-equiv":"content-language","content":"pl-PL"}]', $htmlManager->renderProperty('content-language'));
         self::assertSame('[{"name":"generator","content":"TYPO3 CMS x T3Headless"}]', $htmlManager->renderProperty('generator'));
         self::assertSame('[{"name":"generator","content":"TYPO3 CMS x T3Headless"},{"http-equiv":"content-language","content":"pl-PL"}]', $htmlManager->renderAllProperties());
         self::assertSame('[{"property":"og:image","content":"Powered by TYPO3"},{"property":"og:image:url","content":"https:\/\/example.com\/image.jpg"}]', $ogManager->renderAllProperties());
+    }
+
+    protected function tearDown(): void
+    {
+        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
+        parent::tearDown();
     }
 }

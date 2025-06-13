@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Middleware;
 
 use FriendsOfTYPO3\Headless\Seo\MetaHandler;
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -26,7 +26,7 @@ class UserIntMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private readonly HeadlessUserInt $headlessUserInt,
-        private readonly HeadlessMode $headlessMode,
+        private readonly HeadlessModeInterface $headlessMode,
         private readonly MetaHandler $metaHandler
     ) {}
 

@@ -14,9 +14,11 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Middleware;
 use FriendsOfTYPO3\Headless\Middleware\SiteBaseRedirectResolver;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\JsonResponse;
@@ -30,6 +32,7 @@ use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\ErrorController;
 use TYPO3\CMS\Frontend\Http\RequestHandler;
+
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_decode;
@@ -64,6 +67,9 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $siteFinder->method('getSiteByPageId')->willReturn($site);
 
         $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        GeneralUtility::setContainer($container);
+
         $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->prophesize(Resolver::class)->reveal(), $siteFinder);
         $container->set(UrlUtility::class, $urlUtility);
 
@@ -78,7 +84,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
 
         $request = $request->withUri($uri);
         $request = $request->withAttribute('routing', new SiteRouteResult($uri, $site));
-        $request = $request->withAttribute('headless', new Headless(HeadlessMode::FULL));
+        $request = $request->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
         $response = $resolver->process($request, $this->prophesize(RequestHandler::class)->reveal());
 
@@ -135,6 +141,8 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $siteFinder->method('getSiteByPageId')->willReturn($site);
 
         $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+
         $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->prophesize(Resolver::class)->reveal(), $siteFinder);
         $container->set(UrlUtility::class, $urlUtility);
         $errorController = $this->prophesize(ErrorController::class);
@@ -168,5 +176,11 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $response = $resolver->process($request, $handler->reveal());
 
         self::assertSame(['ErrorController' => true], json_decode($response->getBody()->getContents(), true));
+    }
+
+    protected function tearDown(): void
+    {
+        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
+        parent::tearDown();
     }
 }

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass\Controller;
 
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Security\RequestToken;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -108,6 +108,6 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
 
     private function isHeadlessEnabled(): bool
     {
-        return GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled();
+        return GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled();
     }
 }

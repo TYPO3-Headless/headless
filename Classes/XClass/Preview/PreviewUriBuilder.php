@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass\Preview;
 
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use InvalidArgumentException;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
@@ -48,7 +47,7 @@ class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
                 $language = $site->getDefaultLanguage();
             }
 
-            $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class);
+            $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
             $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
             $request = $headlessMode->overrideBackendRequestBySite($site, $language);
 
