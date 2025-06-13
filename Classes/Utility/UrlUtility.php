@@ -42,19 +42,19 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private SiteFinder $siteFinder;
     private array $conf = [];
     private array $variants = [];
-    private HeadlessMode $headlessMode;
+    private HeadlessModeInterface $headlessMode;
 
     public function __construct(
         ?Features $features = null,
         ?Resolver $resolver = null,
         ?SiteFinder $siteFinder = null,
         ?ServerRequestInterface $serverRequest = null,
-        ?HeadlessMode $headlessMode = null
+        ?HeadlessModeInterface $headlessMode = null
     ) {
         $this->features = $features ?? GeneralUtility::makeInstance(Features::class);
         $this->resolver = $resolver ?? GeneralUtility::makeInstance(Resolver::class, 'site', []);
         $this->siteFinder = $siteFinder ?? GeneralUtility::makeInstance(SiteFinder::class);
-        $this->headlessMode = $headlessMode ?? GeneralUtility::makeInstance(HeadlessMode::class);
+        $this->headlessMode = $headlessMode ?? GeneralUtility::makeInstance(HeadlessModeInterface::class);
         $request = $serverRequest ?? ($GLOBALS['TYPO3_REQUEST'] ?? null);
 
         if ($request instanceof ServerRequestInterface) {

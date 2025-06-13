@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use TYPO3\CMS\Backend\Routing\Event\AfterPagePreviewUriGeneratedEvent;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Http\Uri;
@@ -34,7 +34,7 @@ final class AfterPagePreviewUriGeneratedListener
             $languageUid = $event->getLanguageId();
             $language = $languageUid === -1 ? null : $site->getLanguageById($languageUid);
 
-            $headlessMode = GeneralUtility::makeInstance(HeadlessMode::class);
+            $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
             $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
             $request = $headlessMode->overrideBackendRequestBySite($site, $language);
 

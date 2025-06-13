@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Middleware;
 
 use FriendsOfTYPO3\Headless\Utility\Headless;
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -25,14 +25,14 @@ class HeadlessModeSetter implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $mode = HeadlessMode::NONE;
+        $mode = HeadlessModeInterface::NONE;
 
         /**
          * @var Site $site
          */
         $site = $request->getAttribute('site');
         if ($site instanceof Site) {
-            $mode = (int)($site->getConfiguration()['headless'] ?? HeadlessMode::NONE);
+            $mode = (int)($site->getConfiguration()['headless'] ?? HeadlessModeInterface::NONE);
         }
 
         $request = $request->withAttribute('headless', new Headless($mode));

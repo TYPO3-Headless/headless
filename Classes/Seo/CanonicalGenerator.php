@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Seo;
 
-use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Seo\Canonical\CanonicalGenerator as CoreCanonicalGenerator;
 
@@ -33,7 +33,7 @@ class CanonicalGenerator
             return '';
         }
 
-        if (GeneralUtility::makeInstance(HeadlessMode::class)->withRequest($params['request'])->isEnabled()) {
+        if (GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($params['request'])->isEnabled()) {
             $canonical = [
                 'href' => $this->processCanonical($canonical),
                 'rel' => 'canonical',

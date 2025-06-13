@@ -13,17 +13,20 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\XClass;
 
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\XClass\TemplateView;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use ReflectionProperty;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Fluid\Core\Rendering\RenderingContext;
 use TYPO3\CMS\Fluid\Core\ViewHelper\ViewHelperResolver;
 use TYPO3\CMS\Fluid\View\TemplatePaths;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use TYPO3Fluid\Fluid\Core\Cache\FluidCacheInterface;
 use TYPO3Fluid\Fluid\Core\Variables\StandardVariableProvider;
-
 use TYPO3Fluid\Fluid\View\Exception\InvalidTemplateResourceException;
 
 use function json_encode;
@@ -31,12 +34,27 @@ use function json_encode;
 #[IgnoreDeprecations]
 class TemplateViewTest extends UnitTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        GeneralUtility::setContainer($container);
+    }
+
+    protected function tearDown(): void
+    {
+        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
+        parent::tearDown();
+    }
+
     public function testTemplateNotFoundRender(): void
     {
         $this->expectException(InvalidTemplateResourceException::class);
 
         $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1) // fe request
-            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
+            ->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
         $templatePaths = $this->createMock(TemplatePaths::class);
         $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
@@ -52,7 +70,7 @@ class TemplateViewTest extends UnitTestCase
     public function testTemplateRender(): void
     {
         $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1) // fe request
-            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
+            ->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
         $templatePaths = $this->createMock(TemplatePaths::class);
         $templatePaths->method('resolveTemplateFileForControllerAndActionAndFormat')->willReturn(__DIR__ . '/Fixtures/Templates/Default/Default.php');
@@ -73,7 +91,7 @@ class TemplateViewTest extends UnitTestCase
     public function testTemplateFoundRender(): void
     {
         $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1) // fe request
-            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
+            ->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
         $templatePaths = $this->createMock(TemplatePaths::class);
 
@@ -99,7 +117,7 @@ class TemplateViewTest extends UnitTestCase
     public function testChangingAction(): void
     {
         $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1) // fe request
-            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
+            ->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
         $templatePaths = $this->createMock(TemplatePaths::class);
         $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
@@ -125,7 +143,7 @@ class TemplateViewTest extends UnitTestCase
     public function testExceptionInTemplate(): void
     {
         $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('applicationType', 1) // fe request
-            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
+            ->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
         $templatePaths = $this->createMock(TemplatePaths::class);
         $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
