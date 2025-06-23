@@ -39,7 +39,6 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 use TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent;
-
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_encode;
@@ -60,7 +59,8 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $listener = new AfterCacheableContentIsGeneratedListener(
             new JsonEncoder(),
             $metaHandler,
-            new HeadlessUserInt()
+            new HeadlessUserInt(),
+            new HeadlessMode()
         );
 
         $request = $this->prophesize(ServerRequestInterface::class);
@@ -98,7 +98,8 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $listener = new AfterCacheableContentIsGeneratedListener(
             new JsonEncoder(),
             $metaHandler,
-            new HeadlessUserInt()
+            new HeadlessUserInt(),
+            new HeadlessMode()
         );
 
         $content = json_encode(['someCustomPageWithoutMeta' => ['title' => 'test before event']]);
@@ -127,7 +128,8 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $listener = new AfterCacheableContentIsGeneratedListener(
             new JsonEncoder(),
             $metaHandler,
-            new HeadlessUserInt()
+            new HeadlessUserInt(),
+            new HeadlessMode()
         );
 
         $content = json_encode(['someCustomPageWithoutMeta' => ['title' => HeadlessUserInt::NESTED . '_START<<<!--INT_SCRIPT.d53df2a300e62171a7b4882c4b88a153-->>>' . HeadlessUserInt::NESTED . '_END']]);
@@ -153,16 +155,16 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
 
         $eventDispatcher = GeneralUtility::makeInstance(EventDispatcher::class, $listenerProvider->reveal());
 
-        $metaHandler = new MetaHandler($this->prophesize(MetaTagManagerRegistry::class)->reveal(), $eventDispatcher);
+        $metaTagRegistry = $this->prophesize(MetaTagManagerRegistry::class);
+        $metaTagRegistry->getAllManagers()->willReturn([]);
 
-        $container = new Container();
-        $container->set(HeadlessModeInterface::class, new HeadlessMode());
-        GeneralUtility::setContainer($container);
+        $metaHandler = new MetaHandler($metaTagRegistry->reveal(), $eventDispatcher);
 
         $listener = new AfterCacheableContentIsGeneratedListener(
             new JsonEncoder(),
             $metaHandler,
-            new HeadlessUserInt()
+            new HeadlessUserInt(),
+            new HeadlessMode()
         );
 
         $request = $this->prophesize(ServerRequestInterface::class);
@@ -222,17 +224,6 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $eventDispatcher = $this->prophesize(EventDispatcher::class);
         $eventDispatcher->dispatch(Argument::any())->willReturn($event);
 
-        $metaHandler = new MetaHandler(
-            $this->prophesize(MetaTagManagerRegistry::class)->reveal(),
-            $eventDispatcher->reveal()
-        );
-
-        $listener = new AfterCacheableContentIsGeneratedListener(
-            new JsonEncoder(),
-            $metaHandler,
-            new HeadlessUserInt()
-        );
-
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::FULL));
         $request->getAttribute(Argument::is('language'))->willReturn(new SiteLanguage(
@@ -267,11 +258,23 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
             public function handle(): void {}
         };
 
+        $metaHandler = new MetaHandler(
+            $registry,
+            $eventDispatcher->reveal()
+        );
+
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['TYPO3\CMS\Frontend\Page\PageGenerator']['generateMetaTags']['test'] = $testHook::class . '->handle';
 
         $manager->addProperty('generator', 'TYPO3 CMS x T3Headless', [], true, 'name');
 
         $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $controller->reveal(), 'abc', false);
+
+        $listener = new AfterCacheableContentIsGeneratedListener(
+            new JsonEncoder(),
+            $metaHandler,
+            new HeadlessUserInt(),
+            new HeadlessMode()
+        );
 
         $listener($event);
 

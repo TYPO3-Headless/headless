@@ -11,12 +11,11 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Event\Listener;
 
-use FriendsOfTYPO3\Headless\Json\JsonEncoder;
-use FriendsOfTYPO3\Headless\Seo\MetaHandler;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
+use FriendsOfTYPO3\Headless\Seo\MetaHandlerInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Throwable;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 
@@ -27,15 +26,16 @@ use const JSON_THROW_ON_ERROR;
 class AfterCacheableContentIsGeneratedListener
 {
     public function __construct(
-        private readonly JsonEncoder $encoder,
-        private readonly MetaHandler $metaHandler,
+        private readonly JsonEncoderInterface $encoder,
+        private readonly MetaHandlerInterface $metaHandler,
         private readonly HeadlessUserInt $headlessUserInt,
+        private readonly HeadlessModeInterface $headlessMode,
     ) {}
 
     public function __invoke(AfterCacheableContentIsGeneratedEvent $event)
     {
         try {
-            if (!GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($event->getRequest())->isEnabled()) {
+            if (!$this->headlessMode->withRequest($event->getRequest())->isEnabled()) {
                 return;
             }
 

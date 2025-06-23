@@ -27,7 +27,7 @@ use function array_merge_recursive;
 use function htmlspecialchars;
 use function implode;
 
-class MetaHandler
+class MetaHandler implements MetaHandlerInterface
 {
     public function __construct(
         private readonly MetaTagManagerRegistry $metaTagRegistry,
@@ -45,17 +45,20 @@ class MetaHandler
             GeneralUtility::callUserFunction($_funcRef, $_params, $_ref);
         }
 
+        $typoScriptSetup = $request->getAttribute('frontend.typoscript')->getSetupArray();
+        $typoScriptConfig = $typoScriptSetup['config.'] ?? [];
+
         $content['seo']['title'] = $controller->generatePageTitle($request);
 
         $this->generateMetaTagsFromTyposcript(
-            $controller->pSetup['meta.'] ?? [],
+            $typoScriptSetup['page.']['meta.'] ?? [],
             $controller->cObj
         );
 
         $metaTags = [];
-        $metaTagManagers = GeneralUtility::makeInstance(MetaTagManagerRegistry::class)->getAllManagers();
+        $metaTagManagers = $this->metaTagRegistry->getAllManagers();
 
-        foreach ($metaTagManagers as $manager => $managerObject) {
+        foreach ($metaTagManagers as $managerObject) {
             $properties = json_decode($managerObject->renderAllProperties(), true);
             if (!empty($properties)) {
                 $metaTags = array_merge($metaTags, $properties);
@@ -83,8 +86,8 @@ class MetaHandler
          */
         $language = $request->getAttribute('language');
 
-        $rawHtmlTagAttrs = $controller->config['config']['htmlTag.']['attributes.'] ?? [];
-        $overwriteBodyTag = (int)($controller->config['config']['headless.']['overwriteBodyTag'] ?? 0);
+        $rawHtmlTagAttrs = $typoScriptConfig['htmlTag.']['attributes.'] ?? [];
+        $overwriteBodyTag = (int)($typoScriptConfig['headless.']['overwriteBodyTag'] ?? 0);
         $htmlTagAttrs = $this->normalizeAttr($rawHtmlTagAttrs);
 
         $defaultBodyAttrs = [
@@ -94,7 +97,7 @@ class MetaHandler
             ]),
         ];
 
-        $rawBodyTagAttrs = GeneralUtility::get_tag_attributes(trim($request->getAttribute('frontend.typoscript')->getSetupArray()['page.']['bodyTagAdd'] ?? ''));
+        $rawBodyTagAttrs = GeneralUtility::get_tag_attributes(trim($typoScriptSetup['page.']['bodyTagAdd'] ?? ''));
 
         if ($overwriteBodyTag) {
             $bodyTagAttrs = array_merge($defaultBodyAttrs, $rawBodyTagAttrs);
