@@ -49,7 +49,9 @@ final class AfterLinkIsGeneratedListener
 
         $pageId = $result->getLinkConfiguration()['parameter'] ?? 0;
 
-        if (isset($result->getLinkConfiguration()['parameter.'])) {
+        if ((int)($result->getLinkConfiguration()['page']['doktype'] ?? 1) === 4) {
+            $pageId = (int)$result->getLinkConfiguration()['page']['shortcut'];
+        } elseif (isset($result->getLinkConfiguration()['parameter.'])) {
             $pageId = (int)($this->linkService->resolve($event->getContentObjectRenderer()->parameters['href'] ?? '')['pageuid'] ?? 0);
         }
 
@@ -65,7 +67,13 @@ final class AfterLinkIsGeneratedListener
                 $site = $this->getTargetSite($event);
                 $key = 'frontendBase';
 
-                if (is_string($pageId) && str_starts_with($pageId, 't3://page?uid=current&type=' . $site->getSettings()->get('headless.sitemap.type', '1533906435'))) {
+                if (is_string($pageId) && str_starts_with(
+                    $pageId,
+                    't3://page?uid=current&type=' . $site->getSettings()->get(
+                        'headless.sitemap.type',
+                        '1533906435'
+                    )
+                )) {
                     $key = $site->getSettings()->get('headless.sitemap.key', 'frontendApiProxy');
                 }
 
@@ -88,11 +96,17 @@ final class AfterLinkIsGeneratedListener
         if (isset($linkConfiguration['parameter.'])) {
             // Evaluate "parameter." stdWrap but keep additional information (like target, class and title)
             $linkParameterParts = $this->typoLinkCodecService->decode($linkConfiguration['parameter'] ?? '');
-            $modifiedLinkParameterString = $event->getContentObjectRenderer()->stdWrap($linkParameterParts['url'], $linkConfiguration['parameter.']);
+            $modifiedLinkParameterString = $event->getContentObjectRenderer()->stdWrap(
+                $linkParameterParts['url'],
+                $linkConfiguration['parameter.']
+            );
             // As the stdWrap result might contain target etc. as well again (".field = header_link")
             // the result is then taken from the stdWrap and overridden if the value is not empty.
             $modifiedLinkParameterParts = $this->typoLinkCodecService->decode((string)($modifiedLinkParameterString ?? ''));
-            $linkParameterParts = array_replace($linkParameterParts, array_filter($modifiedLinkParameterParts, static fn($value) => trim((string)$value) !== ''));
+            $linkParameterParts = array_replace(
+                $linkParameterParts,
+                array_filter($modifiedLinkParameterParts, static fn($value) => trim((string)$value) !== '')
+            );
             $linkParameter = $this->typoLinkCodecService->encode($linkParameterParts);
         } else {
             $linkParameter = trim((string)($linkConfiguration['parameter'] ?? ''));
@@ -104,9 +118,18 @@ final class AfterLinkIsGeneratedListener
             $this->logger->warning($e->getMessage(), ['linkConfiguration' => $linkConfiguration]);
             throw $e;
         }
-        $linkDetails = $this->resolveLinkDetails($linkParameter, $linkConfiguration, $event->getContentObjectRenderer());
+        $linkDetails = $this->resolveLinkDetails(
+            $linkParameter,
+            $linkConfiguration,
+            $event->getContentObjectRenderer()
+        );
         if ($linkDetails === null) {
-            throw new UnableToLinkException('Could not resolve link details from ' . $linkParameter, 1642001442, null, $event->getLinkResult()->getLinkText());
+            throw new UnableToLinkException(
+                'Could not resolve link details from ' . $linkParameter,
+                1642001442,
+                null,
+                $event->getLinkResult()->getLinkText()
+            );
         }
 
         if (($linkDetails['pageuid'] ?? 'current') === 'current') {
@@ -116,8 +139,11 @@ final class AfterLinkIsGeneratedListener
         return $this->siteFinder->getSiteByPageId((int)$linkDetails['pageuid']);
     }
 
-    protected function resolveLinkDetails(string $linkParameter, array $linkConfiguration, ContentObjectRenderer $contentObjectRenderer): ?array
-    {
+    protected function resolveLinkDetails(
+        string $linkParameter,
+        array $linkConfiguration,
+        ContentObjectRenderer $contentObjectRenderer
+    ): ?array {
         $linkDetails = null;
         if (!$linkParameter) {
             // Support anchors without href value if id or name attribute is present.
@@ -149,9 +175,16 @@ final class AfterLinkIsGeneratedListener
     {
         $linkParameterParts = $this->typoLinkCodecService->decode($mixedLinkParameter);
         [$linkHandlerKeyword] = explode(':', $linkParameterParts['url'] ?? '', 2);
-        if (in_array(strtolower((string)preg_replace('#\s|[[:cntrl:]]#', '', (string)$linkHandlerKeyword)), ['javascript', 'data'], true)) {
+        if (in_array(
+            strtolower((string)preg_replace('#\s|[[:cntrl:]]#', '', (string)$linkHandlerKeyword)),
+            ['javascript', 'data'],
+            true
+        )) {
             // Disallow insecure scheme's like javascript: or data:
-            throw new UnableToLinkException('Insuecure scheme for linking detected with "' . $mixedLinkParameter . "'", 1641986533);
+            throw new UnableToLinkException(
+                'Insuecure scheme for linking detected with "' . $mixedLinkParameter . "'",
+                1641986533
+            );
         }
 
         // additional parameters that need to be set
