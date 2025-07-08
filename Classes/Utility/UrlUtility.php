@@ -166,7 +166,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $parsedProjectFrontendUrl = new Uri($this->sanitizeBaseUrl($this->getFrontendUrl()));
 
         if ($parsedTargetUrl->getHost() === $parsedProjectFrontendUrl->getHost()) {
-            return $parsedTargetUrl->getPath() . ($parsedTargetUrl->getQuery() ? '?' . $parsedTargetUrl->getQuery() : '');
+            return '/' . ltrim($parsedTargetUrl->getPath() . ($parsedTargetUrl->getQuery() ? '?' . $parsedTargetUrl->getQuery() : ''), '/');
         }
 
         return $targetUrl;
