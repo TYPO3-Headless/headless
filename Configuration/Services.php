@@ -26,6 +26,7 @@ use FriendsOfTYPO3\Headless\Event\Listener\AfterPagePreviewUriGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\HeadlessHreflangGeneratorListener;
 use FriendsOfTYPO3\Headless\Event\Listener\LoginConfirmedEventListener;
 use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
+use FriendsOfTYPO3\Headless\Form\Translator;
 use FriendsOfTYPO3\Headless\Frontend\BackendEditorUrl;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
@@ -110,6 +111,7 @@ return static function (ContainerConfigurator $configurator): void {
     }
 
     if ($cmsFormsInstalled) {
+        $services->set(Translator::class)->public();
         $services->set(FormTranslationService::class)->arg('$runtimeCache', service('cache.runtime'))->public();
     }
 
