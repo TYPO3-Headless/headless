@@ -48,22 +48,19 @@ return (static function (): array {
     }
 
     if ($features->isFeatureEnabled('headless.cookieDomainPerSite')) {
-        $middlewares['backend'] = [
-            'headless/cms-backend/cookie-domain-middleware' => [
-                'before' => [
-                    'typo3/cms-backend/authentication',
-                ],
-                'target' => \FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite::class,
+        $middlewares['backend']['headless/cms-backend/cookie-domain-middleware'] =  [
+            'before' => [
+                'typo3/cms-backend/authentication',
             ],
+            'target' => \FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite::class,
         ];
-        $middlewares['frontend'] = [
-            'headless/cms-backend/cookie-domain-middleware' => [
-                'before' => [
-                    'typo3/cms-frontend/backend-user-authentication',
-                    'typo3/cms-frontend/authentication',
-                ],
-                'target' => \FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite::class,
+
+        $middlewares['frontend']['headless/cms-backend/cookie-domain-middleware'] = [
+            'before' => [
+                'typo3/cms-frontend/backend-user-authentication',
+                'typo3/cms-frontend/authentication',
             ],
+            'target' => \FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite::class,
         ];
     }
 
