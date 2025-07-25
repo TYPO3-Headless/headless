@@ -15,6 +15,8 @@ use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
+
 
 /**
  * This XClass allows you to render frontend URLs for workspaces
