@@ -25,6 +25,8 @@ use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
+
 
 use function array_merge;
 use function ltrim;
