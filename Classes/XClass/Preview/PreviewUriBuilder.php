@@ -18,6 +18,8 @@ use TYPO3\CMS\Core\Routing\InvalidRouteArgumentsException;
 use TYPO3\CMS\Core\Routing\UnableToLinkToPageException;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
+
 
 /**
  * @codeCoverageIgnore
