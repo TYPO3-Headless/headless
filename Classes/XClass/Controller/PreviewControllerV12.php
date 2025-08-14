@@ -16,12 +16,14 @@ use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+use function class_alias;
+
 /**
  * This XClass allows you to render frontend URLs for workspaces
  *
  * @codeCoverageIgnore
  */
-readonly class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewController
+class PreviewControllerV12 extends \TYPO3\CMS\Workspaces\Controller\PreviewController
 {
     protected function generateUrl(Site $site, int $pageUid, array $parameters): string
     {
@@ -38,3 +40,5 @@ readonly class PreviewController extends \TYPO3\CMS\Workspaces\Controller\Previe
         return GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request)->getFrontendUrlForPage($url, $pageUid);
     }
 }
+
+class_alias(PreviewControllerV12::class, PreviewController::class);

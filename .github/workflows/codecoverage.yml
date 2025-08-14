@@ -32,6 +32,7 @@ jobs:
         env:
           TYPO3: "${{ matrix.typo3-version }}"
         run: |
+          composer global require php-coveralls/php-coveralls
           composer require --no-ansi --no-interaction --no-progress --no-install typo3/minimal:"$TYPO3"
           composer show
       - name: "Install lowest dependencies with composer"
@@ -60,7 +61,7 @@ jobs:
       - name: "Upload coverage results to Coveralls"
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./.Build/vendor/bin/php-coveralls --coverage_clover=build/logs/clover.xml -v
+        run: php-coveralls --coverage_clover=build/logs/clover.xml -v
     strategy:
       fail-fast: false
       matrix:

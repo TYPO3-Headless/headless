@@ -36,7 +36,6 @@
     "friendsofphp/php-cs-fixer": "^v3",
     "helmich/typo3-typoscript-lint": "^v3",
     "justinrainbow/json-schema": "^5",
-    "php-coveralls/php-coveralls": "^2",
     "phpspec/prophecy-phpunit": "^2",
     "phpstan/extension-installer": "^1.1",
     "phpstan/phpstan": "^1.12",
@@ -49,7 +48,7 @@
     "typo3/coding-standards": "^0.8"
   },
   "conflict": {
-    "typo3/cms-core": "<12.4.21"
+    "typo3/cms-core": "<12.4.21 || >=13.4 <13.4.16"
   },
   "config": {
     "preferred-install": {

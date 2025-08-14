@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass\Preview;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use InvalidArgumentException;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
