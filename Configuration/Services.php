@@ -34,6 +34,7 @@ use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use FriendsOfTYPO3\Headless\XClass\TemplateView;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use TYPO3\CMS\Core\Configuration\Features;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Controller\FormFrontendController;
 use TYPO3\CMS\FrontendLogin\Controller\LoginController;
@@ -52,12 +53,20 @@ return static function (ContainerConfigurator $configurator): void {
     $excludes = [];
     $cmsFormsInstalled = class_exists(FormFrontendController::class, false);
 
+    $previewWorkspaceExclude = '../Classes/XClass/Controller/PreviewController.php';
+
+    if ((new Typo3Version())->getMajorVersion() > 12) {
+        $previewWorkspaceExclude = '../Classes/XClass/Controller/PreviewControllerV12.php';
+    }
+
+    $excludes[] = $previewWorkspaceExclude;
+
     if (!$cmsFormsInstalled) {
-        $excludes = [
+        $excludes = array_merge($excludes, [
             '../Classes/Form/*',
             '../Classes/XClass/Controller/FormFrontendController.php',
             '../Classes/XClass/FormRuntime.php',
-        ];
+        ]);
     }
 
     $feloginInstalled = class_exists(LoginController::class, false);
@@ -136,7 +145,7 @@ return static function (ContainerConfigurator $configurator): void {
                 'share' => false,
                 'public' => true,
             ],
-            FlexFormProcessor::class => ['identifier' => 'headless-flex-form', 'share' => false, 'public' => false],
+            FlexFormProcessor::class => ['identifier' => 'headless-flex-form', 'share' => false, 'public' => true],
         ] as $class => $processorConfig
     ) {
         $service = $services->set($class)
