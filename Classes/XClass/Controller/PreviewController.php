@@ -13,6 +13,7 @@ namespace FriendsOfTYPO3\Headless\XClass\Controller;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -23,9 +24,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 readonly class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewController
 {
-    protected function generateUrl(Site $site, int $pageUid, array $parameters): string
+    protected function generateUrl(Site $site, int $pageUid, array $parameters, ?Context $context = null): string
     {
-        $url = (string)$site->getRouter()->generateUri($pageUid, $parameters);
+        $url = parent::generateUrl($site, $pageUid, $parameters, $context);
 
         if (!isset($GLOBALS['TYPO3_REQUEST'])) {
             return $url;
