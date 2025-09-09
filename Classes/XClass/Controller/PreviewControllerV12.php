@@ -27,7 +27,7 @@ class PreviewControllerV12 extends \TYPO3\CMS\Workspaces\Controller\PreviewContr
 {
     protected function generateUrl(Site $site, int $pageUid, array $parameters): string
     {
-        $url = (string)$site->getRouter()->generateUri($pageUid, $parameters);
+        $url = parent::generateUrl($site, $pageUid, $parameters);
 
         if (!isset($GLOBALS['TYPO3_REQUEST'])) {
             return $url;
