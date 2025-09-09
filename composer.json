@@ -48,7 +48,7 @@
     "typo3/coding-standards": "^0.8"
   },
   "conflict": {
-    "typo3/cms-core": "<12.4.21 || >=13.4 <13.4.16"
+    "typo3/cms-core": "<12.4.21 || >=13.4 <13.4.18"
   },
   "config": {
     "preferred-install": {
