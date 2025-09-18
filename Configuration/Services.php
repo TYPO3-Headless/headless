@@ -19,6 +19,8 @@ use FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FlexFormProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
+use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema;
+use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterCacheableContentIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
@@ -85,6 +87,8 @@ return static function (ContainerConfigurator $configurator): void {
     $toLoad->set(IntegerContentObject::class)->tag('frontend.contentobject', ['identifier' => 'INT']);
     $toLoad->set(FloatContentObject::class)->tag('frontend.contentobject', ['identifier' => 'FLOAT']);
 
+    $services->set(SiteProvider::class)->public();
+    $services->set(DomainSchema::class)->public();
     $services->set(BackendEditorUrl::class)->public();
     $services->set(FileUtility::class)->public();
     $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
