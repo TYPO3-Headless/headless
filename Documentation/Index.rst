@@ -20,7 +20,7 @@ EXT:headless
    The frontend part exists as JavaScript application
    `nuxt-typo3 <https://github.com/TYPO3-Initiatives/nuxt-typo3>`__
    which consumes the JSON API and renders the content using Nuxt framework of VueJS.
-   You can find the frontend documentation `here <https://typo3-headless.github.io/nuxt-typo3/>`__.
+   You can find the frontend documentation `here <https://t3headless.macopedia.io/nuxt-typo3/>`__.
 
 :Keywords:
    headless, json, api
