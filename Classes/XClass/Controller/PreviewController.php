@@ -26,7 +26,7 @@ use TYPO3\CMS\Core\Information\Typo3Version;
  */
 
 // Conditional class definition based on TYPO3 version
-if (class_exists(Typo3Version::class) && (new Typo3Version())->getMajorVersion() >= 13) {
+if ((new Typo3Version())->getMajorVersion() >= 13) {
     // TYPO3 v13+ version with readonly class and Context parameter
     readonly class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewController
     {
