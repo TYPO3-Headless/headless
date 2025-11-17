@@ -14,28 +14,51 @@ namespace FriendsOfTYPO3\Headless\XClass\Controller;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-/**
- * This XClass allows you to render frontend URLs for workspaces
- *
- * @codeCoverageIgnore
- */
-readonly class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewController
-{
-    protected function generateUrl(Site $site, int $pageUid, array $parameters, ?Context $context = null): string
+if ((new Typo3Version())->getMajorVersion() >= 13) {
+    /**
+     * @codeCoverageIgnore
+     */
+    readonly class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewController
     {
-        $url = parent::generateUrl($site, $pageUid, $parameters, $context);
+        protected function generateUrl(Site $site, int $pageUid, array $parameters, ?Context $context = null): string
+        {
+            $url = parent::generateUrl($site, $pageUid, $parameters, $context);
 
-        if (!isset($GLOBALS['TYPO3_REQUEST'])) {
-            return $url;
+            if (!isset($GLOBALS['TYPO3_REQUEST'])) {
+                return $url;
+            }
+
+            $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
+            $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
+            $request = $headlessMode->overrideBackendRequestBySite($site, $parameters['_language'] ?? null);
+
+            return GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request)->getFrontendUrlForPage($url, $pageUid);
         }
+    }
+} else {
+    /**
+     * for support 12.4.x
+     * @codeCoverageIgnore
+     */
+    class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewController
+    {
+        protected function generateUrl(Site $site, int $pageUid, array $parameters): string
+        {
+            $url = parent::generateUrl($site, $pageUid, $parameters);
 
-        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
-        $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
-        $request = $headlessMode->overrideBackendRequestBySite($site, $parameters['_language'] ?? null);
+            if (!isset($GLOBALS['TYPO3_REQUEST'])) {
+                return $url;
+            }
 
-        return GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request)->getFrontendUrlForPage($url, $pageUid);
+            $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
+            $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
+            $request = $headlessMode->overrideBackendRequestBySite($site, $parameters['_language'] ?? null);
+
+            return GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request)->getFrontendUrlForPage($url, $pageUid);
+        }
     }
 }
