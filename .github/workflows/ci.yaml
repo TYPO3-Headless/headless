@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
@@ -76,7 +76,7 @@ jobs:
           using TYPO3 ${{ matrix.typo3-versions.typo3 }}
           with testing framework version ${{ matrix.typo3-versions.testing }}"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -131,7 +131,7 @@ jobs:
           using TYPO3 ${{ matrix.typo3-versions.typo3 }}
           with testing framework version ${{ matrix.typo3-versions.testing }}"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: shivammathur/setup-php@v2
         with:
