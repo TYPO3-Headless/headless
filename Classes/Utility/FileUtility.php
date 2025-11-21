@@ -109,6 +109,10 @@ class FileUtility
                 $disableProcessingFor[] = 'image/svg+xml';
             }
 
+            if (!$processingConfiguration->processGif) {
+                $disableProcessingFor[] = 'image/gif';
+            }
+
             if (!$processingConfiguration->delayProcessing && !in_array(
                 $fileReference->getMimeType(),
                 $disableProcessingFor,
