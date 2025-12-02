@@ -90,7 +90,7 @@ abstract class BaseContentTypeTesting extends BaseHeadlessTesting
         self::assertIsArray($contentElement['content']['gallery']['rows'][1]['columns'], 'rows.columns not set');
         self::assertCount(1, $contentElement['content']['gallery']['rows'][1]['columns'], 'rows.columns count mismatch');
 
-        $this->checkGalleryFile($contentElement['content']['gallery']['rows'][1]['columns'][1], '/typo3conf/ext/headless/ext_icon.gif', 'image/gif', 'MetadataTitle', 18, 16, null);
+        $this->checkGalleryFile($contentElement['content']['gallery']['rows'][1]['columns'][1], '/typo3conf/ext/headless/ext_icon.gif', 'image/gif', 'MetadataTitle', 18, 16, 1);
     }
 
     protected function checkGalleryFile($fileElement, $originalUrl, $mimeType, $title, $width, $height, $autoplay)
