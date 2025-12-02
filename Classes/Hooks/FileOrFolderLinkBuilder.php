@@ -27,6 +27,10 @@ class FileOrFolderLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\FileOrFolderL
      */
     public function build(array &$linkDetails, string $linkText, string $target, array $conf): LinkResultInterface
     {
+        if (!isset($GLOBALS['TYPO3_REQUEST'])) {
+            return parent::build($linkDetails, $linkText, $target, $conf);
+        }
+
         $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
 
         if ($headlessMode->isEnabled()) {
