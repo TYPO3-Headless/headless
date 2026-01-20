@@ -194,11 +194,13 @@ class JsonContentObjectTest extends UnitTestCase
             [['fields.' => ['test' => 'INT', 'test.' => ['value' => 1]]], json_encode(['test' => 1])],
             [['fields.' => ['test' => 'BOOL', 'test.' => ['value' => 0]]], json_encode(['test' => false])],
             [['fields.' => ['test' => 'BOOL', 'test.' => ['value' => 1]]], json_encode(['test' => true])],
-            [['fields.' => ['test' => 'BOOL', 'test.' => ['value' => 1], 'nested.' => ['fields.' => ['nestedTest' => 'INT', 'nestedTest.' => ['value' => 10]]] ]], json_encode(['test' => true, 'nested' => ['nestedTest' => 10]])],
+            [['fields.' => ['test' => 'BOOL', 'test.' => ['value' => 1], 'nested.' => ['fields.' => ['nestedTest' => 'INT', 'nestedTest.' => ['value' => 10]]]]], json_encode(['test' => true, 'nested' => ['nestedTest' => 10]])],
             [['fields.' => ['test' => 'BOOL', 'test.' => ['value' => 1], 'nested.' => ['fields.' => ['nestedTest' => 'INT', 'nestedTest.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]]]]]], json_encode(['test' => true, 'nested' => ['nestedTest' => ['SomeCustomProcessing']]])],
             [['fields.' => ['test' => 'FLOAT', 'test.' => ['value' => 12.34]]], json_encode(['test' => 12.34])],
             [['fields.' => ['test' => 'USER_INT', 'test.' => ['userFunc' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\ExampleUserFunc->someUserFunc']]], json_encode(['test' => 'HEADLESS_INT_START<<<!--INT_SCRIPT.202cb962ac59075b964b07152d234b70-->>>HEADLESS_INT_END'])],
             [['fields.' => ['test' => 'USER', 'test.' => ['userFunc' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\ExampleUserFunc->someUserFunc']]], json_encode(['test' => ['test2' => 'someExtraCustomData']])],
+            [['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']], 'merge' => '1', 'fields.' => ['test' => 'TEXT', 'test.' => ['value' => '1']]], json_encode(['test' => '1', 'SomeCustomProcessing'])],
+            [['fields.' => ['test.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']], 'merge' => '1', 'fields.' => ['nested' => 'TEXT', 'nested.' => ['value' => '1']]]]], json_encode(['test' => ['nested' => '1', 'SomeCustomProcessing']])],
         ];
     }
 
