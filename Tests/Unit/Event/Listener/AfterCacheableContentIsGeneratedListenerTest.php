@@ -14,6 +14,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Event\Listener;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterCacheableContentIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Seo\MetaHandler;
+use FriendsOfTYPO3\Headless\Seo\MetaHandlerInterface;
 use FriendsOfTYPO3\Headless\Seo\MetaTag\Html5MetaTagManager;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
@@ -30,13 +31,13 @@ use TYPO3\CMS\Core\EventDispatcher\ListenerProvider;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
+use TYPO3\CMS\Core\PageTitle\PageTitleProviderManager;
 use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\TypoScript\AST\Node\RootNode;
 use TYPO3\CMS\Core\TypoScript\FrontendTypoScript;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 use TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
@@ -53,7 +54,8 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
     {
         $metaHandler = new MetaHandler(
             $this->prophesize(MetaTagManagerRegistry::class)->reveal(),
-            $this->prophesize(EventDispatcherInterface::class)->reveal()
+            $this->prophesize(EventDispatcherInterface::class)->reveal(),
+            $this->prophesize(PageTitleProviderManager::class)->reveal()
         );
 
         $listener = new AfterCacheableContentIsGeneratedListener(
@@ -66,33 +68,28 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::NONE));
 
-        $controller = $this->prophesize(TypoScriptFrontendController::class);
-        $controller->content = '';
-
-        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $controller->reveal(), 'abc', false);
+        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), '', 'abc', false);
 
         $listener($event);
 
-        self::assertSame('', $event->getController()->content);
+        self::assertSame('', $event->getContent());
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::FULL));
 
-        $controller = $this->prophesize(TypoScriptFrontendController::class);
-        $controller->content = '';
-
-        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $controller->reveal(), 'abc', false);
+        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), '', 'abc', false);
 
         $listener($event);
 
-        self::assertSame('', $event->getController()->content);
+        self::assertSame('', $event->getContent());
     }
 
     public function testNotModifiedWhileValidJson(): void
     {
         $metaHandler = new MetaHandler(
             $this->prophesize(MetaTagManagerRegistry::class)->reveal(),
-            $this->prophesize(EventDispatcherInterface::class)->reveal()
+            $this->prophesize(EventDispatcherInterface::class)->reveal(),
+            $this->prophesize(PageTitleProviderManager::class)->reveal()
         );
 
         $listener = new AfterCacheableContentIsGeneratedListener(
@@ -107,22 +104,19 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::FULL));
 
-        $controller = $this->prophesize(TypoScriptFrontendController::class);
-        $controller->content = $content;
-        $controller->generatePageTitle($request)->willReturn('Modified title via PageTitleManager');
-
-        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $controller->reveal(), 'abc', false);
+        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $content, 'abc', false);
 
         $listener($event);
 
-        self::assertSame($content, $event->getController()->content);
+        self::assertSame($content, $event->getContent());
     }
 
     public function testNotModifiedWhenUserIntContent(): void
     {
         $metaHandler = new MetaHandler(
             $this->prophesize(MetaTagManagerRegistry::class)->reveal(),
-            $this->prophesize(EventDispatcherInterface::class)->reveal()
+            $this->prophesize(EventDispatcherInterface::class)->reveal(),
+            $this->prophesize(PageTitleProviderManager::class)->reveal()
         );
 
         $listener = new AfterCacheableContentIsGeneratedListener(
@@ -137,62 +131,42 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::FULL));
 
-        $controller = $this->prophesize(TypoScriptFrontendController::class);
-        $controller->content = $content;
-        $controller->generatePageTitle($request)->willReturn('Modified title via PageTitleManager');
-
-        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $controller->reveal(), 'abc', false);
+        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $content, 'abc', false);
 
         $listener($event);
 
-        self::assertSame($content, $event->getController()->content);
+        self::assertSame($content, $event->getContent());
     }
 
     public function testModifiedPageTitle(): void
     {
-        $listenerProvider = $this->prophesize(ListenerProvider::class);
-        $listenerProvider->getListenersForEvent(Argument::any())->willReturn([]);
-
-        $eventDispatcher = GeneralUtility::makeInstance(EventDispatcher::class, $listenerProvider->reveal());
-
-        $metaTagRegistry = $this->prophesize(MetaTagManagerRegistry::class);
-        $metaTagRegistry->getAllManagers()->willReturn([]);
-
-        $metaHandler = new MetaHandler($metaTagRegistry->reveal(), $eventDispatcher);
+        $metaHandler = $this->prophesize(MetaHandlerInterface::class);
+        $metaHandler->process(Argument::any(), Argument::any())->will(function ($args) {
+            $content = $args[1];
+            $content['seo']['title'] = 'Modified title via PageTitleProviderManager';
+            $content['seo']['meta'] = [];
+            $content['seo']['htmlAttrs'] = ['lang' => 'en', 'dir' => null];
+            $content['seo']['bodyAttrs'] = ['class' => 'pid-1 layout-layout-0'];
+            return $content;
+        });
 
         $listener = new AfterCacheableContentIsGeneratedListener(
             new JsonEncoder(),
-            $metaHandler,
+            $metaHandler->reveal(),
             new HeadlessUserInt(),
             new HeadlessMode()
         );
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::FULL));
-        $request->getAttribute(Argument::is('language'))->willReturn(new SiteLanguage(
-            0,
-            'en',
-            new Uri('/en'),
-            []
-        ));
 
-        $request->getAttribute('routing')->willReturn(new PageArguments(1, '0', []));
-        $frontendTyposcript = new FrontendTypoScript(new RootNode(), [], [], []);
-        $frontendTyposcript->setSetupTree(new RootNode());
-        $frontendTyposcript->setSetupArray([]);
-
-        $request->getAttribute(Argument::is('frontend.typoscript'))->willReturn($frontendTyposcript);
-
-        $controller = $this->prophesize(TypoScriptFrontendController::class);
-        $controller->content = json_encode([
+        $content = json_encode([
             'meta' => ['title' => 'test before event'],
             'seo' => ['title' => 'test before event'],
             'appearance' => ['layout' => 'layout-0'],
         ]);
-        $controller->cObj = $this->prophesize(ContentObjectRenderer::class)->reveal();
-        $controller->generatePageTitle($request)->willReturn('Modified title via PageTitleProviderManager');
 
-        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $controller->reveal(), 'abc', false);
+        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $content, 'abc', false);
 
         $listener($event);
 
@@ -205,76 +179,43 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
                 'bodyAttrs' => ['class' => 'pid-1 layout-layout-0'],
             ],
             'appearance' => ['layout' => 'layout-0'],
-        ]), $event->getController()->content);
+        ]), $event->getContent());
     }
 
     public function testHreflangs(): void
     {
-        $container = new Container();
-        $container->set(HeadlessModeInterface::class, new HeadlessMode());
-        GeneralUtility::setContainer($container);
+        $metaHandler = $this->prophesize(MetaHandlerInterface::class);
+        $metaHandler->process(Argument::any(), Argument::any())->will(function ($args) {
+            $content = $args[1];
+            $content['seo']['title'] = 'Modified title via PageTitleProviderManager';
+            $content['seo']['meta'] = [['name' => 'generator', 'content' => 'TYPO3 CMS x T3Headless']];
+            $content['seo']['link'] = [
+                ['rel' => 'alternate', 'hreflang' => 'pl-PL', 'href' => 'https://example.com/pl'],
+                ['rel' => 'alternate', 'hreflang' => 'en-US', 'href' => 'https://example.com/us'],
+                ['rel' => 'alternate', 'hreflang' => 'en-UK', 'href' => 'https://example.com/uk'],
+            ];
+            $content['seo']['htmlAttrs'] = ['lang' => 'en', 'dir' => null];
+            $content['seo']['bodyAttrs'] = ['class' => 'pid-2 layout-custom custom'];
+            return $content;
+        });
 
-        $event = new ModifyHrefLangTagsEvent(new ServerRequest());
-        $event->setHrefLangs([
-            'pl-PL' => 'https://example.com/pl',
-            'en-US' => 'https://example.com/us',
-            'en-UK' => 'https://example.com/uk',
-        ]);
-
-        $eventDispatcher = $this->prophesize(EventDispatcher::class);
-        $eventDispatcher->dispatch(Argument::any())->willReturn($event);
+        $listener = new AfterCacheableContentIsGeneratedListener(
+            new JsonEncoder(),
+            $metaHandler->reveal(),
+            new HeadlessUserInt(),
+            new HeadlessMode()
+        );
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getAttribute(Argument::is('headless'))->willReturn(new Headless(HeadlessModeInterface::FULL));
-        $request->getAttribute(Argument::is('language'))->willReturn(new SiteLanguage(
-            0,
-            'en',
-            new Uri('/en'),
-            []
-        ));
-        $request->getAttribute('routing')->willReturn(new PageArguments(2, '0', []));
 
-        $frontendTyposcript = new FrontendTypoScript(new RootNode(), [], [], []);
-        $frontendTyposcript->setSetupTree(new RootNode());
-        $frontendTyposcript->setSetupArray(['page.' => ['bodyTagAdd' => 'class="custom"']]);
-
-        $request->getAttribute(Argument::is('frontend.typoscript'))->willReturn($frontendTyposcript);
-
-        $GLOBALS['TYPO3_REQUEST'] = $request->reveal();
-        $controller = $this->prophesize(TypoScriptFrontendController::class);
-        $controller->content = json_encode([
+        $content = json_encode([
             'meta' => ['title' => 'test before event'],
             'seo' => ['title' => 'test before event'],
             'appearance' => ['layout' => 'custom'],
         ]);
-        $controller->cObj = $this->prophesize(ContentObjectRenderer::class)->reveal();
-        $controller->generatePageTitle($request)->willReturn('Modified title via PageTitleProviderManager');
 
-        $registry = GeneralUtility::makeInstance(MetaTagManagerRegistry::class);
-        $registry->registerManager('html5', Html5MetaTagManager::class);
-        $manager = $registry->getManagerForProperty('generator');
-
-        $testHook = new class () {
-            public function handle(): void {}
-        };
-
-        $metaHandler = new MetaHandler(
-            $registry,
-            $eventDispatcher->reveal()
-        );
-
-        $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['TYPO3\CMS\Frontend\Page\PageGenerator']['generateMetaTags']['test'] = $testHook::class . '->handle';
-
-        $manager->addProperty('generator', 'TYPO3 CMS x T3Headless', [], true, 'name');
-
-        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $controller->reveal(), 'abc', false);
-
-        $listener = new AfterCacheableContentIsGeneratedListener(
-            new JsonEncoder(),
-            $metaHandler,
-            new HeadlessUserInt(),
-            new HeadlessMode()
-        );
+        $event = new AfterCacheableContentIsGeneratedEvent($request->reveal(), $content, 'abc', false);
 
         $listener($event);
 
@@ -291,7 +232,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
                 'htmlAttrs' => ['lang' => 'en', 'dir' => null],
                 'bodyAttrs' => ['class' => 'pid-2 layout-custom custom']],
             'appearance' => ['layout' => 'custom'],
-        ]), $event->getController()->content);
+        ]), $event->getContent());
     }
 
     protected function tearDown(): void

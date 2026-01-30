@@ -39,20 +39,20 @@ class AfterCacheableContentIsGeneratedListener
                 return;
             }
 
-            if ($this->headlessUserInt->hasNonCacheableContent($event->getController()->content)) {
+            if ($this->headlessUserInt->hasNonCacheableContent($event->getContent())) {
                 // we have dynamic content on page, we fire MetaHandler later on middleware
                 return;
             }
 
-            $content = json_decode($event->getController()->content, true, 512, JSON_THROW_ON_ERROR);
+            $content = json_decode($event->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
             if (($content['seo']['title'] ?? null) === null) {
                 return;
             }
 
-            $content = $this->metaHandler->process($event->getRequest(), $event->getController(), $content);
+            $content = $this->metaHandler->process($event->getRequest(), $content);
 
-            $event->getController()->content = $this->encoder->encode($content);
+            $event->setContent($this->encoder->encode($content));
         } catch (Throwable $e) {
             return;
         }

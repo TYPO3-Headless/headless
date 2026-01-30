@@ -30,6 +30,7 @@ use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\FileType;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\MetaDataAspect;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
@@ -595,11 +596,11 @@ class FileUtilityTest extends UnitTestCase
         $fileReference->method('getUid')->willReturn(103);
         if ($type === 'video') {
             $fileReference->method('getMimeType')->willReturn('video/youtube');
-            $fileReference->method('getType')->willReturn(AbstractFile::FILETYPE_VIDEO);
+            $fileReference->method('getType')->willReturn(FileType::VIDEO->value);
             $fileReference->method('getPublicUrl')->willReturn('https://www.youtube.com/watch?v=123456789');
             $fileReference->method('getExtension')->willReturn('');
         } else {
-            $fileReference->method('getType')->willReturn(AbstractFile::FILETYPE_IMAGE);
+            $fileReference->method('getType')->willReturn(FileType::IMAGE->value);
             $fileReference->method('getPublicUrl')->willReturn('/fileadmin/test-file.jpg');
             $fileReference->method('getMimeType')->willReturn('image/jpeg');
             $fileReference->method('getExtension')->willReturn('jpg');

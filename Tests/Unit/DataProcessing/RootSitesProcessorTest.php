@@ -50,10 +50,13 @@ class RootSitesProcessorTest extends UnitTestCase
     {
         $processor = new RootSitesProcessor();
 
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
-        $contentObjectRenderer->start([], 'tt_content');
-        $contentObjectRenderer->data['uid'] = 1;
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->data = ['uid' => 1];
+        $contentObjectRenderer->method('stdWrapValue')->willReturnCallback(
+            static function (string $key, array $conf, $defaultValue = '') {
+                return $conf[$key] ?? $defaultValue;
+            }
+        );
         $conf = [];
         $conf['siteProvider'] = TestSiteProvider::class;
         $conf['siteSchema'] = TestDomainSchema::class;
@@ -86,9 +89,8 @@ class RootSitesProcessorTest extends UnitTestCase
     {
         $processor = new RootSitesProcessor();
 
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
-        $contentObjectRenderer->start([], 'tt_content');
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->data = [];
 
         $conf = [];
         self::assertEquals([], $processor->process($contentObjectRenderer, [], $conf, []));
@@ -98,10 +100,8 @@ class RootSitesProcessorTest extends UnitTestCase
     {
         $processor = new RootSitesProcessor();
 
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
-        $contentObjectRenderer->start([], 'tt_content');
-        $contentObjectRenderer->data['uid'] = 1;
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->data = ['uid' => 1];
         $conf = [];
         $conf['siteProvider'] = stdClass::class;
         $this->expectException(InvalidArgumentException::class);
@@ -112,10 +112,8 @@ class RootSitesProcessorTest extends UnitTestCase
     {
         $processor = new RootSitesProcessor();
 
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
-        $contentObjectRenderer->start([], 'tt_content');
-        $contentObjectRenderer->data['uid'] = 1;
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->data = ['uid' => 1];
         $conf = [];
         $conf['siteSchema'] = stdClass::class;
         $this->expectException(InvalidArgumentException::class);

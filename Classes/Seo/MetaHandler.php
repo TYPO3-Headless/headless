@@ -15,11 +15,11 @@ use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
+use TYPO3\CMS\Core\PageTitle\PageTitleProviderManager;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent;
 
 use function array_merge;
@@ -32,14 +32,17 @@ class MetaHandler implements MetaHandlerInterface
     public function __construct(
         private readonly MetaTagManagerRegistry $metaTagRegistry,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly PageTitleProviderManager $pageTitleProviderManager,
     ) {}
 
     public function process(
         ServerRequestInterface $request,
-        TypoScriptFrontendController $controller,
         array $content
     ): array {
-        $_params = ['page' => $controller->page, 'request' => $request, '_seoLinks' => []];
+        $pageInformation = $request->getAttribute('frontend.page.information');
+        $page = $pageInformation->getPageRecord();
+
+        $_params = ['page' => $page, 'request' => $request, '_seoLinks' => []];
         $_ref = null;
         foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['TYPO3\CMS\Frontend\Page\PageGenerator']['generateMetaTags'] ?? [] as $_funcRef) {
             GeneralUtility::callUserFunction($_funcRef, $_params, $_ref);
@@ -48,11 +51,12 @@ class MetaHandler implements MetaHandlerInterface
         $typoScriptSetup = $request->getAttribute('frontend.typoscript')->getSetupArray();
         $typoScriptConfig = $typoScriptSetup['config.'] ?? [];
 
-        $content['seo']['title'] = $controller->generatePageTitle($request);
+        $content['seo']['title'] = $this->generatePageTitle($request, $typoScriptConfig);
 
+        $cObj = $this->createContentObjectRenderer($request, $page);
         $this->generateMetaTagsFromTyposcript(
             $typoScriptSetup['page.']['meta.'] ?? [],
-            $controller->cObj
+            $cObj
         );
 
         $metaTags = [];
@@ -119,6 +123,25 @@ class MetaHandler implements MetaHandlerInterface
         $content['seo']['bodyAttrs'] = $this->normalizeAttr($bodyTagAttrs);
 
         return $content;
+    }
+
+    /**
+     * Generate page title using PageTitleProviderManager
+     */
+    protected function generatePageTitle(ServerRequestInterface $request, array $typoScriptConfig): string
+    {
+        return $this->pageTitleProviderManager->getTitle($request);
+    }
+
+    /**
+     * Create ContentObjectRenderer instance for TypoScript processing
+     */
+    protected function createContentObjectRenderer(ServerRequestInterface $request, array $page): ContentObjectRenderer
+    {
+        $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
+        $cObj->setRequest($request);
+        $cObj->start($page, 'pages');
+        return $cObj;
     }
 
     /**
