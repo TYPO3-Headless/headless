@@ -116,7 +116,6 @@ return static function (ContainerConfigurator $configurator): void {
 
     if ($cmsFormsInstalled) {
         $services->set(Translator::class)->public();
-        $services->set(FormTranslationService::class)->arg('$runtimeCache', service('cache.runtime'))->public();
     }
 
     $features = GeneralUtility::makeInstance(Features::class);
