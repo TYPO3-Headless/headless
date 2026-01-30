@@ -29,8 +29,8 @@
   "require": {
     "ext-json": "*",
     "php": ">= 8.2",
-    "typo3/cms-core": "^12.4 || ^13.4",
-    "typo3/cms-install": "^12.4 || ^13.4"
+    "typo3/cms-core": "^14.0",
+    "typo3/cms-install": "^14.0"
   },
   "require-dev": {
     "ergebnis/composer-normalize": "^2.43",
@@ -41,15 +41,14 @@
     "phpstan/extension-installer": "^1.1",
     "phpstan/phpstan": "^1.12",
     "phpunit/phpcov": "^8 || ^9 || ^10",
-    "saschaegerer/phpstan-typo3": "^1.1",
     "seld/jsonlint": "^1.11",
     "symfony/yaml": "^6.1 || ^7.1",
-    "typo3/cms-form": "^12.4 || ^13.3",
-    "typo3/testing-framework": "^8.0",
+    "typo3/cms-form": "^14.0",
+    "typo3/testing-framework": "^9.0",
     "typo3/coding-standards": "^0.8"
   },
   "conflict": {
-    "typo3/cms-core": "<12.4.21 || >=13.4 <13.4.18"
+    "typo3/cms-core": "<14.0"
   },
   "config": {
     "preferred-install": {

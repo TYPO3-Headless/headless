@@ -30,9 +30,8 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Frontend\Controller\ErrorController;
-use TYPO3\CMS\Frontend\Http\RequestHandler;
-
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_decode;
@@ -86,7 +85,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $request = $request->withAttribute('routing', new SiteRouteResult($uri, $site));
         $request = $request->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
-        $response = $resolver->process($request, $this->prophesize(RequestHandler::class)->reveal());
+        $response = $resolver->process($request, $this->prophesize(RequestHandlerInterface::class)->reveal());
 
         self::assertSame(['redirectUrl' => 'https://www.typo3.org/en-us', 'statusCode' => 307], json_decode($response->getBody()->getContents(), true));
 
@@ -97,7 +96,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $request = $request->withAttribute('routing', new SiteRouteResult($uri, $site));
         $request = $request->withAttribute('language', new SiteLanguage(0, 'en', new Uri('/en-us'), ['enabled' =>  true]));
 
-        $handler = $this->prophesize(RequestHandler::class);
+        $handler = $this->prophesize(RequestHandlerInterface::class);
         $handler->handle($request)->willReturn(new JsonResponse(['nextMiddleware' => true]));
 
         $response = $resolver->process($request, $handler->reveal());
@@ -110,7 +109,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $request = $request->withUri($uri);
         $request = $request->withAttribute('language', null);
 
-        $handler = $this->prophesize(RequestHandler::class);
+        $handler = $this->prophesize(RequestHandlerInterface::class);
         $handler->handle($request)->willReturn(new JsonResponse(['nextMiddleware' => true]));
 
         $response = $resolver->process($request, $handler->reveal());
@@ -157,7 +156,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $request = $request->withUri($uri);
         $request = $request->withAttribute('site', $site);
 
-        $handler = $this->prophesize(RequestHandler::class);
+        $handler = $this->prophesize(RequestHandlerInterface::class);
         $handler->handle($request)->willReturn(new JsonResponse(['nextMiddleware' => true]));
 
         $response = $resolver->process($request, $handler->reveal());
@@ -170,7 +169,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $request = $request->withUri($uri);
         $request = $request->withAttribute('site', new NullSite());
 
-        $handler = $this->prophesize(RequestHandler::class);
+        $handler = $this->prophesize(RequestHandlerInterface::class);
         $handler->handle($request)->willReturn(new JsonResponse(['ErrorController' => true]));
 
         $response = $resolver->process($request, $handler->reveal());

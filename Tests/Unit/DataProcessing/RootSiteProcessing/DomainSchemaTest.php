@@ -37,7 +37,7 @@ class DomainSchemaTest extends UnitTestCase
     {
         $testUri = new Uri('https://test.domain.tld');
         $cObj = $this->prophesize(ContentObjectRenderer::class);
-        $cObj->start(Argument::any());
+        $cObj->start(Argument::any(), Argument::any());
         $mainSite = $this->getSite($testUri, 1);
 
         $this->prophesize(SiteProvider::class);

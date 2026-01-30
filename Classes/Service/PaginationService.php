@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Service;
 
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /**
@@ -146,8 +147,10 @@ class PaginationService
 
     protected function getCurrentPageId(): int
     {
-        if (is_object($GLOBALS['TSFE'])) {
-            return (int)$GLOBALS['TSFE']->id;
+        $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
+        if ($request instanceof ServerRequestInterface) {
+            $routing = $request->getAttribute('routing');
+            return $routing?->getPageId() ?? 0;
         }
         return 0;
     }

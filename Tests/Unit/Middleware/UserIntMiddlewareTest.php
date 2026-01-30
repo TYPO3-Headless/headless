@@ -19,10 +19,9 @@ use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use PHPUnit\Framework\Attributes\Test;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
-use TYPO3\CMS\Frontend\Http\RequestHandler;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_encode;
@@ -91,7 +90,6 @@ class UserIntMiddlewareTest extends UnitTestCase
         $request = new ServerRequest();
 
         $request = $request->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
-        $request = $request->withAttribute('frontend.controller', $this->createMock(TypoScriptFrontendController::class));
 
         $metaHandlerMock = $this->createMock(MetaHandler::class);
         $metaHandlerMock->method('process')->withAnyParameters()->willReturn(['seo' => ['title' => 'test2']]);
@@ -113,7 +111,7 @@ class UserIntMiddlewareTest extends UnitTestCase
 
     protected function getMockHandlerWithResponse($response)
     {
-        $handler = $this->createMock(RequestHandler::class, ['handle']);
+        $handler = $this->createMock(RequestHandlerInterface::class);
         $handler->method('handle')->willReturn($response);
         return $handler;
     }

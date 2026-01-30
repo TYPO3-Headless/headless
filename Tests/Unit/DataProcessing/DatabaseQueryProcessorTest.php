@@ -28,10 +28,7 @@ class DatabaseQueryProcessorTest extends UnitTestCase
 {
     use ProphecyTrait;
 
-    /**
-     * @var ObjectProphecy|TypoScriptService
-     */
-    protected $typoScriptService;
+    protected TypoScriptService $typoScriptService;
 
     /**
      * @var ObjectProphecy|ContentDataProcessor
@@ -50,13 +47,13 @@ class DatabaseQueryProcessorTest extends UnitTestCase
 
     protected function setUp(): void
     {
-        $this->typoScriptService = $this->prophesize(TypoScriptService::class);
+        $this->typoScriptService = new TypoScriptService();
         $this->contentDataProcessor = $this->prophesize(ContentDataProcessor::class);
         $this->contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
         $this->contentObjectRenderer->getRequest()->willReturn(new ServerRequest());
         $this->subject = $this->getAccessibleMock(DatabaseQueryProcessor::class, ['createContentObjectRenderer'], [
             $this->contentDataProcessor->reveal(),
-            $this->typoScriptService->reveal(),
+            $this->typoScriptService,
         ]);
         parent::setUp();
     }
@@ -166,9 +163,6 @@ class DatabaseQueryProcessorTest extends UnitTestCase
 
         $this->contentObjectRenderer->getRecords('tt_content', $processorConfigurationWithoutTable)->shouldBeCalledOnce()->willReturn($records);
         $this->contentDataProcessor->process($contentObjectRenderer, $processorConfigurationWithoutTable, $expectedRecords[0])->shouldBeCalledOnce()->willReturn($expectedRecords[0]);
-
-        $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['fields.'])->shouldBeCalledOnce()->willReturn($fields);
-        $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON'])->shouldBeCalledOnce()->willReturn($jsonCE);
 
         $contentObjectRenderer->start($records[0], $processorConfiguration['table'])->shouldBeCalledOnce();
         $contentObjectRenderer->setRequest(Argument::type(ServerRequest::class))->shouldBeCalledOnce();

@@ -16,11 +16,11 @@ use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
 use TYPO3\CMS\Backend\View\BackendLayoutView;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\TimeTracker\TimeTracker;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
+use TYPO3\CMS\Frontend\ContentObject\Event\ModifyRecordsAfterFetchingContentEvent;
 
 use function array_merge;
 use function count;
@@ -200,23 +200,25 @@ class JsonContentContentObject extends ContentContentObject
     }
 
     /**
+     * Local record register to track processed records (replaces TSFE->recordRegister)
+     */
+    private array $recordRegister = [];
+
+    /**
      * @param array<string, mixed> $conf
      * @return array<string, mixed>
      */
     private function prepareValue(array $conf): array
     {
-        $t3v13andAbove = (new Typo3Version())->getMajorVersion() >= 13;
-
-        $frontendController = $this->getTypoScriptFrontendController();
         $theValue = [];
-        $originalRec = $frontendController->currentRecord;
+        $originalRec = $this->cObj->currentRecord;
         // If the currentRecord is set, we register, that this record has invoked this function.
         // It should not be allowed to do this again then!!
         if ($originalRec) {
-            if (isset($frontendController->recordRegister[$originalRec])) {
-                ++$frontendController->recordRegister[$originalRec];
+            if (isset($this->recordRegister[$originalRec])) {
+                ++$this->recordRegister[$originalRec];
             } else {
-                $frontendController->recordRegister[$originalRec] = 1;
+                $this->recordRegister[$originalRec] = 1;
             }
         }
         $conf['table'] = trim((string)$this->cObj->stdWrapValue('table', $conf ?? []));
@@ -241,50 +243,40 @@ class JsonContentContentObject extends ContentContentObject
         $tmpValue = '';
 
         do {
-            if ($t3v13andAbove) {
-                $modifyRecordsEvent = $this->eventDispatcher->dispatch(
-                    new \TYPO3\CMS\Frontend\ContentObject\Event\ModifyRecordsAfterFetchingContentEvent(
-                        $this->cObj->getRecords($conf['table'], $conf['select.']),
-                        json_encode($theValue, JSON_THROW_ON_ERROR),
-                        $slide,
-                        $slideCollect,
-                        $slideCollectReverse,
-                        $slideCollectFuzzy,
-                        $conf
-                    )
-                );
+            $modifyRecordsEvent = $this->eventDispatcher->dispatch(
+                new ModifyRecordsAfterFetchingContentEvent(
+                    $this->cObj->getRecords($conf['table'], $conf['select.']),
+                    json_encode($theValue, JSON_THROW_ON_ERROR),
+                    $slide,
+                    $slideCollect,
+                    $slideCollectReverse,
+                    $slideCollectFuzzy,
+                    $conf
+                )
+            );
 
-                $records = $modifyRecordsEvent->getRecords();
-                $theValue = json_decode($modifyRecordsEvent->getFinalContent(), true, 512, JSON_THROW_ON_ERROR);
-                $slide = $modifyRecordsEvent->getSlide();
-                $slideCollect = $modifyRecordsEvent->getSlideCollect();
-                $slideCollectReverse = $modifyRecordsEvent->getSlideCollectReverse();
-                $slideCollectFuzzy = $modifyRecordsEvent->getSlideCollectFuzzy();
-                $conf = $modifyRecordsEvent->getConfiguration();
-            } else {
-                $records = $this->cObj->getRecords($conf['table'], $conf['select.']);
-            }
+            $records = $modifyRecordsEvent->getRecords();
+            $theValue = json_decode($modifyRecordsEvent->getFinalContent(), true, 512, JSON_THROW_ON_ERROR);
+            $slide = $modifyRecordsEvent->getSlide();
+            $slideCollect = $modifyRecordsEvent->getSlideCollect();
+            $slideCollectReverse = $modifyRecordsEvent->getSlideCollectReverse();
+            $slideCollectFuzzy = $modifyRecordsEvent->getSlideCollectFuzzy();
+            $conf = $modifyRecordsEvent->getConfiguration();
+
             $cobjValue = [];
             if (!empty($records)) {
                 $this->timeTracker->setTSlogMessage('NUMROWS: ' . count($records));
 
-                $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class, $frontendController);
+                $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
                 $cObj->setParent($this->cObj->data, $this->cObj->currentRecord);
                 $this->cObj->currentRecordNumber = 0;
 
                 foreach ($records as $row) {
-                    if (!$t3v13andAbove) {
-                        // Call hook for possible manipulation of database row for cObj->data
-                        foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content_content.php']['modifyDBRow'] ?? [] as $className) {
-                            $_procObj = GeneralUtility::makeInstance($className);
-                            $_procObj->modifyDBRow($row, $conf['table']);
-                        }
-                    }
                     $registerField = $conf['table'] . ':' . ($row['uid'] ?? 0);
-                    if (!($frontendController->recordRegister[$registerField] ?? false)) {
+                    if (!($this->recordRegister[$registerField] ?? false)) {
                         $this->cObj->currentRecordNumber++;
                         $cObj->parentRecordNumber = $this->cObj->currentRecordNumber;
-                        $frontendController->currentRecord = $registerField;
+                        $this->cObj->currentRecord = $registerField;
                         $this->cObj->lastChanged($row['tstamp'] ?? 0);
                         $cObj->setRequest($this->request);
                         $cObj->start($row, $conf['table']);
@@ -318,9 +310,9 @@ class JsonContentContentObject extends ContentContentObject
 
         $theValue = $this->groupContentElementsByColPos($theValue, $conf);
         // Restore
-        $frontendController->currentRecord = $originalRec;
+        $this->cObj->currentRecord = $originalRec;
         if ($originalRec) {
-            --$frontendController->recordRegister[$originalRec];
+            --$this->recordRegister[$originalRec];
         }
 
         return $theValue;

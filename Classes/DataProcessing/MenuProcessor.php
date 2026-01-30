@@ -51,14 +51,8 @@ use function is_array;
  *     }
  *   }
  *
- *   # To customize JSON output you could use `overwriteMenuLevelConfig`
- *   overwriteMenuLevelConfig {
- *     stdWrap.cObject {
- *       100 = TEXT
- *       100.field = uid
- *       100.wrap = ,"uid":|
- *     }
- *   }
+ *   # To add additional fields from page data to menu items
+ *   additionalFields = abstract
  * }
  *
  * @codeCoverageIgnore
@@ -70,7 +64,7 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
     /**
      * @inheritDoc
      */
-    public $allowedConfigurationKeys = [
+    public array $allowedConfigurationKeys = [
         'cache_period',
         'entryLevel',
         'entryLevel.',
@@ -114,12 +108,14 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
         'appendData',
         'overwriteMenuLevelConfig.',
         'overwriteMenuConfig.',
+        'additionalFields',
+        'additionalFields.',
     ];
 
     /**
      * @inheritDoc
      */
-    public $removeConfigurationKeysForHmenu = [
+    public array $removeConfigurationKeysForHmenu = [
         'levels',
         'levels.',
         'expandAll',
@@ -136,23 +132,30 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
         'appendData',
         'overwriteMenuLevelConfig.',
         'overwriteMenuConfig.',
+        'additionalFields',
+        'additionalFields.',
     ];
 
     /**
-     * Build the menu configuration so it can be treated by HMENU cObject and allow customization for $this->menuLevelConfig
+     * Build the menu configuration so it can be treated by HMENU cObject and allow customization
      */
-    public function buildConfiguration()
+    public function buildConfiguration(): void
     {
-        // Before rendering the actual menu via HMENU we want to update $this->menuLevelConfig
-        $overwriteMenuLevelConfig = $this->getConfigurationValue('overwriteMenuLevelConfig.');
-        if (is_array($overwriteMenuLevelConfig)) {
-            ArrayUtility::mergeRecursiveWithOverrule($this->menuLevelConfig, $overwriteMenuLevelConfig);
-        }
-
         parent::buildConfiguration();
 
-        // override built configuration
-        $overwriteMenuConfig = $this->getConfigurationValue('overwriteMenuConfig.');
+        // After parent builds configuration, apply level-specific overrides to each level
+        $overwriteMenuLevelConfig = $this->processorConfiguration['overwriteMenuLevelConfig.'] ?? null;
+        if (is_array($overwriteMenuLevelConfig)) {
+            // Apply to each menu level that was configured
+            for ($i = 1; $i <= $this->menuLevels; $i++) {
+                if (isset($this->menuConfig[$i . '.']) && is_array($this->menuConfig[$i . '.'])) {
+                    ArrayUtility::mergeRecursiveWithOverrule($this->menuConfig[$i . '.'], $overwriteMenuLevelConfig);
+                }
+            }
+        }
+
+        // Override built configuration
+        $overwriteMenuConfig = $this->processorConfiguration['overwriteMenuConfig.'] ?? null;
         if (is_array($overwriteMenuConfig)) {
             ArrayUtility::mergeRecursiveWithOverrule($this->menuConfig, $overwriteMenuConfig);
         }
@@ -174,6 +177,47 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
             $processedData
         );
 
+        // Add additional fields from page data to menu items
+        $additionalFields = $this->getAdditionalFields($processorConfiguration);
+        if ($additionalFields !== [] && isset($processedData[$this->menuTargetVariableName])) {
+            $processedData[$this->menuTargetVariableName] = $this->addAdditionalFieldsToMenuItems(
+                $processedData[$this->menuTargetVariableName],
+                $additionalFields
+            );
+        }
+
         return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
+    }
+
+    /**
+     * Get additional fields to include from configuration
+     */
+    protected function getAdditionalFields(array $processorConfiguration): array
+    {
+        $additionalFields = $processorConfiguration['additionalFields'] ?? '';
+        if ($additionalFields === '') {
+            return [];
+        }
+        return array_map('trim', explode(',', $additionalFields));
+    }
+
+    /**
+     * Add additional fields from page data to menu items recursively
+     */
+    protected function addAdditionalFieldsToMenuItems(array $menuItems, array $additionalFields): array
+    {
+        foreach ($menuItems as $key => $item) {
+            if (isset($item['data']) && is_array($item['data'])) {
+                foreach ($additionalFields as $field) {
+                    if (array_key_exists($field, $item['data'])) {
+                        $menuItems[$key][$field] = $item['data'][$field];
+                    }
+                }
+            }
+            if (isset($item['children']) && is_array($item['children'])) {
+                $menuItems[$key]['children'] = $this->addAdditionalFieldsToMenuItems($item['children'], $additionalFields);
+            }
+        }
+        return $menuItems;
     }
 }

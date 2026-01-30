@@ -24,7 +24,7 @@ use function ob_end_clean;
 use function ob_get_clean;
 use function ob_start;
 
-class TemplateView extends \TYPO3\CMS\Fluid\View\TemplateView
+class TemplateView extends \TYPO3Fluid\Fluid\View\TemplateView
 {
     public function render($actionName = null)
     {

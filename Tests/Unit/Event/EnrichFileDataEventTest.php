@@ -14,8 +14,8 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Event;
 use FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use Prophecy\PhpUnit\ProphecyTrait;
-use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Core\Resource\FileType;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class EnrichFileDataEventTest extends UnitTestCase
@@ -78,10 +78,10 @@ class EnrichFileDataEventTest extends UnitTestCase
         $fileReference->method('getUid')->willReturn(103);
         if ($type === 'video') {
             $fileReference->method('getMimeType')->willReturn('video/youtube');
-            $fileReference->method('getType')->willReturn(AbstractFile::FILETYPE_VIDEO);
+            $fileReference->method('getType')->willReturn(FileType::VIDEO->value);
             $fileReference->method('getPublicUrl')->willReturn('https://www.youtube.com/watch?v=123456789');
         } else {
-            $fileReference->method('getType')->willReturn(AbstractFile::FILETYPE_IMAGE);
+            $fileReference->method('getType')->willReturn(FileType::IMAGE->value);
             $fileReference->method('getPublicUrl')->willReturn('/fileadmin/test-file.jpg');
             $fileReference->method('getMimeType')->willReturn('image/jpeg');
         }

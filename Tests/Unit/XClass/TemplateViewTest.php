@@ -26,6 +26,7 @@ use TYPO3\CMS\Fluid\Core\ViewHelper\ViewHelperResolver;
 use TYPO3\CMS\Fluid\View\TemplatePaths;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use TYPO3Fluid\Fluid\Core\Cache\FluidCacheInterface;
+use TYPO3Fluid\Fluid\Core\ViewHelper\ArgumentProcessorInterface;
 use TYPO3Fluid\Fluid\Core\Variables\StandardVariableProvider;
 use TYPO3Fluid\Fluid\View\Exception\InvalidTemplateResourceException;
 
@@ -57,7 +58,7 @@ class TemplateViewTest extends UnitTestCase
             ->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
         $templatePaths = $this->createMock(TemplatePaths::class);
-        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
+        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths, $this->createMock(ArgumentProcessorInterface::class));
 
         $variableProvider = new StandardVariableProvider();
         $variableProvider->add('settings', ['phpTemplate' => 1]);
@@ -75,7 +76,7 @@ class TemplateViewTest extends UnitTestCase
         $templatePaths = $this->createMock(TemplatePaths::class);
         $templatePaths->method('resolveTemplateFileForControllerAndActionAndFormat')->willReturn(__DIR__ . '/Fixtures/Templates/Default/Default.php');
 
-        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
+        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths, $this->createMock(ArgumentProcessorInterface::class));
 
         $variableProvider = new StandardVariableProvider();
         $variableProvider->add('settings', ['phpTemplate' => 1]);
@@ -95,7 +96,7 @@ class TemplateViewTest extends UnitTestCase
 
         $templatePaths = $this->createMock(TemplatePaths::class);
 
-        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
+        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths, $this->createMock(ArgumentProcessorInterface::class));
 
         $variableProvider = new StandardVariableProvider();
         $variableProvider->add('settings', ['phpTemplate' => 1]);
@@ -120,7 +121,7 @@ class TemplateViewTest extends UnitTestCase
             ->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
         $templatePaths = $this->createMock(TemplatePaths::class);
-        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
+        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths, $this->createMock(ArgumentProcessorInterface::class));
 
         $variableProvider = new StandardVariableProvider();
         $variableProvider->add('settings', ['phpTemplate' => 1]);
@@ -146,7 +147,7 @@ class TemplateViewTest extends UnitTestCase
             ->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
         $templatePaths = $this->createMock(TemplatePaths::class);
-        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths);
+        $context = new RenderingContext($this->createMock(ViewHelperResolver::class), $this->createMock(FluidCacheInterface::class), [], [], $templatePaths, $this->createMock(ArgumentProcessorInterface::class));
 
         $variableProvider = new StandardVariableProvider();
         $variableProvider->add('settings', ['phpTemplate' => 1]);
