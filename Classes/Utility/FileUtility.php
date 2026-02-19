@@ -134,7 +134,7 @@ class FileUtility
             'originalUrl' => $originalFileUrl,
             'uidLocal' => $uidLocal,
             'fileReferenceUid' => $fileReferenceUid,
-            'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getSize()),
+            'size' => $this->calculateKilobytesToFileSize((int)$fileReference->getOriginalFile()->getSize()),
             'dimensions' => [
                 'width' => $fileReference->getProperty('width'),
                 'height' => $fileReference->getProperty('height'),
@@ -153,7 +153,7 @@ class FileUtility
             ],
             'crop' => $crop,
             'autoplay' => $fileReference->getProperty('autoplay'),
-            'extension' => $fileReference->getProperty('extension'),
+            'extension' => $fileReference->getOriginalFile()->getProperty('extension'),
         ];
 
         $processedProperties = array_merge(
