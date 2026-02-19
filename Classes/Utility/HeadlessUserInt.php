@@ -49,7 +49,7 @@ class HeadlessUserInt
                 sprintf(self::REGEX, self::NESTED, self::NESTED),
                 [$this, 'replace'],
                 $content
-            );
+            ) ?? $content;
         }
 
         if (str_contains($content, self::NESTED_NULLABLE)) {
@@ -59,7 +59,7 @@ class HeadlessUserInt
                     return $this->replace($content, true);
                 },
                 $content
-            );
+            ) ?? $content;
         }
 
         if (str_contains($content, self::STANDARD_NULLABLE)) {
@@ -69,14 +69,14 @@ class HeadlessUserInt
                     return $this->replace($content, true);
                 },
                 $content
-            );
+            ) ?? $content;
         }
 
         return preg_replace_callback(
             sprintf(self::REGEX, self::STANDARD, self::STANDARD),
             [$this, 'replace'],
             $content
-        );
+        ) ?? $content;
     }
 
     /**
