@@ -13,6 +13,7 @@ namespace FriendsOfTYPO3\Headless\Utility;
 
 use function json_decode;
 use function json_encode;
+use function json_last_error;
 use function preg_quote;
 use function preg_replace;
 use function preg_replace_callback;
@@ -20,13 +21,22 @@ use function sprintf;
 use function str_contains;
 use function substr;
 
+use function trim;
+
+use const JSON_ERROR_NONE;
+use const PHP_VERSION_ID;
+
 class HeadlessUserInt
 {
     public const STANDARD = 'HEADLESS_INT';
     public const NESTED = 'NESTED_HEADLESS_INT';
     public const STANDARD_NULLABLE = 'HEADLESS_INT_NULL';
     public const NESTED_NULLABLE = 'NESTED_HEADLESS_INT_NULL';
-    private const REGEX = '/("|)%s_START<<(.*?)>>%s_END("|)/s';
+
+    private const REGEX = '/(?P<quote>\\\\"|")?(?P<type>%s|%s)_START<<(?P<content>(?:[^>]|>(?!>(?P=type)_END))*+)>>(?P=type)_END(?P=quote)?/sS';
+
+    /** @var array<string, string> */
+    private static array $regexPatterns = [];
 
     public function wrap(string $content, string $type = self::STANDARD): string
     {
@@ -34,7 +44,7 @@ class HeadlessUserInt
             '/(' . preg_quote('<!--INT_SCRIPT.', '/') . '[0-9a-z]{32}' . preg_quote('-->', '/') . ')/',
             sprintf('%s_START<<\1>>%s_END', $type, $type),
             $content
-        );
+        ) ?? $content;
     }
 
     public function hasNonCacheableContent(string $content): bool
@@ -46,67 +56,80 @@ class HeadlessUserInt
     {
         if (str_contains($content, self::NESTED)) {
             $content = preg_replace_callback(
-                sprintf(self::REGEX, self::NESTED, self::NESTED),
-                [$this, 'replace'],
+                $this->buildPattern(self::NESTED, self::NESTED_NULLABLE),
+                fn(array $m) => $this->replace($m, $m['type'] === self::NESTED_NULLABLE),
                 $content
-            );
-        }
-
-        if (str_contains($content, self::NESTED_NULLABLE)) {
-            $content = preg_replace_callback(
-                sprintf(self::REGEX, self::NESTED_NULLABLE, self::NESTED_NULLABLE),
-                function (array $content) {
-                    return $this->replace($content, true);
-                },
-                $content
-            );
-        }
-
-        if (str_contains($content, self::STANDARD_NULLABLE)) {
-            $content = preg_replace_callback(
-                sprintf(self::REGEX, self::STANDARD_NULLABLE, self::STANDARD_NULLABLE),
-                function (array $content) {
-                    return $this->replace($content, true);
-                },
-                $content
-            );
+            ) ?? $content;
         }
 
         return preg_replace_callback(
-            sprintf(self::REGEX, self::STANDARD, self::STANDARD),
-            [$this, 'replace'],
+            $this->buildPattern(self::STANDARD, self::STANDARD_NULLABLE),
+            fn(array $m) => $this->replace($m, $m['type'] === self::STANDARD_NULLABLE),
             $content
+        ) ?? $content;
+    }
+
+    protected function buildPattern(string $primary, string $nullable): string
+    {
+        return self::$regexPatterns[$primary] ??= sprintf(
+            self::REGEX,
+            preg_quote($nullable, '/'),
+            preg_quote($primary, '/')
         );
     }
 
-    /**
-     * for use in preg_replace_callback
-     * to unwrap all HEADLESS_INT<<>>HEADLESS_INT blocks
-     *
-     * @param array<int, string> $input
-     */
-    private function replace(array $input, bool $returnNull = false): ?string
+    protected function replace(array $m, bool $isNullable): string
     {
-        $content = $input[2];
-        if ($input[1] === $input[3] && $input[1] === '"') {
-            // have a look inside if it might be json already
-            $decoded = json_decode($content);
+        $hasQuotes  = $m['quote'] !== '';
+        $rawContent = (string)$m['content'];
 
-            if (empty($decoded) && $returnNull) {
-                return json_encode(null);
+        if ($hasQuotes) {
+            if ($this->isJson($rawContent)) {
+                return $rawContent;
+            }
+
+            $decoded = json_decode($rawContent);
+
+            if (empty($decoded) && $isNullable) {
+                return 'null';
             }
 
             if ($decoded !== null) {
-                return $content;
+                return $rawContent;
             }
-            return json_encode($content);
+
+            return json_encode($rawContent);
         }
 
-        // trim one occurrence of double quotes at both ends
-        $jsonEncoded = json_encode($content);
-        if ($jsonEncoded[0] === '"' && $jsonEncoded[-1] === '"') {
-            $jsonEncoded = substr($jsonEncoded, 1, -1);
+        $jsonEncoded = json_encode($rawContent);
+
+        if ($jsonEncoded !== false && $jsonEncoded[0] === '"') {
+            return substr($jsonEncoded, 1, -1);
         }
-        return $jsonEncoded;
+
+        return $jsonEncoded ?: '';
+    }
+
+    protected function isJson(string $string): bool
+    {
+        $string = trim($string);
+
+        if ($string === '') {
+            return false;
+        }
+
+        $first = $string[0];
+        $last  = $string[-1];
+
+        if (!(($first === '{' && $last === '}') || ($first === '[' && $last === ']'))) {
+            return false;
+        }
+
+        if (PHP_VERSION_ID >= 80300) {
+            return json_validate($string);
+        }
+
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
     }
 }
