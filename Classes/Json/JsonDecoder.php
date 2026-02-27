@@ -12,11 +12,14 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Json;
 
 use function is_array;
-use function is_numeric;
 use function is_object;
 use function is_string;
 use function json_decode;
+use function json_last_error;
 use function trim;
+
+use const JSON_ERROR_NONE;
+use const PHP_VERSION_ID;
 
 class JsonDecoder implements JsonDecoderInterface
 {
@@ -25,45 +28,46 @@ class JsonDecoder implements JsonDecoderInterface
      */
     public function decode(array $data): array
     {
-        $json = [];
+        $result = [];
 
-        foreach ($data as $key => $singleData) {
-            if (is_string($singleData)) {
-                if ($this->isJson($singleData)) {
-                    $json[$key] = json_decode($singleData);
+        foreach ($data as $key => $value) {
+            if (is_string($value)) {
+                if ($value !== '' && ($value[0] === '{' || $value[0] === '[')) {
+                    $decoded = json_decode($value);
+                    $result[$key] = (is_object($decoded) || is_array($decoded)) ? $decoded : $value;
                 } else {
-                    $json[$key] = $singleData;
+                    $result[$key] = $value;
                 }
-            } elseif (is_array($singleData)) {
-                $json[$key] = $this->decode($singleData);
+            } elseif (is_array($value)) {
+                $result[$key] = $this->decode($value);
             } else {
-                $json[$key] = $singleData;
+                $result[$key] = $value;
             }
         }
-        return $json;
+
+        return $result;
     }
 
     /**
      * @param mixed $possibleJson
      */
-    public function isJson($possibleJson): bool
+    public function isJson(mixed $possibleJson): bool
     {
-        if (is_numeric($possibleJson)) {
+        if (!is_string($possibleJson) || $possibleJson === '') {
             return false;
         }
 
-        $possibleJson = trim((string)$possibleJson);
+        $trimmed = trim($possibleJson);
 
-        if ($possibleJson === '') {
+        if ($trimmed === '' || ($trimmed[0] !== '{' && $trimmed[0] !== '[')) {
             return false;
         }
 
-        $data = json_decode($possibleJson);
-
-        if (!is_object($data) && !is_array($data)) {
-            return false;
+        if (PHP_VERSION_ID >= 80300) {
+            return json_validate($possibleJson);
         }
 
-        return $data !== null;
+        json_decode($possibleJson);
+        return json_last_error() === JSON_ERROR_NONE;
     }
 }
