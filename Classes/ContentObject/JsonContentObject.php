@@ -14,23 +14,17 @@ namespace FriendsOfTYPO3\Headless\ContentObject;
 use FriendsOfTYPO3\Headless\Json\JsonDecoderInterface;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
-use Generator;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use RecursiveArrayIterator;
-use RecursiveIteratorIterator;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 
 use function is_array;
-use function strpos;
 
 class JsonContentObject extends AbstractContentObject implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
-
-    private array $conf;
 
     public function __construct(
         protected ContentDataProcessor $contentDataProcessor,
@@ -41,25 +35,28 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
 
     /**
      * Rendering the cObject, JSON
+     *
      * @param array $conf Array of TypoScript properties
-     * @return string The HTML output
+     * @return string JSON-encoded content
      */
     public function render($conf = []): string
     {
-        if (!empty($conf['if.']) && !$this->cObj->checkIf($conf['if.'])) {
-            return '';
-        }
-
-        $data = [];
-
         if (!is_array($conf)) {
             $conf = [];
         }
 
-        $this->conf = $conf;
+        if (!empty($conf['if.']) && !$this->cObj->checkIf($conf['if.'])) {
+            return '';
+        }
+
+        $nullableFieldsIfEmpty = array_flip(
+            GeneralUtility::trimExplode(',', $conf['nullableFieldsIfEmpty'] ?? '', true)
+        );
+
+        $data = [];
 
         if (isset($conf['fields.'])) {
-            $data = $this->cObjGet($conf['fields.']);
+            $data = $this->cObjGet($conf['fields.'], '', $nullableFieldsIfEmpty);
         }
         if (isset($conf['dataProcessing.'])) {
             $data = $this->processFieldWithDataProcessing($conf);
@@ -79,80 +76,71 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     }
 
     /**
-     * Rendering of a "string array" of cObjects from TypoScript
-     * Will call ->cObjGetSingle() for each cObject found and accumulate the output.
-     *
-     * @param array $setup array with cObjects as values.
-     * @param string $addKey A prefix for the debugging information
-     * @return array Rendered output from the cObjects in the array.
-     * @see cObjGetSingle()
+     * @param array  $setup
+     * @param string $addKey
+     * @param array  $nullableFieldsIfEmpty
+     * @return array
      */
-    public function cObjGet(array $setup, string $addKey = ''): array
+    public function cObjGet(array $setup, string $addKey = '', array $nullableFieldsIfEmpty = []): array
     {
         $content = [];
-        $nullableFieldsIfEmpty = GeneralUtility::trimExplode(',', $this->conf['nullableFieldsIfEmpty'] ?? '', true);
 
-        $sKeyArray = $this->filterByStringKeys($setup);
-        foreach ($sKeyArray as $theKey) {
-            $theValue = $setup[$theKey];
-            if ((string)$theKey && !str_contains($theKey, '.')) {
+        foreach ($setup as $theKey => $theValue) {
+            if (!is_string($theKey) || $theKey === '') {
+                continue;
+            }
+
+            if (!str_contains($theKey, '.')) {
                 $conf = $setup[$theKey . '.'] ?? [];
-                $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
-                if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
+
+                if (!empty($conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
-                }
-                if ((isset($conf['floatval']) && $conf['floatval']) || $theValue === 'FLOAT') {
+                } elseif (!empty($conf['floatval']) || $theValue === 'FLOAT') {
                     $content[$theKey] = (float)$content[$theKey];
-                }
-                if ((isset($conf['boolval']) && $conf['boolval']) || $theValue === 'BOOL') {
+                } elseif (!empty($conf['boolval']) || $theValue === 'BOOL') {
                     $content[$theKey] = (bool)(int)$content[$theKey];
                 }
-                if ($theValue === 'USER_INT' || str_starts_with((string)$content[$theKey], '<!--INT_SCRIPT.')) {
-                    $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey], (int)($conf['ifEmptyReturnNull'] ?? 0) === 1 ? HeadlessUserInt::STANDARD_NULLABLE : HeadlessUserInt::STANDARD);
+
+                $ifEmptyReturnNull = (int)($conf['ifEmptyReturnNull'] ?? 0) === 1;
+
+                if ($theValue === 'USER_INT' || (is_string($content[$theKey]) && str_starts_with($content[$theKey], '<!--INT_SCRIPT.'))) {
+                    $content[$theKey] = $this->headlessUserInt->wrap(
+                        $content[$theKey],
+                        $ifEmptyReturnNull ? HeadlessUserInt::STANDARD_NULLABLE : HeadlessUserInt::STANDARD
+                    );
                 }
-                if ($content[$theKey] === '' && ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 || in_array($theKey, $nullableFieldsIfEmpty, true))) {
+
+                if ($content[$theKey] === '' && ($ifEmptyReturnNull || isset($nullableFieldsIfEmpty[$theKey]))) {
                     $content[$theKey] = null;
                 }
+
                 if ((int)($conf['ifEmptyUnsetKey'] ?? 0) === 1 && ($content[$theKey] === '' || $content[$theKey] === false)) {
                     unset($content[$theKey]);
                 }
-                if (!empty($contentDataProcessing['dataProcessing.'])) {
-                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
+
+                if (isset($conf['dataProcessing.'])) {
+                    $content[$theKey] = $this->processFieldWithDataProcessing(
+                        ['dataProcessing.' => $conf['dataProcessing.']]
+                    );
                 }
-            }
-            if ((string)$theKey && strpos($theKey, '.') > 0 && !isset($setup[rtrim($theKey, '.')])) {
-                $contentFieldName = $theValue['source'] ?? rtrim($theKey, '.');
-                $contentFieldTypeProcessing['dataProcessing.'] = $theValue['dataProcessing.'] ?? [];
+            } elseif ($theKey[0] !== '.' && !isset($setup[rtrim($theKey, '.')])) {
+                $trimmedKey = rtrim($theKey, '.');
+                $contentFieldName = $theValue['source'] ?? $trimmedKey;
 
                 if (array_key_exists('fields.', $theValue)) {
-                    $content[$contentFieldName] = $this->cObjGet($theValue['fields.']);
+                    $content[$contentFieldName] = $this->cObjGet($theValue['fields.'], '', $nullableFieldsIfEmpty);
                 }
-                if (!empty($contentFieldTypeProcessing['dataProcessing.'])) {
-                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentFieldTypeProcessing);
-                }
-            }
-        }
-        return $content;
-    }
 
-    /**
-     * Takes a TypoScript array as input and returns an array which contains all string properties found which had a value (not only properties).
-     *
-     * @param array $setupArr TypoScript array with string array in
-     * @param bool $acceptAnyKeys If set, then a value is not required - the properties alone will be enough.
-     * @return array An array with all string properties.
-     */
-    protected function filterByStringKeys(array $setupArr, bool $acceptAnyKeys = false): array
-    {
-        $filteredKeys = [];
-        $keys = array_keys($setupArr);
-        foreach ($keys as $key) {
-            if ($acceptAnyKeys || is_string($key)) {
-                $filteredKeys[] = (string)$key;
+                if (isset($theValue['dataProcessing.'])) {
+                    $content[$trimmedKey] = $this->processFieldWithDataProcessing(
+                        ['dataProcessing.' => $theValue['dataProcessing.']]
+                    );
+                }
             }
         }
-        return array_unique($filteredKeys);
+
+        return $content;
     }
 
     /**
@@ -169,37 +157,29 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             ]
         );
 
-        $dataProcessingData = null;
-
-        foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
+        foreach ($this->findAsKeys($dataProcessing) as $value) {
             if (isset($data[$value])) {
-                $dataProcessingData = $data[$value];
+                return $data[$value];
             }
         }
-        return $dataProcessingData;
+
+        return null;
     }
 
     /**
-     * @param array<string, mixed> $haystack
+     * Collects all 'as' alias keys from the top-level dataProcessing processor configs.
+     *
+     * @param array $dataProcessing
+     * @return array
      */
-    protected function recursiveFind(array $haystack, string $needle): Generator
+    private function findAsKeys(array $dataProcessing): array
     {
-        $iterator = new RecursiveArrayIterator($haystack);
-        $recursive = new RecursiveIteratorIterator(
-            $iterator,
-            RecursiveIteratorIterator::SELF_FIRST
-        );
-        $iteration = 0;
-        foreach ($recursive as $key => $value) {
-            if ($key === 'dataProcessing.') {
-                $iteration++;
-                if ($iteration > 1) {
-                    return;
-                }
-            }
-            if ($key === $needle) {
-                yield $value;
+        $asKeys = [];
+        foreach ($dataProcessing['dataProcessing.'] ?? [] as $value) {
+            if (is_array($value) && isset($value['as'])) {
+                $asKeys[] = $value['as'];
             }
         }
+        return $asKeys;
     }
 }
