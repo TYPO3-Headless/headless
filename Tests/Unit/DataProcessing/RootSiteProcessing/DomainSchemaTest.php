@@ -97,6 +97,7 @@ class DomainSchemaTest extends UnitTestCase
         foreach ($languages as $language) {
             $siteLanguage = $this->prophesize(SiteLanguage::class);
 
+            $siteLanguage->toArray()->willReturn([]);
             $siteLanguage->getTypo3Language()
                 ->willReturn($language);
 

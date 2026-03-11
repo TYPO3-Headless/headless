@@ -26,10 +26,13 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+use function array_key_exists;
 use function array_merge;
+use function array_unique;
 use function ltrim;
 use function rtrim;
 use function str_contains;
+use function str_starts_with;
 use function strlen;
 use function substr;
 
@@ -43,6 +46,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private array $conf = [];
     private array $variants = [];
     private HeadlessModeInterface $headlessMode;
+    private array $frontendDomains = [];
 
     public function __construct(
         ?Features $features = null,
@@ -80,8 +84,12 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     public function getFrontendUrlWithSite($url, SiteInterface $site, string $returnField = 'frontendBase'): string
     {
         $this->handleSiteConfiguration($site, $this);
+        $siteLanguage = $this->overrideByLanguageIfNecessary($site, $url);
+        if ($siteLanguage !== null) {
+            $this->handleLanguageConfiguration($siteLanguage, $this);
+        }
 
-        if (!$this->headlessMode->isEnabled()) {
+        if (!$this->headlessMode->isEnabled() || $this->alreadyFrontendLink($url)) {
             return $url;
         }
 
@@ -101,12 +109,18 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             $frontExtraPath = $frontendBase->getPath();
             $frontPort = $frontendBase->getPort();
             $targetUri = new Uri($this->sanitizeBaseUrl($url));
+            $targetUri = $targetUri->withHost($frontBase);
+            if ($targetUri->getScheme() === '') {
+                $targetUri = $targetUri->withScheme($frontendBase->getScheme());
+            }
 
-            if (str_contains($url, $site->getBase()->getHost())) {
-                $targetUri = $targetUri->withHost($frontBase);
-                if ($frontExtraPath) {
-                    $targetUri = $targetUri->withPath($this->handleFrontendAndBackendPaths($frontExtraPath, $targetUri, $site->getBase()->getPath()));
-                }
+            if ($targetUri->getFragment() !== '') {
+                $targetUri = $targetUri->withHost('');
+                $targetUri = $targetUri->withScheme('');
+            }
+
+            if ($frontExtraPath) {
+                $targetUri = $targetUri->withPath($this->handleFrontendAndBackendPaths($frontExtraPath, $targetUri, $site->getBase()->getPath()));
             }
 
             if ($site->getBase()->getPort() === $frontPort) {
@@ -243,6 +257,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
         if ($frontendBase !== '') {
             $overrides['frontendBase'] =  $frontendBase;
+            $this->frontendDomains[] = (new Uri($this->sanitizeBaseUrl($frontendBase)))->getHost();
         }
 
         if ($frontendApiProxy !== '') {
@@ -266,6 +281,12 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     {
         $object->conf = $site->getConfiguration();
         $object->variants = $object->conf['baseVariants'] ?? [];
+        $this->frontendDomains = [];
+
+        $base = trim($object->conf['frontendBase'] ?? '');
+        if ($base !== '') {
+            $this->frontendDomains[] = (new Uri($this->sanitizeBaseUrl($base)))->getHost();
+        }
 
         return $object;
     }
@@ -291,5 +312,43 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private function handleFrontendAndBackendPaths(string $frontendPath, UriInterface $targetUri, string $baseBackendPath = ''): string
     {
         return rtrim($frontendPath, '/') . ($targetUri->getPath() !== '' ? '/' . ltrim(substr($targetUri->getPath(), strlen($baseBackendPath)), '/') : '');
+    }
+
+    private function overrideByLanguageIfNecessary(SiteInterface $site, string $backendUrl): ?SiteLanguage
+    {
+        $backendUri = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($backendUrl));
+        $matchedLanguage = null;
+        foreach ($site->getLanguages() as $language) {
+            $conf = $language->toArray();
+
+            if (!array_key_exists('frontendBase', $conf)) {
+                continue;
+            }
+
+            $base = trim($conf['frontendBase'] ?? '');
+
+            if ($base === '') {
+                continue;
+            }
+
+            $this->frontendDomains[] = (new Uri($this->sanitizeBaseUrl($base)))->getHost();
+
+            if ($language->getBase()->getHost() === $backendUri->getHost()) {
+                $matchedLanguage = $language;
+            } elseif ($backendUri->getPath() !== '/' && str_starts_with($backendUri->getPath(), $language->getBase()->getPath())) {
+                $matchedLanguage = $language;
+            }
+        }
+
+        $this->frontendDomains = array_unique($this->frontendDomains);
+
+        return $matchedLanguage;
+    }
+
+    protected function alreadyFrontendLink(string $url): bool
+    {
+        $targetUri = new Uri($this->sanitizeBaseUrl($url));
+
+        return in_array($targetUri->getHost(), $this->frontendDomains, true);
     }
 }

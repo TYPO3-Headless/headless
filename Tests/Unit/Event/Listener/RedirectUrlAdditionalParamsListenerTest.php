@@ -240,6 +240,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         }
 
         $site->getLanguageById(Argument::any())->willReturn($withLanguage);
+        $site->getLanguages()->willReturn([]);
 
         return $site->reveal();
     }
