@@ -21,7 +21,9 @@ class DecodeViewHelperTest extends UnitTestCase
         $GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] = true;
         $decodeViewHelper = new DecodeViewHelper();
         $decodeViewHelper->setArguments(['json' => null]);
-        $decodeViewHelper->setRenderChildrenClosure(function () { return "\n \n"; });
+        $decodeViewHelper->setRenderChildrenClosure(function () {
+            return "\n \n";
+        });
         $result = $decodeViewHelper->render();
         self::assertNull($result);
     }
