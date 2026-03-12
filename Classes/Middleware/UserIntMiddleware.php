@@ -18,8 +18,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Http\Stream;
 
+use TYPO3\CMS\Core\PageTitle\PageTitleProviderManager;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use function json_decode;
 
 class UserIntMiddleware implements MiddlewareInterface
@@ -27,7 +30,8 @@ class UserIntMiddleware implements MiddlewareInterface
     public function __construct(
         private readonly HeadlessUserInt $headlessUserInt,
         private readonly HeadlessModeInterface $headlessMode,
-        private readonly MetaHandler $metaHandler
+        private readonly MetaHandler $metaHandler,
+        private readonly Features $features,
     ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -47,6 +51,10 @@ class UserIntMiddleware implements MiddlewareInterface
         $jsonContent = $this->headlessUserInt->unwrap($jsonContent);
         $responseBody = json_decode($jsonContent, true);
 
+        if ($this->features->isFeatureEnabled('headless.pageTitleProviders')) {
+            $this->modifyPageTitle($request, $responseBody);
+        }
+
         if (($responseBody['seo']['title'] ?? null) !== null) {
             $responseBody = $this->metaHandler->process(
                 $request,
@@ -59,5 +67,16 @@ class UserIntMiddleware implements MiddlewareInterface
         $stream = new Stream('php://temp', 'r+');
         $stream->write($jsonContent);
         return $response->withBody($stream);
+    }
+
+    private function modifyPageTitle(ServerRequestInterface $request, mixed &$responseBody): void
+    {
+        if (($responseBody['meta']['title'] ?? null) === null) return;
+
+        $titleProviderManager = GeneralUtility::makeInstance(PageTitleProviderManager::class);
+
+        $title = $titleProviderManager->getTitle($request);
+
+        $responseBody['meta']['title'] = $title;
     }
 }
