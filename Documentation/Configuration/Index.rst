@@ -123,6 +123,9 @@ To enable headless support for `EXT:workspaces`, add the following flag to your 
 
 Enables support for the PageTitle API.
 
+Note: this flag is now obsolete, please adjust your frontend app to use `page.seo` instead of `page.meta`
+You will have full TYPO3 core features, and when using nuxt-typo3 you will have automatically generated meta tags from TYPO3 without manual work.
+
 .. code-block:: php
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.pageTitleProviders'] = true;
@@ -186,7 +189,7 @@ Availability of Feature Toggles by Version
    -  :Header1:   headless.pageTitleProviders
       :Header2:   not available
       :Header3:   not available
-      :Header4:   >= 4.2.3
+      :Header4:   >= 4.2.3 <= 4.4
 
 .. _configuration-ext-form:
 
