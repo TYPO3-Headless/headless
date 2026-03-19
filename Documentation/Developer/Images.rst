@@ -127,23 +127,84 @@ Here's an example of how the `og_image` of a page is being rendered via TypoScri
 Configuration
 -------------
 
-The rendering configuration can be set via the property `processingConfiguration` and provides the following sub-properties:
+The rendering configuration can be set via the property `processingConfiguration` and provides the following sub-properties.
 
-* `legacyReturn` (0|1): Allows to control new simplified output or old system (old system by default)
-* `linkResult` (0|1): Allows to define if file object should return only url of defined link or whole LinkResult object
-* `cacheBusting` (0|1): Allows to enable cacheBusting urls for processed files
-* `conditionalCropVariant` (0|1): Allows conditionally autogenerate files with defined variants if set (if not all variants are returned)
-* `processPdfAsImage` (0|1): Enabled optional processing pdf files as image (default off)
-* `processSvg` (0|1): Enabled optional processing svg files (default off)
-* `properties.byType` (0|1): Allows filter file properties by type (i.e. do not return video properties on images)
-* `properties.defaultFieldsByType` (coma separated list of fields): Default fields for when enabled option `properties.byType`
-* `properties.defaultImageFields` (coma separated list of fields): Default fields for image type when enabled option `properties.byType`
-* `properties.defaultVideoFields` (coma separated list of fields): Default fields for video type when enabled option `properties.byType`
-* `properties.includeOnly` (string, comma separated): Configure what file properties to return
-* `properties.flatten` (0|1): Flatten nested properties (dimensions array) to use with `properties.includeOnly`
-* `returnFlattenObject`: without that flag an array of (multiple) images is rendered. Set this if you're only rendering 1 image and want to reduce nesting.
-* `delayProcessing`: can be used to skip processing of images (and have them simply collected with the `FilesProcessor`), in order to have them processed by the next processor in line (which is generally `GalleryProcessor`).
-* `fileExtension`: can be used to convert the images to any desired format, e.g. `webp`.
+All properties support **stdWrap** processing. This means you can use stdWrap properties like `override`, `if`, `ifEmpty`, etc.
+However, to use a **cObject** (e.g. `CASE`, `COA`, `TEXT`) for dynamic value resolution, you must use the `cObject` stdWrap property
+explicitly and provide a dummy value:
+
+.. code-block:: typoscript
+
+   processingConfiguration {
+      # Simple static value
+      width = 800
+
+      # Using stdWrap override
+      width = 800
+      width.override = 1200
+
+      # Using a cObject for dynamic values — note the dummy value and .cObject syntax
+      width = 1
+      width.cObject = CASE
+      width.cObject {
+         key.field = layout
+         1 = TEXT
+         1.value = 400
+         2 = TEXT
+         2.value = 800
+      }
+
+      # This will NOT work ("CASE" is treated as a literal string):
+      # width = CASE
+      # width.key.field = layout
+   }
+
+Image processing
+~~~~~~~~~~~~~~~~
+
+* `width` (string): Width of the processed image (e.g. ``800``, ``800c``, ``800m``). Supports the same syntax as TYPO3's image processing.
+* `height` (string): Height of the processed image.
+* `minWidth` (int): Minimum width of the processed image.
+* `minHeight` (int): Minimum height of the processed image.
+* `maxWidth` (int): Maximum width of the processed image.
+* `maxHeight` (int): Maximum height of the processed image.
+* `fileExtension` (string): Convert the images to any desired format, e.g. ``webp``.
+* `cropVariant` (string, default: ``default``): The crop variant to use for image processing.
+* `outputCropArea` (0|1): Output the crop area in the response.
+
+Output control
+~~~~~~~~~~~~~~
+
+* `legacyReturn` (0|1, default: 1): Controls new simplified output or old system.
+* `linkResult` (0|1): Return the whole ``LinkResult`` object instead of a simple URL.
+* `cacheBusting` (0|1): Enable cache-busting URLs for processed files.
+* `returnFlattenObject` (0|1): Without this flag an array of (multiple) images is rendered. Set this if you're only rendering 1 image and want to reduce nesting.
+* `delayProcessing` (0|1): Skip processing of images (have them simply collected by `FilesProcessor`), in order to have them processed by the next processor in line (generally `GalleryProcessor`).
+
+Crop variants
+~~~~~~~~~~~~~
+
+* `conditionalCropVariant` (0|1): Conditionally autogenerate files with defined variants if set (if not all variants are returned).
+
+File type handling
+~~~~~~~~~~~~~~~~~~
+
+* `processPdfAsImage` (0|1): Enable optional processing of PDF files as images (default off).
+* `processSvg` (0|1): Enable optional processing of SVG files (default off).
+
+Property filtering
+~~~~~~~~~~~~~~~~~~
+
+* `properties.byType` (0|1): Filter file properties by type (e.g. do not return video properties on images).
+* `properties.defaultFieldsByType` (comma separated list of fields): Default fields when ``properties.byType`` is enabled.
+* `properties.defaultImageFields` (comma separated list of fields): Default fields for image type when ``properties.byType`` is enabled.
+* `properties.defaultVideoFields` (comma separated list of fields): Default fields for video type when ``properties.byType`` is enabled.
+* `properties.includeOnly` (string, comma separated): Configure what file properties to return.
+* `properties.flatten` (0|1): Flatten nested properties (dimensions array) to use with ``properties.includeOnly``.
+
+Autogenerate variants
+~~~~~~~~~~~~~~~~~~~~~
+
 * `autogenerate`:
   * `retina2x`: set this to render an additional image URI in high quality (200%).
   * `lqip`: set this to render an additional image URI with low quality (10%).
