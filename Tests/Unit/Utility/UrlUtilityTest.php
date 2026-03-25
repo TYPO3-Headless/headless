@@ -122,6 +122,7 @@ class UrlUtilityTest extends UnitTestCase
         $siteFinder = $this->createMock(SiteFinder::class);
 
         $site->getBase()->shouldBeCalled(2)->willReturn(new Uri('https://test-backend3-api.tld/'));
+        $site->getLanguages()->willReturn([]);
 
         $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder, null, $headlessMode);
         $urlUtility = $urlUtility->withSite($site->reveal());
@@ -151,6 +152,8 @@ class UrlUtilityTest extends UnitTestCase
                 ],
             ],
         ]);
+
+        $site->getLanguages()->willReturn([]);
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);
@@ -470,6 +473,8 @@ class UrlUtilityTest extends UnitTestCase
             'headless' => 0,
         ]);
 
+        $site->getLanguages()->willReturn([]);
+
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
 
@@ -515,6 +520,7 @@ class UrlUtilityTest extends UnitTestCase
         $uri = new Uri('https://api.tld');
 
         $site->getBase()->shouldBeCalled(2)->willReturn($uri);
+        $site->getLanguages()->willReturn([]);
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
@@ -551,6 +557,7 @@ class UrlUtilityTest extends UnitTestCase
             ],
             'headless' => false,
         ]);
+        $site->getLanguages()->willReturn([]);
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
@@ -597,6 +604,7 @@ class UrlUtilityTest extends UnitTestCase
             ],
             'headless' => false,
         ]);
+        $site->getLanguages()->willReturn([]);
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::any())->willReturn(true);
@@ -838,6 +846,8 @@ class UrlUtilityTest extends UnitTestCase
             'languages' => [],
             'baseVariants' => $variants,
         ]);
+
+        $site->getLanguages()->willReturn([]);
 
         $uri = new Uri($backendUrl);
         $site->getBase()->willReturn($uri);
