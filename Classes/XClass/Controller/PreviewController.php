@@ -18,47 +18,23 @@ use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-if ((new Typo3Version())->getMajorVersion() >= 13) {
-    /**
-     * @codeCoverageIgnore
-     */
-    readonly class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewController
+/**
+ * @codeCoverageIgnore
+ */
+readonly class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewController
+{
+    protected function generateUrl(Site $site, int $pageUid, array $parameters, ?Context $context = null): string
     {
-        protected function generateUrl(Site $site, int $pageUid, array $parameters, ?Context $context = null): string
-        {
-            $url = parent::generateUrl($site, $pageUid, $parameters, $context);
+        $url = parent::generateUrl($site, $pageUid, $parameters, $context);
 
-            if (!isset($GLOBALS['TYPO3_REQUEST'])) {
-                return $url;
-            }
-
-            $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
-            $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
-            $request = $headlessMode->overrideBackendRequestBySite($site, $parameters['_language'] ?? null);
-
-            return GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request)->getFrontendUrlForPage($url, $pageUid);
+        if (!isset($GLOBALS['TYPO3_REQUEST'])) {
+            return $url;
         }
-    }
-} else {
-    /**
-     * for support 12.4.x
-     * @codeCoverageIgnore
-     */
-    class PreviewController extends \TYPO3\CMS\Workspaces\Controller\PreviewController
-    {
-        protected function generateUrl(Site $site, int $pageUid, array $parameters): string
-        {
-            $url = parent::generateUrl($site, $pageUid, $parameters);
 
-            if (!isset($GLOBALS['TYPO3_REQUEST'])) {
-                return $url;
-            }
+        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
+        $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
+        $request = $headlessMode->overrideBackendRequestBySite($site, $parameters['_language'] ?? null);
 
-            $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
-            $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
-            $request = $headlessMode->overrideBackendRequestBySite($site, $parameters['_language'] ?? null);
-
-            return GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request)->getFrontendUrlForPage($url, $pageUid);
-        }
+        return GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request)->getFrontendUrlForPage($url, $pageUid);
     }
 }
