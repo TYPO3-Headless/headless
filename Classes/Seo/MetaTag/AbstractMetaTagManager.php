@@ -30,7 +30,7 @@ abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMe
             return $this->renderAllHeadlessProperties();
         }
 
-        return parent::renderAllProperties();
+        return parent::renderAllProperties($docType);
     }
 
     public function renderProperty(string $property, ?DocType $docType = null): string
