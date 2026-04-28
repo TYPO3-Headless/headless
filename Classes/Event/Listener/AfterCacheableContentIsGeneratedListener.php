@@ -32,7 +32,7 @@ class AfterCacheableContentIsGeneratedListener
         private readonly HeadlessModeInterface $headlessMode,
     ) {}
 
-    public function __invoke(AfterCacheableContentIsGeneratedEvent $event)
+    public function __invoke(AfterCacheableContentIsGeneratedEvent $event): void
     {
         try {
             if (!$this->headlessMode->withRequest($event->getRequest())->isEnabled()) {

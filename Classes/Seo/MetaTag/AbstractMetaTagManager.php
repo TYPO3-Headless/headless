@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Seo\MetaTag;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
+use TYPO3\CMS\Core\Type\DocType;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_merge;
@@ -23,16 +24,16 @@ use function json_encode;
  */
 abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMetaTagManager
 {
-    public function renderAllProperties(): string
+    public function renderAllProperties(DocType|null $docType = null): string
     {
         if (GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
             return $this->renderAllHeadlessProperties();
         }
 
-        return parent::renderAllProperties();
+        return parent::renderAllProperties($docType);
     }
 
-    public function renderProperty(string $property): string
+    public function renderProperty(string $property, ?DocType $docType = null): string
     {
         if (GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
             return $this->renderHeadlessProperty($property);
