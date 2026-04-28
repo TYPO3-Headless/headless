@@ -18,6 +18,7 @@ use FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FlexFormProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor;
+use FriendsOfTYPO3\Headless\DataProcessing\LanguageMenuProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider;
@@ -130,6 +131,7 @@ return static function (ContainerConfigurator $configurator): void {
             FilesProcessor::class => ['identifier' => 'headless-files', 'share' => true, 'public' => false],
             RootSitesProcessor::class => ['identifier' => 'headless-root-sites', 'share' => true, 'public' => false],
             MenuProcessor::class => ['identifier' => 'headless-menu', 'share' => false, 'public' => true],
+            LanguageMenuProcessor::class => ['identifier' => 'headless-language-menu', 'share' => false, 'public' => true],
             GalleryProcessor::class => ['identifier' => 'headless-gallery', 'share' => false, 'public' => false],
             DatabaseQueryProcessor::class => [
                 'identifier' => 'headless-database-query',
