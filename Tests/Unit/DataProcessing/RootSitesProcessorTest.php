@@ -17,7 +17,6 @@ use FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing\TestSit
 use InvalidArgumentException;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use ReflectionProperty;
 use stdClass;
 use Symfony\Component\DependencyInjection\Container;
