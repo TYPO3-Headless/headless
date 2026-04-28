@@ -71,9 +71,6 @@ call_user_func(
         }
 
         if (ExtensionManagementUtility::isLoaded('workspaces')) {
-            $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][PreviewController::class] = [
-                'className' => FriendsOfTYPO3\Headless\XClass\Controller\PreviewController::class
-            ];
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][PreviewUriBuilder::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\Preview\PreviewUriBuilder::class
             ];
