@@ -13,8 +13,6 @@ use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
-use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
@@ -33,8 +31,6 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -52,15 +48,15 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
     public function test__construct()
     {
-        $resolver = $this->prophesize(Resolver::class);
-        $resolver->evaluate(Argument::any())->willReturn(true);
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturn(true);
         $siteFinder = $this->createPartialMock(SiteFinder::class, []);
 
         $listener = new AfterLinkIsGeneratedListener(
-            $this->prophesize(Logger::class)->reveal(),
-            new UrlUtility(null, $resolver->reveal(), $siteFinder),
-            $this->prophesize(LinkService::class)->reveal(),
-            new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
+            $this->createMock(Logger::class),
+            new UrlUtility(null, $resolver, $siteFinder),
+            $this->createMock(LinkService::class),
+            new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
             $siteFinder
         );
 
@@ -69,27 +65,27 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
     public function test__invokeNotModifingAnything()
     {
-        $resolver = $this->prophesize(Resolver::class);
-        $resolver->evaluate(Argument::any())->willReturn(true);
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturn(true);
         $siteFinder = $this->createMock(SiteFinder::class);
 
         $listener = new AfterLinkIsGeneratedListener(
-            $this->prophesize(Logger::class)->reveal(),
-            new UrlUtility(null, $resolver->reveal(), $siteFinder),
-            $this->prophesize(LinkService::class)->reveal(),
-            new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
+            $this->createMock(Logger::class),
+            new UrlUtility(null, $resolver, $siteFinder),
+            $this->createMock(LinkService::class),
+            new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
             $siteFinder
         );
 
         $site = new Site('test', 1, []);
-        $cObj = $this->prophesize(ContentObjectRenderer::class);
-        $cObj->getRequest()->willReturn((new ServerRequest())->withAttribute('site', $site));
-        $cObj->stdWrapValue(Argument::is('ATagParams'), Argument::is([]))->willReturn('');
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->method('getRequest')->willReturn((new ServerRequest())->withAttribute('site', $site));
+        $cObj->method('stdWrapValue')->with('ATagParams', [])->willReturn('');
 
         $linkResult = new LinkResult('page', '/');
         $linkResult = $linkResult->withLinkText('|');
 
-        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj->reveal(), []);
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj, []);
         $listener($event);
 
         self::assertSame('/', $event->getLinkResult()->getUrl());
@@ -97,7 +93,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $linkResult = new LinkResult('telephone', 'tel+111222333');
         $linkResult = $linkResult->withLinkText('|');
 
-        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj->reveal(), []);
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj, []);
         $listener($event);
 
         self::assertSame('tel+111222333', $event->getLinkResult()->getUrl());
@@ -105,32 +101,25 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
     public function test__invokeModifingFromPageUid()
     {
-        $resolver = $this->prophesize(Resolver::class);
-        $resolver->evaluate(Argument::any())->willReturn(true);
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturn(true);
 
-        $urlUtility = $this->prophesize(UrlUtility::class);
-        $urlUtility->getFrontendUrlForPage(
-            Argument::is('/'),
-            Argument::is(2)
-        )->willReturn('https://frontend-domain.tld/page');
-        $urlUtility->getFrontendUrlWithSite(
-            Argument::is('/'),
-            Argument::any(),
-            Argument::is('frontendBase')
-        )->willReturn('https://frontend-domain.tld/page');
+        $urlUtility = $this->createMock(UrlUtility::class);
+        $urlUtility->method('getFrontendUrlForPage')->with('/', 2)->willReturn('https://frontend-domain.tld/page');
+        $urlUtility->method('getFrontendUrlWithSite')->with('/', self::anything(), 'frontendBase')->willReturn('https://frontend-domain.tld/page');
 
         $site = new Site('test', 1, []);
-        $cObj = $this->prophesize(ContentObjectRenderer::class);
+        $cObj = $this->createMock(ContentObjectRenderer::class);
         $request = (new ServerRequest())->withAttribute('site', $site);
-        $cObj->getRequest()->willReturn($request);
+        $cObj->method('getRequest')->willReturn($request);
 
-        $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
+        $urlUtility->method('withRequest')->with($request)->willReturn($urlUtility);
 
         $listener = new AfterLinkIsGeneratedListener(
-            $this->prophesize(Logger::class)->reveal(),
-            $urlUtility->reveal(),
-            $this->prophesize(LinkService::class)->reveal(),
-            new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
+            $this->createMock(Logger::class),
+            $urlUtility,
+            $this->createMock(LinkService::class),
+            new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
             $this->createMock(SiteFinder::class)
         );
 
@@ -138,7 +127,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $linkResult = $linkResult->withLinkConfiguration(['parameter' => 2]);
         $linkResult = $linkResult->withLinkText('t3://page?uid=2');
 
-        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj->reveal(), []);
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj, []);
         $listener($event);
 
         self::assertSame('https://frontend-domain.tld/page', $event->getLinkResult()->getUrl());
@@ -146,35 +135,35 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
     public function test__invokeModifingExternalSite()
     {
-        $resolver = $this->prophesize(Resolver::class);
-        $resolver->evaluate(Argument::any())->willReturn(true);
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturn(true);
 
         $site = new Site('test', 1, []);
 
-        $urlUtility = $this->prophesize(UrlUtility::class);
-        $urlUtility->getFrontendUrlForPage(Argument::is('/'), Argument::is(5))->willReturn('https://front.typo3.tld');
+        $urlUtility = $this->createMock(UrlUtility::class);
+        $urlUtility->method('getFrontendUrlForPage')->with('/', 5)->willReturn('https://front.typo3.tld');
 
-        $linkService = $this->prophesize(LinkService::class);
-        $linkService->resolve(Argument::any())->willReturn(['pageuid' => 5]);
+        $linkService = $this->createMock(LinkService::class);
+        $linkService->method('resolve')->willReturn(['pageuid' => 5]);
 
-        $cObj = $this->prophesize(ContentObjectRenderer::class);
+        $cObj = $this->createMock(ContentObjectRenderer::class);
         $request = (new ServerRequest())->withAttribute('site', $site);
-        $cObj->getRequest()->willReturn($request);
+        $cObj->method('getRequest')->willReturn($request);
 
-        $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
+        $urlUtility->method('withRequest')->with($request)->willReturn($urlUtility);
 
         $listener = new AfterLinkIsGeneratedListener(
-            $this->prophesize(Logger::class)->reveal(),
-            $urlUtility->reveal(),
-            $linkService->reveal(),
-            new TypoLinkCodecService($this->prophesize(EventDispatcherInterface::class)->reveal()),
+            $this->createMock(Logger::class),
+            $urlUtility,
+            $linkService,
+            new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
             $this->createMock(SiteFinder::class)
         );
         $linkResult = new LinkResult('page', '/');
         $linkResult = $linkResult->withLinkConfiguration(['parameter.' => ['data' => 'parameters:href']]);
         $linkResult = $linkResult->withLinkText('|');
 
-        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj->reveal(), []);
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj, []);
         $listener($event);
 
         self::assertSame('https://front.typo3.tld', $event->getLinkResult()->getUrl());
@@ -182,39 +171,38 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
     public function test__SitemapLink()
     {
-        $resolver = $this->prophesize(Resolver::class);
-        $resolver->evaluate(Argument::any())->willReturn(true);
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturn(true);
 
         $site = new Site('test', 1, []);
 
-        $urlUtility = $this->prophesize(UrlUtility::class);
-        $urlUtility->getFrontendUrlWithSite(
-            Argument::is('https://typo3.tld/sitemap-type/pages/sitemap.xml'),
-            Argument::is($site),
-            Argument::is('frontendApiProxy')
-        )
-            ->willReturn('https://front.typo3.tld/headless/sitemap-type/pages/sitemap.xml');
+        $urlUtility = $this->createMock(UrlUtility::class);
+        $urlUtility->method('getFrontendUrlWithSite')->with(
+            'https://typo3.tld/sitemap-type/pages/sitemap.xml',
+            $site,
+            'frontendApiProxy'
+        )->willReturn('https://front.typo3.tld/headless/sitemap-type/pages/sitemap.xml');
 
-        $linkService = $this->prophesize(LinkService::class);
-        $linkService->resolve(Argument::any())->willReturn(['pageuid' => 5]);
+        $linkService = $this->createMock(LinkService::class);
+        $linkService->method('resolve')->willReturn(['pageuid' => 5]);
 
-        $cObj = $this->prophesize(ContentObjectRenderer::class);
+        $cObj = $this->createMock(ContentObjectRenderer::class);
         $request = (new ServerRequest())->withAttribute('site', $site);
-        $cObj->getRequest()->willReturn($request);
+        $cObj->method('getRequest')->willReturn($request);
 
         $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
         $siteFinder->method('getSiteByPageId')->willReturn($site);
 
-        $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
+        $urlUtility->method('withRequest')->with($request)->willReturn($urlUtility);
 
-        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
-        $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->method('dispatch')->willReturnArgument(0);
 
         $listener = new AfterLinkIsGeneratedListener(
-            $this->prophesize(Logger::class)->reveal(),
-            $urlUtility->reveal(),
-            $linkService->reveal(),
-            new TypoLinkCodecService($eventDispatcher->reveal()),
+            $this->createMock(Logger::class),
+            $urlUtility,
+            $linkService,
+            new TypoLinkCodecService($eventDispatcher),
             $siteFinder
         );
 
@@ -225,7 +213,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             'additionalParams' => '&sitemap=pages',
         ]);
 
-        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj->reveal(), []);
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj, []);
         $listener($event);
 
         self::assertSame(
@@ -233,4 +221,69 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $event->getLinkResult()->getUrl()
         );
     }
+
+    public function testInvokeFollowsShortcutDoktype(): void
+    {
+        $urlUtility = $this->createMock(UrlUtility::class);
+        $urlUtility->method('withRequest')->willReturnSelf();
+        $urlUtility->method('getFrontendUrlForPage')->with('/', 7)->willReturn('https://front.tld/page-7');
+
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->method('getRequest')->willReturn(new ServerRequest());
+
+        $listener = new AfterLinkIsGeneratedListener(
+            $this->createMock(Logger::class),
+            $urlUtility,
+            $this->createMock(LinkService::class),
+            new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
+            $this->createMock(SiteFinder::class)
+        );
+
+        $linkResult = new LinkResult('page', '/');
+        $linkResult = $linkResult->withLinkConfiguration([
+            'parameter' => 1,
+            'page' => ['doktype' => 4, 'shortcut' => 7],
+        ]);
+
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj, []);
+        $listener($event);
+
+        self::assertSame('https://front.tld/page-7', $event->getLinkResult()->getUrl());
+    }
+
+    public function testInvokeWithEmptyLinkLogsErrorWhenNoSite(): void
+    {
+        $logger = $this->createMock(Logger::class);
+        $logger->expects(self::once())->method('error');
+
+        $urlUtility = $this->createMock(UrlUtility::class);
+        $urlUtility->method('withRequest')->willReturnSelf();
+
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->method('getRequest')->willReturn(new ServerRequest());
+        $cObj->method('stdWrap')->willReturn('');
+
+        $listener = new AfterLinkIsGeneratedListener(
+            $logger,
+            $urlUtility,
+            $this->createMock(LinkService::class),
+            new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
+            $this->createMock(SiteFinder::class)
+        );
+
+        // empty parameter triggers UnableToLinkException path in getTargetSite via resolveLinkDetails
+        $linkResult = new LinkResult('page', '');
+        $linkResult = $linkResult->withLinkConfiguration([
+            'parameter' => '',
+            'parameter.' => ['data' => 'parameters:href'],
+        ]);
+        $linkResult = $linkResult->withLinkText('|');
+
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj, []);
+        $listener($event);
+
+        // href stays empty since no site could be resolved
+        self::assertSame('', $event->getLinkResult()->getUrl());
+    }
+
 }

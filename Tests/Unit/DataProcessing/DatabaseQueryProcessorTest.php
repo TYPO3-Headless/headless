@@ -12,9 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing;
 
 use FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor;
-use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
-use Prophecy\Prophecy\ObjectProphecy;
+use PHPUnit\Framework\MockObject\MockObject;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -26,15 +24,10 @@ use function json_encode;
 
 class DatabaseQueryProcessorTest extends UnitTestCase
 {
-    use ProphecyTrait;
+    protected TypoScriptService $typoScriptService;
 
     /**
-     * @var ObjectProphecy|TypoScriptService
-     */
-    protected $typoScriptService;
-
-    /**
-     * @var ObjectProphecy|ContentDataProcessor
+     * @var MockObject&ContentDataProcessor
      */
     protected $contentDataProcessor;
 
@@ -44,19 +37,19 @@ class DatabaseQueryProcessorTest extends UnitTestCase
     protected $subject;
 
     /**
-     * @var ObjectProphecy|ContentObjectRenderer
+     * @var MockObject&ContentObjectRenderer
      */
     protected $contentObjectRenderer;
 
     protected function setUp(): void
     {
-        $this->typoScriptService = $this->prophesize(TypoScriptService::class);
-        $this->contentDataProcessor = $this->prophesize(ContentDataProcessor::class);
-        $this->contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
-        $this->contentObjectRenderer->getRequest()->willReturn(new ServerRequest());
+        $this->typoScriptService = new TypoScriptService();
+        $this->contentDataProcessor = $this->createMock(ContentDataProcessor::class);
+        $this->contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $this->contentObjectRenderer->method('getRequest')->willReturn(new ServerRequest());
         $this->subject = $this->getAccessibleMock(DatabaseQueryProcessor::class, ['createContentObjectRenderer'], [
-            $this->contentDataProcessor->reveal(),
-            $this->typoScriptService->reveal(),
+            $this->contentDataProcessor,
+            $this->typoScriptService,
         ]);
         parent::setUp();
     }
@@ -69,9 +62,9 @@ class DatabaseQueryProcessorTest extends UnitTestCase
             ],
         ];
         $processedData = [];
-        $this->contentObjectRenderer->checkIf($processorConfiguration['if.'])->shouldBeCalledOnce()->willReturn(false);
-        $this->contentObjectRenderer->stdWrapValue(Argument::any())->shouldNotBeCalled();
-        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
+        $this->contentObjectRenderer->expects(self::once())->method('checkIf')->with($processorConfiguration['if.'])->willReturn(false);
+        $this->contentObjectRenderer->expects(self::never())->method('stdWrapValue');
+        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer, [], $processorConfiguration, $processedData));
     }
 
     public function testReturnEarlyNoTableIsGiven(): void
@@ -82,9 +75,9 @@ class DatabaseQueryProcessorTest extends UnitTestCase
             ],
         ];
         $processedData = [];
-        $this->contentObjectRenderer->checkIf($processorConfiguration['if.'])->shouldBeCalledOnce()->willReturn(true);
-        $this->contentObjectRenderer->stdWrapValue('table', $processorConfiguration)->shouldBeCalledOnce()->willReturn('');
-        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
+        $this->contentObjectRenderer->expects(self::once())->method('checkIf')->with($processorConfiguration['if.'])->willReturn(true);
+        $this->contentObjectRenderer->expects(self::once())->method('stdWrapValue')->with('table', $processorConfiguration)->willReturn('');
+        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer, [], $processorConfiguration, $processedData));
     }
 
     public function testProcessWithoutAdditionalFields(): void
@@ -104,22 +97,23 @@ class DatabaseQueryProcessorTest extends UnitTestCase
             ],
         ];
 
-        $this->contentObjectRenderer->stdWrapValue('table', $processorConfiguration)->shouldBeCalledOnce()->willReturn('tt_content');
+        $this->contentObjectRenderer->method('stdWrapValue')->willReturnMap([
+            ['table', $processorConfiguration, '', null, 'tt_content'],
+            ['as', $processorConfigurationWithoutTable, 'records', null, 'records'],
+        ]);
 
-        $this->contentObjectRenderer->stdWrapValue('as', $processorConfigurationWithoutTable, 'records')->shouldBeCalledOnce()->willReturn('records');
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->method('getRequest')->willReturn(new ServerRequest());
+        $contentObjectRenderer->expects(self::once())->method('setRequest')->with(self::isInstanceOf(ServerRequest::class));
+        $contentObjectRenderer->method('cObjGetSingle')->with(self::anything(), [])->willReturn(json_encode(['uid' => 1]));
+        $contentObjectRenderer->expects(self::once())->method('start')->with($records[0], 'tt_content');
+        $this->subject->expects(self::any())->method('createContentObjectRenderer')->willReturn($contentObjectRenderer);
 
-        $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
-        $contentObjectRenderer->getRequest()->willReturn(new ServerRequest());
-        $contentObjectRenderer->setRequest(Argument::type(ServerRequest::class))->shouldBeCalledOnce();
-        $contentObjectRenderer->cObjGetSingle(Argument::any(), [])->willReturn(json_encode([ 'uid' => 1]));
-        $contentObjectRenderer->start($records[0], 'tt_content')->shouldBeCalledOnce();
-        $this->subject->expects(self::any())->method('createContentObjectRenderer')->willReturn($contentObjectRenderer->reveal());
-
-        $this->contentDataProcessor->process($contentObjectRenderer, $processorConfigurationWithoutTable, $records[0])->shouldBeCalledOnce()->willReturn($records[0]);
-        $this->contentObjectRenderer->getRecords('tt_content', $processorConfigurationWithoutTable)->shouldBeCalledOnce()->willReturn($records);
+        $this->contentDataProcessor->expects(self::once())->method('process')->with($contentObjectRenderer, $processorConfigurationWithoutTable, $records[0])->willReturn($records[0]);
+        $this->contentObjectRenderer->expects(self::once())->method('getRecords')->with('tt_content', $processorConfigurationWithoutTable)->willReturn($records);
 
         $processedData['records'] = $records;
-        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
+        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer, [], $processorConfiguration, $processedData));
     }
 
     public function testProcessWithAdditionalFields(): void
@@ -149,14 +143,15 @@ class DatabaseQueryProcessorTest extends UnitTestCase
         $jsonCE = $typoscriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON']);
         $processedData = [];
 
-        $this->contentObjectRenderer->stdWrapValue('table', $processorConfiguration)->shouldBeCalledOnce()->willReturn('tt_content');
+        $this->contentObjectRenderer->method('stdWrapValue')->willReturnMap([
+            ['table', $processorConfiguration, '', null, 'tt_content'],
+            ['as', $processorConfigurationWithoutTable, 'records', null, 'records'],
+        ]);
 
-        $this->contentObjectRenderer->stdWrapValue('as', $processorConfigurationWithoutTable, 'records')->shouldBeCalledOnce()->willReturn('records');
-
-        $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
-        $contentObjectRenderer->getRequest()->willReturn(new ServerRequest());
-        $contentObjectRenderer->setRequest(Argument::type(ServerRequest::class))->shouldBeCalledOnce();
-        $this->subject->expects(self::any())->method('createContentObjectRenderer')->willReturn($contentObjectRenderer->reveal());
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->method('getRequest')->willReturn(new ServerRequest());
+        $contentObjectRenderer->method('setRequest')->with(self::isInstanceOf(ServerRequest::class));
+        $this->subject->expects(self::any())->method('createContentObjectRenderer')->willReturn($contentObjectRenderer);
 
         $expectedRecords = [
             [
@@ -164,18 +159,14 @@ class DatabaseQueryProcessorTest extends UnitTestCase
             ],
         ];
 
-        $this->contentObjectRenderer->getRecords('tt_content', $processorConfigurationWithoutTable)->shouldBeCalledOnce()->willReturn($records);
-        $this->contentDataProcessor->process($contentObjectRenderer, $processorConfigurationWithoutTable, $expectedRecords[0])->shouldBeCalledOnce()->willReturn($expectedRecords[0]);
+        $this->contentObjectRenderer->expects(self::once())->method('getRecords')->with('tt_content', $processorConfigurationWithoutTable)->willReturn($records);
+        $this->contentDataProcessor->expects(self::once())->method('process')->with($contentObjectRenderer, $processorConfigurationWithoutTable, $expectedRecords[0])->willReturn($expectedRecords[0]);
 
-        $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['fields.'])->shouldBeCalledOnce()->willReturn($fields);
-        $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON'])->shouldBeCalledOnce()->willReturn($jsonCE);
-
-        $contentObjectRenderer->start($records[0], $processorConfiguration['table'])->shouldBeCalledOnce();
-        $contentObjectRenderer->setRequest(Argument::type(ServerRequest::class))->shouldBeCalledOnce();
-        $contentObjectRenderer->cObjGetSingle('JSON', $jsonCE)->willReturn('{"title":"title"}');
+        $contentObjectRenderer->expects(self::once())->method('start')->with($records[0], $processorConfiguration['table']);
+        $contentObjectRenderer->method('cObjGetSingle')->with('JSON', $jsonCE)->willReturn('{"title":"title"}');
 
         $processedData['records'] = $expectedRecords;
 
-        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer->reveal(), [], $processorConfiguration, $processedData));
+        self::assertEquals($processedData, $this->subject->process($this->contentObjectRenderer, [], $processorConfiguration, $processedData));
     }
 }

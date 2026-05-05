@@ -16,7 +16,6 @@ use FriendsOfTYPO3\Headless\Seo\MetaTag\OpenGraphMetaTagManager;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
-use Prophecy\PhpUnit\ProphecyTrait;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -27,17 +26,16 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class MetaTagTest extends UnitTestCase
 {
-    use ProphecyTrait;
     protected bool $resetSingletonInstances = true;
 
     public function testProps(): void
     {
         $container = new Container();
-        $pageRenderer = $this->prophesize(PageRenderer::class);
-        $pageRenderer->getDocType()->willReturn(\TYPO3\CMS\Core\Type\DocType::html5);
+        $pageRenderer = $this->createMock(PageRenderer::class);
+        $pageRenderer->method('getDocType')->willReturn(\TYPO3\CMS\Core\Type\DocType::html5);
 
         $container->set(HeadlessModeInterface::class, new HeadlessMode());
-        $container->set(PageRenderer::class, $pageRenderer->reveal());
+        $container->set(PageRenderer::class, $pageRenderer);
 
         GeneralUtility::setContainer($container);
 
@@ -71,6 +69,27 @@ class MetaTagTest extends UnitTestCase
         self::assertSame('[{"name":"generator","content":"TYPO3 CMS x T3Headless"}]', $htmlManager->renderProperty('generator'));
         self::assertSame('[{"name":"generator","content":"TYPO3 CMS x T3Headless"},{"http-equiv":"content-language","content":"pl-PL"}]', $htmlManager->renderAllProperties());
         self::assertSame('[{"property":"og:image","content":"Powered by TYPO3"},{"property":"og:image:url","content":"https:\/\/example.com\/image.jpg"}]', $ogManager->renderAllProperties());
+    }
+
+    public function testCustomContentAttribute(): void
+    {
+        $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        GeneralUtility::setContainer($container);
+
+        $manager = new class () extends \FriendsOfTYPO3\Headless\Seo\MetaTag\AbstractMetaTagManager {
+            protected $handledProperties = [
+                'special' => ['contentAttribute' => 'data-content'],
+            ];
+        };
+        $manager->addProperty('special', 'value', [], true);
+
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
+
+        self::assertSame(
+            '[{"name":"special","data-content":"value"}]',
+            $manager->renderProperty('special')
+        );
     }
 
     protected function tearDown(): void

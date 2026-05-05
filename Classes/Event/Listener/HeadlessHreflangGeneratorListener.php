@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent;
 
 /**
@@ -20,10 +19,12 @@ use TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent;
  */
 class HeadlessHreflangGeneratorListener
 {
+    public function __construct(private readonly UrlUtility $urlUtility) {}
+
     public function __invoke(ModifyHrefLangTagsEvent $event): void
     {
         $hrefLangs = [];
-        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withRequest($event->getRequest());
+        $urlUtility = $this->urlUtility->withRequest($event->getRequest());
 
         foreach ($event->getHrefLangs() as $lang => $hrefLang) {
             $hrefLangs[$lang] = $urlUtility->getFrontendUrlWithSite($hrefLang, $event->getRequest()->getAttribute('site'));

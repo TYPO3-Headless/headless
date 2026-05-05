@@ -66,6 +66,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - typo3-version: "^12"
+          - typo3-version: "^14"
             php-version: "8.2"
             composer-dependencies: highest

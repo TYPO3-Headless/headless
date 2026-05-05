@@ -18,6 +18,7 @@ use FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FlexFormProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor;
+use FriendsOfTYPO3\Headless\DataProcessing\LanguageMenuProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider;
@@ -27,7 +28,6 @@ use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterPagePreviewUriGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\HeadlessHreflangGeneratorListener;
 use FriendsOfTYPO3\Headless\Event\Listener\LoginConfirmedEventListener;
-use FriendsOfTYPO3\Headless\Form\Service\FormTranslationService;
 use FriendsOfTYPO3\Headless\Form\Translator;
 use FriendsOfTYPO3\Headless\Frontend\BackendEditorUrl;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
@@ -39,8 +39,6 @@ use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Controller\FormFrontendController;
 use TYPO3\CMS\FrontendLogin\Controller\LoginController;
-
-use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $configurator): void {
     $services = $configurator->services()
@@ -82,7 +80,8 @@ return static function (ContainerConfigurator $configurator): void {
     $services->set(DomainSchema::class)->public();
     $services->set(BackendEditorUrl::class)->public();
     $services->set(FileUtility::class)->public();
-    $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
+    $services->set(UrlUtility::class)->autowire(false)->share(false);
+    $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false)->share(false);
     $services->set(AfterLinkIsGeneratedListener::class)->tag(
         'event.listener',
         ['identifier' => 'headless/AfterLinkIsGenerated']
@@ -116,7 +115,6 @@ return static function (ContainerConfigurator $configurator): void {
 
     if ($cmsFormsInstalled) {
         $services->set(Translator::class)->public();
-        $services->set(FormTranslationService::class)->arg('$runtimeCache', service('cache.runtime'))->public();
     }
 
     $features = GeneralUtility::makeInstance(Features::class);
@@ -131,10 +129,11 @@ return static function (ContainerConfigurator $configurator): void {
 
     foreach (
         [
-            FilesProcessor::class => ['identifier' => 'headless-files', 'share' => true, 'public' => false],
+            FilesProcessor::class => ['identifier' => 'headless-files', 'share' => true, 'public' => true],
             RootSitesProcessor::class => ['identifier' => 'headless-root-sites', 'share' => true, 'public' => false],
             MenuProcessor::class => ['identifier' => 'headless-menu', 'share' => false, 'public' => true],
-            GalleryProcessor::class => ['identifier' => 'headless-gallery', 'share' => false, 'public' => false],
+            LanguageMenuProcessor::class => ['identifier' => 'headless-language-menu', 'share' => false, 'public' => true],
+            GalleryProcessor::class => ['identifier' => 'headless-gallery', 'share' => false, 'public' => true],
             DatabaseQueryProcessor::class => [
                 'identifier' => 'headless-database-query',
                 'share' => false,

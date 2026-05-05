@@ -16,9 +16,8 @@ use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Http\Uri;
-use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
-use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -26,6 +25,26 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class ResourceLocalDriver extends LocalDriver
 {
+    /**
+     * Lazy-loaded dependencies. This XClass is registered via
+     * $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'] in ext_localconf.php. TYPO3 instantiates
+     * such classes through GeneralUtility::makeInstanceForDi() which bypasses Symfony's
+     * service compilation, so neither constructor injection nor #[Required] setter injection
+     * is honored for SYS][Objects] XClasses. We resolve via container manually on first use.
+     */
+    private ?HeadlessModeInterface $headlessMode = null;
+    private ?UrlUtility $urlUtility = null;
+
+    private function getHeadlessMode(): HeadlessModeInterface
+    {
+        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
+    private function getUrlUtility(): UrlUtility
+    {
+        return $this->urlUtility ??= GeneralUtility::makeInstance(UrlUtility::class);
+    }
+
     protected function determineBaseUrl(): void
     {
         $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
@@ -35,7 +54,7 @@ class ResourceLocalDriver extends LocalDriver
             return;
         }
 
-        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($request);
+        $headlessMode = $this->getHeadlessMode()->withRequest($request);
 
         if (!$headlessMode->isEnabled() || ApplicationType::fromRequest($request)->isBackend()) {
             parent::determineBaseUrl();
@@ -43,8 +62,8 @@ class ResourceLocalDriver extends LocalDriver
             return;
         }
 
-        if ($this->hasCapability(((new Typo3Version())->getMajorVersion() < 13) ? ResourceStorage::CAPABILITY_PUBLIC : \TYPO3\CMS\Core\Resource\Capabilities::CAPABILITY_PUBLIC)) {
-            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request);
+        if ($this->hasCapability(Capabilities::CAPABILITY_PUBLIC)) {
+            $urlUtility = $this->getUrlUtility()->withRequest($request);
 
             $basePath = match (true) {
                 (($this->configuration['baseUri'] ?? '') !== '') => $this->configuration['baseUri'],

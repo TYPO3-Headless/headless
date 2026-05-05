@@ -16,8 +16,7 @@ use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
-use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
+use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
@@ -31,15 +30,12 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\ErrorController;
-use TYPO3\CMS\Frontend\Http\RequestHandler;
-
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_decode;
 
 class SiteBaseRedirectResolverTest extends UnitTestCase
 {
-    use ProphecyTrait;
     protected bool $resetSingletonInstances = true;
 
     public function testJsonRedirect()
@@ -70,12 +66,12 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $container->set(HeadlessModeInterface::class, new HeadlessMode());
         GeneralUtility::setContainer($container);
 
-        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->prophesize(Resolver::class)->reveal(), $siteFinder);
+        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->createMock(Resolver::class), $siteFinder);
         $container->set(UrlUtility::class, $urlUtility);
 
         GeneralUtility::setContainer($container);
 
-        $resolver = new SiteBaseRedirectResolver(new HeadlessMode());
+        $resolver = new SiteBaseRedirectResolver(new HeadlessMode(), $urlUtility);
 
         $request = new ServerRequest();
         $request = $request->withAttribute('site', $site);
@@ -86,7 +82,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $request = $request->withAttribute('routing', new SiteRouteResult($uri, $site));
         $request = $request->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
 
-        $response = $resolver->process($request, $this->prophesize(RequestHandler::class)->reveal());
+        $response = $resolver->process($request, $this->createMock(RequestHandlerInterface::class));
 
         self::assertSame(['redirectUrl' => 'https://www.typo3.org/en-us', 'statusCode' => 307], json_decode($response->getBody()->getContents(), true));
 
@@ -97,10 +93,10 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $request = $request->withAttribute('routing', new SiteRouteResult($uri, $site));
         $request = $request->withAttribute('language', new SiteLanguage(0, 'en', new Uri('/en-us'), ['enabled' =>  true]));
 
-        $handler = $this->prophesize(RequestHandler::class);
-        $handler->handle($request)->willReturn(new JsonResponse(['nextMiddleware' => true]));
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->method('handle')->with($request)->willReturn(new JsonResponse(['nextMiddleware' => true]));
 
-        $response = $resolver->process($request, $handler->reveal());
+        $response = $resolver->process($request, $handler);
 
         self::assertSame(['nextMiddleware' => true], json_decode($response->getBody()->getContents(), true));
 
@@ -110,10 +106,10 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $request = $request->withUri($uri);
         $request = $request->withAttribute('language', null);
 
-        $handler = $this->prophesize(RequestHandler::class);
-        $handler->handle($request)->willReturn(new JsonResponse(['nextMiddleware' => true]));
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->method('handle')->with($request)->willReturn(new JsonResponse(['nextMiddleware' => true]));
 
-        $response = $resolver->process($request, $handler->reveal());
+        $response = $resolver->process($request, $handler);
 
         self::assertSame(['redirectUrl' => 'https://www.typo3.org/en-us', 'statusCode' => 307], json_decode($response->getBody()->getContents(), true));
 
@@ -143,12 +139,12 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $container = new Container();
         $container->set(HeadlessModeInterface::class, new HeadlessMode());
 
-        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->prophesize(Resolver::class)->reveal(), $siteFinder);
+        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->createMock(Resolver::class), $siteFinder);
         $container->set(UrlUtility::class, $urlUtility);
-        $errorController = $this->prophesize(ErrorController::class);
-        $errorController->pageNotFoundAction(Argument::any(), Argument::any(), Argument::any())->willReturn(new JsonResponse(['ErrorController' => true]));
+        $errorController = $this->createMock(ErrorController::class);
+        $errorController->method('pageNotFoundAction')->willReturn(new JsonResponse(['ErrorController' => true]));
 
-        $container->set(ErrorController::class, $errorController->reveal());
+        $container->set(ErrorController::class, $errorController);
         GeneralUtility::setContainer($container);
 
         $uri = new Uri('https://www.typo3.org/');
@@ -157,10 +153,10 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $request = $request->withUri($uri);
         $request = $request->withAttribute('site', $site);
 
-        $handler = $this->prophesize(RequestHandler::class);
-        $handler->handle($request)->willReturn(new JsonResponse(['nextMiddleware' => true]));
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->method('handle')->with($request)->willReturn(new JsonResponse(['nextMiddleware' => true]));
 
-        $response = $resolver->process($request, $handler->reveal());
+        $response = $resolver->process($request, $handler);
 
         self::assertSame(['ErrorController' => true], json_decode($response->getBody()->getContents(), true));
 
@@ -170,10 +166,10 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $request = $request->withUri($uri);
         $request = $request->withAttribute('site', new NullSite());
 
-        $handler = $this->prophesize(RequestHandler::class);
-        $handler->handle($request)->willReturn(new JsonResponse(['ErrorController' => true]));
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->method('handle')->with($request)->willReturn(new JsonResponse(['ErrorController' => true]));
 
-        $response = $resolver->process($request, $handler->reveal());
+        $response = $resolver->process($request, $handler);
 
         self::assertSame(['ErrorController' => true], json_decode($response->getBody()->getContents(), true));
     }

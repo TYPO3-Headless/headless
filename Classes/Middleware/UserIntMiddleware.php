@@ -50,7 +50,6 @@ class UserIntMiddleware implements MiddlewareInterface
         if (($responseBody['seo']['title'] ?? null) !== null) {
             $responseBody = $this->metaHandler->process(
                 $request,
-                $request->getAttribute('frontend.controller'),
                 $responseBody
             );
             $jsonContent = json_encode($responseBody);

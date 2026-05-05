@@ -14,8 +14,8 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Psr\Log\NullLogger;
 use stdClass;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -32,7 +32,8 @@ class JsonEncoderTest extends UnitTestCase
     #[Test, DataProvider('jsonProvider')]
     public function testEncoding($testValue, $expectedValue): void
     {
-        $encoder = GeneralUtility::makeInstance(JsonEncoder::class);
+        $encoder = new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features());
+        $encoder->setLogger(new NullLogger());
 
         self::assertSame($expectedValue, $encoder->encode($testValue));
     }
@@ -41,7 +42,8 @@ class JsonEncoderTest extends UnitTestCase
     public function prettyEncoding(): void
     {
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.prettyPrint'] = true;
-        $encoder = GeneralUtility::makeInstance(JsonEncoder::class);
+        $encoder = new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features());
+        $encoder->setLogger(new NullLogger());
 
         $encodeValue = ['nested' => ['test' => 1]];
 

@@ -17,8 +17,6 @@ use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use InvalidArgumentException;
-use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\UriInterface;
 use ReflectionProperty;
@@ -37,19 +35,17 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     public function testInvoke(): void
     {
-        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
-        $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->method('dispatch')->willReturnArgument(0);
 
         $c = new Container();
-        $c->set(EventDispatcherInterface::class, $eventDispatcher->reveal());
+        $c->set(EventDispatcherInterface::class, $eventDispatcher);
         GeneralUtility::setContainer($c);
 
         $listener = new RedirectUrlAdditionalParamsListener(
-            new TypoLinkCodecService($eventDispatcher->reveal()),
+            new TypoLinkCodecService($eventDispatcher),
             new LinkService(),
             $this->getUrlUtility()
         );
@@ -106,28 +102,23 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         $expectedUri = new Uri($targetUrl . '&' . $additionalParams);
         $newRedirectEvent = clone $redirectEvent;
 
-        $pageRouter = $this->prophesize(PageRouter::class);
-
-        $pageRouter
-            ->generateUri(
-                '1',
-                [
-                    'tx_test' =>
-                        [
-                            'action' => 'test',
-                            'controller' => 'Test',
-                            'test' => '123',
-                        ],
-                ]
-            )
-            ->shouldBeCalledOnce()
-            ->willReturn($expectedUri);
+        $pageRouter = $this->createMock(PageRouter::class);
+        $pageRouter->expects(self::once())->method('generateUri')->with(
+            '1',
+            [
+                'tx_test' =>
+                    [
+                        'action' => 'test',
+                        'controller' => 'Test',
+                        'test' => '123',
+                    ],
+            ]
+        )->willReturn($expectedUri);
 
         $mockListener = $this->createPartialMock(RedirectUrlAdditionalParamsListener::class, ['getPageRouterForSite']);
-        $mockListener->method('getPageRouterForSite')
-            ->willReturn($pageRouter->reveal());
+        $mockListener->method('getPageRouterForSite')->willReturn($pageRouter);
         $mockListener->__construct(
-            new TypoLinkCodecService($eventDispatcher->reveal()),
+            new TypoLinkCodecService($eventDispatcher),
             new LinkService(),
             $this->getUrlUtility()
         );
@@ -138,18 +129,18 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 
     public function testInvokeWithLanguage(): void
     {
-        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
-        $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->method('dispatch')->willReturnArgument(0);
 
         $container = new Container();
-        $container->set(EventDispatcherInterface::class, $eventDispatcher->reveal());
+        $container->set(EventDispatcherInterface::class, $eventDispatcher);
         GeneralUtility::setContainer($container);
 
         $targetUrl = 'https://test.domain2.tld/123';
         $additionalParams = 'tx_test[action]=test&tx_test[controller]=Test&tx_test[test]=123';
         $expectedUri = new Uri($targetUrl . '&' . $additionalParams);
         $request = (new ServerRequest())->withAttribute('test', 1)->withUri(new Uri('https://test.domain3.tld'));
-        $language = $this->prophesize(SiteLanguage::class)->reveal();
+        $language = $this->createMock(SiteLanguage::class);
         $site = $this->getSiteWithBase($expectedUri, $language);
         $request = $request->withAttribute('site', $site);
 
@@ -169,30 +160,25 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
         );
         $newRedirectEvent = clone $redirectEvent;
 
-        $pageRouter = $this->prophesize(PageRouter::class);
-
-        $pageRouter
-            ->generateUri(
-                '1',
-                [
-                    'tx_test' =>
-                        [
-                            'action' => 'test',
-                            'controller' => 'Test',
-                            'test' => '123',
-                        ],
-                    '_language' => $language,
-                ]
-            )
-            ->shouldBeCalledOnce()
-            ->willReturn($expectedUri);
+        $pageRouter = $this->createMock(PageRouter::class);
+        $pageRouter->expects(self::once())->method('generateUri')->with(
+            '1',
+            [
+                'tx_test' =>
+                    [
+                        'action' => 'test',
+                        'controller' => 'Test',
+                        'test' => '123',
+                    ],
+                '_language' => $language,
+            ]
+        )->willReturn($expectedUri);
 
         $mockListener = $this->createPartialMock(RedirectUrlAdditionalParamsListener::class, ['getPageRouterForSite']);
-        $mockListener->method('getPageRouterForSite')
-            ->willReturn($pageRouter->reveal());
+        $mockListener->method('getPageRouterForSite')->willReturn($pageRouter);
 
         $mockListener->__construct(
-            new TypoLinkCodecService($eventDispatcher->reveal()),
+            new TypoLinkCodecService($eventDispatcher),
             new LinkService(),
             $this->getUrlUtility($site)
         );
@@ -217,8 +203,8 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 
     protected function getSiteWithBase(UriInterface $uri, $withLanguage = null)
     {
-        $site = $this->prophesize(Site::class);
-        $site->getConfiguration()->willReturn([
+        $site = $this->createMock(Site::class);
+        $site->method('getConfiguration')->willReturn([
             'base' => 'https://www.typo3.org',
             'languages' => [],
             'baseVariants' => [
@@ -232,25 +218,24 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
             ],
         ]);
 
-        $site->getBase()->willReturn($uri);
+        $site->method('getBase')->willReturn($uri);
 
         if ($withLanguage === null) {
-            $withLanguage = $this->prophesize(SiteLanguage::class);
-            $withLanguage->reveal();
+            $withLanguage = $this->createMock(SiteLanguage::class);
         }
 
-        $site->getLanguageById(Argument::any())->willReturn($withLanguage);
-        $site->getLanguages()->willReturn([]);
+        $site->method('getLanguageById')->willReturn($withLanguage);
+        $site->method('getLanguages')->willReturn([]);
 
-        return $site->reveal();
+        return $site;
     }
 
     protected function getUrlUtility($site = null): UrlUtility
     {
         $uri = new Uri('https://test-backend-api.tld');
 
-        $resolver = $this->prophesize(Resolver::class);
-        $resolver->evaluate(Argument::any())->willReturn(true);
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturn(true);
 
         $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
 
@@ -260,7 +245,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 
         $siteFinder->method('getSiteByPageId')->willReturn($site);
 
-        return new UrlUtility(null, $resolver->reveal(), $siteFinder, null, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
+        return new UrlUtility(null, $resolver, $siteFinder, null, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
     }
 
     protected function tearDown(): void

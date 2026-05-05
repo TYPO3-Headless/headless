@@ -13,10 +13,12 @@ namespace FriendsOfTYPO3\Headless\Form\Finisher;
 
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use JsonException;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\RequestInterface;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 use function is_string;
 use function json_encode;
@@ -43,6 +45,13 @@ class JsonRedirectFinisher extends AbstractFinisher
 
     protected RequestInterface $request;
     protected UriBuilder $uriBuilder;
+
+    /**
+     * Lazy-loaded UrlUtility. Finishers are instantiated by FormDefinition::createFinisher
+     * via GeneralUtility::makeInstance($implementationClassName) without args, so DI cannot
+     * honor constructor injection. Resolve via container on first use.
+     */
+    private ?UrlUtility $urlUtility = null;
 
     /**
      * Executes this finisher
@@ -88,8 +97,21 @@ class JsonRedirectFinisher extends AbstractFinisher
         ?string $message = null
     ): ?string {
         try {
-            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
-            $targetUrl = $this->getTypoScriptFrontendController()->cObj->typoLink_URL([
+            /** @var ServerRequestInterface $serverRequest */
+            $serverRequest = $this->request->getAttribute('extbase.request.originalRequest')
+                ?? $GLOBALS['TYPO3_REQUEST'];
+
+            $urlUtility = ($this->urlUtility ??= GeneralUtility::makeInstance(UrlUtility::class))->withRequest($serverRequest);
+
+            $cObj = $serverRequest->getAttribute('currentContentObject');
+            if ($cObj === null) {
+                $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
+                $cObj->setRequest($serverRequest);
+                $pageInformation = $serverRequest->getAttribute('frontend.page.information');
+                $cObj->start($pageInformation?->getPageRecord() ?? [], 'pages');
+            }
+
+            $targetUrl = $cObj->typoLink_URL([
                 'parameter' => $pageUid,
                 'additionalParams' => $additionalParameters,
                 'forceAbsoluteUrl' => 1,

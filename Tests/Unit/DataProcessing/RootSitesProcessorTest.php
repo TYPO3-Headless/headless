@@ -15,9 +15,7 @@ use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing\TestDomainSchema;
 use FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing\TestSiteProvider;
 use InvalidArgumentException;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use ReflectionProperty;
 use stdClass;
 use Symfony\Component\DependencyInjection\Container;
@@ -27,8 +25,6 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class RootSitesProcessorTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     protected function setUp(): void
     {
         $this->resetSingletonInstances = true;
@@ -36,7 +32,7 @@ class RootSitesProcessorTest extends UnitTestCase
         parent::setUp();
 
         $c = new Container();
-        $c->set(EventDispatcherInterface::class, $this->prophesize(EventDispatcherInterface::class)->reveal());
+        $c->set(EventDispatcherInterface::class, $this->createMock(EventDispatcherInterface::class));
         GeneralUtility::setContainer($c);
     }
 
@@ -50,10 +46,13 @@ class RootSitesProcessorTest extends UnitTestCase
     {
         $processor = new RootSitesProcessor();
 
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
-        $contentObjectRenderer->start([], 'tt_content');
-        $contentObjectRenderer->data['uid'] = 1;
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->data = ['uid' => 1];
+        $contentObjectRenderer->method('stdWrapValue')->willReturnCallback(
+            static function (string $key, array $conf, $defaultValue = '') {
+                return $conf[$key] ?? $defaultValue;
+            }
+        );
         $conf = [];
         $conf['siteProvider'] = TestSiteProvider::class;
         $conf['siteSchema'] = TestDomainSchema::class;
@@ -86,9 +85,8 @@ class RootSitesProcessorTest extends UnitTestCase
     {
         $processor = new RootSitesProcessor();
 
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
-        $contentObjectRenderer->start([], 'tt_content');
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->data = [];
 
         $conf = [];
         self::assertEquals([], $processor->process($contentObjectRenderer, [], $conf, []));
@@ -98,10 +96,8 @@ class RootSitesProcessorTest extends UnitTestCase
     {
         $processor = new RootSitesProcessor();
 
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
-        $contentObjectRenderer->start([], 'tt_content');
-        $contentObjectRenderer->data['uid'] = 1;
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->data = ['uid' => 1];
         $conf = [];
         $conf['siteProvider'] = stdClass::class;
         $this->expectException(InvalidArgumentException::class);
@@ -112,10 +108,8 @@ class RootSitesProcessorTest extends UnitTestCase
     {
         $processor = new RootSitesProcessor();
 
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->setRequest($this->prophesize(ServerRequestInterface::class)->reveal());
-        $contentObjectRenderer->start([], 'tt_content');
-        $contentObjectRenderer->data['uid'] = 1;
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->data = ['uid' => 1];
         $conf = [];
         $conf['siteSchema'] = stdClass::class;
         $this->expectException(InvalidArgumentException::class);

@@ -26,6 +26,32 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
 {
     /**
+     * Lazy-loaded dependencies. This XClass is registered via
+     * $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'] in ext_localconf.php. TYPO3 instantiates
+     * such classes through GeneralUtility::makeInstanceForDi() which bypasses Symfony's
+     * service compilation: neither constructor injection nor #[Required] setter injection
+     * are honored for SYS][Objects] XClasses. We resolve via container manually on first use.
+     */
+    private ?HeadlessModeInterface $headlessMode = null;
+    private ?SiteFinder $siteFinder = null;
+    private ?UrlUtility $urlUtility = null;
+
+    private function getHeadlessMode(): HeadlessModeInterface
+    {
+        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
+    private function getSiteFinder(): SiteFinder
+    {
+        return $this->siteFinder ??= GeneralUtility::makeInstance(SiteFinder::class);
+    }
+
+    private function getUrlUtility(): UrlUtility
+    {
+        return $this->urlUtility ??= GeneralUtility::makeInstance(UrlUtility::class);
+    }
+
+    /**
      * Generates a workspace preview link.
      *
      * @param int $uid The ID of the record to be linked
@@ -39,20 +65,18 @@ class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
             $this->workspaceService->getCurrentWorkspace()
         );
 
-        $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
         try {
-            $site = $siteFinder->getSiteByPageId($uid);
+            $site = $this->getSiteFinder()->getSiteByPageId($uid);
             try {
                 $language = $site->getLanguageById($languageId);
             } catch (InvalidArgumentException $e) {
                 $language = $site->getDefaultLanguage();
             }
 
-            $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
-            $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
+            $headlessMode = $this->getHeadlessMode()->withRequest($GLOBALS['TYPO3_REQUEST']);
             $request = $headlessMode->overrideBackendRequestBySite($site, $language);
 
-            return GeneralUtility::makeInstance(UrlUtility::class)
+            return $this->getUrlUtility()
                 ->withRequest($request)
                 ->getFrontendUrlForPage((string)$site->getRouter()->generateUri($uid, ['ADMCMD_prev' => $previewKeyword, '_language' => $language], ''), $uid);
         } catch (SiteNotFoundException | InvalidRouteArgumentsException $e) {
