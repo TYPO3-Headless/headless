@@ -68,7 +68,7 @@ jobs:
     strategy:
       max-parallel: 2
       matrix:
-        php-versions: [8.2, 8.3, 8.4]
+        php-versions: [8.2, 8.3, 8.4, 8.5]
         typo3-versions:
           - { typo3: 14, testing: ^9.0, phpunit: ^11, phpcov: ^10, yaml: ^7 }
 
