@@ -23,7 +23,7 @@ use function str_replace;
 /**
  * @codeCoverageIgnore
  */
-readonly class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
+class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
 {
     /**
      * @inheritDoc
