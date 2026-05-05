@@ -17,11 +17,14 @@ use TYPO3\CMS\Backend\Routing\Event\AfterPagePreviewUriGeneratedEvent;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\SiteFinder;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class AfterPagePreviewUriGeneratedListener
 {
-    public function __construct(private HeadlessFrontendUrlInterface $urlUtility, private readonly SiteFinder $siteFinder) {}
+    public function __construct(
+        private readonly HeadlessFrontendUrlInterface $urlUtility,
+        private readonly SiteFinder $siteFinder,
+        private readonly HeadlessModeInterface $headlessMode,
+    ) {}
 
     public function __invoke(AfterPagePreviewUriGeneratedEvent $event): void
     {
@@ -34,8 +37,7 @@ final class AfterPagePreviewUriGeneratedListener
             $languageUid = $event->getLanguageId();
             $language = $languageUid === -1 ? null : $site->getLanguageById($languageUid);
 
-            $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
-            $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
+            $headlessMode = $this->headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
             $request = $headlessMode->overrideBackendRequestBySite($site, $language);
 
             $urlUtility = $this->urlUtility->withRequest($request);

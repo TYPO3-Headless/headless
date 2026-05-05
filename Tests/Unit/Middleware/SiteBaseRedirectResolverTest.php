@@ -71,7 +71,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
 
         GeneralUtility::setContainer($container);
 
-        $resolver = new SiteBaseRedirectResolver(new HeadlessMode());
+        $resolver = new SiteBaseRedirectResolver(new HeadlessMode(), $urlUtility);
 
         $request = new ServerRequest();
         $request = $request->withAttribute('site', $site);

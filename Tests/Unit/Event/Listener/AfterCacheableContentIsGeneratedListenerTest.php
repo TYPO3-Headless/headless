@@ -39,11 +39,12 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $metaHandler = new MetaHandler(
             $this->createMock(MetaTagManagerRegistry::class),
             $this->createMock(EventDispatcherInterface::class),
-            $this->createMock(PageTitleProviderManager::class)
+            $this->createMock(PageTitleProviderManager::class),
+            new \TYPO3\CMS\Core\TypoScript\TypoScriptService()
         );
 
         $listener = new AfterCacheableContentIsGeneratedListener(
-            new JsonEncoder(),
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
             $metaHandler,
             new HeadlessUserInt(),
             new HeadlessMode()
@@ -73,11 +74,12 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $metaHandler = new MetaHandler(
             $this->createMock(MetaTagManagerRegistry::class),
             $this->createMock(EventDispatcherInterface::class),
-            $this->createMock(PageTitleProviderManager::class)
+            $this->createMock(PageTitleProviderManager::class),
+            new \TYPO3\CMS\Core\TypoScript\TypoScriptService()
         );
 
         $listener = new AfterCacheableContentIsGeneratedListener(
-            new JsonEncoder(),
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
             $metaHandler,
             new HeadlessUserInt(),
             new HeadlessMode()
@@ -100,11 +102,12 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         $metaHandler = new MetaHandler(
             $this->createMock(MetaTagManagerRegistry::class),
             $this->createMock(EventDispatcherInterface::class),
-            $this->createMock(PageTitleProviderManager::class)
+            $this->createMock(PageTitleProviderManager::class),
+            new \TYPO3\CMS\Core\TypoScript\TypoScriptService()
         );
 
         $listener = new AfterCacheableContentIsGeneratedListener(
-            new JsonEncoder(),
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
             $metaHandler,
             new HeadlessUserInt(),
             new HeadlessMode()
@@ -134,7 +137,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         });
 
         $listener = new AfterCacheableContentIsGeneratedListener(
-            new JsonEncoder(),
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
             $metaHandler,
             new HeadlessUserInt(),
             new HeadlessMode()
@@ -182,7 +185,7 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         });
 
         $listener = new AfterCacheableContentIsGeneratedListener(
-            new JsonEncoder(),
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
             $metaHandler,
             new HeadlessUserInt(),
             new HeadlessMode()

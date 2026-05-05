@@ -47,6 +47,13 @@ class JsonRedirectFinisher extends AbstractFinisher
     protected UriBuilder $uriBuilder;
 
     /**
+     * Lazy-loaded UrlUtility. Finishers are instantiated by FormDefinition::createFinisher
+     * via GeneralUtility::makeInstance($implementationClassName) without args, so DI cannot
+     * honor constructor injection. Resolve via container on first use.
+     */
+    private ?UrlUtility $urlUtility = null;
+
+    /**
      * Executes this finisher
      * @see AbstractFinisher::execute()
      */
@@ -90,11 +97,11 @@ class JsonRedirectFinisher extends AbstractFinisher
         ?string $message = null
     ): ?string {
         try {
-            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
-
             /** @var ServerRequestInterface $serverRequest */
             $serverRequest = $this->request->getAttribute('extbase.request.originalRequest')
                 ?? $GLOBALS['TYPO3_REQUEST'];
+
+            $urlUtility = ($this->urlUtility ??= GeneralUtility::makeInstance(UrlUtility::class))->withRequest($serverRequest);
 
             $cObj = $serverRequest->getAttribute('currentContentObject');
             if ($cObj === null) {

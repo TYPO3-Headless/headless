@@ -33,6 +33,7 @@ class MetaHandler implements MetaHandlerInterface
         private readonly MetaTagManagerRegistry $metaTagRegistry,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly PageTitleProviderManager $pageTitleProviderManager,
+        private readonly TypoScriptService $typoScriptService,
     ) {}
 
     public function process(
@@ -149,8 +150,7 @@ class MetaHandler implements MetaHandlerInterface
      */
     protected function generateMetaTagsFromTyposcript(array $metaTagTypoScript, ContentObjectRenderer $cObj)
     {
-        $typoScriptService = GeneralUtility::makeInstance(TypoScriptService::class);
-        $conf = $typoScriptService->convertTypoScriptArrayToPlainArray($metaTagTypoScript);
+        $conf = $this->typoScriptService->convertTypoScriptArrayToPlainArray($metaTagTypoScript);
         foreach ($conf as $key => $properties) {
             $replace = false;
             if (is_array($properties)) {

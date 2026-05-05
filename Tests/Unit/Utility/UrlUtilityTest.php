@@ -925,6 +925,74 @@ class UrlUtilityTest extends UnitTestCase
         self::assertSame('https://test-frontend-from-from-request-lang.tld/headless/fileadmin', $urlUtilityWithRequest->getStorageProxyUrl());
     }
 
+    public function testGetFrontendUrlWithSiteDoesNotLeakStateBetweenCalls(): void
+    {
+        $headlessMode = $this->createHeadlessMode();
+
+        $site1 = $this->createMock(Site::class);
+        $site1->method('getBase')->willReturn(new Uri('https://backend1.example.com'));
+        $site1->method('getLanguages')->willReturn([]);
+        $site1->method('getConfiguration')->willReturn([
+            'base' => 'https://backend1.example.com',
+            'frontendBase' => 'https://site1.example.com',
+            'frontendApiProxy' => 'https://site1.example.com/headless',
+            'frontendFileApi' => 'https://site1.example.com/headless/fileadmin',
+            'languages' => [],
+            'baseVariants' => [],
+        ]);
+
+        $site2 = $this->createMock(Site::class);
+        $site2->method('getBase')->willReturn(new Uri('https://backend2.example.com'));
+        $site2->method('getLanguages')->willReturn([]);
+        $site2->method('getConfiguration')->willReturn([
+            'base' => 'https://backend2.example.com',
+            'frontendBase' => 'https://site2.example.com',
+            'frontendApiProxy' => 'https://site2.example.com/headless',
+            'frontendFileApi' => 'https://site2.example.com/headless/fileadmin',
+            'languages' => [],
+            'baseVariants' => [],
+        ]);
+
+        $site3 = $this->createMock(Site::class);
+        $site3->method('getBase')->willReturn(new Uri('https://backend3.example.com'));
+        $site3->method('getLanguages')->willReturn([]);
+        $site3->method('getConfiguration')->willReturn([
+            'base' => 'https://backend3.example.com',
+            'frontendBase' => 'https://site3.example.com',
+            'frontendApiProxy' => 'https://site3.example.com/headless',
+            'frontendFileApi' => 'https://site3.example.com/headless/fileadmin',
+            'languages' => [],
+            'baseVariants' => [],
+        ]);
+
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturn(false);
+
+        $siteFinder = $this->createMock(SiteFinder::class);
+
+        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+
+        // First call — site1
+        $url1 = $urlUtility->getFrontendUrlWithSite('https://backend1.example.com/page1', $site1);
+        self::assertSame('https://site1.example.com/page1', $url1);
+
+        // Second call — site2 must NOT leak host from site1
+        $url2 = $urlUtility->getFrontendUrlWithSite('https://backend2.example.com/page2', $site2);
+        self::assertSame('https://site2.example.com/page2', $url2);
+        self::assertStringNotContainsString('site1.example.com', $url2);
+
+        // Third call — site3 to verify no crosstalk lingers
+        $url3 = $urlUtility->getFrontendUrlWithSite('https://backend3.example.com/page3', $site3);
+        self::assertSame('https://site3.example.com/page3', $url3);
+        self::assertStringNotContainsString('site1.example.com', $url3);
+        self::assertStringNotContainsString('site2.example.com', $url3);
+
+        // Verify the shared instance has no leaked frontendDomains state via reflection.
+        $reflection = new ReflectionProperty(UrlUtility::class, 'frontendDomains');
+        $domains = $reflection->getValue($urlUtility);
+        self::assertSame([], $domains, 'getFrontendUrlWithSite must not mutate $this->frontendDomains');
+    }
+
     protected function createMockSite(string $backendUrl, string $frontendUrl = '', ?array $variants = null)
     {
         $site = $this->createMock(Site::class);

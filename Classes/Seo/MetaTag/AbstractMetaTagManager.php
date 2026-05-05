@@ -24,9 +24,22 @@ use function json_encode;
  */
 abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMetaTagManager
 {
+    /**
+     * Lazy-loaded HeadlessMode. Concrete subclasses are instantiated by TYPO3's
+     * MetaTagManagerRegistry via GeneralUtility::makeInstance($module) with no args,
+     * so neither constructor nor #[Required] setter injection is honored. We resolve
+     * via container manually on first use.
+     */
+    private ?HeadlessModeInterface $headlessMode = null;
+
+    private function getHeadlessMode(): HeadlessModeInterface
+    {
+        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
     public function renderAllProperties(DocType|null $docType = null): string
     {
-        if (GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
+        if ($this->getHeadlessMode()->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
             return $this->renderAllHeadlessProperties();
         }
 
@@ -35,7 +48,7 @@ abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMe
 
     public function renderProperty(string $property, ?DocType $docType = null): string
     {
-        if (GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
+        if ($this->getHeadlessMode()->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
             return $this->renderHeadlessProperty($property);
         }
 

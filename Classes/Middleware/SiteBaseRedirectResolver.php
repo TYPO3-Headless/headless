@@ -19,11 +19,13 @@ use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Site\Entity\NullSite;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class SiteBaseRedirectResolver extends \TYPO3\CMS\Frontend\Middleware\SiteBaseRedirectResolver
 {
-    public function __construct(private readonly HeadlessModeInterface $headlessMode) {}
+    public function __construct(
+        private readonly HeadlessModeInterface $headlessMode,
+        private readonly UrlUtility $urlUtility,
+    ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -40,7 +42,7 @@ class SiteBaseRedirectResolver extends \TYPO3\CMS\Frontend\Middleware\SiteBaseRe
         }
 
         if ($response instanceof RedirectResponse) {
-            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request);
+            $urlUtility = $this->urlUtility->withRequest($request);
             return new JsonResponse([
                 'redirectUrl' => $urlUtility->prepareRelativeUrlIfPossible(
                     $urlUtility->getFrontendUrlWithSite(

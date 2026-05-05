@@ -36,6 +36,8 @@ class FilesProcessor implements DataProcessorInterface
         'filesAs' => 'files',
     ];
 
+    public function __construct(private readonly FileUtility $fileUtility) {}
+
     /**
      * The content object renderer
      *
@@ -198,6 +200,6 @@ class FilesProcessor implements DataProcessorInterface
 
     protected function getFileUtility(): FileUtility
     {
-        return GeneralUtility::makeInstance(FileUtility::class);
+        return $this->fileUtility;
     }
 }

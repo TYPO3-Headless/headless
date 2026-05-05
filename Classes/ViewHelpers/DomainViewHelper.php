@@ -12,11 +12,12 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\ViewHelpers;
 
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 class DomainViewHelper extends AbstractViewHelper
 {
+    public function __construct(private readonly UrlUtility $urlUtility) {}
+
     public function initializeArguments(): void
     {
         $this->registerArgument('return', 'string', 'value from site configuration');
@@ -24,7 +25,7 @@ class DomainViewHelper extends AbstractViewHelper
 
     public function render(): mixed
     {
-        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
+        $urlUtility = $this->urlUtility;
 
         if (isset($GLOBALS['TYPO3_REQUEST'])) {
             $urlUtility = $urlUtility->withRequest($GLOBALS['TYPO3_REQUEST']);

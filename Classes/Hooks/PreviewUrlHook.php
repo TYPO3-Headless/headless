@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Hooks;
 
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * PreviewUrlHook
@@ -21,6 +20,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  **/
 class PreviewUrlHook
 {
+    public function __construct(private readonly UrlUtility $urlUtility) {}
+
     /**
      * @param string $previewUrl
      * @param int $pageUid
@@ -36,6 +37,6 @@ class PreviewUrlHook
         if (isset($GLOBALS['BE_USER']) && $GLOBALS['BE_USER']->workspace !== 0) {
             return $previewUrl;
         }
-        return GeneralUtility::makeInstance(UrlUtility::class)->getFrontendUrlForPage($previewUrl, $pageUid);
+        return $this->urlUtility->getFrontendUrlForPage($previewUrl, $pageUid);
     }
 }

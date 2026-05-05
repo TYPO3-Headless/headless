@@ -29,6 +29,20 @@ use function json_encode;
 class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginController
 {
     /**
+     * Lazy-loaded HeadlessMode instance. This XClass is registered via
+     * $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'] in ext_localconf.php. TYPO3 instantiates
+     * such classes through GeneralUtility::makeInstanceForDi() which bypasses Symfony's
+     * service compilation, so neither constructor injection nor #[Required] setter injection
+     * is honored for SYS][Objects] XClasses. We resolve via container manually on first use.
+     */
+    private ?HeadlessModeInterface $headlessMode = null;
+
+    private function getHeadlessMode(): HeadlessModeInterface
+    {
+        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
+    /**
      * Show login form
      */
     public function loginAction(): ResponseInterface
@@ -108,6 +122,6 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
 
     private function isHeadlessEnabled(): bool
     {
-        return GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($this->request)->isEnabled();
+        return $this->getHeadlessMode()->withRequest($this->request)->isEnabled();
     }
 }

@@ -100,15 +100,16 @@ class JsonContentObjectTest extends UnitTestCase
         $container->set(EventDispatcherInterface::class, $eventDispatcher);
         $container->set(JsonContentObject::class, new JsonContentObject(
             $contentDataProcessor,
-            new JsonEncoder(),
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
             new JsonDecoder(),
             new HeadlessUserInt()
         ));
         $container->set(JsonContentContentObject::class, new JsonContentContentObject(
             $container->get(TimeTracker::class),
             $container->get(EventDispatcherInterface::class),
-            new JsonEncoder(),
-            new HeadlessUserInt()
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
+            new HeadlessUserInt(),
+            $this->createMock(\TYPO3\CMS\Backend\View\BackendLayoutView::class)
         ));
         $container->set(RecordsContentObject::class, new RecordsContentObject($container->get(TimeTracker::class)));
         $container->set(ContentContentObject::class, new ContentContentObject($container->get(TimeTracker::class), $container->get(EventDispatcherInterface::class)));

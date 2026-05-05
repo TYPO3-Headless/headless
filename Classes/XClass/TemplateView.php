@@ -26,9 +26,25 @@ use function ob_start;
 
 class TemplateView extends \TYPO3Fluid\Fluid\View\TemplateView
 {
+    /**
+     * Lazy-loaded HeadlessMode instance. While this XClass is technically registered as a
+     * Symfony service alias in Configuration/Services.php (when the headless.overrideFluidTemplates
+     * feature is enabled), the parent class accepts a RenderingContextInterface via constructor
+     * which is supplied by callers (and by tests instantiating with `new TemplateView($context)`).
+     * Constructor / #[Required] setter injection would either break that contract or fail to run
+     * under direct instantiation. Lazy-resolving via the container keeps full BC and remains
+     * mockable in tests by registering a stub HeadlessModeInterface in the GeneralUtility container.
+     */
+    private ?HeadlessModeInterface $headlessMode = null;
+
+    private function getHeadlessMode(): HeadlessModeInterface
+    {
+        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
     public function render($actionName = null)
     {
-        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
+        $headlessMode = $this->getHeadlessMode()->withRequest($GLOBALS['TYPO3_REQUEST']);
 
         if (!ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend() || !$headlessMode->isEnabled()) {
             return parent::render($actionName);

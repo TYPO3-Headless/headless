@@ -80,7 +80,8 @@ return static function (ContainerConfigurator $configurator): void {
     $services->set(DomainSchema::class)->public();
     $services->set(BackendEditorUrl::class)->public();
     $services->set(FileUtility::class)->public();
-    $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
+    $services->set(UrlUtility::class)->autowire(false)->share(false);
+    $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false)->share(false);
     $services->set(AfterLinkIsGeneratedListener::class)->tag(
         'event.listener',
         ['identifier' => 'headless/AfterLinkIsGenerated']
@@ -128,11 +129,11 @@ return static function (ContainerConfigurator $configurator): void {
 
     foreach (
         [
-            FilesProcessor::class => ['identifier' => 'headless-files', 'share' => true, 'public' => false],
+            FilesProcessor::class => ['identifier' => 'headless-files', 'share' => true, 'public' => true],
             RootSitesProcessor::class => ['identifier' => 'headless-root-sites', 'share' => true, 'public' => false],
             MenuProcessor::class => ['identifier' => 'headless-menu', 'share' => false, 'public' => true],
             LanguageMenuProcessor::class => ['identifier' => 'headless-language-menu', 'share' => false, 'public' => true],
-            GalleryProcessor::class => ['identifier' => 'headless-gallery', 'share' => false, 'public' => false],
+            GalleryProcessor::class => ['identifier' => 'headless-gallery', 'share' => false, 'public' => true],
             DatabaseQueryProcessor::class => [
                 'identifier' => 'headless-database-query',
                 'share' => false,

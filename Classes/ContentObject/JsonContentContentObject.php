@@ -110,7 +110,8 @@ class JsonContentContentObject extends ContentContentObject
         protected TimeTracker $timeTracker,
         protected EventDispatcherInterface $eventDispatcher,
         protected JsonEncoderInterface $jsonEncoder,
-        protected HeadlessUserInt $headlessUserInt
+        protected HeadlessUserInt $headlessUserInt,
+        protected BackendLayoutView $backendLayoutView
     ) {}
 
     /**
@@ -183,8 +184,7 @@ class JsonContentContentObject extends ContentContentObject
         }
 
         if ($groupingEnabled && $this->isSortByBackendLayoutEnabled($conf)) {
-            $backendLayoutView = GeneralUtility::makeInstance(BackendLayoutView::class);
-            $backendLayout = $backendLayoutView->getSelectedBackendLayout($this->request->getAttribute('routing')->getPageId());
+            $backendLayout = $this->backendLayoutView->getSelectedBackendLayout($this->request->getAttribute('routing')->getPageId());
 
             $sorted = [];
             foreach ($backendLayout['__colPosList'] ?? [] as $value) {

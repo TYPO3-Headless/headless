@@ -62,7 +62,7 @@ class MetaHandlerTest extends UnitTestCase
         $eventDispatcher->method('dispatch')->willReturnArgument(0);
 
         $handler = $this->getMockBuilder(MetaHandler::class)
-            ->setConstructorArgs([$registry, $eventDispatcher, $titleProvider])
+            ->setConstructorArgs([$registry, $eventDispatcher, $titleProvider, new \TYPO3\CMS\Core\TypoScript\TypoScriptService()])
             ->onlyMethods(['createContentObjectRenderer'])
             ->getMock();
         $handler->method('createContentObjectRenderer')->willReturn(
@@ -98,7 +98,7 @@ class MetaHandlerTest extends UnitTestCase
         $titleProvider->method('getTitle')->willReturn('Title');
 
         $handler = $this->getMockBuilder(MetaHandler::class)
-            ->setConstructorArgs([$registry, $eventDispatcher, $titleProvider])
+            ->setConstructorArgs([$registry, $eventDispatcher, $titleProvider, new \TYPO3\CMS\Core\TypoScript\TypoScriptService()])
             ->onlyMethods(['createContentObjectRenderer'])
             ->getMock();
         $handler->method('createContentObjectRenderer')->willReturn($this->createMock(ContentObjectRenderer::class));
@@ -123,7 +123,7 @@ class MetaHandlerTest extends UnitTestCase
         $titleProvider->method('getTitle')->willReturn('Title');
 
         $handler = $this->getMockBuilder(MetaHandler::class)
-            ->setConstructorArgs([$registry, $eventDispatcher, $titleProvider])
+            ->setConstructorArgs([$registry, $eventDispatcher, $titleProvider, new \TYPO3\CMS\Core\TypoScript\TypoScriptService()])
             ->onlyMethods(['createContentObjectRenderer'])
             ->getMock();
         $handler->method('createContentObjectRenderer')->willReturn($this->createMock(ContentObjectRenderer::class));

@@ -22,6 +22,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class VideoTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VideoTagRenderer
 {
+    /**
+     * Renderers are instantiated by RendererRegistry::makeInstance($className) without args,
+     * so DI cannot honor constructor injection. Resolve via container on first use.
+     */
+    private ?FileUtility $fileUtility = null;
+
     public function getPriority(): int
     {
         return 2;
@@ -40,7 +46,8 @@ class VideoTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VideoTagRender
     public function render(FileInterface $file, $width, $height, array $options = []): string
     {
         if (($options['returnUrl'] ?? false) === true) {
-            return htmlspecialchars(GeneralUtility::makeInstance(FileUtility::class)->getAbsoluteUrl($file->getPublicUrl()), ENT_QUOTES | ENT_HTML5);
+            $fileUtility = $this->fileUtility ??= GeneralUtility::makeInstance(FileUtility::class);
+            return htmlspecialchars($fileUtility->getAbsoluteUrl($file->getPublicUrl()), ENT_QUOTES | ENT_HTML5);
         }
         return parent::render(...func_get_args());
     }

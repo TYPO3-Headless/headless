@@ -48,6 +48,21 @@ use function str_replace;
 class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendController
 {
     /**
+     * Lazy-loaded HeadlessMode instance. This XClass is registered via
+     * $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'] in ext_localconf.php. TYPO3 instantiates
+     * such classes through GeneralUtility::makeInstanceForDi() which bypasses Symfony's
+     * service compilation, so neither constructor injection nor #[Required] setter injection
+     * is honored for SYS][Objects] XClasses. We resolve via container manually on first use.
+     */
+    private ?HeadlessModeInterface $headlessMode = null;
+    private ?Translator $translator = null;
+
+    private function getHeadlessMode(): HeadlessModeInterface
+    {
+        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
+    /**
      * Take the form which should be rendered from the plugin settings
      * and overlay the formDefinition with additional data from
      * flexform and typoscript settings.
@@ -58,9 +73,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      */
     public function renderAction(): ResponseInterface
     {
-        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
-
-        if (!$headlessMode->withRequest($this->request)->isEnabled()) {
+        if (!$this->getHeadlessMode()->withRequest($this->request)->isEnabled()) {
             return parent::renderAction();
         }
 
@@ -317,11 +330,15 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
     private function getHashService(): HashService
     {
-        return GeneralUtility::makeInstance(HashService::class);
+        // ActionController parent declares `protected HashService $hashService` and injects it via
+        // injectHashService(). Even SYS][Objects] XClasses honor injectXxx() setter injection
+        // (extbase calls these explicitly in ObjectManager-style flow), so we trust the parent's
+        // injected instance here rather than maintaining our own lazy lookup.
+        return $this->hashService;
     }
 
     private function getFormTranslator(): Translator
     {
-        return GeneralUtility::makeInstance(Translator::class);
+        return $this->translator ??= GeneralUtility::makeInstance(Translator::class);
     }
 }

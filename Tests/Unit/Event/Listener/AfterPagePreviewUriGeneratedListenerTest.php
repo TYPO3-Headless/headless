@@ -54,7 +54,7 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
             null,
             $resolver,
             $siteFinder
-        ), $siteFinder);
+        ), $siteFinder, new HeadlessMode());
 
         self::assertInstanceOf(AfterPagePreviewUriGeneratedListener::class, $listener);
     }
@@ -70,7 +70,7 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
             null,
             $resolver,
             $siteFinder
-        ), $siteFinder);
+        ), $siteFinder, new HeadlessMode());
 
         $event = new AfterPagePreviewUriGeneratedEvent(
             new Uri('https://test.tld/page'),
@@ -104,7 +104,7 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
             null,
             $resolver,
             $siteFinder
-        ), $siteFinder);
+        ), $siteFinder, new HeadlessMode());
 
         $event = new AfterPagePreviewUriGeneratedEvent(
             new Uri('https://test.tld/page'),
