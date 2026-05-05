@@ -18,6 +18,7 @@ use FriendsOfTYPO3\Headless\Form\Translator;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\XClass\FormRuntime;
 use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Core\Crypto\HashAlgo;
 use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -65,18 +66,15 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
         $formDefinition = [];
         if (!empty($this->settings['persistenceIdentifier'])) {
-            $formSettings = [];
-            $typoScriptSettings = [];
             $typoScriptSettings = $this->configurationManager->getConfiguration(
                 ExtbaseConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS,
                 'form'
             );
-            $formSettings = $this->extFormConfigurationManager->getYamlConfiguration($typoScriptSettings, true);
 
             $formDefinition = $this->formPersistenceManager->load(
                 $this->settings['persistenceIdentifier'],
-                $formSettings,
-                $typoScriptSettings
+                $typoScriptSettings,
+                $this->request
             );
             $formDefinition['persistenceIdentifier'] = $this->settings['persistenceIdentifier'];
             $formDefinition = $this->overrideByFlexFormSettings($formDefinition);
@@ -134,7 +132,8 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
         $stateHash = $this->getHashService()->appendHmac(
             base64_encode(serialize($formState)),
-            class_exists(\TYPO3\CMS\Form\Security\HashScope::class) ? \TYPO3\CMS\Form\Security\HashScope::FormState->prefix() : ''
+            class_exists(\TYPO3\CMS\Form\Security\HashScope::class) ? \TYPO3\CMS\Form\Security\HashScope::FormState->prefix() : '',
+            HashAlgo::SHA3_256
         );
 
         $currentPageIndex = $formRuntime->getCurrentPage() ? $formRuntime->getCurrentPage()->getIndex() : 0;
