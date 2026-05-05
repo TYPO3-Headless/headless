@@ -49,7 +49,7 @@ class TemplateView extends \TYPO3Fluid\Fluid\View\TemplateView
         $templateFile = $templatePaths->resolveTemplateFileForControllerAndActionAndFormat($renderingContext->getControllerName(), $renderingContext->getControllerAction(), 'php');
 
         if ($templateFile === null) {
-            throw new InvalidTemplateResourceException('Template is not found');
+            throw new InvalidTemplateResourceException('Template is not found', 1740000000);
         }
 
         return $this->loadTemplate($templateFile, $renderingContext);

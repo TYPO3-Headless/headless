@@ -37,7 +37,6 @@
     "friendsofphp/php-cs-fixer": "^v3",
     "helmich/typo3-typoscript-lint": "^v3",
     "justinrainbow/json-schema": "^5",
-    "phpspec/prophecy-phpunit": "^2",
     "phpstan/extension-installer": "^1.1",
     "phpstan/phpstan": "^1.12",
     "phpunit/phpcov": "^8 || ^9 || ^10",

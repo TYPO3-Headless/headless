@@ -16,8 +16,6 @@ use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
-use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -31,27 +29,20 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class DomainSchemaTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     public function testProcess(): void
     {
         $testUri = new Uri('https://test.domain.tld');
-        $cObj = $this->prophesize(ContentObjectRenderer::class);
-        $cObj->start(Argument::any(), Argument::any());
+        $cObj = $this->createMock(ContentObjectRenderer::class);
         $mainSite = $this->getSite($testUri, 1);
 
-        $this->prophesize(SiteProvider::class);
-        $siteProvider = $this->prophesize(SiteProvider::class);
-        $siteProvider->getSites()->willReturn([$mainSite]);
-        $siteProvider = $siteProvider->reveal();
+        $siteProvider = $this->createMock(SiteProvider::class);
+        $siteProvider->method('getSites')->willReturn([$mainSite]);
 
         $expectedValueOfAdditionalDataProcessor = ['test' => 1];
-        $contentDataProcessor = $this->prophesize(ContentDataProcessor::class);
-        $contentDataProcessor->process(Argument::any(), Argument::any(), Argument::any())->willReturn(
-            $expectedValueOfAdditionalDataProcessor
-        );
+        $contentDataProcessor = $this->createMock(ContentDataProcessor::class);
+        $contentDataProcessor->method('process')->willReturn($expectedValueOfAdditionalDataProcessor);
 
-        $domainSchema = new DomainSchema($this->getUrlUtility($mainSite), $contentDataProcessor->reveal());
+        $domainSchema = new DomainSchema($this->getUrlUtility($mainSite), $contentDataProcessor);
         $expectedResult = [
             [
                 'name' => $testUri->getHost(),
@@ -68,12 +59,12 @@ class DomainSchemaTest extends UnitTestCase
             ],
         ];
 
-        self::assertEquals($expectedResult, $domainSchema->process($siteProvider, ['cObj' => $cObj->reveal()]));
+        self::assertEquals($expectedResult, $domainSchema->process($siteProvider, ['cObj' => $cObj]));
         self::assertEquals(
             [$expectedValueOfAdditionalDataProcessor],
             $domainSchema->process(
                 $siteProvider,
-                ['cObj' => $cObj->reveal(), 'processorConfiguration' => ['dataProcessing.' => []]]
+                ['cObj' => $cObj, 'processorConfiguration' => ['dataProcessing.' => []]]
             )
         );
     }
@@ -84,27 +75,23 @@ class DomainSchemaTest extends UnitTestCase
             $languages[] = 'default';
         }
 
-        $defaultLanguage = $this->prophesize(SiteLanguage::class);
-        $defaultLanguage->getTypo3Language()->willReturn('default');
+        $defaultLanguage = $this->createMock(SiteLanguage::class);
+        $defaultLanguage->method('getTypo3Language')->willReturn('default');
 
-        $site = $this->prophesize(Site::class);
-
-        $site->getBase()->willReturn($domainUri);
-        $site->getDefaultLanguage()->willReturn($defaultLanguage->reveal());
-        $site->getRootPageId()->willReturn($rootPageId);
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn($domainUri);
+        $site->method('getDefaultLanguage')->willReturn($defaultLanguage);
+        $site->method('getRootPageId')->willReturn($rootPageId);
 
         $siteLanguages = [];
         foreach ($languages as $language) {
-            $siteLanguage = $this->prophesize(SiteLanguage::class);
-
-            $siteLanguage->toArray()->willReturn([]);
-            $siteLanguage->getTypo3Language()
-                ->willReturn($language);
-
-            $siteLanguages[] = $siteLanguage->reveal();
+            $siteLanguage = $this->createMock(SiteLanguage::class);
+            $siteLanguage->method('toArray')->willReturn([]);
+            $siteLanguage->method('getTypo3Language')->willReturn($language);
+            $siteLanguages[] = $siteLanguage;
         }
 
-        $site->getConfiguration()->willReturn([
+        $site->method('getConfiguration')->willReturn([
             'base' => 'https://www.typo3.org',
             'languages' => [],
             'baseVariants' => [
@@ -118,18 +105,16 @@ class DomainSchemaTest extends UnitTestCase
             ],
         ]);
 
-        $site
-            ->getLanguages()
-            ->willReturn($siteLanguages);
-        return $site->reveal();
+        $site->method('getLanguages')->willReturn($siteLanguages);
+        return $site;
     }
 
     protected function getUrlUtility($site = null): UrlUtility
     {
         $uri = new Uri('https://test-backend-api.tld');
 
-        $resolver = $this->prophesize(Resolver::class);
-        $resolver->evaluate(Argument::any())->willReturn(true);
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturn(true);
 
         $mock = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
         $mock->method('getSiteByPageId')->willReturn($site);
@@ -140,17 +125,16 @@ class DomainSchemaTest extends UnitTestCase
 
         $mock->method('getSiteByPageId')->willReturn($site);
 
-        //$siteFinder->getSiteByPageId(Argument::is(1))->willReturn($site);
         $dummyRequest = (new ServerRequest())->withAttribute('site', $site);
         $dummyRequest = $dummyRequest->withAttribute('headless', new Headless());
 
-        return new UrlUtility(null, $resolver->reveal(), $mock, $dummyRequest, (new HeadlessMode())->withRequest($dummyRequest));
+        return new UrlUtility(null, $resolver, $mock, $dummyRequest, (new HeadlessMode())->withRequest($dummyRequest));
     }
 
     protected function getSiteWithBase(UriInterface $uri, $withLanguage = null)
     {
-        $site = $this->prophesize(Site::class);
-        $site->getConfiguration()->willReturn([
+        $site = $this->createMock(Site::class);
+        $site->method('getConfiguration')->willReturn([
             'base' => 'https://www.typo3.org',
             'languages' => [],
             'baseVariants' => [
@@ -164,13 +148,8 @@ class DomainSchemaTest extends UnitTestCase
             ],
         ]);
 
-        $site->getBase()->willReturn($uri);
+        $site->method('getBase')->willReturn($uri);
 
-        if ($withLanguage === null) {
-            $withLanguage = $this->prophesize(SiteLanguage::class);
-            $withLanguage->reveal();
-        }
-
-        return $site->reveal();
+        return $site;
     }
 }

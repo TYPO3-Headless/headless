@@ -15,9 +15,7 @@ use FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use InvalidArgumentException;
-use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
-use Prophecy\Prophecy\ObjectProphecy;
+use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Container;
 use Throwable;
@@ -46,19 +44,17 @@ use function array_merge;
 
 class FileUtilityTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     /**
-     * @var ObjectProphecy|ContentObjectRenderer
+     * @var MockObject&ContentObjectRenderer
      */
     protected $contentObjectRenderer;
 
     public function testGetAbsoluteUrl(): void
     {
-        $normalizedParams = $this->prophesize(NormalizedParams::class);
+        $normalizedParams = $this->createMock(NormalizedParams::class);
         $urlDomain = 'https://test-frontend.tld';
-        $normalizedParams->getSiteUrl()->shouldBeCalled(1)->willReturn($urlDomain . '/test-site');
-        $normalizedParams->getRequestHost()->shouldBeCalled(1)->willReturn($urlDomain);
+        $normalizedParams->method('getSiteUrl')->willReturn($urlDomain . '/test-site');
+        $normalizedParams->method('getRequestHost')->willReturn($urlDomain);
         $fileUtility = $this->getFileUtility($normalizedParams);
 
         self::assertSame(
@@ -66,9 +62,9 @@ class FileUtilityTest extends UnitTestCase
             $fileUtility->getAbsoluteUrl('/fileadmin/test-video-file.mp4')
         );
 
-        $normalizedParams = $this->prophesize(NormalizedParams::class);
-        $normalizedParams->getSiteUrl()->shouldBeCalled(1)->willReturn($urlDomain . '/test-site#asdasdas');
-        $normalizedParams->getRequestHost()->shouldBeCalled(1)->willReturn($urlDomain);
+        $normalizedParams = $this->createMock(NormalizedParams::class);
+        $normalizedParams->method('getSiteUrl')->willReturn($urlDomain . '/test-site#asdasdas');
+        $normalizedParams->method('getRequestHost')->willReturn($urlDomain);
         $fileUtility = $this->getFileUtility($normalizedParams);
         self::assertSame(
             'https://test-frontend.tld/test-site#asdasdas/fileadmin/#test-video#-file.mp#4',
@@ -127,8 +123,8 @@ class FileUtilityTest extends UnitTestCase
         ]);
         $processedFile = $this->getMockProcessedFileForData($fileData);
         $imageService = $this->getImageServiceWithProcessedFile($file, $processedFile);
-        $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
-        $contentObjectRenderer->typoLink(Argument::any(), Argument::any())->willReturn($linkResult);
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->method('typoLink')->willReturn($linkResult);
         $fileUtility = $this->getFileUtility(null, $imageService, $contentObjectRenderer);
         $overwrittenBaseline = $this->getBaselineResultArrayForFile();
         $overwrittenBaseline['properties']['link'] = $link;
@@ -147,8 +143,8 @@ class FileUtilityTest extends UnitTestCase
         ]);
         $processedFile = $this->getMockProcessedFileForData($fileData);
         $imageService = $this->getImageServiceWithProcessedFile($file, $processedFile);
-        $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
-        $contentObjectRenderer->typoLink(Argument::any(), Argument::any())->willReturn($linkResult);
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->method('typoLink')->willReturn($linkResult);
         $fileUtility = $this->getFileUtility(null, $imageService, $contentObjectRenderer);
         $overwrittenBaseline = $this->getBaselineResultArrayForFile();
         $overwrittenBaseline['properties']['link'] = $link;
@@ -164,10 +160,10 @@ class FileUtilityTest extends UnitTestCase
         );
         $rendererFileUrl = 'https://renderer.public.url.tld/youtube';
         $fileReference = $this->getMockFileReferenceForData($fileReferenceData, 'video');
-        $rendererRegistry = $this->prophesize(RendererRegistry::class);
-        $fileRenderer = $this->prophesize(YouTubeRenderer::class);
-        $fileRenderer->render($fileReference, '', '', ['returnUrl' => true])->willReturn($rendererFileUrl);
-        $rendererRegistry->getRenderer($fileReference)->willReturn($fileRenderer->reveal());
+        $rendererRegistry = $this->createMock(RendererRegistry::class);
+        $fileRenderer = $this->createMock(YouTubeRenderer::class);
+        $fileRenderer->method('render')->with($fileReference, '', '', ['returnUrl' => true])->willReturn($rendererFileUrl);
+        $rendererRegistry->method('getRenderer')->with($fileReference)->willReturn($fileRenderer);
         $fileUtility = $this->getFileUtility(null, null, null, $rendererRegistry);
 
         $overwrittenBaseline = $this->getBaselineResultArrayForVideoFileReference();
@@ -465,37 +461,33 @@ class FileUtilityTest extends UnitTestCase
     }
 
     protected function getFileUtility(
-        ?ObjectProphecy $normalizedParams = null,
+        ?MockObject $normalizedParams = null,
         $imageService = null,
-        ?ObjectProphecy $contentObjectRenderer = null,
-        ?ObjectProphecy $rendererRegistry = null
+        ?MockObject $contentObjectRenderer = null,
+        ?MockObject $rendererRegistry = null
     ): FileUtility {
         if ($contentObjectRenderer === null) {
-            $contentObjectRenderer = $this->prophesize(ContentObjectRenderer::class);
+            $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
         }
 
         if ($imageService === null) {
-            $imageService = $this->prophesize(ImageService::class);
+            $imageService = $this->createMock(ImageService::class);
         }
 
         if ($rendererRegistry === null) {
-            $rendererRegistry = $this->prophesize(RendererRegistry::class);
+            $rendererRegistry = $this->createMock(RendererRegistry::class);
         }
 
         if ($normalizedParams === null) {
-            $normalizedParams = $this->prophesize(NormalizedParams::class);
-            $normalizedParams->getSiteUrl()->willReturn('https://test-frontend.tld/test-site');
-            $normalizedParams->getRequestHost()->willReturn('https://test-frontend.tld');
+            $normalizedParams = $this->createMock(NormalizedParams::class);
+            $normalizedParams->method('getSiteUrl')->willReturn('https://test-frontend.tld/test-site');
+            $normalizedParams->method('getRequestHost')->willReturn('https://test-frontend.tld');
         }
 
-        $serverRequest = $this->prophesize(ServerRequest::class);
-        $serverRequest->getAttribute('normalizedParams')->willReturn($normalizedParams->reveal());
+        $serverRequest = $this->createMock(ServerRequest::class);
+        $serverRequest->method('getAttribute')->with('normalizedParams')->willReturn($normalizedParams);
 
-        $contentObjectRenderer->getRequest()->willReturn($serverRequest);
-
-        if ($imageService instanceof ObjectProphecy) {
-            $imageService = $imageService->reveal();
-        }
+        $contentObjectRenderer->method('getRequest')->willReturn($serverRequest);
 
         $container = new Container();
         $listenerProvider = new ListenerProvider($container);
@@ -503,8 +495,8 @@ class FileUtilityTest extends UnitTestCase
 
         $fileUtility = $this->createPartialMock(FileUtility::class, ['translate']);
         $fileUtility->__construct(
-            $contentObjectRenderer->reveal(),
-            $rendererRegistry->reveal(),
+            $contentObjectRenderer,
+            $rendererRegistry,
             $imageService,
             $eventDispatcher,
             new Features()
@@ -536,10 +528,10 @@ class FileUtilityTest extends UnitTestCase
                 'getPublicUrl',
             ]
         );
-        $resourceStorage = $this->prophesize(ResourceStorage::class);
-        $resourceStorage->getFileInfo($file)->willReturn($data);
-        $metaData = $this->prophesize(MetaDataAspect::class);
-        $metaData->get()->willReturn(
+        $resourceStorage = $this->createMock(ResourceStorage::class);
+        $resourceStorage->method('getFileInfo')->with($file)->willReturn($data);
+        $metaData = $this->createMock(MetaDataAspect::class);
+        $metaData->method('get')->willReturn(
             [
                 'width' => $data['width'],
                 'height' => $data['height'],
@@ -551,8 +543,8 @@ class FileUtilityTest extends UnitTestCase
             ]
         );
 
-        $file->method('getMetaData')->willReturn($metaData->reveal());
-        $file->method('getStorage')->willReturn($resourceStorage->reveal());
+        $file->method('getMetaData')->willReturn($metaData);
+        $file->method('getStorage')->willReturn($resourceStorage);
         $file->method('getUid')->willReturn($data['uid']);
         $file->method('getPublicUrl')->willReturn('/fileadmin/test-file.jpg');
         if ($overrideToArray !== []) {
@@ -571,7 +563,7 @@ class FileUtilityTest extends UnitTestCase
                 ]
             );
         }
-        $file->__construct($data, $this->prophesize(ResourceStorage::class)->reveal());
+        $file->__construct($data, $this->createMock(ResourceStorage::class));
         return $file;
     }
 
@@ -652,12 +644,12 @@ class FileUtilityTest extends UnitTestCase
                 'fileExtension' => null,
             ];
         }
-        $imageService = $this->prophesize(ImageService::class);
+        $imageService = $this->createMock(ImageService::class);
 
-        $imageService->getImageUri($processedFile, true)->willReturn(
+        $imageService->method('getImageUri')->with($processedFile, true)->willReturn(
             'https://test-frontend.tld/fileadmin/test-file.jpg'
         );
-        $imageService->applyProcessingInstructions($file, Argument::any())->willReturn($processedFile);
+        $imageService->method('applyProcessingInstructions')->with($file, self::anything())->willReturn($processedFile);
 
         return $imageService;
     }
@@ -794,12 +786,6 @@ class FileUtilityTest extends UnitTestCase
     {
         $fileReferenceData = $this->getFileReferenceBaselineData();
         $fileReference = $this->getMockFileReferenceForData($fileReferenceData, 'video');
-        $imageService = $this->prophesize(ImageService::class);
-
-        $imageService->getImageUri(Argument::any())->willReturn(
-            'https://returnValue-frontend.tld/fileadmin/returnValue-file.jpg'
-        );
-
         $imageService = $this->createPartialMock(ImageService::class, ['applyProcessingInstructions', 'getImageUri']);
         $imageService->method('getImageUri')->willReturn('');
         $imageService->method('applyProcessingInstructions')->willThrowException($exception);

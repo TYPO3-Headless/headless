@@ -16,7 +16,6 @@ use FriendsOfTYPO3\Headless\Middleware\ElementBodyResponseMiddleware;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
-use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Site\Entity\Site;
@@ -25,8 +24,6 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class ElementBodyResponseMiddlewareTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     public function testProcess(): void
     {
         $middleware = new ElementBodyResponseMiddleware(new JsonEncoder(), new HeadlessMode());
@@ -179,12 +176,12 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
         $request = $request->withAttribute('headless', new Headless());
 
         if ($withSite) {
-            $site = $this->prophesize(Site::class);
-            $site->getConfiguration()->willReturn([
+            $site = $this->createMock(Site::class);
+            $site->method('getConfiguration')->willReturn([
                 'headless' => $headless,
             ]);
 
-            $request = $request->withAttribute('site', $site->reveal());
+            $request = $request->withAttribute('site', $site);
             $request = $request->withAttribute('headless', new Headless($headless ? HeadlessModeInterface::FULL : HeadlessModeInterface::NONE));
         }
 

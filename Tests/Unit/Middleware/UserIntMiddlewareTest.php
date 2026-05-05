@@ -18,7 +18,6 @@ use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use PHPUnit\Framework\Attributes\Test;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -28,8 +27,6 @@ use function json_encode;
 
 class UserIntMiddlewareTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     #[Test]
     public function process(): void
     {

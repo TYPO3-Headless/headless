@@ -13,15 +13,12 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Event;
 
 use FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
-use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileType;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class EnrichFileDataEventTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     public function testEvent()
     {
         $properties = [

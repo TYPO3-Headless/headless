@@ -15,7 +15,6 @@ use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing\TestDomainSchema;
 use FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing\TestSiteProvider;
 use InvalidArgumentException;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use ReflectionProperty;
 use stdClass;
@@ -26,8 +25,6 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class RootSitesProcessorTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     protected function setUp(): void
     {
         $this->resetSingletonInstances = true;
@@ -35,7 +32,7 @@ class RootSitesProcessorTest extends UnitTestCase
         parent::setUp();
 
         $c = new Container();
-        $c->set(EventDispatcherInterface::class, $this->prophesize(EventDispatcherInterface::class)->reveal());
+        $c->set(EventDispatcherInterface::class, $this->createMock(EventDispatcherInterface::class));
         GeneralUtility::setContainer($c);
     }
 

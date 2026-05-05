@@ -16,7 +16,6 @@ use FriendsOfTYPO3\Headless\Seo\MetaTag\OpenGraphMetaTagManager;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
-use Prophecy\PhpUnit\ProphecyTrait;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -27,17 +26,16 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class MetaTagTest extends UnitTestCase
 {
-    use ProphecyTrait;
     protected bool $resetSingletonInstances = true;
 
     public function testProps(): void
     {
         $container = new Container();
-        $pageRenderer = $this->prophesize(PageRenderer::class);
-        $pageRenderer->getDocType()->willReturn(\TYPO3\CMS\Core\Type\DocType::html5);
+        $pageRenderer = $this->createMock(PageRenderer::class);
+        $pageRenderer->method('getDocType')->willReturn(\TYPO3\CMS\Core\Type\DocType::html5);
 
         $container->set(HeadlessModeInterface::class, new HeadlessMode());
-        $container->set(PageRenderer::class, $pageRenderer->reveal());
+        $container->set(PageRenderer::class, $pageRenderer);
 
         GeneralUtility::setContainer($container);
 
