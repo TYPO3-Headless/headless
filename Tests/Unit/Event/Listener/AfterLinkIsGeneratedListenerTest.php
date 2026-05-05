@@ -221,4 +221,69 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $event->getLinkResult()->getUrl()
         );
     }
+
+    public function testInvokeFollowsShortcutDoktype(): void
+    {
+        $urlUtility = $this->createMock(UrlUtility::class);
+        $urlUtility->method('withRequest')->willReturnSelf();
+        $urlUtility->method('getFrontendUrlForPage')->with('/', 7)->willReturn('https://front.tld/page-7');
+
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->method('getRequest')->willReturn(new ServerRequest());
+
+        $listener = new AfterLinkIsGeneratedListener(
+            $this->createMock(Logger::class),
+            $urlUtility,
+            $this->createMock(LinkService::class),
+            new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
+            $this->createMock(SiteFinder::class)
+        );
+
+        $linkResult = new LinkResult('page', '/');
+        $linkResult = $linkResult->withLinkConfiguration([
+            'parameter' => 1,
+            'page' => ['doktype' => 4, 'shortcut' => 7],
+        ]);
+
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj, []);
+        $listener($event);
+
+        self::assertSame('https://front.tld/page-7', $event->getLinkResult()->getUrl());
+    }
+
+    public function testInvokeWithEmptyLinkLogsErrorWhenNoSite(): void
+    {
+        $logger = $this->createMock(Logger::class);
+        $logger->expects(self::once())->method('error');
+
+        $urlUtility = $this->createMock(UrlUtility::class);
+        $urlUtility->method('withRequest')->willReturnSelf();
+
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->method('getRequest')->willReturn(new ServerRequest());
+        $cObj->method('stdWrap')->willReturn('');
+
+        $listener = new AfterLinkIsGeneratedListener(
+            $logger,
+            $urlUtility,
+            $this->createMock(LinkService::class),
+            new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
+            $this->createMock(SiteFinder::class)
+        );
+
+        // empty parameter triggers UnableToLinkException path in getTargetSite via resolveLinkDetails
+        $linkResult = new LinkResult('page', '');
+        $linkResult = $linkResult->withLinkConfiguration([
+            'parameter' => '',
+            'parameter.' => ['data' => 'parameters:href'],
+        ]);
+        $linkResult = $linkResult->withLinkText('|');
+
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj, []);
+        $listener($event);
+
+        // href stays empty since no site could be resolved
+        self::assertSame('', $event->getLinkResult()->getUrl());
+    }
+
 }

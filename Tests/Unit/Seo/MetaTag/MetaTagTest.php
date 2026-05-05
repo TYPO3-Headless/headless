@@ -71,6 +71,27 @@ class MetaTagTest extends UnitTestCase
         self::assertSame('[{"property":"og:image","content":"Powered by TYPO3"},{"property":"og:image:url","content":"https:\/\/example.com\/image.jpg"}]', $ogManager->renderAllProperties());
     }
 
+    public function testCustomContentAttribute(): void
+    {
+        $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        GeneralUtility::setContainer($container);
+
+        $manager = new class () extends \FriendsOfTYPO3\Headless\Seo\MetaTag\AbstractMetaTagManager {
+            protected $handledProperties = [
+                'special' => ['contentAttribute' => 'data-content'],
+            ];
+        };
+        $manager->addProperty('special', 'value', [], true);
+
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
+
+        self::assertSame(
+            '[{"name":"special","data-content":"value"}]',
+            $manager->renderProperty('special')
+        );
+    }
+
     protected function tearDown(): void
     {
         (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
