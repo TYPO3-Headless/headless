@@ -16,7 +16,7 @@ namespace FriendsOfTYPO3\Headless\Utility;
  */
 class HeadlessVersion
 {
-    protected const VERSION = '4.7.3';
+    protected const VERSION = '4.8.0';
 
     public function getVersion(): string
     {
