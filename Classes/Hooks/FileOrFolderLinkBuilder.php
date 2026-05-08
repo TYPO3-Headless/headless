@@ -22,11 +22,9 @@ use TYPO3\CMS\Frontend\Typolink\UnableToLinkException;
  */
 class FileOrFolderLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\FileOrFolderLinkBuilder
 {
-    public function __construct(protected ?HeadlessModeInterface $headlessMode = null) {}
-
     protected function getHeadlessMode(): HeadlessModeInterface
     {
-        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+        return GeneralUtility::makeInstance(HeadlessModeInterface::class);
     }
 
     /**
@@ -37,8 +35,7 @@ class FileOrFolderLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\FileOrFolderL
         array $configuration,
         ServerRequestInterface $request,
         string $linkText = '',
-    ): LinkResultInterface
-    {
+    ): LinkResultInterface {
         if ($this->getHeadlessMode()->withRequest($request)->isEnabled()) {
             $configuration['forceAbsoluteUrl'] = 1;
         }
