@@ -39,10 +39,18 @@ class ShortcutAndMountPointRedirect extends \TYPO3\CMS\Frontend\Middleware\Short
         $coreResponse = parent::process($request, $handler);
 
         if ($coreResponse instanceof RedirectResponse && $this->isHeadlessEnabled($request)) {
+            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)
+                ->withRequest($request);
+
+            $url = $urlUtility->getFrontendUrlWithSite(
+                $coreResponse->getHeader('location')[0] ?? '',
+                $request->getAttribute('site'),
+            );
+
             return new JsonResponse([
-                'redirectUrl' => GeneralUtility::makeInstance(UrlUtility::class)
+                'redirectUrl' => $urlUtility
                     ->withRequest($request)
-                    ->prepareRelativeUrlIfPossible($coreResponse->getHeader('location')[0] ?? ''),
+                    ->prepareRelativeUrlIfPossible($url),
                 'statusCode' => $coreResponse->getStatusCode(),
             ]);
         }

@@ -277,7 +277,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $object;
     }
 
-    private function handleSiteConfiguration(Site $site, UrlUtility $object): self
+    private function handleSiteConfiguration(SiteInterface $site, UrlUtility $object): self
     {
         $object->conf = $site->getConfiguration();
         $object->variants = $object->conf['baseVariants'] ?? [];
