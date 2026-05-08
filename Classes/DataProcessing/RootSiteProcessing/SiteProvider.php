@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Driver\Exception;
 use InvalidArgumentException;
 use TYPO3\CMS\Core\Database\Connection;
@@ -196,7 +197,7 @@ class SiteProvider implements SiteProviderInterface
             ->where(
                 $queryBuilder->expr()->in(
                     'uid',
-                    $queryBuilder->createNamedParameter($rootPagesId, Connection::PARAM_INT_ARRAY)
+                    $queryBuilder->createNamedParameter($rootPagesId, ArrayParameterType::INTEGER)
                 )
             )
             ->executeQuery()

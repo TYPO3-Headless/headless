@@ -41,10 +41,7 @@ class RegisterFieldViewHelper extends AbstractFormFieldViewHelper
         $this->registerArgument('multiple', 'bool', 'Specifies whether this checkbox belongs to a multivalue (is part of a checkbox group)', false, false);
     }
 
-    /**
-     * @return string|void
-     */
-    public function render()
+    public function render(): string
     {
         $nameAttribute = $this->getName();
 
@@ -76,5 +73,7 @@ class RegisterFieldViewHelper extends AbstractFormFieldViewHelper
         }
 
         $this->registerFieldNameForFormTokenGeneration($nameAttribute);
+
+        return '';
     }
 }

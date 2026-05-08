@@ -20,8 +20,6 @@ use FriendsOfTYPO3\Headless\Json\JsonDecoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use ReflectionProperty;
 use stdClass;
@@ -49,8 +47,6 @@ use TYPO3\CMS\Frontend\ContentObject\ScalableVectorGraphicsContentObject;
 use TYPO3\CMS\Frontend\ContentObject\TextContentObject;
 use TYPO3\CMS\Frontend\ContentObject\UserContentObject;
 use TYPO3\CMS\Frontend\ContentObject\UserInternalContentObject;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
-
 use TYPO3\CMS\Frontend\DataProcessing\DataProcessorRegistry;
 
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
@@ -60,8 +56,6 @@ use function md5;
 
 class JsonContentObjectTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     private JsonContentObject $contentObject;
 
     protected function setUp(): void
@@ -96,39 +90,78 @@ class JsonContentObjectTest extends UnitTestCase
 
         $container = new Container();
 
-        $eventDispatcher = $this->prophesize(EventDispatcher::class);
-        $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
+        $eventDispatcher->method('dispatch')->willReturnArgument(0);
 
-        $contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class, $container, $this->prophesize(DataProcessorRegistry::class)->reveal());
+        $contentDataProcessor = GeneralUtility::makeInstance(ContentDataProcessor::class, $container, $this->createMock(DataProcessorRegistry::class));
 
-        $container->set(MarkerBasedTemplateService::class, new MarkerBasedTemplateService($this->prophesize(FrontendInterface::class)->reveal(), $this->prophesize(FrontendInterface::class)->reveal()));
+        $container->set(MarkerBasedTemplateService::class, new MarkerBasedTemplateService($this->createMock(FrontendInterface::class), $this->createMock(FrontendInterface::class)));
         $container->set(TimeTracker::class, new TimeTracker(false));
-        $container->set(EventDispatcherInterface::class, $eventDispatcher->reveal());
+        $container->set(EventDispatcherInterface::class, $eventDispatcher);
         $container->set(JsonContentObject::class, new JsonContentObject(
             $contentDataProcessor,
-            new JsonEncoder(),
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
             new JsonDecoder(),
             new HeadlessUserInt()
         ));
         $container->set(JsonContentContentObject::class, new JsonContentContentObject(
             $container->get(TimeTracker::class),
             $container->get(EventDispatcherInterface::class),
-            new JsonEncoder(),
-            new HeadlessUserInt()
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
+            new HeadlessUserInt(),
+            $this->createMock(\TYPO3\CMS\Backend\View\BackendLayoutView::class)
         ));
         $container->set(RecordsContentObject::class, new RecordsContentObject($container->get(TimeTracker::class)));
         $container->set(ContentContentObject::class, new ContentContentObject($container->get(TimeTracker::class), $container->get(EventDispatcherInterface::class)));
+        $container->set(DataProcessingExample::class, new DataProcessingExample());
+        $container->set(EmptyDataProcessingExample::class, new EmptyDataProcessingExample());
         GeneralUtility::setContainer($container);
 
         $request = new ServerRequest();
-        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
-        $contentObjectRenderer->setRequest($request);
-        $contentObjectRenderer->start([], 'tt_content');
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->data = [];
+        $contentObjectRenderer->method('getRequest')->willReturn($request);
+        $contentObjectRenderer->method('cObjGetSingle')->willReturnCallback(
+            static function (string $name, array $conf) {
+                if ($name === 'USER_INT') {
+                    return '<!--INT_SCRIPT.' . md5('123') . '-->';
+                }
+                if ($name === 'USER' && isset($conf['userFunc'])) {
+                    [$class, $method] = explode('->', $conf['userFunc']);
+                    $obj = new $class();
+                    return $obj->$method('', $conf);
+                }
+                $value = $conf['value'] ?? '';
+                if (isset($conf['stdWrap.']['ifEmpty']) && ($value === '' || $value === null)) {
+                    $value = $conf['stdWrap.']['ifEmpty'];
+                }
+                return $value;
+            }
+        );
+        $contentObjectRenderer->method('checkIf')->willReturnCallback(
+            static function (array $conf) {
+                return (bool)($conf['isTrue'] ?? false);
+            }
+        );
+        $contentObjectRenderer->method('stdWrap')->willReturnCallback(
+            static function (string $content, array $conf) {
+                if (isset($conf['wrap'])) {
+                    $parts = explode('|', $conf['wrap']);
+                    return ($parts[0] ?? '') . $content . ($parts[1] ?? '');
+                }
+                return $content;
+            }
+        );
+        $contentObjectRenderer->method('stdWrapValue')->willReturnCallback(
+            static function (string $key, array $conf, $defaultValue = '') {
+                return $conf[$key] ?? $defaultValue;
+            }
+        );
 
-        $factory = $this->prophesize(ContentObjectFactory::class);
-        $factory->getContentObject(Argument::type('string'), Argument::type('object'), Argument::type('object'))
-            ->will(static function ($args) use ($contentObjectRenderer, $request) {
-                $obj = GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'][$args[0]]);
+        $factory = $this->createMock(ContentObjectFactory::class);
+        $factory->method('getContentObject')
+            ->willReturnCallback(static function (string $name) use ($contentObjectRenderer, $request) {
+                $obj = GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'][$name]);
                 $obj->setRequest($request);
                 $obj->setContentObjectRenderer($contentObjectRenderer);
 
@@ -136,18 +169,9 @@ class JsonContentObjectTest extends UnitTestCase
             });
 
         $container = GeneralUtility::getContainer();
-        $container->set(ContentObjectFactory::class, $factory->reveal());
+        $container->set(ContentObjectFactory::class, $factory);
 
         GeneralUtility::setContainer($container);
-
-        foreach ($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] as $class) {
-            GeneralUtility::makeInstance($class);
-        }
-
-        $tsfe = $this->prophesize(TypoScriptFrontendController::class);
-        $tsfe->uniqueHash()->willReturn(md5('123'));
-
-        $GLOBALS['TSFE'] = $tsfe->reveal();
 
         $this->contentObject = GeneralUtility::makeInstance(JsonContentObject::class);
         $this->contentObject->setRequest($request);

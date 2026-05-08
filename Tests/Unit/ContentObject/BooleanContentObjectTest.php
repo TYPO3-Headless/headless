@@ -13,15 +13,12 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 
 use FriendsOfTYPO3\Headless\ContentObject\BooleanContentObject;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class BooleanContentObjectTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     public function testRender()
     {
         $cObj = $this->createMock(ContentObjectRenderer::class);

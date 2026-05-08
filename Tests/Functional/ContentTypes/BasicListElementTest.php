@@ -27,7 +27,7 @@ class BasicListElementTest extends BaseContentTypeTesting
 
         $contentElement = $fullTree['content']['colPos0'][4];
 
-        $this->checkDefaultContentFields($contentElement, 6, 1, 'BasicList', 0);
+        $this->checkDefaultContentFields($contentElement, 6, 1, '', 0);
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 1, 2);
         $this->checkHeaderFieldsLink($contentElement, 'Page 1', '/page1?parameter=999&cHash=', '_blank');

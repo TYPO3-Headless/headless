@@ -39,6 +39,11 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
 
     protected ProcessingConfiguration $processorConfigurationObject;
 
+    public function __construct(
+        private readonly FileUtility $fileUtility,
+        private readonly ImageService $imageService,
+    ) {}
+
     /**
      * @inheritDoc
      */
@@ -249,7 +254,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      */
     protected function getFileUtility(): FileUtility
     {
-        return GeneralUtility::makeInstance(FileUtility::class);
+        return $this->fileUtility;
     }
 
     /**
@@ -257,7 +262,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      */
     protected function getImageService(): ImageService
     {
-        return GeneralUtility::makeInstance(ImageService::class);
+        return $this->imageService;
     }
 
     /**

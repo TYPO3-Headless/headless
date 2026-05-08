@@ -16,11 +16,10 @@ use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use PHPUnit\Framework\Attributes\Test;
-use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Log\LoggerInterface;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\NormalizedParams;
@@ -33,8 +32,6 @@ use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class CookieDomainPerSiteTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -53,8 +50,8 @@ class CookieDomainPerSiteTest extends UnitTestCase
     #[Test]
     public function emptyCookieDomain()
     {
-        $site = $this->prophesize(Site::class);
-        $site->getConfiguration()->shouldBeCalled(3)->willReturn([
+        $site = $this->createMock(Site::class);
+        $site->method('getConfiguration')->willReturn([
             'base' => 'https://www.typo3.org',
             'languages' => [],
             'baseVariants' => [
@@ -77,19 +74,19 @@ class CookieDomainPerSiteTest extends UnitTestCase
             ],
         ]);
 
-        $resolver = $this->prophesize(Resolver::class);
-        $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturnCallback(static fn($expr): bool => str_contains((string)$expr, 'Development'));
 
         $siteFinder = $this->createPartialMock(SiteFinder::class, ['getAllSites']);
 
         $siteFinder->method('getAllSites')->willReturn([
-            $site->reveal(),
+            $site,
         ]);
 
-        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder);
-        $urlUtility = $urlUtility->withSite($site->reveal());
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, new HeadlessMode());
+        $urlUtility = $urlUtility->withSite($site);
 
-        $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->prophesize(LoggerInterface::class)->reveal());
+        $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->createMock(LoggerInterface::class));
 
         $request = new ServerRequest('https://test-backend-api.tld');
         $request = $request->withAttribute('normalizedParams', NormalizedParams::createFromRequest($request));
@@ -110,8 +107,8 @@ class CookieDomainPerSiteTest extends UnitTestCase
     #[Test]
     public function cookieDomainIsSet()
     {
-        $site = $this->prophesize(Site::class);
-        $site->getConfiguration()->shouldBeCalled(3)->willReturn([
+        $site = $this->createMock(Site::class);
+        $site->method('getConfiguration')->willReturn([
             'base' => 'https://www.typo3.org',
             'languages' => [],
             'baseVariants' => [
@@ -135,19 +132,19 @@ class CookieDomainPerSiteTest extends UnitTestCase
             ],
         ]);
 
-        $resolver = $this->prophesize(Resolver::class);
-        $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturnCallback(static fn($expr): bool => str_contains((string)$expr, 'Development'));
 
         $siteFinder = $this->createPartialMock(SiteFinder::class, ['getAllSites']);
 
         $siteFinder->method('getAllSites')->willReturn([
-            $site->reveal(),
+            $site,
         ]);
 
-        $urlUtility = new UrlUtility(null, $resolver->reveal(), $siteFinder);
-        $urlUtility = $urlUtility->withSite($site->reveal());
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, new HeadlessMode());
+        $urlUtility = $urlUtility->withSite($site);
 
-        $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->prophesize(LoggerInterface::class)->reveal());
+        $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->createMock(LoggerInterface::class));
 
         $request = new ServerRequest('https://test-backend-api.tld');
         $request = $request->withAttribute('normalizedParams', NormalizedParams::createFromRequest($request));

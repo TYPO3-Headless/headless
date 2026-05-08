@@ -28,6 +28,13 @@ use function json_encode;
  */
 class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginController
 {
+    private ?HeadlessModeInterface $headlessMode = null;
+
+    private function getHeadlessMode(): HeadlessModeInterface
+    {
+        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
     /**
      * Show login form
      */
@@ -108,6 +115,6 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
 
     private function isHeadlessEnabled(): bool
     {
-        return GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled();
+        return $this->getHeadlessMode()->withRequest($this->request)->isEnabled();
     }
 }

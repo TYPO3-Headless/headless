@@ -31,9 +31,9 @@ $tempColumns = [
             'renderType' => 'selectSingle',
             'default' => HeadlessModeInterface::NONE,
             'items' => [
-                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.none', HeadlessModeInterface::NONE],
-                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.full', HeadlessModeInterface::FULL],
-                ['LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.mixed', HeadlessModeInterface::MIXED],
+                ['label' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.none', 'value' => HeadlessModeInterface::NONE],
+                ['label' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.full', 'value' => HeadlessModeInterface::FULL],
+                ['label' => 'LLL:EXT:headless/Resources/Private/Language/locallang_siteconfiguration.xlf:site.headless.mixed', 'value' => HeadlessModeInterface::MIXED],
             ],
         ],
     ],

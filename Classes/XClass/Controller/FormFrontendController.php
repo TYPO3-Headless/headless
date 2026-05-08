@@ -18,7 +18,8 @@ use FriendsOfTYPO3\Headless\Form\Translator;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\XClass\FormRuntime;
 use Psr\Http\Message\ResponseInterface;
-use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Crypto\HashAlgo;
+use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface as ExtbaseConfigurationManagerInterface;
@@ -46,6 +47,14 @@ use function str_replace;
  */
 class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendController
 {
+    private ?HeadlessModeInterface $headlessMode = null;
+    private ?Translator $translator = null;
+
+    private function getHeadlessMode(): HeadlessModeInterface
+    {
+        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
     /**
      * Take the form which should be rendered from the plugin settings
      * and overlay the formDefinition with additional data from
@@ -57,29 +66,21 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      */
     public function renderAction(): ResponseInterface
     {
-        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
-
-        if (!$headlessMode->withRequest($this->request)->isEnabled()) {
+        if (!$this->getHeadlessMode()->withRequest($this->request)->isEnabled()) {
             return parent::renderAction();
         }
 
         $formDefinition = [];
         if (!empty($this->settings['persistenceIdentifier'])) {
-            $formSettings = [];
-            $typoScriptSettings = [];
-
-            if ((new Typo3Version())->getMajorVersion() >= 13) {
-                $typoScriptSettings = $this->configurationManager->getConfiguration(
-                    ExtbaseConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS,
-                    'form'
-                );
-                $formSettings = $this->extFormConfigurationManager->getYamlConfiguration($typoScriptSettings, true);
-            }
+            $typoScriptSettings = $this->configurationManager->getConfiguration(
+                ExtbaseConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS,
+                'form'
+            );
 
             $formDefinition = $this->formPersistenceManager->load(
                 $this->settings['persistenceIdentifier'],
-                $formSettings,
-                $typoScriptSettings
+                $typoScriptSettings,
+                $this->request
             );
             $formDefinition['persistenceIdentifier'] = $this->settings['persistenceIdentifier'];
             $formDefinition = $this->overrideByFlexFormSettings($formDefinition);
@@ -137,7 +138,8 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
         $stateHash = $this->getHashService()->appendHmac(
             base64_encode(serialize($formState)),
-            class_exists(\TYPO3\CMS\Form\Security\HashScope::class) ? \TYPO3\CMS\Form\Security\HashScope::FormState->prefix() : ''
+            class_exists(\TYPO3\CMS\Form\Security\HashScope::class) ? \TYPO3\CMS\Form\Security\HashScope::FormState->prefix() : '',
+            HashAlgo::SHA3_256
         );
 
         $currentPageIndex = $formRuntime->getCurrentPage() ? $formRuntime->getCurrentPage()->getIndex() : 0;
@@ -319,17 +321,13 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         return $formFieldsNames;
     }
 
-    private function getHashService(): \TYPO3\CMS\Extbase\Security\Cryptography\HashService|\TYPO3\CMS\Core\Crypto\HashService
+    private function getHashService(): HashService
     {
-        if ((new Typo3Version())->getMajorVersion() >= 13) {
-            return GeneralUtility::makeInstance(\TYPO3\CMS\Core\Crypto\HashService::class);
-        }
-
-        return GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Security\Cryptography\HashService::class);
+        return $this->hashService;
     }
 
     private function getFormTranslator(): Translator
     {
-        return GeneralUtility::makeInstance(Translator::class);
+        return $this->translator ??= GeneralUtility::makeInstance(Translator::class);
     }
 }

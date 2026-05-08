@@ -15,7 +15,6 @@ use JsonException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Configuration\Features;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function json_encode;
 
@@ -25,12 +24,7 @@ class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private Features $features;
-
-    public function __construct()
-    {
-        $this->features = GeneralUtility::makeInstance(Features::class);
-    }
+    public function __construct(private readonly Features $features) {}
 
     /**
      * @inheritDoc

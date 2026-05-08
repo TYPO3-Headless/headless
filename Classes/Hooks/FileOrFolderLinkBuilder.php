@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Hooks;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Typolink\LinkResultInterface;
 use TYPO3\CMS\Frontend\Typolink\UnableToLinkException;
@@ -21,22 +22,24 @@ use TYPO3\CMS\Frontend\Typolink\UnableToLinkException;
  */
 class FileOrFolderLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\FileOrFolderLinkBuilder
 {
+    protected function getHeadlessMode(): HeadlessModeInterface
+    {
+        return GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
     /**
-     * {@inheritDoc}
      * @throws UnableToLinkException
      */
-    public function build(array &$linkDetails, string $linkText, string $target, array $conf): LinkResultInterface
-    {
-        if (!isset($GLOBALS['TYPO3_REQUEST'])) {
-            return parent::build($linkDetails, $linkText, $target, $conf);
+    public function buildLink(
+        array $linkDetails,
+        array $configuration,
+        ServerRequestInterface $request,
+        string $linkText = '',
+    ): LinkResultInterface {
+        if ($this->getHeadlessMode()->withRequest($request)->isEnabled()) {
+            $configuration['forceAbsoluteUrl'] = 1;
         }
 
-        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
-
-        if ($headlessMode->isEnabled()) {
-            $conf['forceAbsoluteUrl'] = 1;
-        }
-
-        return parent::build($linkDetails, $linkText, $target, $conf);
+        return parent::buildLink($linkDetails, $configuration, $request, $linkText);
     }
 }

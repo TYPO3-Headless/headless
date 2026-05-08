@@ -14,15 +14,12 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\ContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use Prophecy\PhpUnit\ProphecyTrait;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class IntegerContentObjectTest extends UnitTestCase
 {
-    use ProphecyTrait;
-
     #[Test]
     public function render(): void
     {

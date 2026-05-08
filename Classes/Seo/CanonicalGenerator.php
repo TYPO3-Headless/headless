@@ -33,7 +33,7 @@ class CanonicalGenerator
             return '';
         }
 
-        if (GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($params['request'])->isEnabled()) {
+        if ($this->getHeadlessMode()->withRequest($params['request'])->isEnabled()) {
             $canonical = [
                 'href' => $this->processCanonical($canonical),
                 'rel' => 'canonical',
@@ -49,5 +49,10 @@ class CanonicalGenerator
     protected function processCanonical(string $canonical): string
     {
         return htmlspecialchars(GeneralUtility::get_tag_attributes($canonical)['href'] ?? '');
+    }
+
+    protected function getHeadlessMode(): HeadlessModeInterface
+    {
+        return GeneralUtility::makeInstance(HeadlessModeInterface::class);
     }
 }

@@ -11,11 +11,12 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
-use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Resource\FileInterface;
+use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function str_replace;
@@ -23,20 +24,30 @@ use function str_replace;
 /**
  * @codeCoverageIgnore
  */
-class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
+readonly class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
 {
+    private HeadlessModeInterface $headlessMode;
+    private HeadlessFrontendUrlInterface $urlUtility;
+
+    public function __construct(ResourceFactory $resourceFactory)
+    {
+        parent::__construct($resourceFactory);
+        $this->headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
+        $this->urlUtility = GeneralUtility::makeInstance(HeadlessFrontendUrlInterface::class);
+    }
+
     /**
      * @inheritDoc
      */
     protected function getImageFromSourceString(string $src, bool $treatIdAsReference): ?FileInterface
     {
-        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
+        $headlessMode = $this->headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
 
         if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
             && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend()
             && $headlessMode->isEnabled()
         ) {
-            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
+            $urlUtility = $this->urlUtility->withRequest($GLOBALS['TYPO3_REQUEST']);
             $baseUriForProxy = $urlUtility->getProxyUrl();
 
             if ($baseUriForProxy) {

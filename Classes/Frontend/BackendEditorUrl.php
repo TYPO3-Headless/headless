@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Frontend;
 
 use TYPO3\CMS\Backend\Routing\UriBuilder;
+use TYPO3\CMS\Core\Attribute\AsAllowedCallable;
 
 /**
  * @codeCoverageIgnore
@@ -20,11 +21,13 @@ class BackendEditorUrl
 {
     public function __construct(protected UriBuilder $uriBuilder) {}
 
+    #[AsAllowedCallable]
     public function page(): string
     {
         return $this->generateUrl('pages');
     }
 
+    #[AsAllowedCallable]
     public function record(): string
     {
         return $this->generateUrl();

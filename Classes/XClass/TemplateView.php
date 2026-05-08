@@ -24,11 +24,18 @@ use function ob_end_clean;
 use function ob_get_clean;
 use function ob_start;
 
-class TemplateView extends \TYPO3\CMS\Fluid\View\TemplateView
+class TemplateView extends \TYPO3Fluid\Fluid\View\TemplateView
 {
+    private ?HeadlessModeInterface $headlessMode = null;
+
+    private function getHeadlessMode(): HeadlessModeInterface
+    {
+        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
     public function render($actionName = null)
     {
-        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
+        $headlessMode = $this->getHeadlessMode()->withRequest($GLOBALS['TYPO3_REQUEST']);
 
         if (!ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend() || !$headlessMode->isEnabled()) {
             return parent::render($actionName);
@@ -49,7 +56,7 @@ class TemplateView extends \TYPO3\CMS\Fluid\View\TemplateView
         $templateFile = $templatePaths->resolveTemplateFileForControllerAndActionAndFormat($renderingContext->getControllerName(), $renderingContext->getControllerAction(), 'php');
 
         if ($templateFile === null) {
-            throw new InvalidTemplateResourceException('Template is not found');
+            throw new InvalidTemplateResourceException('Template is not found', 1740000000);
         }
 
         return $this->loadTemplate($templateFile, $renderingContext);

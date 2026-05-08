@@ -142,4 +142,54 @@ class AbstractFormDefinitionDecoratorTest extends UnitTestCase
             ],
         ], $test);
     }
+
+    public function testSubmitButtonLabelIsExposedInI18n(): void
+    {
+        $class = new class () extends AbstractFormDefinitionDecorator {};
+        $classUnderTest = new $class(['api' => 'test']);
+
+        $definition = [
+            'identifier' => 'test-123',
+            'renderables' => [0 => ['renderables' => []]],
+            'renderingOptions' => ['submitButtonLabel' => 'Send it'],
+            'i18n' => ['properties' => ['greeting' => 'Hello']],
+        ];
+
+        $result = $classUnderTest($definition, 0);
+
+        self::assertSame([
+            'submitButtonLabel' => 'Send it',
+            'greeting' => 'Hello',
+        ], $result['i18n']);
+    }
+
+    public function testBackendOnlyValidatorIsStripped(): void
+    {
+        $class = new class () extends AbstractFormDefinitionDecorator {};
+        $classUnderTest = new $class([]);
+
+        $definition = [
+            'identifier' => 'test-123',
+            'renderables' => [
+                0 => [
+                    'renderables' => [
+                        [
+                            'type' => 'input',
+                            'identifier' => 'field',
+                            'validators' => [
+                                ['identifier' => 'NotEmpty'],
+                                ['identifier' => 'BackendValidator', 'backendOnly' => 1],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $result = $classUnderTest($definition, 0);
+
+        self::assertSame([
+            ['identifier' => 'NotEmpty'],
+        ], $result['elements'][0]['validators']);
+    }
 }

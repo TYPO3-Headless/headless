@@ -77,7 +77,10 @@ class FlexFormProcessor implements DataProcessorInterface
     /**
      * Constructor
      */
-    public function __construct(protected FlexFormService $flexFormService) {}
+    public function __construct(
+        protected FlexFormService $flexFormService,
+        private readonly TypoScriptService $typoScriptService,
+    ) {}
 
     /**
      * @param ContentObjectRenderer $cObj The data of the content element or page
@@ -146,9 +149,8 @@ class FlexFormProcessor implements DataProcessorInterface
         $data = array_merge($data, $flexformData);
         $recordContentObjectRenderer->start($data);
 
-        $typoScriptService = GeneralUtility::makeInstance(TypoScriptService::class);
-        $overrideFields = $typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['overrideFields.']);
-        $jsonCE = $typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $overrideFields, '_typoScriptNodeValue' => 'JSON']);
+        $overrideFields = $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['overrideFields.']);
+        $jsonCE = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $overrideFields, '_typoScriptNodeValue' => 'JSON']);
         $record = json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
 
         foreach ($record as $fieldName => $overrideData) {

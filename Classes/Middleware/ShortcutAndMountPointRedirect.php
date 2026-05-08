@@ -11,21 +11,27 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Middleware;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
-use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\LinkHandling\PageTypeLinkResolver;
 
 /**
  * @codeCoverageIgnore
  */
 class ShortcutAndMountPointRedirect extends \TYPO3\CMS\Frontend\Middleware\ShortcutAndMountPointRedirect
 {
-    public function __construct(private readonly HeadlessModeInterface $headlessMode) {}
+    public function __construct(
+        private readonly HeadlessModeInterface $headlessMode,
+        private readonly HeadlessFrontendUrlInterface $urlUtility,
+        PageTypeLinkResolver $pageTypeLinkResolver,
+    ) {
+        parent::__construct($pageTypeLinkResolver);
+    }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -40,7 +46,7 @@ class ShortcutAndMountPointRedirect extends \TYPO3\CMS\Frontend\Middleware\Short
 
         if ($coreResponse instanceof RedirectResponse && $this->isHeadlessEnabled($request)) {
             return new JsonResponse([
-                'redirectUrl' => GeneralUtility::makeInstance(UrlUtility::class)
+                'redirectUrl' => $this->urlUtility
                     ->withRequest($request)
                     ->prepareRelativeUrlIfPossible($coreResponse->getHeader('location')[0] ?? ''),
                 'statusCode' => $coreResponse->getStatusCode(),

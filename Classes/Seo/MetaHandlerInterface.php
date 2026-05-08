@@ -12,13 +12,11 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Seo;
 
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 interface MetaHandlerInterface
 {
     public function process(
         ServerRequestInterface $request,
-        TypoScriptFrontendController $controller,
         array $content
     ): array;
 }
