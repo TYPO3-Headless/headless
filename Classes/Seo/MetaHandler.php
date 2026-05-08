@@ -126,17 +126,11 @@ class MetaHandler implements MetaHandlerInterface
         return $content;
     }
 
-    /**
-     * Generate page title using PageTitleProviderManager
-     */
     protected function generatePageTitle(ServerRequestInterface $request, array $typoScriptConfig): string
     {
         return $this->pageTitleProviderManager->getTitle($request);
     }
 
-    /**
-     * Create ContentObjectRenderer instance for TypoScript processing
-     */
     protected function createContentObjectRenderer(ServerRequestInterface $request, array $page): ContentObjectRenderer
     {
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);

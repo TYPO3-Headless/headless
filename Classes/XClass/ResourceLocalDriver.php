@@ -25,13 +25,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class ResourceLocalDriver extends LocalDriver
 {
-    /**
-     * Lazy-loaded dependencies. This XClass is registered via
-     * $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'] in ext_localconf.php. TYPO3 instantiates
-     * such classes through GeneralUtility::makeInstanceForDi() which bypasses Symfony's
-     * service compilation, so neither constructor injection nor #[Required] setter injection
-     * is honored for SYS][Objects] XClasses. We resolve via container manually on first use.
-     */
     private ?HeadlessModeInterface $headlessMode = null;
     private ?HeadlessFrontendUrlInterface $urlUtility = null;
 

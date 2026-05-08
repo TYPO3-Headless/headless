@@ -973,22 +973,18 @@ class UrlUtilityTest extends UnitTestCase
 
         $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
 
-        // First call — site1
         $url1 = $urlUtility->getFrontendUrlWithSite('https://backend1.example.com/page1', $site1);
         self::assertSame('https://site1.example.com/page1', $url1);
 
-        // Second call — site2 must NOT leak host from site1
         $url2 = $urlUtility->getFrontendUrlWithSite('https://backend2.example.com/page2', $site2);
         self::assertSame('https://site2.example.com/page2', $url2);
         self::assertStringNotContainsString('site1.example.com', $url2);
 
-        // Third call — site3 to verify no crosstalk lingers
         $url3 = $urlUtility->getFrontendUrlWithSite('https://backend3.example.com/page3', $site3);
         self::assertSame('https://site3.example.com/page3', $url3);
         self::assertStringNotContainsString('site1.example.com', $url3);
         self::assertStringNotContainsString('site2.example.com', $url3);
 
-        // Verify the shared instance has no leaked frontendDomains state via reflection.
         $reflection = new ReflectionProperty(UrlUtility::class, 'frontendDomains');
         $domains = $reflection->getValue($urlUtility);
         self::assertSame([], $domains, 'getFrontendUrlWithSite must not mutate $this->frontendDomains');

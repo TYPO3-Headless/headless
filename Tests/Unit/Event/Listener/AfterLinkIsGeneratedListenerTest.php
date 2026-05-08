@@ -272,7 +272,6 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $this->createMock(SiteFinder::class)
         );
 
-        // empty parameter triggers UnableToLinkException path in getTargetSite via resolveLinkDetails
         $linkResult = new LinkResult('page', '');
         $linkResult = $linkResult->withLinkConfiguration([
             'parameter' => '',
@@ -283,7 +282,6 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj, []);
         $listener($event);
 
-        // href stays empty since no site could be resolved
         self::assertSame('', $event->getLinkResult()->getUrl());
     }
 

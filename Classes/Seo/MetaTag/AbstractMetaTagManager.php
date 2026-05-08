@@ -24,12 +24,6 @@ use function json_encode;
  */
 abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMetaTagManager
 {
-    /**
-     * Lazy-loaded HeadlessMode. Concrete subclasses are instantiated by TYPO3's
-     * MetaTagManagerRegistry via GeneralUtility::makeInstance($module) with no args,
-     * so neither constructor nor #[Required] setter injection is honored. We resolve
-     * via container manually on first use.
-     */
     private ?HeadlessModeInterface $headlessMode = null;
 
     private function getHeadlessMode(): HeadlessModeInterface

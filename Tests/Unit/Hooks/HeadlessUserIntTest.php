@@ -209,8 +209,6 @@ class HeadlessUserIntTest extends UnitTestCase
 
     public function testQuotedNumericPluginResponseReturnsRawContent(): void
     {
-        // raw content '42' is not JSON object/array (so isJson=false)
-        // but json_decode('42') returns 42 (non-null), triggering the "return rawContent" branch
         $testContent = '"HEADLESS_INT_START<<42>>HEADLESS_INT_END"';
         $userInt = new HeadlessUserInt();
         self::assertSame('42', $userInt->unwrap($testContent));
@@ -218,13 +216,10 @@ class HeadlessUserIntTest extends UnitTestCase
 
     public function testQuotedInvalidJsonFallsBackToJsonEncode(): void
     {
-        // unquoted plain content invokes the substr branch (line 107)
-        // covered by other tests; here cover the quoted-but-not-valid-JSON path
         $rawContent = 'plain"with"quotes';
         $testContent = '"HEADLESS_INT_START<<' . $rawContent . '>>HEADLESS_INT_END"';
         $userInt = new HeadlessUserInt();
         $output = $userInt->unwrap($testContent);
-        // json_encode of the raw content is returned as a quoted string
         self::assertSame(json_encode($rawContent), $output);
     }
 }

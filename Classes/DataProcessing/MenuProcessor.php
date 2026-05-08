@@ -51,7 +51,6 @@ use function is_array;
  *     }
  *   }
  *
- *   # To add additional fields from page data to menu items
  *   additionalFields = abstract
  * }
  *
@@ -136,17 +135,12 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
         'additionalFields.',
     ];
 
-    /**
-     * Build the menu configuration so it can be treated by HMENU cObject and allow customization
-     */
     public function buildConfiguration(): void
     {
         parent::buildConfiguration();
 
-        // After parent builds configuration, apply level-specific overrides to each level
         $overwriteMenuLevelConfig = $this->processorConfiguration['overwriteMenuLevelConfig.'] ?? null;
         if (is_array($overwriteMenuLevelConfig)) {
-            // Apply to each menu level that was configured
             for ($i = 1; $i <= $this->menuLevels; $i++) {
                 if (isset($this->menuConfig[$i . '.']) && is_array($this->menuConfig[$i . '.'])) {
                     ArrayUtility::mergeRecursiveWithOverrule($this->menuConfig[$i . '.'], $overwriteMenuLevelConfig);
@@ -154,7 +148,6 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
             }
         }
 
-        // Override built configuration
         $overwriteMenuConfig = $this->processorConfiguration['overwriteMenuConfig.'] ?? null;
         if (is_array($overwriteMenuConfig)) {
             ArrayUtility::mergeRecursiveWithOverrule($this->menuConfig, $overwriteMenuConfig);
@@ -177,7 +170,6 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
             $processedData
         );
 
-        // Add additional fields from page data to menu items
         $additionalFields = $this->getAdditionalFields($processorConfiguration);
         if ($additionalFields !== [] && isset($processedData[$this->menuTargetVariableName])) {
             $processedData[$this->menuTargetVariableName] = $this->addAdditionalFieldsToMenuItems(
@@ -189,9 +181,6 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
         return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
     }
 
-    /**
-     * Get additional fields to include from configuration
-     */
     protected function getAdditionalFields(array $processorConfiguration): array
     {
         $additionalFields = $processorConfiguration['additionalFields'] ?? '';
@@ -201,9 +190,6 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
         return array_map('trim', explode(',', $additionalFields));
     }
 
-    /**
-     * Add additional fields from page data to menu items recursively
-     */
     protected function addAdditionalFieldsToMenuItems(array $menuItems, array $additionalFields): array
     {
         foreach ($menuItems as $key => $item) {

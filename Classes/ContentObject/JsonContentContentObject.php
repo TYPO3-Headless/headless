@@ -199,9 +199,6 @@ class JsonContentContentObject extends ContentContentObject
         return $data;
     }
 
-    /**
-     * Local record register to track processed records (replaces TSFE->recordRegister)
-     */
     private array $recordRegister = [];
 
     /**

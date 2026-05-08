@@ -29,16 +29,6 @@ readonly class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
     private HeadlessModeInterface $headlessMode;
     private HeadlessFrontendUrlInterface $urlUtility;
 
-    /**
-     * Eager init via container in constructor. This XClass is registered through
-     * $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'] in ext_localconf.php and is created by
-     * cms-extbase's ServiceProvider::getImageService(), which calls
-     * GeneralUtility::makeInstanceForDi(Parent::class, ResourceFactory $resourceFactory) — so
-     * only the parent's constructor signature is passed in. We cannot extend the constructor
-     * signature (extra args would be unfilled), and the parent is a `readonly class` so neither
-     * lazy properties nor #[Required] setter injection are usable. Resolve via the container
-     * during construction instead.
-     */
     public function __construct(ResourceFactory $resourceFactory)
     {
         parent::__construct($resourceFactory);

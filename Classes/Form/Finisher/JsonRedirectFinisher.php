@@ -13,7 +13,6 @@ namespace FriendsOfTYPO3\Headless\Form\Finisher;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use JsonException;
-use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\RequestInterface;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
@@ -46,11 +45,6 @@ class JsonRedirectFinisher extends AbstractFinisher
     protected RequestInterface $request;
     protected UriBuilder $uriBuilder;
 
-    /**
-     * Lazy-loaded UrlUtility. Finishers are instantiated by FormDefinition::createFinisher
-     * via GeneralUtility::makeInstance($implementationClassName) without args, so DI cannot
-     * honor constructor injection. Resolve via container on first use.
-     */
     private ?HeadlessFrontendUrlInterface $urlUtility = null;
 
     /**
@@ -97,7 +91,6 @@ class JsonRedirectFinisher extends AbstractFinisher
         ?string $message = null
     ): ?string {
         try {
-            /** @var ServerRequestInterface $serverRequest */
             $serverRequest = $this->request->getAttribute('extbase.request.originalRequest')
                 ?? $GLOBALS['TYPO3_REQUEST'];
 

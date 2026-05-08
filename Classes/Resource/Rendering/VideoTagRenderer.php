@@ -22,10 +22,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class VideoTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VideoTagRenderer
 {
-    /**
-     * Renderers are instantiated by RendererRegistry::makeInstance($className) without args,
-     * so DI cannot honor constructor injection. Resolve via container on first use.
-     */
     private ?FileUtility $fileUtility = null;
 
     public function getPriority(): int

@@ -25,13 +25,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
 {
-    /**
-     * Lazy-loaded dependencies. This XClass is registered via
-     * $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'] in ext_localconf.php. TYPO3 instantiates
-     * such classes through GeneralUtility::makeInstanceForDi() which bypasses Symfony's
-     * service compilation: neither constructor injection nor #[Required] setter injection
-     * are honored for SYS][Objects] XClasses. We resolve via container manually on first use.
-     */
     private ?HeadlessModeInterface $headlessMode = null;
     private ?SiteFinder $siteFinder = null;
     private ?HeadlessFrontendUrlInterface $urlUtility = null;
