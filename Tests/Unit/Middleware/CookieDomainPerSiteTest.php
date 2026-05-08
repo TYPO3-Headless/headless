@@ -19,6 +19,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Psr\Log\LoggerInterface;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\NormalizedParams;
@@ -82,7 +83,7 @@ class CookieDomainPerSiteTest extends UnitTestCase
             $site,
         ]);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, new HeadlessMode());
         $urlUtility = $urlUtility->withSite($site);
 
         $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->createMock(LoggerInterface::class));
@@ -140,7 +141,7 @@ class CookieDomainPerSiteTest extends UnitTestCase
             $site,
         ]);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, new HeadlessMode());
         $urlUtility = $urlUtility->withSite($site);
 
         $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->createMock(LoggerInterface::class));

@@ -11,12 +11,12 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\ViewHelpers;
 
-use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 class DomainViewHelper extends AbstractViewHelper
 {
-    public function __construct(private readonly UrlUtility $urlUtility) {}
+    public function __construct(private readonly HeadlessFrontendUrlInterface $urlUtility) {}
 
     public function initializeArguments(): void
     {

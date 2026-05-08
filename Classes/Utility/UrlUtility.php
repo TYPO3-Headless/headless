@@ -26,6 +26,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+
 use function array_key_exists;
 use function array_merge;
 use function array_unique;
@@ -40,29 +41,16 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 {
     use LoggerAwareTrait;
 
-    private Features $features;
-    private Resolver $resolver;
-    private SiteFinder $siteFinder;
     private array $conf = [];
     private array $variants = [];
-    private HeadlessModeInterface $headlessMode;
     private array $frontendDomains = [];
 
     public function __construct(
-        ?Features $features = null,
-        ?Resolver $resolver = null,
-        ?SiteFinder $siteFinder = null,
-        ?ServerRequestInterface $serverRequest = null,
-        ?HeadlessModeInterface $headlessMode = null
+        private readonly Features $features,
+        private readonly Resolver $resolver,
+        private readonly SiteFinder $siteFinder,
+        private HeadlessModeInterface $headlessMode,
     ) {
-        $this->features = $features ?? GeneralUtility::makeInstance(Features::class);
-        $this->resolver = $resolver ?? GeneralUtility::makeInstance(Resolver::class, 'site', []);
-        $this->siteFinder = $siteFinder ?? GeneralUtility::makeInstance(SiteFinder::class);
-        $this->headlessMode = $headlessMode ?? GeneralUtility::makeInstance(HeadlessModeInterface::class);
-
-        if ($serverRequest instanceof ServerRequestInterface) {
-            $this->extractConfigurationFromRequest($serverRequest, $this);
-        }
     }
 
     public function withSite(Site $site): HeadlessFrontendUrlInterface

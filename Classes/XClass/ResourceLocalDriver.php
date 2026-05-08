@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
-use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Http\Uri;
@@ -33,16 +33,16 @@ class ResourceLocalDriver extends LocalDriver
      * is honored for SYS][Objects] XClasses. We resolve via container manually on first use.
      */
     private ?HeadlessModeInterface $headlessMode = null;
-    private ?UrlUtility $urlUtility = null;
+    private ?HeadlessFrontendUrlInterface $urlUtility = null;
 
     private function getHeadlessMode(): HeadlessModeInterface
     {
         return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
     }
 
-    private function getUrlUtility(): UrlUtility
+    private function getUrlUtility(): HeadlessFrontendUrlInterface
     {
-        return $this->urlUtility ??= GeneralUtility::makeInstance(UrlUtility::class);
+        return $this->urlUtility ??= GeneralUtility::makeInstance(HeadlessFrontendUrlInterface::class);
     }
 
     protected function determineBaseUrl(): void

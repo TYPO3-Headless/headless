@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Hooks;
 
-use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 
 /**
  * PreviewUrlHook
@@ -20,7 +20,7 @@ use FriendsOfTYPO3\Headless\Utility\UrlUtility;
  **/
 class PreviewUrlHook
 {
-    public function __construct(private readonly UrlUtility $urlUtility) {}
+    public function __construct(private readonly HeadlessFrontendUrlInterface $urlUtility) {}
 
     /**
      * @param string $previewUrl

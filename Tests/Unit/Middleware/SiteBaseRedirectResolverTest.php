@@ -19,6 +19,7 @@ use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -66,7 +67,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $container->set(HeadlessModeInterface::class, new HeadlessMode());
         GeneralUtility::setContainer($container);
 
-        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->createMock(Resolver::class), $siteFinder);
+        $urlUtility = new UrlUtility(new Features(), $this->createMock(Resolver::class), $siteFinder, new HeadlessMode());
         $container->set(UrlUtility::class, $urlUtility);
 
         GeneralUtility::setContainer($container);
@@ -139,7 +140,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $container = new Container();
         $container->set(HeadlessModeInterface::class, new HeadlessMode());
 
-        $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, $this->createMock(Resolver::class), $siteFinder);
+        $urlUtility = new UrlUtility(new Features(), $this->createMock(Resolver::class), $siteFinder, new HeadlessMode());
         $container->set(UrlUtility::class, $urlUtility);
         $errorController = $this->createMock(ErrorController::class);
         $errorController->method('pageNotFoundAction')->willReturn(new JsonResponse(['ErrorController' => true]));

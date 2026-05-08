@@ -17,7 +17,7 @@ use TYPO3\CMS\Core\Http\PropagateResponseException;
 
 class PluginUtility
 {
-    public function __construct(private readonly UrlUtility $urlUtility) {}
+    public function __construct(private readonly HeadlessFrontendUrlInterface $urlUtility) {}
 
     public function redirect(ServerRequestInterface $request, string $uri, int $statusCode = 307): never
     {

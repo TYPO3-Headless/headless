@@ -21,6 +21,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\UriInterface;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
@@ -245,7 +246,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 
         $siteFinder->method('getSiteByPageId')->willReturn($site);
 
-        return new UrlUtility(null, $resolver, $siteFinder, null, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
+        return new UrlUtility(new Features(), $resolver, $siteFinder, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
     }
 
     protected function tearDown(): void

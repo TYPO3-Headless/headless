@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Middleware;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
-use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -24,7 +24,7 @@ class SiteBaseRedirectResolver extends \TYPO3\CMS\Frontend\Middleware\SiteBaseRe
 {
     public function __construct(
         private readonly HeadlessModeInterface $headlessMode,
-        private readonly UrlUtility $urlUtility,
+        private readonly HeadlessFrontendUrlInterface $urlUtility,
     ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface

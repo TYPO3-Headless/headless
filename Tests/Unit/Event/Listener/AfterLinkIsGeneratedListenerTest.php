@@ -16,6 +16,7 @@ use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
@@ -54,7 +55,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
         $listener = new AfterLinkIsGeneratedListener(
             $this->createMock(Logger::class),
-            new UrlUtility(null, $resolver, $siteFinder),
+            new UrlUtility(new Features(), $resolver, $siteFinder, new HeadlessMode()),
             $this->createMock(LinkService::class),
             new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
             $siteFinder
@@ -71,7 +72,7 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
         $listener = new AfterLinkIsGeneratedListener(
             $this->createMock(Logger::class),
-            new UrlUtility(null, $resolver, $siteFinder),
+            new UrlUtility(new Features(), $resolver, $siteFinder, new HeadlessMode()),
             $this->createMock(LinkService::class),
             new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
             $siteFinder
