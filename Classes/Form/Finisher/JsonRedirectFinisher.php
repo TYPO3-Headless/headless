@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Form\Finisher;
 
-use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use JsonException;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -51,7 +51,7 @@ class JsonRedirectFinisher extends AbstractFinisher
      * via GeneralUtility::makeInstance($implementationClassName) without args, so DI cannot
      * honor constructor injection. Resolve via container on first use.
      */
-    private ?UrlUtility $urlUtility = null;
+    private ?HeadlessFrontendUrlInterface $urlUtility = null;
 
     /**
      * Executes this finisher
@@ -101,7 +101,7 @@ class JsonRedirectFinisher extends AbstractFinisher
             $serverRequest = $this->request->getAttribute('extbase.request.originalRequest')
                 ?? $GLOBALS['TYPO3_REQUEST'];
 
-            $urlUtility = ($this->urlUtility ??= GeneralUtility::makeInstance(UrlUtility::class))->withRequest($serverRequest);
+            $urlUtility = ($this->urlUtility ??= GeneralUtility::makeInstance(HeadlessFrontendUrlInterface::class))->withRequest($serverRequest);
 
             $cObj = $serverRequest->getAttribute('currentContentObject');
             if ($cObj === null) {

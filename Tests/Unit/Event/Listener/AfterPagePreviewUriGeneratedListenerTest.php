@@ -18,6 +18,7 @@ use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Backend\Routing\Event\AfterPagePreviewUriGeneratedEvent;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
@@ -51,9 +52,10 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
         $siteFinder = $this->createMock(SiteFinder::class);
 
         $listener = new AfterPagePreviewUriGeneratedListener(new UrlUtility(
-            null,
+            new Features(),
             $resolver,
-            $siteFinder
+            $siteFinder,
+            new HeadlessMode()
         ), $siteFinder, new HeadlessMode());
 
         self::assertInstanceOf(AfterPagePreviewUriGeneratedListener::class, $listener);
@@ -67,9 +69,10 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
         $siteFinder->method('getSiteByPageId')->willReturn($site = new Site('test', 1, ['headless' => HeadlessModeInterface::MIXED, 'frontendBase' => 'https://front.test.tld', 'base' => 'https://test.tld']));
 
         $listener = new AfterPagePreviewUriGeneratedListener(new UrlUtility(
-            null,
+            new Features(),
             $resolver,
-            $siteFinder
+            $siteFinder,
+            new HeadlessMode()
         ), $siteFinder, new HeadlessMode());
 
         $event = new AfterPagePreviewUriGeneratedEvent(
@@ -101,9 +104,10 @@ class AfterPagePreviewUriGeneratedListenerTest extends TestCase
         $siteFinder->method('getSiteByPageId')->willThrowException(new SiteNotFoundException());
 
         $listener = new AfterPagePreviewUriGeneratedListener(new UrlUtility(
-            null,
+            new Features(),
             $resolver,
-            $siteFinder
+            $siteFinder,
+            new HeadlessMode()
         ), $siteFinder, new HeadlessMode());
 
         $event = new AfterPagePreviewUriGeneratedEvent(

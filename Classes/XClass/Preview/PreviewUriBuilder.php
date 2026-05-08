@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass\Preview;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
-use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use InvalidArgumentException;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Routing\InvalidRouteArgumentsException;
@@ -34,7 +34,7 @@ class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
      */
     private ?HeadlessModeInterface $headlessMode = null;
     private ?SiteFinder $siteFinder = null;
-    private ?UrlUtility $urlUtility = null;
+    private ?HeadlessFrontendUrlInterface $urlUtility = null;
 
     private function getHeadlessMode(): HeadlessModeInterface
     {
@@ -46,9 +46,9 @@ class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
         return $this->siteFinder ??= GeneralUtility::makeInstance(SiteFinder::class);
     }
 
-    private function getUrlUtility(): UrlUtility
+    private function getUrlUtility(): HeadlessFrontendUrlInterface
     {
-        return $this->urlUtility ??= GeneralUtility::makeInstance(UrlUtility::class);
+        return $this->urlUtility ??= GeneralUtility::makeInstance(HeadlessFrontendUrlInterface::class);
     }
 
     /**

@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\XClass;
 
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
-use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Resource\FileInterface;
@@ -27,7 +27,7 @@ use function str_replace;
 readonly class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
 {
     private HeadlessModeInterface $headlessMode;
-    private UrlUtility $urlUtility;
+    private HeadlessFrontendUrlInterface $urlUtility;
 
     /**
      * Eager init via container in constructor. This XClass is registered through
@@ -43,7 +43,7 @@ readonly class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
     {
         parent::__construct($resourceFactory);
         $this->headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
-        $this->urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
+        $this->urlUtility = GeneralUtility::makeInstance(HeadlessFrontendUrlInterface::class);
     }
 
     /**

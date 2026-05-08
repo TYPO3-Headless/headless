@@ -48,7 +48,7 @@ class PluginUtilityTest extends TestCase
 
     public function testProperException(): void
     {
-        $urlUtility = new UrlUtility(new Features(), $this->createMock(Resolver::class), $this->createMock(SiteFinder::class));
+        $urlUtility = new UrlUtility(new Features(), $this->createMock(Resolver::class), $this->createMock(SiteFinder::class), new HeadlessMode());
 
         $pluginRedirect = new PluginUtility($urlUtility);
 
@@ -59,7 +59,7 @@ class PluginUtilityTest extends TestCase
 
     public function testResponse(): void
     {
-        $urlUtility = new UrlUtility(new Features(), $this->createMock(Resolver::class), $this->createMock(SiteFinder::class));
+        $urlUtility = new UrlUtility(new Features(), $this->createMock(Resolver::class), $this->createMock(SiteFinder::class), new HeadlessMode());
 
         $pluginRedirect = new PluginUtility($urlUtility);
 

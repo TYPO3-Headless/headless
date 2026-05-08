@@ -18,6 +18,7 @@ use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -95,7 +96,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->createMock(SiteFinder::class);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         self::assertSame('https://test-frontend.tld', $urlUtility->getFrontendUrl());
@@ -116,7 +117,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->createMock(SiteFinder::class);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         self::assertSame('https://test-frontend2.tld', $urlUtility->getFrontendUrl());
@@ -143,7 +144,7 @@ class UrlUtilityTest extends UnitTestCase
         $site->method('getBase')->willReturn(new Uri('https://test-backend3-api.tld/'));
         $site->method('getLanguages')->willReturn([]);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         self::assertSame('https://test-frontend3.tld', $urlUtility->getFrontendUrl());
@@ -179,7 +180,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->createMock(SiteFinder::class);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         self::assertSame('https://test-frontend.tld/frontend/content-page', $urlUtility->getFrontendUrlWithSite('https://test-backend-api.tld/dev-path/content-page', $site));
@@ -215,7 +216,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $headlessMode = $this->createHeadlessMode();
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         self::assertSame('https://test-frontend.tld', $urlUtility->getFrontendUrl());
@@ -227,7 +228,7 @@ class UrlUtilityTest extends UnitTestCase
         $resolver = $this->createMock(Resolver::class);
         $resolver->method('evaluate')->with(self::stringContains('Development'))->willReturn(false);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         self::assertSame('https://www.typo3.org', $urlUtility->getFrontendUrl());
@@ -275,7 +276,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->createMock(SiteFinder::class);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         // same page, so we make it relative
@@ -311,7 +312,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->createMock(SiteFinder::class);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         // same page, so we make it relative
@@ -385,7 +386,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->createMock(SiteFinder::class);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
         $urlUtility = $urlUtility->withLanguage(new SiteLanguage(0, 'en', new Uri('/'), [
             'title' =>  'English',
@@ -434,7 +435,7 @@ class UrlUtilityTest extends UnitTestCase
         self::assertSame('https://test-frontend-from-lang.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
 
         // not overlay site variants if language has not defined variants
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $this->createHeadlessMode());
         $urlUtility = $urlUtility->withSite($site);
         $urlUtility = $urlUtility->withLanguage(new SiteLanguage(0, 'en', new Uri('/'), [
             'title' =>  'English',
@@ -466,7 +467,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->createMock(SiteFinder::class);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
         $urlUtility = $urlUtility->withLanguage(new SiteLanguage(0, 'en', new Uri('/'), [
             'title' =>  'English',
@@ -529,7 +530,7 @@ class UrlUtilityTest extends UnitTestCase
         $siteFinder->method('getSiteByPageId')->willReturn($site);
 
         $headlessMode = $this->createHeadlessMode(HeadlessMode::NONE);
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         // flag is not existing/disabled
@@ -540,7 +541,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $headlessMode = $this->createHeadlessMode(HeadlessMode::FULL);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
         self::assertSame(
             'https://test-frontend.tld/test-page',
@@ -577,7 +578,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $headlessMode = $this->createHeadlessMode();
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         self::assertSame(
@@ -613,7 +614,7 @@ class UrlUtilityTest extends UnitTestCase
         $siteFinder->method('getSiteByPageId')->willReturn($site);
 
         $headlessMode = $this->createHeadlessMode(HeadlessMode::NONE);
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         // flag is not existing/disabled
@@ -624,7 +625,7 @@ class UrlUtilityTest extends UnitTestCase
 
         // flag is enabled
         $headlessMode = $this->createHeadlessMode();
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
         self::assertSame(
             'https://test-frontend.tld:3000/test-page',
@@ -659,7 +660,7 @@ class UrlUtilityTest extends UnitTestCase
         $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
         $siteFinder->method('getSiteByPageId')->willReturn($site);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
 
         // flag is not existing/disabled
@@ -670,7 +671,7 @@ class UrlUtilityTest extends UnitTestCase
 
         // flag is enabled
         $headlessMode = $this->createHeadlessMode();
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtility = $urlUtility->withSite($site);
         self::assertSame(
             'https://test-frontend.tld:3000/test-page',
@@ -703,7 +704,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
         $siteFinder->method('getSiteByPageId')->willReturn($site);
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, $request, null, $headlessMode);
+        $urlUtility = (new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode))->withRequest($request);
 
         self::assertSame(
             'https://test-backend-api.tld:8000/test-page',
@@ -712,7 +713,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
         $siteFinder->method('getSiteByPageId')->willThrowException(new SiteNotFoundException('test'));
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, $request);
+        $urlUtility = (new UrlUtility(new Features(), $resolver, $siteFinder, $this->createHeadlessMode()))->withRequest($request);
 
         self::assertSame(
             'https://test-backend-api.tld:8000/test-page',
@@ -722,7 +723,7 @@ class UrlUtilityTest extends UnitTestCase
         $resolver = $this->createPartialMock(Resolver::class, ['evaluate']);
         $resolver->method('evaluate')->willThrowException(new SyntaxError('test'));
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, $request, $headlessMode);
+        $urlUtility = (new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode))->withRequest($request);
         self::assertSame('', $urlUtility->getFrontendUrl());
 
         $urlUtility = $urlUtility->withSite($this->createMockSite('https://test-frontend.tld', '', []));
@@ -764,7 +765,7 @@ class UrlUtilityTest extends UnitTestCase
         $resolver = $this->createMock(Resolver::class);
         $resolver->method('evaluate')->willReturn(true);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, $request, $headlessMode);
+        $urlUtility = (new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode))->withRequest($request);
         self::assertSame('https://test-frontend-from-lang.tld', $urlUtility->getFrontendUrl());
 
         $request = $this->createMock(ServerRequest::class);
@@ -794,7 +795,7 @@ class UrlUtilityTest extends UnitTestCase
         $resolver = $this->createMock(Resolver::class);
         $resolver->method('evaluate')->willReturn(true);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, $request, $headlessMode);
+        $urlUtility = (new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode))->withRequest($request);
         self::assertSame('', $urlUtility->getFrontendUrl());
 
         // configuration on language lvl without variants
@@ -829,7 +830,7 @@ class UrlUtilityTest extends UnitTestCase
         $resolver = $this->createMock(Resolver::class);
         $resolver->method('evaluate')->willReturn(true);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, $request, $headlessMode);
+        $urlUtility = (new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode))->withRequest($request);
         self::assertSame('https://frontend-domain-from-lang.tld', $urlUtility->getFrontendUrl());
         self::assertSame('https://frontend-domain-from-lang.tld/headless', $urlUtility->getProxyUrl());
         self::assertSame('https://frontend-domain-from-lang.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
@@ -876,7 +877,7 @@ class UrlUtilityTest extends UnitTestCase
         $resolver = $this->createMock(Resolver::class);
         $resolver->method('evaluate')->willReturn(true);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, $request, $headlessMode);
+        $urlUtility = (new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode))->withRequest($request);
         self::assertSame('https://test-frontend-from-when-develop-lang.tld', $urlUtility->getFrontendUrl());
         self::assertSame('https://test-frontend-from-when-develop-lang.tld/headless', $urlUtility->getProxyUrl());
         self::assertSame('https://test-frontend-from-when-develop-lang.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
@@ -918,7 +919,7 @@ class UrlUtilityTest extends UnitTestCase
             return null;
         });
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
         $urlUtilityWithRequest = $urlUtility->withRequest($manualRequest);
         self::assertSame('https://test-frontend-from-from-request-lang.tld', $urlUtilityWithRequest->getFrontendUrl());
         self::assertSame('https://test-frontend-from-from-request-lang.tld/headless', $urlUtilityWithRequest->getProxyUrl());
@@ -970,7 +971,7 @@ class UrlUtilityTest extends UnitTestCase
 
         $siteFinder = $this->createMock(SiteFinder::class);
 
-        $urlUtility = new UrlUtility(null, $resolver, $siteFinder, null, $headlessMode);
+        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, $headlessMode);
 
         // First call — site1
         $url1 = $urlUtility->getFrontendUrlWithSite('https://backend1.example.com/page1', $site1);

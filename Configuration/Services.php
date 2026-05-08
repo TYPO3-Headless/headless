@@ -36,9 +36,12 @@ use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use FriendsOfTYPO3\Headless\XClass\TemplateView;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use TYPO3\CMS\Core\Configuration\Features;
+use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Controller\FormFrontendController;
 use TYPO3\CMS\FrontendLogin\Controller\LoginController;
+
+use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $configurator): void {
     $services = $configurator->services()
@@ -80,8 +83,15 @@ return static function (ContainerConfigurator $configurator): void {
     $services->set(DomainSchema::class)->public();
     $services->set(BackendEditorUrl::class)->public();
     $services->set(FileUtility::class)->public();
-    $services->set(UrlUtility::class)->autowire(false)->share(false);
-    $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false)->share(false);
+    $services->set('headless.expression_language.resolver.site', Resolver::class)
+        ->args(['site', []]);
+
+    $services->set(UrlUtility::class)
+        ->share(false)
+        ->arg('$resolver', service('headless.expression_language.resolver.site'));
+    $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)
+        ->share(false)
+        ->arg('$resolver', service('headless.expression_language.resolver.site'));
     $services->set(AfterLinkIsGeneratedListener::class)->tag(
         'event.listener',
         ['identifier' => 'headless/AfterLinkIsGenerated']
