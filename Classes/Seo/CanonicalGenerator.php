@@ -25,7 +25,12 @@ use function json_encode;
  */
 class CanonicalGenerator
 {
-    public function __construct(private readonly HeadlessModeInterface $headlessMode) {}
+    public function __construct(protected ?HeadlessModeInterface $headlessMode = null) {}
+
+    protected function getHeadlessMode(): HeadlessModeInterface
+    {
+        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
 
     public function handle(array &$params): string
     {
@@ -35,7 +40,7 @@ class CanonicalGenerator
             return '';
         }
 
-        if ($this->headlessMode->withRequest($params['request'])->isEnabled()) {
+        if ($this->getHeadlessMode()->withRequest($params['request'])->isEnabled()) {
             $canonical = [
                 'href' => $this->processCanonical($canonical),
                 'rel' => 'canonical',
