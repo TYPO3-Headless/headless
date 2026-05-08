@@ -26,7 +26,6 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-
 use function array_key_exists;
 use function array_merge;
 use function array_unique;
@@ -50,8 +49,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         private readonly Resolver $resolver,
         private readonly SiteFinder $siteFinder,
         private HeadlessModeInterface $headlessMode,
-    ) {
-    }
+    ) {}
 
     public function withSite(Site $site): HeadlessFrontendUrlInterface
     {
