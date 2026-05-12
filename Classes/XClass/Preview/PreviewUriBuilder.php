@@ -23,57 +23,45 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 /**
  * @codeCoverageIgnore
  */
-class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
+readonly class PreviewUriBuilder extends \TYPO3\CMS\Workspaces\Preview\PreviewUriBuilder
 {
-    private ?HeadlessModeInterface $headlessMode = null;
-    private ?SiteFinder $siteFinder = null;
-    private ?HeadlessFrontendUrlInterface $urlUtility = null;
-
     private function getHeadlessMode(): HeadlessModeInterface
     {
-        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+        return GeneralUtility::makeInstance(HeadlessModeInterface::class);
     }
 
     private function getSiteFinder(): SiteFinder
     {
-        return $this->siteFinder ??= GeneralUtility::makeInstance(SiteFinder::class);
+        return GeneralUtility::makeInstance(SiteFinder::class);
     }
 
     private function getUrlUtility(): HeadlessFrontendUrlInterface
     {
-        return $this->urlUtility ??= GeneralUtility::makeInstance(HeadlessFrontendUrlInterface::class);
+        return GeneralUtility::makeInstance(HeadlessFrontendUrlInterface::class);
     }
 
-    /**
-     * Generates a workspace preview link.
-     *
-     * @param int $uid The ID of the record to be linked
-     * @param int $languageId the language to link to
-     * @return string the full domain including the protocol http:// or https://, but without the trailing '/'
-     */
     public function buildUriForPage(int $uid, int $languageId = 0): string
     {
-        $previewKeyword = $this->compilePreviewKeyword(
-            $this->previewLinkLifetime * 3600,
-            $this->workspaceService->getCurrentWorkspace()
-        );
-
+        $previewKeyword = $this->compilePreviewKeyword();
         try {
             $site = $this->getSiteFinder()->getSiteByPageId($uid);
             try {
                 $language = $site->getLanguageById($languageId);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 $language = $site->getDefaultLanguage();
             }
+
+            $uri = $site->getRouter()->generateUri($uid, ['ADMCMD_prev' => $previewKeyword, '_language' => $language], '');
 
             $headlessMode = $this->getHeadlessMode()->withRequest($GLOBALS['TYPO3_REQUEST']);
             $request = $headlessMode->overrideBackendRequestBySite($site, $language);
 
             return $this->getUrlUtility()
                 ->withRequest($request)
-                ->getFrontendUrlForPage((string)$site->getRouter()->generateUri($uid, ['ADMCMD_prev' => $previewKeyword, '_language' => $language], ''), $uid);
+                ->getFrontendUrlForPage((string)$uri, $uid);
+
         } catch (SiteNotFoundException | InvalidRouteArgumentsException $e) {
-            throw new UnableToLinkToPageException('The page ' . $uid . ' had no proper connection to a site, no link could be built.', 1559794916);
+            throw new UnableToLinkToPageException(sprintf('The link to the page with ID "%d" could not be generated: %s', $uid, $e->getMessage()), 1559794916, $e);
         }
     }
 }
