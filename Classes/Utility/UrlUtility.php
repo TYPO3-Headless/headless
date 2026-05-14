@@ -89,7 +89,9 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             $this->handleLanguageConfiguration($siteLanguage, $this);
         }
 
-        if (!$this->headlessMode->isEnabled() || $this->alreadyFrontendLink($url)) {
+        $targetUri = new Uri($this->sanitizeBaseUrl($url));
+
+        if (!$this->headlessMode->isEnabled() || $this->alreadyFrontendLink($url) || $targetUri->getHost() === '') {
             return $url;
         }
 
@@ -108,7 +110,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             $frontBase = $frontendBase->getHost();
             $frontExtraPath = $frontendBase->getPath();
             $frontPort = $frontendBase->getPort();
-            $targetUri = new Uri($this->sanitizeBaseUrl($url));
+
             $targetUri = $targetUri->withHost($frontBase);
             if ($targetUri->getScheme() === '') {
                 $targetUri = $targetUri->withScheme($frontendBase->getScheme());
