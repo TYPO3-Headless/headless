@@ -58,6 +58,6 @@ class ShortcutAndMountPointRedirect extends \TYPO3\CMS\Frontend\Middleware\Short
 
     private function isHeadlessEnabled(ServerRequestInterface $request): bool
     {
-        return $this->headlessMode->withRequest($request)->isEnabled();
+        return $this->headlessMode->isEnabledFor($request);
     }
 }

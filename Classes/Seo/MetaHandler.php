@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Seo;
 
+use FriendsOfTYPO3\Headless\Seo\MetaTag\AbstractMetaTagManager;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -26,6 +27,9 @@ use function array_merge;
 use function array_merge_recursive;
 use function htmlspecialchars;
 use function implode;
+use function json_decode;
+
+use const JSON_THROW_ON_ERROR;
 
 class MetaHandler implements MetaHandlerInterface
 {
@@ -36,11 +40,18 @@ class MetaHandler implements MetaHandlerInterface
         private readonly TypoScriptService $typoScriptService,
     ) {}
 
+    /**
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
+     */
     public function process(
         ServerRequestInterface $request,
         array $content
     ): array {
         $pageInformation = $request->getAttribute('frontend.page.information');
+        if ($pageInformation === null) {
+            return $content;
+        }
         $page = $pageInformation->getPageRecord();
 
         $_params = ['page' => $page, 'request' => $request, '_seoLinks' => []];
@@ -64,8 +75,14 @@ class MetaHandler implements MetaHandlerInterface
         $metaTagManagers = $this->metaTagRegistry->getAllManagers();
 
         foreach ($metaTagManagers as $managerObject) {
-            $properties = json_decode($managerObject->renderAllProperties(), true);
-            if (!empty($properties)) {
+            if ($managerObject instanceof AbstractMetaTagManager) {
+                $properties = $managerObject->renderAllHeadlessPropertiesAsArray();
+            } else {
+                $rendered = $managerObject->renderAllProperties();
+                $properties = $rendered === '' ? [] : (json_decode($rendered, true, 512, JSON_THROW_ON_ERROR) ?: []);
+            }
+
+            if ($properties !== []) {
                 $metaTags = array_merge($metaTags, $properties);
             }
         }
@@ -97,7 +114,7 @@ class MetaHandler implements MetaHandlerInterface
 
         $defaultBodyAttrs = [
             'class' => implode(' ', [
-                'pid-' . $request->getAttribute('routing')->getPageId(),
+                'pid-' . $pageInformation->getId(),
                 'layout-' . ($content['appearance']['layout'] ?? ''),
             ]),
         ];
@@ -126,11 +143,17 @@ class MetaHandler implements MetaHandlerInterface
         return $content;
     }
 
+    /**
+     * @param array<string, mixed> $typoScriptConfig
+     */
     protected function generatePageTitle(ServerRequestInterface $request, array $typoScriptConfig): string
     {
         return $this->pageTitleProviderManager->getTitle($request);
     }
 
+    /**
+     * @param array<string, mixed> $page
+     */
     protected function createContentObjectRenderer(ServerRequestInterface $request, array $page): ContentObjectRenderer
     {
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
@@ -141,8 +164,10 @@ class MetaHandler implements MetaHandlerInterface
 
     /**
      * @codeCoverageIgnore
+     *
+     * @param array<string, mixed> $metaTagTypoScript
      */
-    protected function generateMetaTagsFromTyposcript(array $metaTagTypoScript, ContentObjectRenderer $cObj)
+    protected function generateMetaTagsFromTyposcript(array $metaTagTypoScript, ContentObjectRenderer $cObj): void
     {
         $conf = $this->typoScriptService->convertTypoScriptArrayToPlainArray($metaTagTypoScript);
         foreach ($conf as $key => $properties) {
@@ -182,13 +207,15 @@ class MetaHandler implements MetaHandlerInterface
 
     /**
      * @codeCoverageIgnore
+     *
+     * @param array<string, mixed> $subProperties
      */
     private function setMetaTag(
         string $type,
         string $name,
         string $content,
         array $subProperties = [],
-        $replace = true
+        bool $replace = true
     ): void {
         $type = strtolower($type);
         $name = strtolower($name);
@@ -204,6 +231,9 @@ class MetaHandler implements MetaHandlerInterface
 
     /**
      * @codeCoverageIgnore
+     *
+     * @param array<string, mixed> $rawHtmlAttrs
+     * @return array<string, string>
      */
     private function normalizeAttr(array $rawHtmlAttrs): array
     {

@@ -23,9 +23,10 @@ class Translator
     public function __construct(protected FormTranslationService $translator) {}
 
     /**
-     * @param array<mixed> $formDefinition
-     * @param array<mixed> $renderingOptions
-     * @return array<mixed>
+     * @param array<string, mixed> $formDefinition
+     * @param array<string, mixed> $renderingOptions
+     * @param array<string, mixed> $sentValues
+     * @return array<string, mixed>
      */
     public function translate(array $formDefinition, array $renderingOptions, array $sentValues = []): array
     {
@@ -43,15 +44,17 @@ class Translator
         }
 
         foreach ($formDefinition['renderables'] as $page) {
+            if ($page === []) {
+                continue;
+            }
+
             $pageTranslation = [
                 'label' => $this->translator->translateElementValue($page, ['label'], $formRuntime),
             ];
 
-            if (!isset($page['renderables']) || !is_array($page['renderables'])) {
-                continue;
+            if (isset($page['renderables']) && is_array($page['renderables'])) {
+                $pageTranslation['renderables'] = $this->translateRenderables($page['renderables'], $formRuntime, $sentValues);
             }
-
-            $pageTranslation['renderables'] = $this->translateRenderables($page['renderables'], $formRuntime, $sentValues);
 
             $result['renderables'][] = array_replace_recursive($page, $pageTranslation);
         }
@@ -62,7 +65,7 @@ class Translator
     /**
      * @param array<int, mixed> $renderables
      * @param array<string, mixed> $formRuntime
-     * @param array<string, mixed> sentValues
+     * @param array<string, mixed> $sentValues
      * @return array<int, mixed>
      */
     private function translateRenderables(array $renderables, array $formRuntime, array $sentValues): array

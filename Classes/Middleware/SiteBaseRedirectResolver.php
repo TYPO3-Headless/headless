@@ -37,7 +37,7 @@ class SiteBaseRedirectResolver extends \TYPO3\CMS\Frontend\Middleware\SiteBaseRe
             return $response;
         }
 
-        if (!$this->headlessMode->withRequest($request)->isEnabled()) {
+        if (!$this->headlessMode->isEnabledFor($request)) {
             return $response;
         }
 

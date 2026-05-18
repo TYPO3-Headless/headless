@@ -11,6 +11,12 @@ namespace FriendsOfTYPO3\Headless\ViewHelpers\Iterator;
 
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
+use function constant;
+use function explode;
+use function str_contains;
+use function strlen;
+use function trim;
+
 /**
  * Explode ViewHelper
  * Explodes a string by $glue
@@ -18,14 +24,6 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  */
 class ExplodeViewHelper extends AbstractViewHelper
 {
-    /**
-     * @var string
-     */
-    protected $method = 'explode';
-
-    /**
-     * Initialize
-     */
     public function initializeArguments(): void
     {
         $this->registerArgument('content', 'string', 'String to be exploded by glue)', false, '');
@@ -33,12 +31,7 @@ class ExplodeViewHelper extends AbstractViewHelper
         $this->registerArgument('as', 'string', 'Template variable name to assign. If not specified returns the result array instead');
     }
 
-    /**
-     * Render method
-     *
-     * @return mixed
-     */
-    public function render()
+    public function render(): mixed
     {
         $content = $this->arguments['content'];
         $as = $this->arguments['as'];
@@ -48,7 +41,7 @@ class ExplodeViewHelper extends AbstractViewHelper
             $content = $this->renderChildren();
             $contentWasSource = true;
         }
-        $output = call_user_func_array($this->method, [$glue, $content]);
+        $output = explode($glue, (string)$content);
         if (empty($as) === true || $contentWasSource === true) {
             return $output;
         }

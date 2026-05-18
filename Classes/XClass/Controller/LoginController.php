@@ -23,9 +23,6 @@ use TYPO3\CMS\FrontendLogin\Event\ModifyLoginFormViewEvent;
 use function implode;
 use function json_encode;
 
-/**
- * @codeCoverageIgnore
- */
 class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginController
 {
     private ?HeadlessModeInterface $headlessMode = null;
@@ -100,21 +97,19 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
             $this->request
         ));
 
-        $data = [
+        if ($event->getRedirectUrl() === '') {
+            return null;
+        }
+
+        return $this->jsonResponse(json_encode([
             'redirectUrl' => $event->getRedirectUrl(),
             'statusCode' => 303,
             'status' => $status,
-        ];
-
-        return $this->responseFactory->createResponse()->withHeader(
-            'Content-Type',
-            'application/json; charset=utf-8'
-        )
-            ->withBody($this->streamFactory->createStream(json_encode($data)));
+        ], JSON_THROW_ON_ERROR));
     }
 
     private function isHeadlessEnabled(): bool
     {
-        return $this->getHeadlessMode()->withRequest($this->request)->isEnabled();
+        return $this->getHeadlessMode()->isEnabledFor($this->request);
     }
 }

@@ -15,6 +15,10 @@ use Psr\Http\Message\ServerRequestInterface;
 
 interface MetaHandlerInterface
 {
+    /**
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
+     */
     public function process(
         ServerRequestInterface $request,
         array $content

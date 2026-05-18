@@ -31,7 +31,7 @@ class YouTubeRenderer extends \TYPO3\CMS\Core\Resource\Rendering\YouTubeRenderer
      * @param FileInterface $file
      * @param int|string $width TYPO3 known format; examples: 220, 200m or 200c
      * @param int|string $height TYPO3 known format; examples: 220, 200m or 200c
-     * @param array $options
+     * @param array<string, mixed> $options
      * @return string
      */
     public function render(FileInterface $file, $width, $height, array $options = []): string

@@ -21,7 +21,7 @@ class MenuSitemapSelectedPagesElementTest extends BaseContentTypeTesting
             new InternalRequest('https://website.local/page3')
         );
 
-        self::assertEquals(200, $response->getStatusCode());
+        self::assertSame(200, $response->getStatusCode());
 
         $fullTree = json_decode((string)$response->getBody(), true);
 

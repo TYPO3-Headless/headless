@@ -12,12 +12,14 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Seo\MetaTag;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Type\DocType;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_merge;
-use function json_decode;
 use function json_encode;
+
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Overridden core version with headless implementation
@@ -31,9 +33,9 @@ abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMe
         return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
     }
 
-    public function renderAllProperties(DocType|null $docType = null): string
+    public function renderAllProperties(?DocType $docType = null): string
     {
-        if ($this->getHeadlessMode()->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
+        if ($this->isHeadlessRequest()) {
             return $this->renderAllHeadlessProperties();
         }
 
@@ -42,11 +44,18 @@ abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMe
 
     public function renderProperty(string $property, ?DocType $docType = null): string
     {
-        if ($this->getHeadlessMode()->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
+        if ($this->isHeadlessRequest()) {
             return $this->renderHeadlessProperty($property);
         }
 
         return parent::renderProperty($property, $docType);
+    }
+
+    private function isHeadlessRequest(): bool
+    {
+        $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
+        return $request instanceof ServerRequestInterface
+            && $this->getHeadlessMode()->isEnabledFor($request);
     }
 
     /**
@@ -55,6 +64,14 @@ abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMe
      * @param string $property Name of the property
      */
     public function renderHeadlessProperty(string $property): string
+    {
+        return json_encode($this->renderHeadlessPropertyAsArray($property), JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * @return array<int, array<string, string>>
+     */
+    public function renderHeadlessPropertyAsArray(string $property): array
     {
         $property = strtolower($property);
         $metaTags = [];
@@ -71,28 +88,30 @@ abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMe
             $contentAttribute = (string)$this->handledProperties[$property]['contentAttribute'];
         }
 
-        if ($nameAttribute && $contentAttribute) {
-            foreach ($this->getProperty($property) as $propertyItem) {
-                $metaTags[] = [
-                    htmlspecialchars($nameAttribute) => htmlspecialchars($property),
-                    htmlspecialchars($contentAttribute) => htmlspecialchars($propertyItem['content']),
-                ];
+        if (!$nameAttribute || !$contentAttribute) {
+            return $metaTags;
+        }
 
-                if (!count($propertyItem['subProperties'])) {
-                    continue;
-                }
-                foreach ($propertyItem['subProperties'] as $subProperty => $subPropertyItems) {
-                    foreach ($subPropertyItems as $subPropertyItem) {
-                        $metaTags[] = [
-                            htmlspecialchars($nameAttribute) => htmlspecialchars($property . $this->subPropertySeparator . $subProperty),
-                            htmlspecialchars($contentAttribute) => htmlspecialchars((string)$subPropertyItem),
-                        ];
-                    }
+        foreach ($this->getProperty($property) as $propertyItem) {
+            $metaTags[] = [
+                htmlspecialchars($nameAttribute) => htmlspecialchars($property),
+                htmlspecialchars($contentAttribute) => htmlspecialchars($propertyItem['content']),
+            ];
+
+            if (!count($propertyItem['subProperties'])) {
+                continue;
+            }
+            foreach ($propertyItem['subProperties'] as $subProperty => $subPropertyItems) {
+                foreach ($subPropertyItems as $subPropertyItem) {
+                    $metaTags[] = [
+                        htmlspecialchars($nameAttribute) => htmlspecialchars($property . $this->subPropertySeparator . $subProperty),
+                        htmlspecialchars($contentAttribute) => htmlspecialchars((string)$subPropertyItem),
+                    ];
                 }
             }
         }
 
-        return json_encode($metaTags);
+        return $metaTags;
     }
 
     /**
@@ -100,11 +119,18 @@ abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMe
      */
     public function renderAllHeadlessProperties(): string
     {
-        $metatags = [];
-        foreach (array_keys($this->properties) as $property) {
-            $metatags = array_merge($metatags, json_decode($this->renderHeadlessProperty($property), true));
-        }
+        return json_encode($this->renderAllHeadlessPropertiesAsArray(), JSON_THROW_ON_ERROR);
+    }
 
-        return json_encode($metatags);
+    /**
+     * @return array<int, array<string, string>>
+     */
+    public function renderAllHeadlessPropertiesAsArray(): array
+    {
+        $metaTags = [];
+        foreach (array_keys($this->properties) as $property) {
+            $metaTags = array_merge($metaTags, $this->renderHeadlessPropertyAsArray($property));
+        }
+        return $metaTags;
     }
 }

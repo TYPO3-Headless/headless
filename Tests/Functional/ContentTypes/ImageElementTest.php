@@ -21,7 +21,7 @@ class ImageElementTest extends BaseContentTypeTesting
             new InternalRequest('https://website.local/')
         );
 
-        self::assertEquals(200, $response->getStatusCode());
+        self::assertSame(200, $response->getStatusCode());
 
         $fullTree = json_decode((string)$response->getBody(), true);
 
@@ -32,7 +32,7 @@ class ImageElementTest extends BaseContentTypeTesting
         $this->checkHeaderFields($contentElement);
 
         // no bodytext
-        self::assertFalse(isset($contentElement['content']['bodytext']));
+        self::assertArrayNotHasKey('bodytext', $contentElement['content']);
 
         $this->checkGalleryContentFields($contentElement);
     }

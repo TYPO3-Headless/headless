@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Utility;
 
+use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
@@ -27,27 +28,44 @@ final class HeadlessMode implements HeadlessModeInterface
 
     public function withRequest(ServerRequestInterface $request): self
     {
-        $this->request = $request;
-        return $this;
+        $clone = clone $this;
+        $clone->request = $request;
+        return $clone;
     }
+
     public function isEnabled(): bool
     {
-        if ($this->request === null) {
+        return $this->request !== null && $this->checkRequest($this->request);
+    }
+
+    public function isEnabledFor(ServerRequestInterface $request): bool
+    {
+        return $this->checkRequest($request);
+    }
+
+    private function checkRequest(ServerRequestInterface $request): bool
+    {
+        $mode = ($request->getAttribute('headless') ?? new Headless())->getMode();
+
+        if ($mode === self::NONE) {
             return false;
         }
-
-        $headless = $this->request->getAttribute('headless') ?? new Headless();
-
-        if ($headless->getMode() === self::NONE) {
-            return false;
+        if ($mode === self::FULL) {
+            return true;
         }
-
-        return $headless->getMode() === self::FULL ||
-            ($headless->getMode() === self::MIXED && ($this->request->getHeader('Accept')[0] ?? '') === 'application/json');
+        return $mode === self::MIXED
+            && ($request->getHeader('Accept')[0] ?? '') === 'application/json';
     }
 
     public function overrideBackendRequestBySite(SiteInterface $site, ?SiteLanguage $language = null): ServerRequestInterface
     {
+        if ($this->request === null) {
+            throw new LogicException(
+                'HeadlessMode::overrideBackendRequestBySite() requires a request; call withRequest() first.',
+                1747200000
+            );
+        }
+
         $mode = (int)($site->getConfiguration()['headless'] ?? self::NONE);
 
         if ($mode === self::MIXED) {

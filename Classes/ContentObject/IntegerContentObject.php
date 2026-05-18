@@ -22,14 +22,14 @@ class IntegerContentObject extends AbstractContentObject
 {
     /**
      * Rendering the cObject, JSON
-     * @param array $conf Array of TypoScript properties
-     * @return int
+     * @param array<string, mixed> $conf Array of TypoScript properties
      */
     public function render($conf = []): int
     {
         if (!is_array($conf)) {
             return 0;
         }
+
         $content = 0;
         if (isset($conf['value'])) {
             $content = $conf['value'];

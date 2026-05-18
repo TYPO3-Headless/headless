@@ -14,16 +14,15 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing\TestDomainSchema;
 use FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing\TestSiteProvider;
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use ReflectionProperty;
 use stdClass;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-class RootSitesProcessorTest extends UnitTestCase
+class RootSitesProcessorTest extends HeadlessUnitTestCase
 {
     protected function setUp(): void
     {
@@ -34,12 +33,6 @@ class RootSitesProcessorTest extends UnitTestCase
         $c = new Container();
         $c->set(EventDispatcherInterface::class, $this->createMock(EventDispatcherInterface::class));
         GeneralUtility::setContainer($c);
-    }
-
-    protected function tearDown(): void
-    {
-        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
-        parent::tearDown();
     }
 
     public function testCustomImplementation(): void

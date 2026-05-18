@@ -11,12 +11,12 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Seo;
 
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Seo\Canonical\CanonicalGenerator as CoreCanonicalGenerator;
 
 use function htmlspecialchars;
-use function json_encode;
 
 /**
  * Decorate Core version with headless flavor
@@ -25,6 +25,9 @@ use function json_encode;
  */
 class CanonicalGenerator
 {
+    /**
+     * @param array<string, mixed> $params
+     */
     public function handle(array &$params): string
     {
         $canonical = GeneralUtility::makeInstance(CoreCanonicalGenerator::class)->generate($params);
@@ -33,14 +36,14 @@ class CanonicalGenerator
             return '';
         }
 
-        if ($this->getHeadlessMode()->withRequest($params['request'])->isEnabled()) {
+        if ($this->getHeadlessMode()->isEnabledFor($params['request'])) {
             $canonical = [
                 'href' => $this->processCanonical($canonical),
                 'rel' => 'canonical',
             ];
 
             $params['_seoLinks'][] = $canonical;
-            $canonical = json_encode($canonical);
+            $canonical = $this->getJsonEncoder()->encode($canonical);
         }
 
         return $canonical;
@@ -48,11 +51,16 @@ class CanonicalGenerator
 
     protected function processCanonical(string $canonical): string
     {
-        return htmlspecialchars(GeneralUtility::get_tag_attributes($canonical)['href'] ?? '');
+        return htmlspecialchars(GeneralUtility::get_tag_attributes($canonical, true)['href'] ?? '');
     }
 
     protected function getHeadlessMode(): HeadlessModeInterface
     {
         return GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
+    protected function getJsonEncoder(): JsonEncoderInterface
+    {
+        return GeneralUtility::makeInstance(JsonEncoderInterface::class);
     }
 }

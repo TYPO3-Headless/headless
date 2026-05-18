@@ -14,9 +14,9 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
 trait DataProcessingTrait
 {
     /**
-     * @param array $processorConfiguration
-     * @param array $processedData
-     * @return array
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
      */
     protected function removeDataIfnotAppendInConfiguration(array $processorConfiguration, array $processedData): array
     {
@@ -42,14 +42,13 @@ trait DataProcessingTrait
 
     protected function isMenuProcessor(): bool
     {
-        return __CLASS__ === MenuProcessor::class;
+        return $this instanceof MenuProcessor;
     }
 
     /**
      * Removes recursively "data" in children nodes
      *
-     * @param array $children
-     * @param string $nodeName
+     * @param array<int|string, array<string, mixed>> $children
      */
     private function removeDataInChildrenNodes(array &$children, string $nodeName = 'children'): void
     {

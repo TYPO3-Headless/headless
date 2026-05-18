@@ -17,9 +17,8 @@ interface SiteProviderInterface
 {
     /**
      * @param array<string, mixed> $config
-     * @param int $siteUid
      */
-    public function prepare(array $config, int $siteUid);
+    public function prepare(array $config, int $siteUid): self;
 
     /**
      * @return array<Site>
@@ -27,7 +26,7 @@ interface SiteProviderInterface
     public function getSites(): array;
 
     /**
-     * @return array<int, array>
+     * @return array<int, array<string, mixed>>
      */
     public function getPages(): array;
 

@@ -10,13 +10,13 @@
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
+use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
-use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
@@ -28,9 +28,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Event\AfterLinkIsGeneratedEvent;
 use TYPO3\CMS\Frontend\Typolink\LinkResult;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-class AfterLinkIsGeneratedListenerTest extends UnitTestCase
+class AfterLinkIsGeneratedListenerTest extends HeadlessUnitTestCase
 {
     protected function setUp(): void
     {
@@ -41,12 +40,6 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         GeneralUtility::setContainer($container);
     }
 
-    protected function tearDown(): void
-    {
-        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
-        parent::tearDown();
-    }
-
     public function test__construct()
     {
         $resolver = $this->createMock(Resolver::class);
@@ -55,10 +48,11 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
         $listener = new AfterLinkIsGeneratedListener(
             $this->createMock(Logger::class),
-            new UrlUtility(new Features(), $resolver, $siteFinder, new HeadlessMode()),
+            new UrlUtility($resolver, $siteFinder, new HeadlessMode()),
             $this->createMock(LinkService::class),
             new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
-            $siteFinder
+            $siteFinder,
+            new HeadlessMode()
         );
 
         self::assertInstanceOf(AfterLinkIsGeneratedListener::class, $listener);
@@ -72,15 +66,20 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
         $listener = new AfterLinkIsGeneratedListener(
             $this->createMock(Logger::class),
-            new UrlUtility(new Features(), $resolver, $siteFinder, new HeadlessMode()),
+            new UrlUtility($resolver, $siteFinder, new HeadlessMode()),
             $this->createMock(LinkService::class),
             new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
-            $siteFinder
+            $siteFinder,
+            new HeadlessMode()
         );
 
         $site = new Site('test', 1, []);
         $cObj = $this->createMock(ContentObjectRenderer::class);
-        $cObj->method('getRequest')->willReturn((new ServerRequest())->withAttribute('site', $site));
+        $cObj->method('getRequest')->willReturn(
+            (new ServerRequest())
+                ->withAttribute('site', $site)
+                ->withAttribute('headless', new Headless(HeadlessMode::FULL))
+        );
         $cObj->method('stdWrapValue')->with('ATagParams', [])->willReturn('');
 
         $linkResult = new LinkResult('page', '/');
@@ -111,7 +110,9 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
 
         $site = new Site('test', 1, []);
         $cObj = $this->createMock(ContentObjectRenderer::class);
-        $request = (new ServerRequest())->withAttribute('site', $site);
+        $request = (new ServerRequest())
+            ->withAttribute('site', $site)
+            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
         $cObj->method('getRequest')->willReturn($request);
 
         $urlUtility->method('withRequest')->with($request)->willReturn($urlUtility);
@@ -121,7 +122,8 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $urlUtility,
             $this->createMock(LinkService::class),
             new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
-            $this->createMock(SiteFinder::class)
+            $this->createMock(SiteFinder::class),
+            new HeadlessMode()
         );
 
         $linkResult = new LinkResult('page', '/');
@@ -148,7 +150,9 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $linkService->method('resolve')->willReturn(['pageuid' => 5]);
 
         $cObj = $this->createMock(ContentObjectRenderer::class);
-        $request = (new ServerRequest())->withAttribute('site', $site);
+        $request = (new ServerRequest())
+            ->withAttribute('site', $site)
+            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
         $cObj->method('getRequest')->willReturn($request);
 
         $urlUtility->method('withRequest')->with($request)->willReturn($urlUtility);
@@ -158,7 +162,8 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $urlUtility,
             $linkService,
             new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
-            $this->createMock(SiteFinder::class)
+            $this->createMock(SiteFinder::class),
+            new HeadlessMode()
         );
         $linkResult = new LinkResult('page', '/');
         $linkResult = $linkResult->withLinkConfiguration(['parameter.' => ['data' => 'parameters:href']]);
@@ -188,7 +193,9 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $linkService->method('resolve')->willReturn(['pageuid' => 5]);
 
         $cObj = $this->createMock(ContentObjectRenderer::class);
-        $request = (new ServerRequest())->withAttribute('site', $site);
+        $request = (new ServerRequest())
+            ->withAttribute('site', $site)
+            ->withAttribute('headless', new Headless(HeadlessMode::FULL));
         $cObj->method('getRequest')->willReturn($request);
 
         $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
@@ -204,7 +211,8 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $urlUtility,
             $linkService,
             new TypoLinkCodecService($eventDispatcher),
-            $siteFinder
+            $siteFinder,
+            new HeadlessMode()
         );
 
         $linkResult = new LinkResult('page', 'https://typo3.tld/sitemap-type/pages/sitemap.xml');
@@ -230,14 +238,17 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $urlUtility->method('getFrontendUrlForPage')->with('/', 7)->willReturn('https://front.tld/page-7');
 
         $cObj = $this->createMock(ContentObjectRenderer::class);
-        $cObj->method('getRequest')->willReturn(new ServerRequest());
+        $cObj->method('getRequest')->willReturn(
+            (new ServerRequest())->withAttribute('headless', new Headless(HeadlessMode::FULL))
+        );
 
         $listener = new AfterLinkIsGeneratedListener(
             $this->createMock(Logger::class),
             $urlUtility,
             $this->createMock(LinkService::class),
             new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
-            $this->createMock(SiteFinder::class)
+            $this->createMock(SiteFinder::class),
+            new HeadlessMode()
         );
 
         $linkResult = new LinkResult('page', '/');
@@ -252,6 +263,40 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         self::assertSame('https://front.tld/page-7', $event->getLinkResult()->getUrl());
     }
 
+    public function testListenerShortCircuitsWhenHeadlessDisabled(): void
+    {
+        $urlUtility = $this->createMock(UrlUtility::class);
+        // The listener must not touch urlUtility when headless is off.
+        $urlUtility->expects(self::never())->method('withRequest');
+
+        $siteFinder = $this->createMock(SiteFinder::class);
+        $siteFinder->expects(self::never())->method('getSiteByPageId');
+
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->method('getRequest')->willReturn(
+            // No 'headless' attribute → defaults to NONE → isEnabled() === false.
+            new ServerRequest()
+        );
+
+        $listener = new AfterLinkIsGeneratedListener(
+            $this->createMock(Logger::class),
+            $urlUtility,
+            $this->createMock(LinkService::class),
+            new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
+            $siteFinder,
+            new HeadlessMode()
+        );
+
+        $linkResult = (new LinkResult('page', '/original'))
+            ->withLinkConfiguration(['parameter' => 2])
+            ->withLinkText('|');
+
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj, []);
+        $listener($event);
+
+        self::assertSame('/original', $event->getLinkResult()->getUrl());
+    }
+
     public function testInvokeWithEmptyLinkLogsErrorWhenNoSite(): void
     {
         $logger = $this->createMock(Logger::class);
@@ -261,7 +306,9 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
         $urlUtility->method('withRequest')->willReturnSelf();
 
         $cObj = $this->createMock(ContentObjectRenderer::class);
-        $cObj->method('getRequest')->willReturn(new ServerRequest());
+        $cObj->method('getRequest')->willReturn(
+            (new ServerRequest())->withAttribute('headless', new Headless(HeadlessMode::FULL))
+        );
         $cObj->method('stdWrap')->willReturn('');
 
         $listener = new AfterLinkIsGeneratedListener(
@@ -269,7 +316,8 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             $urlUtility,
             $this->createMock(LinkService::class),
             new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
-            $this->createMock(SiteFinder::class)
+            $this->createMock(SiteFinder::class),
+            new HeadlessMode()
         );
 
         $linkResult = new LinkResult('page', '');

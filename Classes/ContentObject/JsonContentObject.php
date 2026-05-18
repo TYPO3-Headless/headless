@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
 use FriendsOfTYPO3\Headless\Json\JsonDecoderInterface;
-use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Generator;
 use Psr\Log\LoggerAwareInterface;
@@ -30,31 +30,34 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
 {
     use LoggerAwareTrait;
 
-    private array $conf;
+    /**
+     * @var array<string, mixed>
+     */
+    private array $conf = [];
 
     public function __construct(
         protected ContentDataProcessor $contentDataProcessor,
-        protected JsonEncoder $jsonEncoder,
+        protected JsonEncoderInterface $jsonEncoder,
         protected JsonDecoderInterface $jsonDecoder,
         protected HeadlessUserInt $headlessUserInt
     ) {}
 
     /**
      * Rendering the cObject, JSON
-     * @param array $conf Array of TypoScript properties
+     * @param array<string, mixed>|null $conf Array of TypoScript properties
      * @return string The HTML output
      */
     public function render($conf = []): string
     {
+        if (!is_array($conf)) {
+            $conf = [];
+        }
+
         if (!empty($conf['if.']) && !$this->cObj->checkIf($conf['if.'])) {
             return '';
         }
 
         $data = [];
-
-        if (!is_array($conf)) {
-            $conf = [];
-        }
 
         $this->conf = $conf;
 
@@ -82,9 +85,9 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
      * Rendering of a "string array" of cObjects from TypoScript
      * Will call ->cObjGetSingle() for each cObject found and accumulate the output.
      *
-     * @param array $setup array with cObjects as values.
+     * @param array<string, mixed> $setup array with cObjects as values.
      * @param string $addKey A prefix for the debugging information
-     * @return array Rendered output from the cObjects in the array.
+     * @return array<string, mixed> Rendered output from the cObjects in the array.
      * @see cObjGetSingle()
      */
     public function cObjGet(array $setup, string $addKey = ''): array
@@ -139,9 +142,9 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     /**
      * Takes a TypoScript array as input and returns an array which contains all string properties found which had a value (not only properties).
      *
-     * @param array $setupArr TypoScript array with string array in
+     * @param array<string, mixed> $setupArr TypoScript array with string array in
      * @param bool $acceptAnyKeys If set, then a value is not required - the properties alone will be enough.
-     * @return array An array with all string properties.
+     * @return array<int, string> An array with all string properties.
      */
     protected function filterByStringKeys(array $setupArr, bool $acceptAnyKeys = false): array
     {
@@ -156,7 +159,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     }
 
     /**
-     * @param array $dataProcessing
+     * @param array<string, mixed> $dataProcessing
      */
     protected function processFieldWithDataProcessing(array $dataProcessing): mixed
     {

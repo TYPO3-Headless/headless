@@ -19,8 +19,14 @@ use TYPO3\CMS\Core\Resource\FileInterface;
  */
 final class FileDataAfterCropVariantProcessingEvent
 {
+    /**
+     * @var array<string, mixed>
+     */
     private array $processedFile;
 
+    /**
+     * @param array<string, mixed> $processedFile
+     */
     public function __construct(
         private readonly FileInterface $originalFileReference,
         private readonly ProcessingConfiguration $processingConfiguration,
@@ -29,11 +35,17 @@ final class FileDataAfterCropVariantProcessingEvent
         $this->processedFile = $processedFile;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getProcessedFile(): array
     {
         return $this->processedFile;
     }
 
+    /**
+     * @param array<string, mixed> $processedFile
+     */
     public function setProcessedFile(array $processedFile): void
     {
         $this->processedFile = $processedFile;

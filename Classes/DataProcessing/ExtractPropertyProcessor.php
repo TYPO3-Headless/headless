@@ -38,17 +38,17 @@ class ExtractPropertyProcessor implements DataProcessorInterface
      * Extract a single (maybe nested) property from a given array
      *
      * @param ContentObjectRenderer $cObj The content object renderer, which contains data of the content element
-     * @param array $contentObjectConfiguration The configuration of Content Object
-     * @param array $processorConfiguration The configuration of this processor
-     * @param array $processedData Key/value store of processed data (e.g. to be passed to a Fluid View)
-     * @return array the processed data as key/value store
+     * @param array<string, mixed> $contentObjectConfiguration The configuration of Content Object
+     * @param array<string, mixed> $processorConfiguration The configuration of this processor
+     * @param array<string, mixed> $processedData Key/value store of processed data (e.g. to be passed to a Fluid View)
+     * @return array<string, mixed> the processed data as key/value store
      */
     public function process(
         ContentObjectRenderer $cObj,
         array $contentObjectConfiguration,
         array $processorConfiguration,
         array $processedData
-    ) {
+    ): array {
         if (empty($processorConfiguration['as'])) {
             throw new Exception('Please specify property \'as\'');
         }
@@ -64,13 +64,17 @@ class ExtractPropertyProcessor implements DataProcessorInterface
 
         $key = GeneralUtility::trimExplode('.', $processorConfiguration['key'], true);
 
-        // Extract (nested) property
-        do {
-            $processedData = $processedData[array_shift($key)] ?? null;
-        } while (count($key));
+        $value = $processedData;
+        foreach ($key as $segment) {
+            if (!is_array($value)) {
+                $value = null;
+                break;
+            }
+            $value = $value[$segment] ?? null;
+        }
 
         return [
-            $targetFieldName => $processedData,
+            $targetFieldName => $value,
         ];
     }
 }

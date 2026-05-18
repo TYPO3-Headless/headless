@@ -16,8 +16,14 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 
 final class EnrichFileDataEvent
 {
+    /**
+     * @var array<string, mixed>
+     */
     private array $properties;
 
+    /**
+     * @param array<string, mixed> $properties
+     */
     public function __construct(
         private readonly FileInterface $originalFileReference,
         private readonly FileInterface $processedFileReference,
@@ -27,11 +33,17 @@ final class EnrichFileDataEvent
         $this->properties = $properties;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getProperties(): array
     {
         return $this->properties;
     }
 
+    /**
+     * @param array<string, mixed> $properties
+     */
     public function setProperties(array $properties): void
     {
         $this->properties = $properties;

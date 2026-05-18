@@ -19,6 +19,8 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 
 use function json_decode;
 
+use const JSON_THROW_ON_ERROR;
+
 /**
  * Fetch records from the database, using the default .select syntax from TypoScript.
  *
@@ -63,7 +65,10 @@ class DatabaseQueryProcessor implements DataProcessorInterface
     public function __construct(protected ContentDataProcessor $contentDataProcessor, protected TypoScriptService $typoScriptService) {}
 
     /**
-     * @inheritDoc
+     * @param array<string, mixed> $contentObjectConfiguration
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
      */
     public function process(ContentObjectRenderer $cObj, array $contentObjectConfiguration, array $processorConfiguration, array $processedData): array
     {
@@ -91,30 +96,30 @@ class DatabaseQueryProcessor implements DataProcessorInterface
         $request = $cObj->getRequest();
         $processedRecordVariables = [];
 
-        $flattenRow = null;
+        $objConf = [];
+        $objName = '< ' . $tableName;
+        if (isset($processorConfiguration['fields.'])) {
+            $objName = 'JSON';
+            $fields = $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['fields.']);
+            $objConf = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON']);
+        }
+
+        $overrideJsonCE = null;
+        if (isset($processorConfiguration['overrideFields.'])) {
+            $overrideFields = $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['overrideFields.']);
+            $overrideJsonCE = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $overrideFields, '_typoScriptNodeValue' => 'JSON']);
+        }
 
         foreach ($records as $key => $record) {
             $recordContentObjectRenderer = $this->createContentObjectRenderer();
             $recordContentObjectRenderer->setRequest($request);
             $recordContentObjectRenderer->start($record, $tableName);
 
-            $objConf = [];
-            $objName = '< ' . $tableName;
-
-            if (isset($processorConfiguration['fields.'])) {
-                $objName = 'JSON';
-                $fields = $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['fields.']);
-                $objConf = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $fields, '_typoScriptNodeValue' => 'JSON']);
-            }
-
-            $processedRecordVariables[$key] = $objConf !== [] ? json_decode($recordContentObjectRenderer->cObjGetSingle($objName, $objConf), true) : $record;
+            $processedRecordVariables[$key] = $objConf !== [] ? json_decode($recordContentObjectRenderer->cObjGetSingle($objName, $objConf), true, 512, JSON_THROW_ON_ERROR) : $record;
             $processedRecordVariables[$key] = $this->contentDataProcessor->process($recordContentObjectRenderer, $processorConfiguration, $processedRecordVariables[$key]);
 
-            if (isset($processorConfiguration['overrideFields.'])) {
-                $overrideFields = $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['overrideFields.']);
-                $jsonCE = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $overrideFields, '_typoScriptNodeValue' => 'JSON']);
-                $record = json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
-
+            if ($overrideJsonCE !== null) {
+                $record = json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $overrideJsonCE), true, 512, JSON_THROW_ON_ERROR);
                 foreach ($record as $fieldName => $overrideData) {
                     $processedRecordVariables[$key][$fieldName] = $overrideData;
                 }

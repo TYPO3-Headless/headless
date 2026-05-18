@@ -9,7 +9,6 @@
 
 use FriendsOfTYPO3\Headless\Middleware\ElementBodyResponseMiddleware;
 use FriendsOfTYPO3\Headless\Middleware\HeadlessModeSetter;
-use FriendsOfTYPO3\Headless\Middleware\RedirectHandler;
 use FriendsOfTYPO3\Headless\Middleware\ShortcutAndMountPointRedirect;
 use FriendsOfTYPO3\Headless\Middleware\SiteBaseRedirectResolver;
 use FriendsOfTYPO3\Headless\Middleware\UserIntMiddleware;
@@ -31,7 +30,7 @@ return (static function (): array {
             'headless/mode-setter' => [
                 'before' => [
                     'typo3/cms-frontend/base-redirect-resolver',
-                    'headless/cms-redirects/redirecthandler',
+                    'typo3/cms-redirects/redirecthandler',
                 ],
                 'target' => HeadlessModeSetter::class,
             ],
@@ -64,11 +63,11 @@ return (static function (): array {
         ];
     }
 
-    if (!$features->isFeatureEnabled('headless.redirectMiddlewares')) {
+    if (!ExtensionManagementUtility::isLoaded('redirects')) {
         return $middlewares;
     }
 
-    $middlewares = array_merge_recursive($middlewares, [
+    return array_merge_recursive($middlewares, [
         'frontend' => [
             'typo3/cms-frontend/shortcut-and-mountpoint-redirect' => [
                 'disabled' => true,
@@ -83,27 +82,6 @@ return (static function (): array {
                 ],
                 'before' => [
                     'typo3/cms-frontend/content-length-headers',
-                ],
-            ],
-        ],
-    ]);
-
-    if (!ExtensionManagementUtility::isLoaded('redirects')) {
-        return $middlewares;
-    }
-
-    return array_merge_recursive($middlewares, [
-        'frontend' => [
-            'typo3/cms-redirects/redirecthandler' => [
-                'disabled' => true,
-            ],
-            'headless/cms-redirects/redirecthandler' => [
-                'target' => RedirectHandler::class,
-                'before' => [
-                    'typo3/cms-frontend/base-redirect-resolver',
-                ],
-                'after' => [
-                    'typo3/cms-frontend/authentication',
                 ],
             ],
         ],

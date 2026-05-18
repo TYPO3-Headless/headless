@@ -12,14 +12,16 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\ViewHelpers;
 
 use LogicException;
-use Psr\Http\Message\RequestInterface;
 use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\SecurityAspect;
+use TYPO3\CMS\Core\Crypto\HashAlgo;
 use TYPO3\CMS\Core\Security\RequestToken;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
+use TYPO3\CMS\Extbase\Mvc\RequestInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy;
+use TYPO3\CMS\Extbase\Security\HashScope;
 use TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper;
 
 use function base64_encode;
@@ -27,9 +29,12 @@ use function is_int;
 use function is_object;
 use function is_string;
 use function json_encode;
+
 use function serialize;
 use function sprintf;
 use function strtolower;
+
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Form ViewHelper. Generates a :html:`<form>` Tag.
@@ -64,8 +69,6 @@ use function strtolower;
  *
  * This automatically inserts the value of ``{customer.name}`` inside the
  * textbox and adjusts the name of the textbox accordingly.
- *
- * @codeCoverageIgnore
  */
 class LoginFormViewHelper extends FormViewHelper
 {
@@ -125,7 +128,7 @@ class LoginFormViewHelper extends FormViewHelper
         $this->removeFormFieldNamesFromViewHelperVariableContainer();
         $this->removeCheckboxFieldNamesFromViewHelperVariableContainer();
 
-        return json_encode($this->data);
+        return json_encode($this->data, JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -168,29 +171,31 @@ class LoginFormViewHelper extends FormViewHelper
         ];
 
         $this->addHiddenField(
-            '__referrer[@extension]',
+            $this->prefixFieldName('__referrer[@extension]'),
             $extensionName
         );
         $this->addHiddenField(
-            '__referrer[@controller]',
+            $this->prefixFieldName('__referrer[@controller]'),
             $controllerName
         );
         $this->addHiddenField(
-            '__referrer[@action]',
+            $this->prefixFieldName('__referrer[@action]'),
             $actionName
         );
         $this->addHiddenField(
-            '__referrer[arguments]',
+            $this->prefixFieldName('__referrer[arguments]'),
             $this->hashService->appendHmac(
                 base64_encode(serialize($request->getArguments())),
-                class_exists(\TYPO3\CMS\Extbase\Security\HashScope::class) ? \TYPO3\CMS\Extbase\Security\HashScope::class::ReferringArguments->prefix() : ''
+                HashScope::ReferringArguments->prefix(),
+                HashAlgo::SHA3_256
             )
         );
         $this->addHiddenField(
-            '__referrer[@request]',
+            $this->prefixFieldName('__referrer[@request]'),
             $this->hashService->appendHmac(
-                json_encode($actionRequest),
-                class_exists(\TYPO3\CMS\Extbase\Security\HashScope::class) ? \TYPO3\CMS\Extbase\Security\HashScope::class::ReferringRequest->prefix() : ''
+                json_encode($actionRequest, JSON_THROW_ON_ERROR),
+                HashScope::ReferringRequest->prefix(),
+                HashAlgo::SHA3_256
             )
         );
 
@@ -235,6 +240,8 @@ class LoginFormViewHelper extends FormViewHelper
         $this->registerFieldNameForFormTokenGeneration($name);
 
         $this->addHiddenField($name, $identifier);
+
+        return '';
     }
 
     /**

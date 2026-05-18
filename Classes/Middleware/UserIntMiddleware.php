@@ -11,30 +11,39 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Middleware;
 
-use FriendsOfTYPO3\Headless\Seo\MetaHandler;
+use FriendsOfTYPO3\Headless\Json\JsonDecoderInterface;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
+use FriendsOfTYPO3\Headless\Seo\MetaHandlerInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
+use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+
 use TYPO3\CMS\Core\Http\Stream;
 
+use function is_array;
 use function json_decode;
+
+use const JSON_THROW_ON_ERROR;
 
 class UserIntMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private readonly HeadlessUserInt $headlessUserInt,
         private readonly HeadlessModeInterface $headlessMode,
-        private readonly MetaHandler $metaHandler
+        private readonly MetaHandlerInterface $metaHandler,
+        private readonly JsonEncoderInterface $jsonEncoder,
+        private readonly JsonDecoderInterface $jsonDecoder,
     ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = $handler->handle($request);
 
-        if (!$this->headlessMode->withRequest($request)->isEnabled()) {
+        if (!$this->headlessMode->isEnabledFor($request)) {
             return $response;
         }
 
@@ -45,14 +54,19 @@ class UserIntMiddleware implements MiddlewareInterface
         }
 
         $jsonContent = $this->headlessUserInt->unwrap($jsonContent);
-        $responseBody = json_decode($jsonContent, true);
 
-        if (($responseBody['seo']['title'] ?? null) !== null) {
+        try {
+            $responseBody = json_decode($jsonContent, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            $responseBody = null;
+        }
+
+        if (is_array($responseBody) && ($responseBody['seo']['title'] ?? null) !== null) {
             $responseBody = $this->metaHandler->process(
                 $request,
-                $responseBody
+                $this->jsonDecoder->decode($responseBody)
             );
-            $jsonContent = json_encode($responseBody);
+            $jsonContent = $this->jsonEncoder->encode($responseBody);
         }
 
         $stream = new Stream('php://temp', 'r+');

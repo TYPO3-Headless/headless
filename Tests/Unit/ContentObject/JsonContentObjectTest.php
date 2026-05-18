@@ -18,10 +18,10 @@ use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
 use FriendsOfTYPO3\Headless\Json\JsonDecoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use ReflectionProperty;
 use stdClass;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -49,12 +49,10 @@ use TYPO3\CMS\Frontend\ContentObject\UserContentObject;
 use TYPO3\CMS\Frontend\ContentObject\UserInternalContentObject;
 use TYPO3\CMS\Frontend\DataProcessing\DataProcessorRegistry;
 
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
-
 use function json_encode;
 use function md5;
 
-class JsonContentObjectTest extends UnitTestCase
+class JsonContentObjectTest extends HeadlessUnitTestCase
 {
     private JsonContentObject $contentObject;
 
@@ -226,9 +224,4 @@ class JsonContentObjectTest extends UnitTestCase
         ];
     }
 
-    protected function tearDown(): void
-    {
-        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
-        parent::tearDown();
-    }
 }

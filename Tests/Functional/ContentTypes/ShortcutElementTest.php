@@ -21,7 +21,7 @@ class ShortcutElementTest extends BaseContentTypeTesting
             new InternalRequest('https://website.local/')
         );
 
-        self::assertEquals(200, $response->getStatusCode());
+        self::assertSame(200, $response->getStatusCode());
 
         $fullTree = json_decode((string)$response->getBody(), true);
 
@@ -29,17 +29,17 @@ class ShortcutElementTest extends BaseContentTypeTesting
 
         $this->checkDefaultContentFields($contentElement, 9, 1, 'shortcut', 0);
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
-        self::assertFalse(isset($contentElement['content']['header']));
-        self::assertFalse(isset($contentElement['content']['bodytext']));
-        self::assertTrue(isset($contentElement['content']['shortcut']));
+        self::assertArrayNotHasKey('header', $contentElement['content']);
+        self::assertArrayNotHasKey('bodytext', $contentElement['content']);
+        self::assertArrayHasKey('shortcut', $contentElement['content']);
         self::assertCount(2, $contentElement['content']['shortcut']);
 
         // element at pos 0 is our TextMediaElement
         $this->checkDefaultContentFields($contentElement['content']['shortcut'][0], 2, 1, 'textmedia', 1);
         $this->checkAppearanceFields($contentElement['content']['shortcut'][0]);
         $this->checkHeaderFields($contentElement['content']['shortcut'][0]);
-        self::assertFalse(isset($contentElement['content']['shortcut'][0]['headerLink']));
-        self::assertFalse(isset($contentElement['content']['shortcut'][0]['bodytext']));
+        self::assertArrayNotHasKey('headerLink', $contentElement['content']['shortcut'][0]);
+        self::assertArrayNotHasKey('bodytext', $contentElement['content']['shortcut'][0]);
 
         // element at pos 1 is our TextElement
         $this->checkDefaultContentFields($contentElement['content']['shortcut'][1], 1, 1, 'text', 0, 'SysCategory1Title,SysCategory2Title');

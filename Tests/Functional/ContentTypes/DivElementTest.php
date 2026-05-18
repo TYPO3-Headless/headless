@@ -21,7 +21,7 @@ class DivElementTest extends BaseContentTypeTesting
             new InternalRequest('https://website.local/')
         );
 
-        self::assertEquals(200, $response->getStatusCode());
+        self::assertSame(200, $response->getStatusCode());
 
         $fullTree = json_decode((string)$response->getBody(), true);
 
@@ -30,7 +30,7 @@ class DivElementTest extends BaseContentTypeTesting
         $this->checkDefaultContentFields($contentElement, 5, 1, 'div', 0);
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         self::assertEquals('Header', $contentElement['content']['header']);
-        self::assertFalse(isset($contentElement['content']['subheader']));
-        self::assertFalse(isset($contentElement['content']['bodytext']));
+        self::assertArrayNotHasKey('subheader', $contentElement['content']);
+        self::assertArrayNotHasKey('bodytext', $contentElement['content']);
     }
 }

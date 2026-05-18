@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
 use TYPO3\CMS\Core\Utility\ArrayUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 use function is_array;
@@ -61,7 +62,7 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
     use DataProcessingTrait;
 
     /**
-     * @inheritDoc
+     * @var array<int, string>
      */
     public array $allowedConfigurationKeys = [
         'cache_period',
@@ -112,7 +113,7 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
     ];
 
     /**
-     * @inheritDoc
+     * @var array<int, string>
      */
     public array $removeConfigurationKeysForHmenu = [
         'levels',
@@ -155,7 +156,10 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
     }
 
     /**
-     * @inheritDoc
+     * @param array<string, mixed> $contentObjectConfiguration
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
      */
     public function process(
         ContentObjectRenderer $cObj,
@@ -181,15 +185,24 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
         return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
     }
 
+    /**
+     * @param array<string, mixed> $processorConfiguration
+     * @return array<int, string>
+     */
     protected function getAdditionalFields(array $processorConfiguration): array
     {
-        $additionalFields = $processorConfiguration['additionalFields'] ?? '';
+        $additionalFields = (string)($processorConfiguration['additionalFields'] ?? '');
         if ($additionalFields === '') {
             return [];
         }
-        return array_map('trim', explode(',', $additionalFields));
+        return GeneralUtility::trimExplode(',', $additionalFields, true);
     }
 
+    /**
+     * @param array<int|string, array<string, mixed>> $menuItems
+     * @param array<int, string> $additionalFields
+     * @return array<int|string, array<string, mixed>>
+     */
     protected function addAdditionalFieldsToMenuItems(array $menuItems, array $additionalFields): array
     {
         foreach ($menuItems as $key => $item) {

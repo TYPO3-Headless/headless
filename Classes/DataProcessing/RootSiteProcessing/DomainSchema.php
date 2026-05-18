@@ -23,8 +23,6 @@ class DomainSchema implements SiteSchemaInterface
 {
     /**
      * @codeCoverageIgnore
-     * @param HeadlessFrontendUrlInterface|null $urlUtility
-     * @param ContentDataProcessor|null $contentObjectRenderer
      */
     public function __construct(
         protected HeadlessFrontendUrlInterface $urlUtility,
@@ -43,9 +41,10 @@ class DomainSchema implements SiteSchemaInterface
         $result = [];
 
         foreach ($provider->getSites() as $site) {
+            $urlUtility = $this->urlUtility->withSite($site);
             $protocol = $site->getBase()->getScheme() . '://';
             $baseUrl = $protocol . $site->getBase()->getHost();
-            $url = $this->urlUtility->getFrontendUrlForPage($baseUrl, $site->getRootPageId());
+            $url = $urlUtility->getFrontendUrlForPage($baseUrl, $site->getRootPageId());
 
             $locales = [];
 
@@ -57,7 +56,7 @@ class DomainSchema implements SiteSchemaInterface
                 'name' => str_replace($protocol, '', $url),
                 'baseURL' => $url,
                 'api' => [
-                    'baseURL' => $this->urlUtility->getProxyUrl(),
+                    'baseURL' => $urlUtility->getProxyUrl(),
                 ],
                 'i18n' => [
                     'locales' => $locales,

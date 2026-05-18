@@ -21,7 +21,7 @@ class HtmlElementTest extends BaseContentTypeTesting
             new InternalRequest('https://website.local/')
         );
 
-        self::assertEquals(200, $response->getStatusCode());
+        self::assertSame(200, $response->getStatusCode());
 
         $fullTree = json_decode((string)$response->getBody(), true);
 
@@ -29,7 +29,7 @@ class HtmlElementTest extends BaseContentTypeTesting
 
         $this->checkDefaultContentFields($contentElement, 4, 1, 'html', 0);
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
-        self::assertFalse(isset($contentElement['content']['subheader']));
+        self::assertArrayNotHasKey('subheader', $contentElement['content']);
 
         // typolink parser was NOT called on bodytext
         self::assertEquals('<a href="t3://page?uid=2 _blank LinkClass LinkTitle parameter=999">Link</a>', $contentElement['content']['bodytext']);

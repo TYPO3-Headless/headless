@@ -27,25 +27,17 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function parse_str;
-use function strpos;
+use function str_contains;
 
 class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private TypoLinkCodecService $typoLinkCodecService;
-    private LinkService $linkService;
-    private HeadlessFrontendUrlInterface $urlUtility;
-
     public function __construct(
-        TypoLinkCodecService $typoLinkCodecService,
-        LinkService $linkService,
-        HeadlessFrontendUrlInterface $urlUtility
-    ) {
-        $this->typoLinkCodecService = $typoLinkCodecService;
-        $this->linkService = $linkService;
-        $this->urlUtility = $urlUtility;
-    }
+        private readonly TypoLinkCodecService $typoLinkCodecService,
+        private readonly LinkService $linkService,
+        private readonly HeadlessFrontendUrlInterface $urlUtility,
+    ) {}
 
     public function __invoke(RedirectUrlEvent $event): void
     {
@@ -61,16 +53,21 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
         );
         $redirectTarget = $linkParameterParts['url'] ?? '';
         $linkDetails = $this->resolveLinkDetailsFromLinkTarget($redirectTarget);
+        $additionalParams = (string)($linkParameterParts['additionalParams'] ?? '');
 
-        if (($linkDetails['type'] === LinkService::TYPE_PAGE) &&
-            strpos($linkParameterParts['additionalParams'], '[action]=') > 0 &&
-            strpos($linkParameterParts['additionalParams'], '[controller]=') > 0) {
+        if (($linkDetails['type'] ?? null) === LinkService::TYPE_PAGE &&
+            str_contains($additionalParams, '[action]=') &&
+            str_contains($additionalParams, '[controller]=')) {
             try {
                 $site = $request->getAttribute('site');
-                parse_str($linkParameterParts['url'], $typolinkData);
-                parse_str($linkParameterParts['additionalParams'], $params);
+                $urlQuery = parse_url((string)($linkParameterParts['url'] ?? ''), PHP_URL_QUERY) ?? '';
+                parse_str($urlQuery, $typolinkData);
+                parse_str((string)$linkParameterParts['additionalParams'], $params);
 
-                $languageId = isset($typolinkData['L']) ? (int)$typolinkData['L'] : 0;
+                $languageId = (int)($typolinkData['L']
+                    ?? $typolinkData['_language']
+                    ?? $linkDetails['_language']
+                    ?? 0);
 
                 if ($languageId > 0) {
                     $language = $site->getLanguageById($languageId);
@@ -97,7 +94,7 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
      * @todo this metod is not fully utilized, author should take a look at it
      * @codeCoverageIgnore
      *
-     * @return array
+     * @return array<string, mixed>
      */
     protected function resolveLinkDetailsFromLinkTarget(string $redirectTarget): array
     {
@@ -110,16 +107,12 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
                 case LinkService::TYPE_FILE:
                     /** @var File $file */
                     $file = $linkDetails['file'];
-                    if ($file instanceof File) {
-                        $linkDetails['url'] = $file->getPublicUrl();
-                    }
+                    $linkDetails['url'] = $file->getPublicUrl();
                     break;
                 case LinkService::TYPE_FOLDER:
                     /** @var Folder $folder */
                     $folder = $linkDetails['folder'];
-                    if ($folder instanceof Folder) {
-                        $linkDetails['url'] = $folder->getPublicUrl();
-                    }
+                    $linkDetails['url'] = $folder->getPublicUrl();
                     break;
                 default:
                     // we have to return the link details without having a "URL" parameter
@@ -141,7 +134,7 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
     /**
      * @codeCoverageIgnore
      *
-     * @param array $context
+     * @param array<string, mixed> $context
      */
     protected function logError(string $message, array $context): void
     {

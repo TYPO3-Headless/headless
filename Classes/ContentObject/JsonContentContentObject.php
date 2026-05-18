@@ -151,7 +151,7 @@ class JsonContentContentObject extends ContentContentObject
     /**
      * @param array<string, mixed> $contentElements
      * @param array<string, mixed> $conf
-     * @return array<string,<array<int, mixed>>
+     * @return array<string, array<int, mixed>>
      */
     protected function groupContentElementsByColPos(array $contentElements, array $conf): array
     {
@@ -168,11 +168,12 @@ class JsonContentContentObject extends ContentContentObject
                 $element = $this->headlessUserInt->wrap($element);
             }
 
-            $element = json_decode($element, true);
+            $decoded = json_decode($element, true);
 
-            if ($element === []) {
+            if (!is_array($decoded) || $decoded === []) {
                 continue;
             }
+            $element = $decoded;
 
             $colPos = $this->getColPosFromElement($groupingEnabled, $element);
 
@@ -184,11 +185,14 @@ class JsonContentContentObject extends ContentContentObject
         }
 
         if ($groupingEnabled && $this->isSortByBackendLayoutEnabled($conf)) {
-            $backendLayout = $this->backendLayoutView->getSelectedBackendLayout($this->request->getAttribute('routing')->getPageId());
+            $routing = $this->request->getAttribute('routing');
+            $backendLayout = $routing !== null
+                ? $this->backendLayoutView->getSelectedBackendLayout($routing->getPageId())
+                : null;
 
             $sorted = [];
             foreach ($backendLayout['__colPosList'] ?? [] as $value) {
-                $sorted['colPos' . $value] = $data['colPos' . $value];
+                $sorted['colPos' . $value] = $data['colPos' . $value] ?? [];
             }
 
             $data = $sorted;
@@ -199,6 +203,9 @@ class JsonContentContentObject extends ContentContentObject
         return $data;
     }
 
+    /**
+     * @var array<string, int>
+     */
     private array $recordRegister = [];
 
     /**
@@ -315,21 +322,33 @@ class JsonContentContentObject extends ContentContentObject
         return $theValue;
     }
 
+    /**
+     * @param array<string, mixed> $conf
+     */
     private function isSortByBackendLayoutEnabled(array $conf): bool
     {
         return isset($conf['sortByBackendLayout']) && (int)$conf['sortByBackendLayout'] === 1;
     }
 
+    /**
+     * @param array<string, mixed> $conf
+     */
     private function isColPolsGroupingEnabled(array $conf): bool
     {
         return !isset($conf['doNotGroupByColPos']) || (int)$conf['doNotGroupByColPos'] === 0;
     }
 
+    /**
+     * @param array<string, mixed> $conf
+     */
     private function returnSingleRowEnabled(array $conf): bool
     {
         return isset($conf['returnSingleRow']) && (int)$conf['returnSingleRow'] === 1;
     }
 
+    /**
+     * @param array<string, mixed> $element
+     */
     private function getColPosFromElement(bool $groupingEnabled, array $element): int
     {
         if ($groupingEnabled && !array_key_exists('colPos', $element)) {

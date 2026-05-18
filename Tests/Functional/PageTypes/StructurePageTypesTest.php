@@ -21,12 +21,12 @@ class StructurePageTypesTest extends BasePageTypesHeadlessTesting
             new InternalRequest('https://website.local/?type=834')
         );
 
-        self::assertEquals(200, $response->getStatusCode());
+        self::assertSame(200, $response->getStatusCode());
 
         $pageTree = json_decode((string)$response->getBody(), true);
-        self::assertTrue(isset($pageTree['navigation']));
+        self::assertArrayHasKey('navigation', $pageTree);
         self::assertCount(1, $pageTree['navigation']);
-        self::assertTrue(isset($pageTree['navigation'][0]));
+        self::assertArrayHasKey(0, $pageTree['navigation']);
         self::assertCount(5, $pageTree['navigation'][0]['children']);
         self::assertCount(1, $pageTree['navigation'][0]['children'][0]['children']);
         self::assertCount(1, $pageTree['navigation'][0]['children'][2]['children']);

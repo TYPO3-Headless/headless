@@ -15,22 +15,20 @@ use FriendsOfTYPO3\Headless\Event\Listener\AfterCacheableContentIsGeneratedListe
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Seo\MetaHandler;
 use FriendsOfTYPO3\Headless\Seo\MetaHandlerInterface;
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionProperty;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
 use TYPO3\CMS\Core\PageTitle\PageTitleProviderManager;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_encode;
 
-class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
+class AfterCacheableContentIsGeneratedListenerTest extends HeadlessUnitTestCase
 {
     protected bool $resetSingletonInstances = true;
 
@@ -220,9 +218,4 @@ class AfterCacheableContentIsGeneratedListenerTest extends UnitTestCase
         ]), $event->getContent());
     }
 
-    protected function tearDown(): void
-    {
-        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
-        parent::tearDown();
-    }
 }

@@ -21,15 +21,10 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 
 class HeadlessModeSetter implements MiddlewareInterface
 {
-    public function __construct() {}
-
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $mode = HeadlessModeInterface::NONE;
 
-        /**
-         * @var Site $site
-         */
         $site = $request->getAttribute('site');
         if ($site instanceof Site) {
             $mode = (int)($site->getConfiguration()['headless'] ?? HeadlessModeInterface::NONE);

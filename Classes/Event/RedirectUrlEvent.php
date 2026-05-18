@@ -79,6 +79,9 @@ class RedirectUrlEvent implements StoppableEventInterface
         return $this->originalTargetUrl;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getRedirectRecord(): array
     {
         return $this->redirectRecord;

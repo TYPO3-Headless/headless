@@ -21,6 +21,9 @@ abstract class AbstractFormDefinitionDecorator implements DefinitionDecoratorInt
     protected array $formStatus;
     protected string $formId = '';
 
+    /**
+     * @param array<string, mixed> $formStatus
+     */
     public function __construct(array $formStatus = [])
     {
         $this->formStatus = $formStatus;

@@ -22,7 +22,7 @@ use function trim;
 class SiteSchema implements SiteSchemaInterface
 {
     public function __construct(
-        protected HeadlessFrontendUrlInterface $urlUtitlity,
+        protected HeadlessFrontendUrlInterface $urlUtility,
         protected ContentDataProcessor $contentDataProcessor
     ) {}
 
@@ -49,7 +49,7 @@ class SiteSchema implements SiteSchemaInterface
             $active = 0;
             $spacer = 0;
             $baseUrl = $site->getBase()->getScheme() . '://' . $site->getBase()->getHost();
-            $url = $this->urlUtitlity->getFrontendUrlForPage($baseUrl, $site->getRootPageId());
+            $url = $this->urlUtility->getFrontendUrlForPage($baseUrl, $site->getRootPageId());
 
             if ($provider->getCurrentRootPage() === $site) {
                 $active = 1;
@@ -93,9 +93,9 @@ class SiteSchema implements SiteSchemaInterface
      * @return array<string, mixed>
      */
     protected function processAdditionalDataProcessors(
-        $page,
+        array $page,
         ContentObjectRenderer $cObj,
-        $processorConfiguration
+        array $processorConfiguration
     ): array {
         $cObj->start($page, 'pages');
         return $this->contentDataProcessor->process($cObj, $processorConfiguration, $page);

@@ -18,52 +18,68 @@ use function is_string;
 use function json_decode;
 use function trim;
 
+use const PHP_VERSION_ID;
+
 class JsonDecoder implements JsonDecoderInterface
 {
     /**
-     * @inheritDoc
+     * @param array<mixed> $data
+     * @return array<mixed>
      */
     public function decode(array $data): array
     {
-        $json = [];
-
         foreach ($data as $key => $singleData) {
             if (is_string($singleData)) {
-                if ($this->isJson($singleData)) {
-                    $json[$key] = json_decode($singleData);
-                } else {
-                    $json[$key] = $singleData;
+                $decoded = $this->tryDecodeJsonString($singleData);
+                if ($decoded !== null) {
+                    $data[$key] = $decoded;
                 }
             } elseif (is_array($singleData)) {
-                $json[$key] = $this->decode($singleData);
-            } else {
-                $json[$key] = $singleData;
+                $data[$key] = $this->decode($singleData);
             }
         }
-        return $json;
+        return $data;
+    }
+
+    public function isJson(mixed $possibleJson): bool
+    {
+        if (!is_string($possibleJson)) {
+            return false;
+        }
+
+        return $this->tryDecodeJsonString($possibleJson) !== null;
     }
 
     /**
-     * @param mixed $possibleJson
+     * @return array<mixed>|object|null
      */
-    public function isJson($possibleJson): bool
+    private function tryDecodeJsonString(string $value): array|object|null
     {
-        if (is_numeric($possibleJson)) {
-            return false;
+        if (is_numeric($value)) {
+            return null;
         }
 
-        $possibleJson = trim((string)$possibleJson);
-
-        if ($possibleJson === '') {
-            return false;
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return null;
         }
 
-        $data = json_decode($possibleJson);
-
-        if (!is_object($data) && !is_array($data)) {
-            return false;
+        $first = $trimmed[0];
+        $last = $trimmed[-1];
+        if (!(($first === '{' && $last === '}') || ($first === '[' && $last === ']'))) {
+            return null;
         }
 
-        return $data !== null;
+        if (PHP_VERSION_ID >= 80300 && !json_validate($trimmed)) {
+            return null;
+        }
+
+        $decoded = json_decode($trimmed);
+
+        if (!is_object($decoded) && !is_array($decoded)) {
+            return null;
+        }
+
+        return $decoded;
     }
 }

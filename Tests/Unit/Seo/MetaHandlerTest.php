@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Seo;
 
 use FriendsOfTYPO3\Headless\Seo\MetaHandler;
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionProperty;
@@ -28,9 +29,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent;
 use TYPO3\CMS\Frontend\Page\PageInformation;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-class MetaHandlerTest extends UnitTestCase
+class MetaHandlerTest extends HeadlessUnitTestCase
 {
     protected bool $resetSingletonInstances = true;
 
@@ -38,12 +38,6 @@ class MetaHandlerTest extends UnitTestCase
     {
         parent::setUp();
         GeneralUtility::setContainer(new Container());
-    }
-
-    protected function tearDown(): void
-    {
-        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
-        parent::tearDown();
     }
 
     public function testProcessBuildsSeoBlock(): void
@@ -136,6 +130,31 @@ class MetaHandlerTest extends UnitTestCase
         $result = $handler->process($request, ['appearance' => ['layout' => 'default']]);
 
         self::assertSame(['class' => 'custom'], $result['seo']['bodyAttrs']);
+    }
+
+    public function testProcessReturnsContentUnchangedWhenPageInformationMissing(): void
+    {
+        $registry = $this->createMock(MetaTagManagerRegistry::class);
+        $registry->method('getAllManagers')->willReturn([]);
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->method('dispatch')->willReturnArgument(0);
+
+        $titleProvider = $this->createMock(PageTitleProviderManager::class);
+
+        $handler = new MetaHandler(
+            $registry,
+            $eventDispatcher,
+            $titleProvider,
+            new \TYPO3\CMS\Core\TypoScript\TypoScriptService()
+        );
+
+        $request = $this->createMock(ServerRequestInterface::class);
+        $request->method('getAttribute')->willReturn(null);
+
+        $content = ['appearance' => ['layout' => 'default'], 'other' => 'kept'];
+
+        self::assertSame($content, $handler->process($request, $content));
     }
 
     private function buildRequest(array $typoScriptSetup = []): ServerRequestInterface

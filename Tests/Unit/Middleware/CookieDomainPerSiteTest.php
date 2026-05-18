@@ -12,14 +12,13 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite;
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Log\LoggerInterface;
-use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
-use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\NormalizedParams;
@@ -28,9 +27,8 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Http\RequestHandler;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-class CookieDomainPerSiteTest extends UnitTestCase
+class CookieDomainPerSiteTest extends HeadlessUnitTestCase
 {
     protected function setUp(): void
     {
@@ -39,12 +37,6 @@ class CookieDomainPerSiteTest extends UnitTestCase
         $container = new Container();
         $container->set(HeadlessModeInterface::class, new HeadlessMode());
         GeneralUtility::setContainer($container);
-    }
-
-    protected function tearDown(): void
-    {
-        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
-        parent::tearDown();
     }
 
     #[Test]
@@ -83,12 +75,12 @@ class CookieDomainPerSiteTest extends UnitTestCase
             $site,
         ]);
 
-        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, new HeadlessMode());
+        $urlUtility = new UrlUtility($resolver, $siteFinder, new HeadlessMode());
         $urlUtility = $urlUtility->withSite($site);
 
         $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->createMock(LoggerInterface::class));
 
-        $request = new ServerRequest('https://test-backend-api.tld');
+        $request = new ServerRequest('https://test-backend-api.tld', 'GET', null, [], ['HTTP_HOST' => 'test-backend-api.tld', 'HTTPS' => 'on']);
         $request = $request->withAttribute('normalizedParams', NormalizedParams::createFromRequest($request));
 
         $response = new JsonResponse([]);
@@ -141,24 +133,31 @@ class CookieDomainPerSiteTest extends UnitTestCase
             $site,
         ]);
 
-        $urlUtility = new UrlUtility(new Features(), $resolver, $siteFinder, new HeadlessMode());
+        $urlUtility = new UrlUtility($resolver, $siteFinder, new HeadlessMode());
         $urlUtility = $urlUtility->withSite($site);
 
         $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->createMock(LoggerInterface::class));
 
-        $request = new ServerRequest('https://test-backend-api.tld');
+        $request = new ServerRequest('https://test-backend-api.tld', 'GET', null, [], ['HTTP_HOST' => 'test-backend-api.tld', 'HTTPS' => 'on']);
         $request = $request->withAttribute('normalizedParams', NormalizedParams::createFromRequest($request));
 
         $response = new JsonResponse([]);
 
-        $middleware->process(
-            $request,
-            $this->getMockHandlerWithResponse($response)
-        );
+        $before = $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] ?? null;
+        $observedCookieDomain = null;
+        $handler = $this->createPartialMock(RequestHandler::class, ['handle']);
+        $handler->method('handle')->willReturnCallback(function () use (&$observedCookieDomain, $response) {
+            $observedCookieDomain = $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] ?? null;
+            return $response;
+        });
 
-        self::assertEquals(
-            '.test-backend-api.tld',
-            $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'],
+        $middleware->process($request, $handler);
+
+        self::assertSame('.test-backend-api.tld', $observedCookieDomain);
+        self::assertSame(
+            $before,
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] ?? null,
+            'cookieDomain must not persist past the middleware call',
         );
     }
 

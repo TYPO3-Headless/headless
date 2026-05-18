@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
-use FriendsOfTYPO3\Headless\Utility\FileUtility;
+use FriendsOfTYPO3\Headless\Utility\FileUtilityInterface;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
@@ -33,19 +33,27 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
     protected $fileReferenceCache = [];
 
     /**
-     * @var array<int, array<string, string|array>>
+     * @var array<int, array{width:int, height:int}>
+     */
+    private array $croppedDimensionCache = [];
+
+    /**
+     * @var array<int, array<string, string|array<mixed>>>
      */
     protected $fileObjects = [];
 
     protected ProcessingConfiguration $processorConfigurationObject;
 
     public function __construct(
-        private readonly FileUtility $fileUtility,
+        private readonly FileUtilityInterface $fileUtility,
         private readonly ImageService $imageService,
     ) {}
 
     /**
-     * @inheritDoc
+     * @param array<string, mixed> $contentObjectConfiguration
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
      */
     public function process(
         ContentObjectRenderer $cObj,
@@ -71,7 +79,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      * replaced only calls to $this->getCroppedDimensionalPropertyFromProcessedFile()
      * because of already processed files by FilesProcessor
      */
-    protected function calculateMediaWidthsAndHeights()
+    protected function calculateMediaWidthsAndHeights(): void
     {
         $columnSpacingTotal = ($this->galleryData['count']['columns'] - 1) * $this->columnSpacing;
 
@@ -185,9 +193,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
     /**
      * Replaces original method (because of already processed files)
      *
-     * @param array $processedFile
-     * @param string $property
-     * @return int
+     * @param array<string, mixed> $processedFile
      */
     private function getCroppedDimensionalPropertyFromProcessedFile(array $processedFile, string $property): int
     {
@@ -197,19 +203,29 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
             }
 
             $croppingConfiguration = $processedFile['properties']['crop'];
+            $uid = (int)$processedFile['properties']['uidLocal'];
         } else {
             if (empty($processedFile['crop'])) {
                 return (int)($this->processorConfigurationObject->flattenProperties ? ($processedFile[$property] ?? 0) : ($processedFile['dimensions'][$property] ?? 0));
             }
 
             $croppingConfiguration = $processedFile['crop'];
+            $uid = (int)$processedFile['uidLocal'];
         }
 
-        $cropVariantCollection = CropVariantCollection::create((string)$croppingConfiguration);
+        if (!isset($this->croppedDimensionCache[$uid])) {
+            $cropArea = CropVariantCollection::create((string)$croppingConfiguration)
+                ->getCropArea($this->cropVariant)
+                ->makeAbsoluteBasedOnFile($this->createFileObject($processedFile))
+                ->asArray();
 
-        return (int)$cropVariantCollection->getCropArea($this->cropVariant)
-            ->makeAbsoluteBasedOnFile($this->createFileObject($processedFile))
-            ->asArray()[$property];
+            $this->croppedDimensionCache[$uid] = [
+                'width' => (int)($cropArea['width'] ?? 0),
+                'height' => (int)($cropArea['height'] ?? 0),
+            ];
+        }
+
+        return $this->croppedDimensionCache[$uid][$property] ?? 0;
     }
 
     /**
@@ -217,7 +233,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      *
      * Make an array for rows, columns and configuration
      */
-    protected function prepareGalleryData()
+    protected function prepareGalleryData(): void
     {
         for ($row = 1; $row <= $this->galleryData['count']['rows']; $row++) {
             for ($column = 1; $column <= $this->galleryData['count']['columns']; $column++) {
@@ -250,9 +266,9 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
     }
 
     /**
-     * @return FileUtility
+     * @return FileUtilityInterface
      */
-    protected function getFileUtility(): FileUtility
+    protected function getFileUtility(): FileUtilityInterface
     {
         return $this->fileUtility;
     }
@@ -268,8 +284,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
     /**
      * small helper for handling cropping based on already processed file
      *
-     * @param array $processedFile
-     * @return FileInterface
+     * @param array<string, mixed> $processedFile
      */
     private function createFileObject(array $processedFile): FileInterface
     {

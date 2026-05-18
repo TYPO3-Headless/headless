@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FriendsOfTYPO3\Headless\Hooks;
+namespace FriendsOfTYPO3\Headless\Typolink;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -28,6 +28,8 @@ class FileOrFolderLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\FileOrFolderL
     }
 
     /**
+     * @param array<string, mixed> $linkDetails
+     * @param array<string, mixed> $configuration
      * @throws UnableToLinkException
      */
     public function buildLink(
@@ -36,7 +38,7 @@ class FileOrFolderLinkBuilder extends \TYPO3\CMS\Frontend\Typolink\FileOrFolderL
         ServerRequestInterface $request,
         string $linkText = '',
     ): LinkResultInterface {
-        if ($this->getHeadlessMode()->withRequest($request)->isEnabled()) {
+        if ($this->getHeadlessMode()->isEnabledFor($request)) {
             $configuration['forceAbsoluteUrl'] = 1;
         }
 

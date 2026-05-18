@@ -36,7 +36,7 @@ class SiteProvider implements SiteProviderInterface
      */
     private array $sites;
     /**
-     * @var array[]
+     * @var array<int, array<string, mixed>>
      */
     private array $pagesData;
     private Site $currentRootPage;
@@ -82,10 +82,8 @@ class SiteProvider implements SiteProviderInterface
             $sorting = GeneralUtility::makeInstance($customSorting, $sites, $pages, $sortingField);
             $sites = $sorting->sort();
         } else {
-            usort($sites, static function (Site $siteA, Site $siteB) use ($pages, $sortingField) {
-                // phpcs:ignore Generic.Files.LineLength
-                return (int)$pages[$siteA->getRootPageId()][$sortingField] >= (int)$pages[$siteB->getRootPageId()][$sortingField] ? 1 : -1;
-            });
+            usort($sites, static fn(Site $siteA, Site $siteB): int =>
+                (int)$pages[$siteA->getRootPageId()][$sortingField] <=> (int)$pages[$siteB->getRootPageId()][$sortingField]);
         }
 
         $this->sites = $sites;
@@ -104,7 +102,7 @@ class SiteProvider implements SiteProviderInterface
     }
 
     /**
-     * @return array<int, array>
+     * @return array<int, array<string, mixed>>
      */
     public function getPages(): array
     {
@@ -125,24 +123,12 @@ class SiteProvider implements SiteProviderInterface
      */
     private function filterSites(array $allowedSites = []): array
     {
-        $allSites = $this->siteFinder->getAllSites();
-
-        if (count($allowedSites) === 0) {
-            return array_filter($allSites, static function (Site $site) {
-                return $site->getConfiguration()['headless'] ?? false;
-            });
-        }
-
-        $sites = [];
-
-        foreach ($allSites as $site) {
-            if (in_array($site->getRootPageId(), $allowedSites, true) &&
-            $site->getConfiguration()['headless'] ?? false) {
-                $sites[] = $site;
-            }
-        }
-
-        return $sites;
+        return array_filter(
+            $this->siteFinder->getAllSites(),
+            static fn(Site $site): bool =>
+                ($site->getConfiguration()['headless'] ?? false)
+                && ($allowedSites === [] || in_array($site->getRootPageId(), $allowedSites, true))
+        );
     }
 
     /**
@@ -174,7 +160,7 @@ class SiteProvider implements SiteProviderInterface
      *
      * @param array<Site> $sites
      * @param array<string, mixed> $config
-     * @return array<int, array>
+     * @return array<int, array<string, mixed>>
      * @throws Exception
      */
     private function fetchPageData(array $sites, array $config = []): array

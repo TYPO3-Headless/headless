@@ -117,7 +117,7 @@ abstract class BaseHeadlessTesting extends FunctionalTestCase
         self::assertEquals($subheader, $contentElementContent['subheader'], 'subheader mismatch');
         self::assertEquals($headerLayout, $contentElementContent['headerLayout'], 'headerLayout mismatch');
         self::assertEquals($headerPosition, $contentElementContent['headerPosition'], 'headerPosition mismatch');
-        self::assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
+        self::assertArrayHasKey('headerLink', $contentElementContent, 'headerLink not set');
     }
 
     protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target)

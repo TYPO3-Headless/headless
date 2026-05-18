@@ -18,13 +18,23 @@ use TYPO3\CMS\Core\Configuration\Features;
 
 use function json_encode;
 
+use const JSON_HEX_AMP;
+use const JSON_HEX_APOS;
+use const JSON_PRETTY_PRINT;
 use const JSON_THROW_ON_ERROR;
 
 class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    public function __construct(private readonly Features $features) {}
+    private const DEFAULT_FLAGS = JSON_HEX_APOS | JSON_HEX_AMP | JSON_THROW_ON_ERROR;
+
+    private readonly bool $prettyPrint;
+
+    public function __construct(Features $features)
+    {
+        $this->prettyPrint = $features->isFeatureEnabled('headless.prettyPrint');
+    }
 
     /**
      * @inheritDoc
@@ -32,18 +42,16 @@ class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
     public function encode($data, int $options = 0): string
     {
         try {
-            if ($this->features->isFeatureEnabled('headless.prettyPrint') && !($options & JSON_PRETTY_PRINT)) {
-                $options |= JSON_PRETTY_PRINT;
-            }
+            $options |= self::DEFAULT_FLAGS;
 
-            if (!($options & JSON_THROW_ON_ERROR)) {
-                $options |= JSON_THROW_ON_ERROR;
+            if ($this->prettyPrint) {
+                $options |= JSON_PRETTY_PRINT;
             }
 
             return json_encode($data, $options);
         } catch (JsonException $e) {
             $this->logger->critical($e->getMessage());
-            return json_encode([]);
+            return json_encode([], self::DEFAULT_FLAGS);
         }
     }
 }

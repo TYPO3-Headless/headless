@@ -13,18 +13,17 @@ namespace FriendsOfTYPO3\Headless\Tests\Seo\MetaTag;
 
 use FriendsOfTYPO3\Headless\Seo\MetaTag\Html5MetaTagManager;
 use FriendsOfTYPO3\Headless\Seo\MetaTag\OpenGraphMetaTagManager;
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
-use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-class MetaTagTest extends UnitTestCase
+class MetaTagTest extends HeadlessUnitTestCase
 {
     protected bool $resetSingletonInstances = true;
 
@@ -71,6 +70,23 @@ class MetaTagTest extends UnitTestCase
         self::assertSame('[{"property":"og:image","content":"Powered by TYPO3"},{"property":"og:image:url","content":"https:\/\/example.com\/image.jpg"}]', $ogManager->renderAllProperties());
     }
 
+    public function testRenderHeadlessPropertyAsArrayReturnsRawStructure(): void
+    {
+        $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        GeneralUtility::setContainer($container);
+
+        $manager = new Html5MetaTagManager();
+        $manager->addProperty('generator', 'TYPO3 CMS x T3Headless', [], true, 'name');
+
+        $result = $manager->renderHeadlessPropertyAsArray('generator');
+
+        self::assertSame(
+            [['name' => 'generator', 'content' => 'TYPO3 CMS x T3Headless']],
+            $result
+        );
+    }
+
     public function testCustomContentAttribute(): void
     {
         $container = new Container();
@@ -92,9 +108,4 @@ class MetaTagTest extends UnitTestCase
         );
     }
 
-    protected function tearDown(): void
-    {
-        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
-        parent::tearDown();
-    }
 }

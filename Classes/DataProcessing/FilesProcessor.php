@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
-use FriendsOfTYPO3\Headless\Utility\FileUtility;
+use FriendsOfTYPO3\Headless\Utility\FileUtilityInterface;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -29,44 +29,37 @@ class FilesProcessor implements DataProcessorInterface
     use DataProcessingTrait;
 
     /**
-     * @var array
+     * @var array<string, string>
      */
-    public $defaults = [
+    public array $defaults = [
         'as' => 'media',
         'filesAs' => 'files',
     ];
 
-    public function __construct(private readonly FileUtility $fileUtility) {}
+    public function __construct(private readonly FileUtilityInterface $fileUtility) {}
+
+    protected ContentObjectRenderer $contentObjectRenderer;
 
     /**
-     * The content object renderer
-     *
-     * @var ContentObjectRenderer
+     * @var array<string, mixed>
      */
-    protected $contentObjectRenderer;
-
-    /**
-     * The processor configuration
-     *
-     * @var array
-     */
-    protected $processorConfiguration;
+    protected array $processorConfiguration = [];
 
     /**
      * The (filtered) media files to be used in the gallery
      *
      * @var FileInterface[]
      */
-    protected $fileObjects = [];
+    protected array $fileObjects = [];
 
     /**
      * Process data for a gallery, for instance the CType "textmedia"
      *
      * @param ContentObjectRenderer $cObj The content object renderer, which contains data of the content element
-     * @param array $contentObjectConfiguration The configuration of Content Object
-     * @param array $processorConfiguration The configuration of this processor
-     * @param array $processedData Key/value store of processed data (e.g. to be passed to a Fluid View)
-     * @return array the processed data as key/value store
+     * @param array<string, mixed> $contentObjectConfiguration The configuration of Content Object
+     * @param array<string, mixed> $processorConfiguration The configuration of this processor
+     * @param array<string, mixed> $processedData Key/value store of processed data (e.g. to be passed to a Fluid View)
+     * @return array<string, mixed> the processed data as key/value store
      */
     public function process(
         ContentObjectRenderer $cObj,
@@ -95,6 +88,11 @@ class FilesProcessor implements DataProcessorInterface
             $this->defaults['as']
         );
 
+        if (!$this->hasFileSources($processorConfiguration)) {
+            $processedData[$targetFieldName] = [];
+            return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
+        }
+
         $this->fileObjects = $this->fetchData();
         $processedData[$targetFieldName] = $this->processFiles($properties);
 
@@ -102,7 +100,20 @@ class FilesProcessor implements DataProcessorInterface
     }
 
     /**
-     * @return array
+     * @param array<string, mixed> $processorConfiguration
+     */
+    private function hasFileSources(array $processorConfiguration): bool
+    {
+        foreach (['references', 'references.', 'files', 'files.', 'collections', 'collections.', 'folders', 'folders.'] as $key) {
+            if (!empty($processorConfiguration[$key])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return array<int, FileInterface>
      */
     protected function fetchData(): array
     {
@@ -171,8 +182,8 @@ class FilesProcessor implements DataProcessorInterface
     }
 
     /**
-     * @param array $properties
-     * @return array|null
+     * @param array<string, mixed> $properties
+     * @return array<int|string, mixed>|null
      */
     protected function processFiles(array $properties = []): ?array
     {
@@ -198,7 +209,7 @@ class FilesProcessor implements DataProcessorInterface
         return $data;
     }
 
-    protected function getFileUtility(): FileUtility
+    protected function getFileUtility(): FileUtilityInterface
     {
         return $this->fileUtility;
     }

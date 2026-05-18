@@ -13,15 +13,14 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Event\Listener\RedirectUrlAdditionalParamsListener;
 use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\UriInterface;
-use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
-use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
@@ -32,9 +31,8 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
-class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
+class RedirectUrlAdditionalParamsListenerTest extends HeadlessUnitTestCase
 {
     public function testInvoke(): void
     {
@@ -246,12 +244,7 @@ class RedirectUrlAdditionalParamsListenerTest extends UnitTestCase
 
         $siteFinder->method('getSiteByPageId')->willReturn($site);
 
-        return new UrlUtility(new Features(), $resolver, $siteFinder, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
+        return new UrlUtility($resolver, $siteFinder, (new HeadlessMode())->withRequest((new ServerRequest())->withAttribute('headless', new Headless())));
     }
 
-    protected function tearDown(): void
-    {
-        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
-        parent::tearDown();
-    }
 }

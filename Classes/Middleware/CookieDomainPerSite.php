@@ -18,48 +18,62 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Http\NormalizedParams;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\SiteFinder;
+
+use function strtolower;
 
 class CookieDomainPerSite implements MiddlewareInterface
 {
-    private HeadlessFrontendUrlInterface $urlUtility;
-    private SiteFinder $siteFinder;
-    private LoggerInterface $logger;
-
     public function __construct(
-        HeadlessFrontendUrlInterface $urlUtility,
-        SiteFinder $siteFinder,
-        LoggerInterface $logger
-    ) {
-        $this->urlUtility = $urlUtility;
-        $this->siteFinder = $siteFinder;
-        $this->logger = $logger;
-    }
+        private readonly HeadlessFrontendUrlInterface $urlUtility,
+        private readonly SiteFinder $siteFinder,
+        private readonly LoggerInterface $logger,
+    ) {}
 
     public function process(
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface {
-        /** @var NormalizedParams $normalizedParams */
         $normalizedParams = $request->getAttribute('normalizedParams');
-        $requestHost = $normalizedParams->getHttpHost();
-        $allSites = $this->siteFinder->getAllSites();
+        if (!$normalizedParams instanceof NormalizedParams) {
+            return $handler->handle($request);
+        }
+        $requestHost = strtolower($normalizedParams->getHttpHost());
 
-        foreach ($allSites as $site) {
+        $cookieDomain = null;
+        foreach ($this->siteFinder->getAllSites() as $site) {
             $urlUtility = $this->urlUtility->withSite($site);
             $base = $urlUtility->resolveKey('base');
-            $cookieDomain = $urlUtility->resolveKey('cookieDomain');
 
-            if (str_contains($base, $requestHost) && $cookieDomain) {
-                $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] = $cookieDomain;
+            if ($base === '' || strtolower((new Uri($base))->getHost()) !== $requestHost) {
+                continue;
+            }
+
+            $resolved = $urlUtility->resolveKey('cookieDomain');
+            if ($resolved) {
+                $cookieDomain = $resolved;
                 break;
             }
         }
 
-        if (!$GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain']) {
-            $this->logger->warning('missing cookieDomain configuration');
+        if ($cookieDomain === null) {
+            if (!($GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] ?? '')) {
+                $this->logger->warning('missing cookieDomain configuration');
+            }
+            return $handler->handle($request);
         }
 
-        return $handler->handle($request);
+        $previous = $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] ?? null;
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] = $cookieDomain;
+        try {
+            return $handler->handle($request);
+        } finally {
+            if ($previous === null) {
+                unset($GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain']);
+            } else {
+                $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] = $previous;
+            }
+        }
     }
 }
