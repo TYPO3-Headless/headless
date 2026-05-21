@@ -43,8 +43,9 @@
     "seld/jsonlint": "^1.11",
     "symfony/yaml": "^6.1 || ^7.1",
     "typo3/cms-form": "^14.0",
-    "typo3/testing-framework": "^9.0",
-    "typo3/coding-standards": "^0.8"
+    "typo3/cms-workspaces": "^14.3",
+    "typo3/coding-standards": "^0.8",
+    "typo3/testing-framework": "^9.0"
   },
   "conflict": {
     "typo3/cms-core": "<14.0"
