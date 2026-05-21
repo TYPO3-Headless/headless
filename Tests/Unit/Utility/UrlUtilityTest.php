@@ -242,6 +242,7 @@ class UrlUtilityTest extends UnitTestCase
                 ],
             ],
         ]);
+        $site->getLanguages()->willReturn([]);
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);
@@ -269,6 +270,12 @@ class UrlUtilityTest extends UnitTestCase
         self::assertSame(
             'https://test-second-frontend.tld/test-page',
             $urlUtility->prepareRelativeUrlIfPossible('https://test-second-frontend.tld/test-page')
+        );
+
+        // do not touch already relative links
+        self::assertSame(
+            '/test-page',
+            $urlUtility->getFrontendUrlWithSite('/test-page', $site->reveal())
         );
 
         // test reversed = "Testing" condition
