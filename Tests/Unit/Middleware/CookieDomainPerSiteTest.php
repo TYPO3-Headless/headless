@@ -25,6 +25,7 @@ use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -76,6 +77,8 @@ class CookieDomainPerSiteTest extends UnitTestCase
                 ],
             ],
         ]);
+
+        $site->getBase()->willReturn(new Uri('https://www.typo3.org'));
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);
@@ -134,6 +137,8 @@ class CookieDomainPerSiteTest extends UnitTestCase
                 ],
             ],
         ]);
+
+        $site->getBase()->willReturn(new Uri('https://www.typo3.org'));
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);

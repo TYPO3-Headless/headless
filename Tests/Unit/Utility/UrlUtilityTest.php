@@ -188,6 +188,8 @@ class UrlUtilityTest extends UnitTestCase
             ],
         ]);
 
+        $site->getBase()->willReturn(new Uri('https://api.typo3.org'));
+
         $siteFinder = $this->createMock(SiteFinder::class);
 
         // local override
@@ -243,6 +245,7 @@ class UrlUtilityTest extends UnitTestCase
             ],
         ]);
         $site->getLanguages()->willReturn([]);
+        $site->getBase()->willReturn(new Uri('https://test-backend-api.tld'));
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);
@@ -276,6 +279,12 @@ class UrlUtilityTest extends UnitTestCase
         self::assertSame(
             '/test-page',
             $urlUtility->getFrontendUrlWithSite('/test-page', $site->reveal())
+        );
+
+        // do not touch external links
+        self::assertSame(
+            'https://typo3.org/headless',
+            $urlUtility->getFrontendUrlWithSite('https://typo3.org/headless', $site->reveal())
         );
 
         // test reversed = "Testing" condition
@@ -345,6 +354,8 @@ class UrlUtilityTest extends UnitTestCase
                 ],
             ],
         ]);
+
+        $site->getBase()->willReturn(new Uri('https://www.typo3.org'));
 
         $resolver = $this->prophesize(Resolver::class);
         $resolver->evaluate(Argument::containingString('Development'))->willReturn(true);
