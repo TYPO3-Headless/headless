@@ -93,10 +93,25 @@ class FilesProcessor implements DataProcessorInterface
             $this->defaults['as']
         );
 
+        if (!$this->hasFileSources($processorConfiguration)) {
+            $processedData[$targetFieldName] = [];
+            return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
+        }
+
         $this->fileObjects = $this->fetchData();
         $processedData[$targetFieldName] = $this->processFiles($properties);
 
         return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
+    }
+
+    private function hasFileSources(array $processorConfiguration): bool
+    {
+        foreach (['references', 'references.', 'files', 'files.', 'collections', 'collections.', 'folders', 'folders.'] as $key) {
+            if (!empty($processorConfiguration[$key])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

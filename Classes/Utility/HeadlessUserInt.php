@@ -71,7 +71,7 @@ class HeadlessUserInt
 
     protected function buildPattern(string $primary, string $nullable): string
     {
-        return self::$regexPatterns[$primary] ??= sprintf(
+        return self::$regexPatterns[$primary . '|' . $nullable] ??= sprintf(
             self::REGEX,
             preg_quote($nullable, '/'),
             preg_quote($primary, '/')
@@ -98,7 +98,8 @@ class HeadlessUserInt
                 return $rawContent;
             }
 
-            return json_encode($rawContent);
+            $encoded = json_encode($rawContent);
+            return $encoded !== false ? $encoded : 'null';
         }
 
         $jsonEncoded = json_encode($rawContent);

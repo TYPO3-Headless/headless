@@ -27,7 +27,8 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function parse_str;
-use function strpos;
+use function parse_url;
+use function str_contains;
 
 class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
 {
@@ -61,14 +62,16 @@ class RedirectUrlAdditionalParamsListener implements LoggerAwareInterface
         );
         $redirectTarget = $linkParameterParts['url'] ?? '';
         $linkDetails = $this->resolveLinkDetailsFromLinkTarget($redirectTarget);
+        $additionalParams = (string)($linkParameterParts['additionalParams'] ?? '');
 
-        if (($linkDetails['type'] === LinkService::TYPE_PAGE) &&
-            strpos($linkParameterParts['additionalParams'], '[action]=') > 0 &&
-            strpos($linkParameterParts['additionalParams'], '[controller]=') > 0) {
+        if (($linkDetails['type'] ?? null) === LinkService::TYPE_PAGE &&
+            str_contains($additionalParams, '[action]=') &&
+            str_contains($additionalParams, '[controller]=')) {
             try {
                 $site = $request->getAttribute('site');
-                parse_str($linkParameterParts['url'], $typolinkData);
-                parse_str($linkParameterParts['additionalParams'], $params);
+                $urlQuery = parse_url((string)($linkParameterParts['url'] ?? ''), PHP_URL_QUERY) ?? '';
+                parse_str($urlQuery, $typolinkData);
+                parse_str($additionalParams, $params);
 
                 $languageId = isset($typolinkData['L']) ? (int)$typolinkData['L'] : 0;
 
