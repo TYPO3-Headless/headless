@@ -27,6 +27,7 @@ use TYPO3\CMS\Extbase\Error\Error;
 use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 use function array_merge;
 use function array_pop;
@@ -35,8 +36,10 @@ use function class_exists;
 use function count;
 use function in_array;
 use function is_array;
+use function is_string;
 use function json_decode;
 use function serialize;
+use function str_contains;
 use function str_replace;
 
 /**
@@ -210,6 +213,12 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
             $formRuntime->getFormState() ? $formRuntime->getFormState()->getFormValues() : []
         );
 
+        // Resolve internal t3:// links in RTE-enabled label fields (e.g. Checkbox labels).
+        // TYPO3 v14 introduced native RTE support for form element labels; without this step,
+        // labels containing internal page links would be output as raw t3://page?uid=X URIs
+        // instead of resolved frontend URLs.
+        $formDefinition = $this->resolveRteLinksInFormDefinition($formDefinition);
+
         $formStatus['status'] = null;
         $formStatus['errors'] = null;
         $formStatus['actionAfterSuccess'] = $finisherResponse ? json_decode($finisherResponse) : null;
@@ -245,6 +254,68 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         $this->view->assign('formConfiguration', $definitionDecorator($formDefinition, $currentPageIndex));
 
         return $this->jsonResponse();
+    }
+
+    /**
+     * Walks the form definition and resolves any internal t3:// URIs in RTE-enabled label
+     * fields by passing them through lib.parseFunc_RTE — the same pipeline used for regular
+     * RTE body-text content elements.
+     *
+     * Only strings that actually contain a t3:// scheme are processed, so plain-text labels
+     * (the majority) incur no additional overhead.
+     *
+     * @param array<mixed> $formDefinition
+     * @return array<mixed>
+     */
+    private function resolveRteLinksInFormDefinition(array $formDefinition): array
+    {
+        if (!isset($formDefinition['renderables']) || !is_array($formDefinition['renderables'])) {
+            return $formDefinition;
+        }
+
+        foreach ($formDefinition['renderables'] as &$page) {
+            if (isset($page['renderables']) && is_array($page['renderables'])) {
+                $page['renderables'] = $this->resolveRteLinksInRenderables($page['renderables']);
+            }
+        }
+        unset($page);
+
+        return $formDefinition;
+    }
+
+    /**
+     * Recursively resolves t3:// links in the `label` field of each form element.
+     * Recurses into container elements (Fieldset, GridRow) automatically.
+     *
+     * @param array<mixed> $renderables
+     * @return array<mixed>
+     */
+    private function resolveRteLinksInRenderables(array $renderables): array
+    {
+        $contentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
+
+        foreach ($renderables as &$element) {
+            // Recurse into container elements (Fieldset, GridRow, …)
+            if (isset($element['renderables']) && is_array($element['renderables'])) {
+                $element['renderables'] = $this->resolveRteLinksInRenderables($element['renderables']);
+            }
+
+            // Only process labels that contain an internal TYPO3 URI — skip plain-text labels
+            if (
+                isset($element['label'])
+                && is_string($element['label'])
+                && str_contains($element['label'], 't3://')
+            ) {
+                $element['label'] = $contentObjectRenderer->parseFunc(
+                    $element['label'],
+                    [],
+                    '< lib.parseFunc_RTE'
+                );
+            }
+        }
+        unset($element);
+
+        return $renderables;
     }
 
     /**
