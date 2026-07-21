@@ -150,7 +150,7 @@ class JsonContentContentObject extends ContentContentObject
     /**
      * @param array<string, mixed> $contentElements
      * @param array<string, mixed> $conf
-     * @return array<string,<array<int, mixed>>
+     * @return array<string, array<int, mixed>>
      */
     protected function groupContentElementsByColPos(array $contentElements, array $conf): array
     {
@@ -167,11 +167,12 @@ class JsonContentContentObject extends ContentContentObject
                 $element = $this->headlessUserInt->wrap($element);
             }
 
-            $element = json_decode($element, true);
+            $decoded = json_decode($element, true);
 
-            if ($element === []) {
+            if (!is_array($decoded) || $decoded === []) {
                 continue;
             }
+            $element = $decoded;
 
             $colPos = $this->getColPosFromElement($groupingEnabled, $element);
 
@@ -184,11 +185,14 @@ class JsonContentContentObject extends ContentContentObject
 
         if ($groupingEnabled && $this->isSortByBackendLayoutEnabled($conf)) {
             $backendLayoutView = GeneralUtility::makeInstance(BackendLayoutView::class);
-            $backendLayout = $backendLayoutView->getSelectedBackendLayout($this->request->getAttribute('routing')->getPageId());
+            $routing = $this->request->getAttribute('routing');
+            $backendLayout = $routing !== null
+                ? $backendLayoutView->getSelectedBackendLayout($routing->getPageId())
+                : null;
 
             $sorted = [];
             foreach ($backendLayout['__colPosList'] ?? [] as $value) {
-                $sorted['colPos' . $value] = $data['colPos' . $value];
+                $sorted['colPos' . $value] = $data['colPos' . $value] ?? [];
             }
 
             $data = $sorted;

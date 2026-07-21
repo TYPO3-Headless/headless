@@ -81,10 +81,8 @@ class SiteProvider implements SiteProviderInterface
             $sorting = GeneralUtility::makeInstance($customSorting, $sites, $pages, $sortingField);
             $sites = $sorting->sort();
         } else {
-            usort($sites, static function (Site $siteA, Site $siteB) use ($pages, $sortingField) {
-                // phpcs:ignore Generic.Files.LineLength
-                return (int)$pages[$siteA->getRootPageId()][$sortingField] >= (int)$pages[$siteB->getRootPageId()][$sortingField] ? 1 : -1;
-            });
+            usort($sites, static fn(Site $siteA, Site $siteB): int =>
+                (int)$pages[$siteA->getRootPageId()][$sortingField] <=> (int)$pages[$siteB->getRootPageId()][$sortingField]);
         }
 
         $this->sites = $sites;

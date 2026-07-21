@@ -215,7 +215,6 @@ class FileUtility
 
     private function onDemandProperties(ProcessingConfiguration $processingConfiguration, array $properties): array
     {
-        $processed = [];
         $props = [];
 
         foreach ($processingConfiguration->includeProperties as $prop) {
@@ -246,7 +245,7 @@ class FileUtility
             }
         }
 
-        return array_merge($processed, $props);
+        return $props;
     }
 
     private function filterProperties(ProcessingConfiguration $processingConfiguration, array $properties): array
@@ -329,7 +328,7 @@ class FileUtility
         $siteUrl = $this->getNormalizedParams()->getSiteUrl();
         $sitePath = str_replace($this->getNormalizedParams()->getRequestHost(), '', $siteUrl);
         $absoluteUrl = trim($fileUrl);
-        if (stripos($absoluteUrl, 'http') !== 0) {
+        if (stripos($absoluteUrl, 'http') !== 0 && !str_starts_with($absoluteUrl, '//')) {
             $fileUrl = preg_replace('#^' . preg_quote($sitePath, '#') . '#', '', $fileUrl);
             $fileUrl = $siteUrl . $fileUrl;
         }
@@ -377,9 +376,12 @@ class FileUtility
         return $this->contentObjectRenderer->getRequest()->getAttribute('normalizedParams');
     }
 
+    /** @var array<string, CropVariantCollection> */
+    private array $cropVariantCache = [];
+
     protected function createCropVariant(string $cropString): CropVariantCollection
     {
-        return CropVariantCollection::create($cropString);
+        return $this->cropVariantCache[$cropString] ??= CropVariantCollection::create($cropString);
     }
 
     /**
@@ -396,8 +398,8 @@ class FileUtility
         array $processedFile,
         ProcessingConfiguration $processingConfiguration
     ): array {
-        $originalWidth = $originalReference->getProperty('width');
-        $originalHeight = $originalReference->getProperty('height');
+        $originalWidth = $this->getCroppedDimensionalProperty($originalReference, 'width', $processingConfiguration->cropVariant);
+        $originalHeight = $this->getCroppedDimensionalProperty($originalReference, 'height', $processingConfiguration->cropVariant);
         $targetWidth = (int)($processingConfiguration->width !== '' ? $processingConfiguration->width : $fileReference->getProperty('width'));
         $targetHeight = (int)($processingConfiguration->height !== '' ? $processingConfiguration->height : $fileReference->getProperty('height'));
 
@@ -436,14 +438,14 @@ class FileUtility
          */
         $crop = $originalFileReference->getProperty('crop');
 
-        if ($crop !== null) {
+        if ($crop !== null && $crop !== '') {
             if (!$processingConfiguration->legacyReturn) {
                 unset($processedFile['crop'], $processedFile['properties']['crop']);
             }
 
-            $cropVariants = json_decode($originalFileReference->getProperty('crop'), true);
+            $cropVariants = json_decode($crop, true);
 
-            $collection = CropVariantCollection::create($originalFileReference->getProperty('crop'));
+            $collection = $this->createCropVariant($crop);
 
             if (is_array($cropVariants) && count($cropVariants) > 1 && str_starts_with(
                 $originalFileReference->getMimeType(),
@@ -454,10 +456,10 @@ class FileUtility
                         continue;
                     }
 
-                    $processingConfiguration = $processingConfiguration->withOptions(['cropVariant' => $cropVariantName]);
-                    $file = $this->process($originalFileReference, $processingConfiguration);
+                    $variantConfiguration = $processingConfiguration->withOptions(['cropVariant' => $cropVariantName]);
+                    $file = $this->process($originalFileReference, $variantConfiguration);
                     $processedFile['cropVariants'][$cropVariantName] = $this->cropVariant(
-                        $processingConfiguration,
+                        $variantConfiguration,
                         $file,
                         $cropVariants[$cropVariantName]
                     );

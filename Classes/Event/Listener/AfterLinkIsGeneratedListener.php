@@ -182,16 +182,16 @@ final class AfterLinkIsGeneratedListener
         )) {
             // Disallow insecure scheme's like javascript: or data:
             throw new UnableToLinkException(
-                'Insuecure scheme for linking detected with "' . $mixedLinkParameter . "'",
+                'Insecure scheme for linking detected with "' . $mixedLinkParameter . "'",
                 1641986533
             );
         }
 
         // additional parameters that need to be set
         if (($linkParameterParts['additionalParams'] ?? '') !== '') {
-            $forceParams = $linkParameterParts['additionalParams'];
-            // params value
-            $linkConfiguration['additionalParams'] = ($linkConfiguration['additionalParams'] ?? '') . $forceParams[0] === '&' ? $forceParams : '&' . $forceParams;
+            $forceParams = (string)$linkParameterParts['additionalParams'];
+            $prefix = $forceParams[0] === '&' ? '' : '&';
+            $linkConfiguration['additionalParams'] = ($linkConfiguration['additionalParams'] ?? '') . $prefix . $forceParams;
         }
 
         return [

@@ -23,9 +23,16 @@ use function json_encode;
  */
 abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMetaTagManager
 {
+    private ?HeadlessModeInterface $headlessMode = null;
+
+    private function getHeadlessMode(): HeadlessModeInterface
+    {
+        return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
+    }
+
     public function renderAllProperties(): string
     {
-        if (GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
+        if ($this->getHeadlessMode()->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
             return $this->renderAllHeadlessProperties();
         }
 
@@ -34,7 +41,7 @@ abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMe
 
     public function renderProperty(string $property): string
     {
-        if (GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
+        if ($this->getHeadlessMode()->withRequest($GLOBALS['TYPO3_REQUEST'])->isEnabled()) {
             return $this->renderHeadlessProperty($property);
         }
 

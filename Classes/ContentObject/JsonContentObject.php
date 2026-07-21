@@ -46,15 +46,15 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
      */
     public function render($conf = []): string
     {
+        if (!is_array($conf)) {
+            $conf = [];
+        }
+
         if (!empty($conf['if.']) && !$this->cObj->checkIf($conf['if.'])) {
             return '';
         }
 
         $data = [];
-
-        if (!is_array($conf)) {
-            $conf = [];
-        }
 
         $this->conf = $conf;
 

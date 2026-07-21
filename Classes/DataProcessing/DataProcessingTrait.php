@@ -42,7 +42,7 @@ trait DataProcessingTrait
 
     protected function isMenuProcessor(): bool
     {
-        return __CLASS__ === MenuProcessor::class;
+        return $this instanceof MenuProcessor;
     }
 
     /**

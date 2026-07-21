@@ -64,13 +64,17 @@ class ExtractPropertyProcessor implements DataProcessorInterface
 
         $key = GeneralUtility::trimExplode('.', $processorConfiguration['key'], true);
 
-        // Extract (nested) property
-        do {
-            $processedData = $processedData[array_shift($key)] ?? null;
-        } while (count($key));
+        $value = $processedData;
+        foreach ($key as $segment) {
+            if (!is_array($value)) {
+                $value = null;
+                break;
+            }
+            $value = $value[$segment] ?? null;
+        }
 
         return [
-            $targetFieldName => $processedData,
+            $targetFieldName => $value,
         ];
     }
 }

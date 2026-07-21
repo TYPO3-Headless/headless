@@ -47,6 +47,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     private array $variants = [];
     private HeadlessModeInterface $headlessMode;
     private array $frontendDomains = [];
+    private array $backendDomains = [];
 
     public function __construct(
         ?Features $features = null,
@@ -91,7 +92,10 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
         $targetUri = new Uri($this->sanitizeBaseUrl($url));
 
-        if (!$this->headlessMode->isEnabled() || $this->alreadyFrontendLink($url) || $targetUri->getHost() === '') {
+        if (!$this->headlessMode->isEnabled() ||
+            $targetUri->getHost() === '' ||
+            $this->isExternalUrl($targetUri->getHost()) ||
+            $this->alreadyFrontendLink($targetUri->getHost())) {
             return $url;
         }
 
@@ -257,6 +261,10 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $frontendFileApi = trim($langConf['frontendFileApi'] ?? '');
         $overrides = [];
 
+        if ($language->getBase()->getHost() !== '') {
+            $this->backendDomains[] = $language->getBase()->getHost();
+        }
+
         if ($frontendBase !== '') {
             $overrides['frontendBase'] =  $frontendBase;
             $this->frontendDomains[] = (new Uri($this->sanitizeBaseUrl($frontendBase)))->getHost();
@@ -283,7 +291,17 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     {
         $object->conf = $site->getConfiguration();
         $object->variants = $object->conf['baseVariants'] ?? [];
+
         $this->frontendDomains = [];
+        $this->backendDomains = [];
+        $this->backendDomains[] = $site->getBase()->getHost();
+
+        foreach ($object->variants as $variant) {
+            $variantBase = trim($variant['base'] ?? '');
+            if ($variantBase !== '') {
+                $object->backendDomains[] = (new Uri($this->sanitizeBaseUrl($variantBase)))->getHost();
+            }
+        }
 
         $base = trim($object->conf['frontendBase'] ?? '');
         if ($base !== '') {
@@ -333,6 +351,9 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
                 continue;
             }
 
+            if ($language->getBase()->getHost() !== '') {
+                $this->backendDomains[] = $language->getBase()->getHost();
+            }
             $this->frontendDomains[] = (new Uri($this->sanitizeBaseUrl($base)))->getHost();
 
             if ($language->getBase()->getHost() === $backendUri->getHost()) {
@@ -342,6 +363,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             }
         }
 
+        $this->backendDomains = array_unique($this->backendDomains);
         $this->frontendDomains = array_unique($this->frontendDomains);
 
         return $matchedLanguage;
@@ -349,8 +371,11 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
     protected function alreadyFrontendLink(string $url): bool
     {
-        $targetUri = new Uri($this->sanitizeBaseUrl($url));
+        return in_array($url, $this->frontendDomains, true);
+    }
 
-        return in_array($targetUri->getHost(), $this->frontendDomains, true);
+    protected function isExternalUrl(string $url): bool
+    {
+        return !in_array($url, array_merge($this->backendDomains, $this->frontendDomains), true);
     }
 }
