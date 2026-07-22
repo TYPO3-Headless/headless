@@ -153,7 +153,7 @@ class FileUtility
             ],
             'crop' => $crop,
             'autoplay' => $fileReference->getProperty('autoplay'),
-            'extension' => $fileReference->getProperty('extension'),
+            'extension' => $fileReference->getExtension() ?: null,
         ];
 
         $processedProperties = array_merge(
