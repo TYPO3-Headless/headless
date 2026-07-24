@@ -18,21 +18,23 @@ use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Throwable;
+use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 
 use function json_decode;
 
 use const JSON_THROW_ON_ERROR;
 
+#[AsEventListener(identifier: 'headless/AfterCacheableContentIsGenerated')]
 class AfterCacheableContentIsGeneratedListener implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     public function __construct(
-        private readonly JsonEncoderInterface $encoder,
-        private readonly MetaHandlerInterface $metaHandler,
-        private readonly HeadlessUserInt $headlessUserInt,
-        private readonly HeadlessModeInterface $headlessMode,
+        protected readonly JsonEncoderInterface $encoder,
+        protected readonly MetaHandlerInterface $metaHandler,
+        protected readonly HeadlessUserInt $headlessUserInt,
+        protected readonly HeadlessModeInterface $headlessMode,
     ) {}
 
     public function __invoke(AfterCacheableContentIsGeneratedEvent $event): void

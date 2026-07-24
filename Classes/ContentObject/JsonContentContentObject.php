@@ -273,13 +273,13 @@ class JsonContentContentObject extends ContentContentObject
 
                 $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
                 $cObj->setParent($this->cObj->data, $this->cObj->currentRecord);
-                $this->cObj->currentRecordNumber = 0;
+                $recordNumber = 0;
 
                 foreach ($records as $row) {
                     $registerField = $conf['table'] . ':' . ($row['uid'] ?? 0);
                     if (!($this->recordRegister[$registerField] ?? false)) {
-                        $this->cObj->currentRecordNumber++;
-                        $cObj->parentRecordNumber = $this->cObj->currentRecordNumber;
+                        $recordNumber++;
+                        $cObj->parentRecordNumber = $recordNumber;
                         $this->cObj->currentRecord = $registerField;
                         $this->cObj->lastChanged($row['tstamp'] ?? 0);
                         $cObj->setRequest($this->request);

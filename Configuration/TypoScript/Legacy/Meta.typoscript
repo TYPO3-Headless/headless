@@ -79,7 +79,7 @@ lib.meta {
         ogImage = TEXT
         ogImage {
             dataProcessing {
-                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                10 = headless-files
                 10 {
                     as = media
                     references.fieldName = og_image
@@ -112,7 +112,7 @@ lib.meta {
         twitterImage = TEXT
         twitterImage {
             dataProcessing {
-                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                10 = headless-files
                 10 {
                     as = media
                     references.fieldName = twitter_image

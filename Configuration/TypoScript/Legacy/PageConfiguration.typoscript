@@ -51,7 +51,7 @@ page {
             media = TEXT
             media {
                 dataProcessing {
-                    10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                    10 = headless-files
                     10 {
                         as = media
                         references.fieldName = media

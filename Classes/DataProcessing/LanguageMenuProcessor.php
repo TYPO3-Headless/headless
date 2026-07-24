@@ -13,9 +13,6 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
 
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
-/**
- * @codeCoverageIgnore
- */
 class LanguageMenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\LanguageMenuProcessor
 {
     use DataProcessingTrait;

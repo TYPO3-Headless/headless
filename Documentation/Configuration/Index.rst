@@ -349,18 +349,18 @@ This is based on the core RedirectFinisher but, instead of delay & statusCode op
 
 Also, JsonRedirect does not redirect by itself but generates a message (default is null) and URI for redirection by the frontend developer.
 
-To use JsonRedirect, define it in the setup.yaml of your extension form's setup:
+Since 5.0 the finisher is registered out of the box via the auto-discovered
+form set `EXT:headless/Configuration/Form/Headless/config.yaml` — reference
+it by its `JsonRedirect` identifier in any form definition:
 
 .. code-block:: yaml
 
-   TYPO3:
-     CMS:
-       Form:
-         prototypes:
-           standard:
-             finishersDefinition:
-               JsonRedirect:
-                 implementationClassName: 'FriendsOfTYPO3\Headless\Form\Finisher\JsonRedirectFinisher'
+   finishers:
+     -
+       identifier: JsonRedirect
+       options:
+         pageUid: '2'
+         message: 'Thanks! You will be redirected shortly.'
 
 [BETA] JsonView Backend Module
 ==============================
@@ -451,4 +451,132 @@ You can add 'recursive' if categories may be stored under current rootPage
       lib.contentElement.fields.categories.10.select.pidInList >
       lib.contentElement.fields.categories.10.select.pidInList.data = leveluid : 0
       lib.contentElement.fields.categories.10.select.recursive = 99
+
+Re-enabling categories in the HeadlessNext set
+==============================================
+
+The `TYPO3 Headless Next` site set (`friendsoftypo3/headless-next`) does not render
+categories at all: the `categories` field is removed from `lib.contentElement`
+(and therefore from every content element), and the page response does not contain
+a `categories` field either. This avoids one `sys_category` join per content
+element on every uncached render for projects that do not use categories.
+
+If your project needs them, re-add the field in your site package TypoScript,
+loaded after the set. Point `pidInList` at the place your categories are actually
+stored — either the storage folder uid, or the current root page with `recursive`
+as shown below.
+
+Content element categories:
+
+.. code-block:: typoscript
+
+   lib.contentElement.fields.categories = COA
+   lib.contentElement.fields.categories {
+       10 = CONTENT
+       10 {
+           table = sys_category
+           select {
+               pidInList.data = leveluid : 0
+               recursive = 99
+               selectFields = sys_category.title
+               join = sys_category_record_mm on sys_category_record_mm.uid_local = sys_category.uid
+               where {
+                   field = uid
+                   wrap = AND sys_category_record_mm.tablenames = 'tt_content' AND sys_category_record_mm.uid_foreign=|
+               }
+           }
+           renderObj = TEXT
+           renderObj {
+               field = title
+               wrap = |###BREAK###
+           }
+       }
+       stdWrap.split {
+           token = ###BREAK###
+           cObjNum = 1 |*|2|*| 3
+           1 {
+               current = 1
+               stdWrap.wrap = |
+           }
+           2 {
+               current = 1
+               stdWrap.wrap = ,|
+           }
+           3 {
+               current = 1
+               stdWrap.wrap = |
+           }
+       }
+   }
+
+Page categories — the legacy `lib.categories` definition is still shipped, it is
+just not imported by the set. Import it, fix the storage pid the same way, and
+add the field back to the page response:
+
+.. code-block:: typoscript
+
+   @import 'EXT:headless/Configuration/TypoScript/Page/Categories.typoscript'
+
+   lib.categories.10.select.pidInList >
+   lib.categories.10.select.pidInList.data = leveluid : 0
+   lib.categories.10.select.recursive = 99
+
+   page.10.fields.categories =< lib.categories
+
+Both snippets render a comma-separated string of category titles, matching the
+output of the legacy set — use them when the consuming frontend should not need
+any changes.
+
+Alternative: categories as a JSON array
+---------------------------------------
+
+If your frontend does not depend on the legacy string format, prefer structured
+output. This variant uses the `EXT:headless` DatabaseQueryProcessor and renders
+each category as an object, so the field becomes
+`"categories": [{"id": 2, "title": "News"}, ...]` instead of `"News,Events"`:
+
+.. code-block:: typoscript
+
+   lib.contentElement.fields.categories = JSON
+   lib.contentElement.fields.categories {
+       dataProcessing {
+           10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
+           10 {
+               table = sys_category
+               pidInList.data = leveluid : 0
+               recursive = 99
+               join = sys_category_record_mm ON sys_category_record_mm.uid_local = sys_category.uid
+               where.data = field:uid
+               where.wrap = sys_category_record_mm.tablenames = 'tt_content' AND sys_category_record_mm.uid_foreign=|
+               orderBy = sys_category.sorting
+               as = categories
+               fields {
+                   id = INT
+                   id {
+                       field = uid
+                   }
+                   title = TEXT
+                   title {
+                       field = title
+                   }
+               }
+           }
+       }
+   }
+
+For page categories use the same definition with
+`where.wrap = sys_category_record_mm.tablenames = 'pages' AND sys_category_record_mm.uid_foreign=|`
+and assign it to the page response instead:
+
+.. code-block:: typoscript
+
+   page.10.fields.categories = JSON
+   page.10.fields.categories {
+       dataProcessing {
+           # same processor configuration as above, with tablenames = 'pages'
+       }
+   }
+
+Note this changes the shape of the `categories` field — frontends migrating from
+the legacy set must be updated accordingly.
 

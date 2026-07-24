@@ -31,7 +31,7 @@ use function realpath;
 use function rtrim;
 use function str_starts_with;
 
-final class HeadlessPhpView implements ViewInterface
+class HeadlessPhpView implements ViewInterface
 {
     /** @var array<string, mixed> */
     private array $variables = [];

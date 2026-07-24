@@ -12,11 +12,14 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Utility;
 
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
 
 interface FileUtilityInterface
 {
+    public function setRequest(ServerRequestInterface $request): void;
+
     /**
      * @param array<string, mixed> $arguments
      * @return array<string, mixed>

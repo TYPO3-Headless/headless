@@ -14,10 +14,7 @@ namespace FriendsOfTYPO3\Headless\Event;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use TYPO3\CMS\Core\Resource\FileInterface;
 
-/**
- * @codeCoverageIgnore
- */
-final class FileDataAfterCropVariantProcessingEvent
+class FileDataAfterCropVariantProcessingEvent
 {
     /**
      * @var array<string, mixed>

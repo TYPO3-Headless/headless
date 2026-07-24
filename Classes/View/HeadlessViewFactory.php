@@ -18,7 +18,7 @@ use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Core\View\ViewInterface;
 
-final class HeadlessViewFactory implements ViewFactoryInterface
+class HeadlessViewFactory implements ViewFactoryInterface
 {
     private readonly bool $enabled;
 

@@ -20,7 +20,6 @@ use function trim;
 /**
  * Explode ViewHelper
  * Explodes a string by $glue
- * @codeCoverageIgnore
  */
 class ExplodeViewHelper extends AbstractViewHelper
 {

@@ -13,8 +13,10 @@ namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
+use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\LinkHandling\Exception\UnknownLinkHandlerException;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\LinkHandling\TypoLinkCodecService;
@@ -30,15 +32,16 @@ use function is_numeric;
 use function is_string;
 use function str_starts_with;
 
-final class AfterLinkIsGeneratedListener
+#[AsEventListener(identifier: 'headless/AfterLinkIsGenerated')]
+class AfterLinkIsGeneratedListener
 {
     public function __construct(
-        private readonly LoggerInterface $logger,
-        private readonly HeadlessFrontendUrlInterface $urlUtility,
-        private readonly LinkService $linkService,
-        private readonly TypoLinkCodecService $typoLinkCodecService,
-        private readonly SiteFinder $siteFinder,
-        private readonly HeadlessModeInterface $headlessMode,
+        protected readonly LoggerInterface $logger,
+        protected readonly HeadlessFrontendUrlInterface $urlUtility,
+        protected readonly LinkService $linkService,
+        protected readonly TypoLinkCodecService $typoLinkCodecService,
+        protected readonly SiteFinder $siteFinder,
+        protected readonly HeadlessModeInterface $headlessMode,
     ) {}
 
     public function __invoke(AfterLinkIsGeneratedEvent $event): void

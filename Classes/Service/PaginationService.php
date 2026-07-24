@@ -14,9 +14,6 @@ namespace FriendsOfTYPO3\Headless\Service;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
-/**
- * @codeCoverageIgnore
- */
 class PaginationService
 {
     /**

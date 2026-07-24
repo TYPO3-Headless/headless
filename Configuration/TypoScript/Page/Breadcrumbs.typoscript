@@ -1,7 +1,7 @@
 lib.breadcrumbs = JSON
 lib.breadcrumbs {
     dataProcessing {
-        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+        10 = headless-menu
         10 {
             special = rootline
             expandAll = 0

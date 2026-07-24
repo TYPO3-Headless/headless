@@ -108,7 +108,7 @@ class MetaHandler implements MetaHandlerInterface
          */
         $language = $request->getAttribute('language');
 
-        $rawHtmlTagAttrs = $typoScriptConfig['htmlTag.']['attributes.'] ?? [];
+        $rawHtmlTagAttrs = $this->resolveAttributesStdWrap($typoScriptConfig['htmlTag.']['attributes.'] ?? [], $cObj);
         $overwriteBodyTag = (int)($typoScriptConfig['headless.']['overwriteBodyTag'] ?? 0);
         $htmlTagAttrs = $this->normalizeAttr($rawHtmlTagAttrs);
 
@@ -227,6 +227,33 @@ class MetaHandler implements MetaHandlerInterface
         }
         $manager = $this->metaTagRegistry->getManagerForProperty($name);
         $manager->addProperty($name, $content, $subProperties, $replace, $type);
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     * @return array<string, mixed>
+     */
+    protected function resolveAttributesStdWrap(array $attributes, ContentObjectRenderer $cObj): array
+    {
+        $resolved = [];
+
+        foreach ($attributes as $attributeName => $value) {
+            if (str_ends_with((string)$attributeName, '.')) {
+                if (isset($attributes[rtrim((string)$attributeName, '.')])) {
+                    continue;
+                }
+                $attributeName = rtrim((string)$attributeName, '.');
+                $value = '';
+            }
+
+            if (is_array($attributes[$attributeName . '.'] ?? null)) {
+                $value = $cObj->stdWrap((string)$value, $attributes[$attributeName . '.']);
+            }
+
+            $resolved[$attributeName] = $value;
+        }
+
+        return $resolved;
     }
 
     /**

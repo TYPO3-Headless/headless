@@ -80,6 +80,7 @@ class FilesProcessor implements DataProcessorInterface
         }
 
         $this->contentObjectRenderer = $cObj;
+        $this->fileUtility->setRequest($cObj->getRequest());
         $this->processorConfiguration = $processorConfiguration;
 
         $targetFieldName = (string)$cObj->stdWrapValue(

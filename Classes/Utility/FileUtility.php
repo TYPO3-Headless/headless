@@ -16,6 +16,7 @@ use FriendsOfTYPO3\Headless\Event\FileDataAfterCropVariantProcessingEvent;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Throwable;
 use TYPO3\CMS\Core\Configuration\Features;
@@ -51,6 +52,11 @@ class FileUtility implements FileUtilityInterface
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Features $features
     ) {}
+
+    public function setRequest(ServerRequestInterface $request): void
+    {
+        $this->contentObjectRenderer->setRequest($request);
+    }
 
     public function processFile(
         FileInterface $fileReference,
@@ -156,7 +162,7 @@ class FileUtility implements FileUtilityInterface
             ],
             'crop' => $crop,
             'autoplay' => $fileReference->getProperty('autoplay'),
-            'extension' => $fileReference->getProperty('extension'),
+            'extension' => $fileReference->getExtension() ?: null,
         ];
 
         $processedProperties = array_merge(
@@ -370,8 +376,11 @@ class FileUtility implements FileUtilityInterface
 
     protected function calculateKilobytesToFileSize(int $value): string
     {
-        $units = $this->translate('viewhelper.format.bytes.units', 'fluid');
-        $units = GeneralUtility::trimExplode(',', $units, true);
+        $units = $this->fileSizeUnits ??= GeneralUtility::trimExplode(
+            ',',
+            (string)$this->translate('viewhelper.format.bytes.units', 'fluid'),
+            true
+        );
         $bytes = max($value, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
@@ -387,6 +396,9 @@ class FileUtility implements FileUtilityInterface
 
     /** @var array<string, CropVariantCollection> */
     private array $cropVariantCache = [];
+
+    /** @var list<string>|null */
+    private ?array $fileSizeUnits = null;
 
     protected function createCropVariant(string $cropString): CropVariantCollection
     {

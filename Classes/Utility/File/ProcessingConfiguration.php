@@ -13,13 +13,10 @@ namespace FriendsOfTYPO3\Headless\Utility\File;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-/**
- * @codeCoverageIgnore
- */
-final class ProcessingConfiguration
+class ProcessingConfiguration
 {
-    private const RETINA_RATIO = 2;
-    private const LQIP_RATIO = 0.1;
+    protected const RETINA_RATIO = 2;
+    protected const LQIP_RATIO = 0.1;
 
     /**
      * @param array<string, mixed> $options

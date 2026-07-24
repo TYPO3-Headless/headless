@@ -18,8 +18,8 @@ use TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent;
 class HeadlessHreflangGeneratorListener
 {
     public function __construct(
-        private readonly HeadlessFrontendUrlInterface $urlUtility,
-        private readonly HeadlessModeInterface $headlessMode,
+        protected readonly HeadlessFrontendUrlInterface $urlUtility,
+        protected readonly HeadlessModeInterface $headlessMode,
     ) {}
 
     public function __invoke(ModifyHrefLangTagsEvent $event): void

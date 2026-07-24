@@ -75,6 +75,16 @@ class FileUtilityTest extends UnitTestCase
         self::assertSame($testSameUrl, $fileUtility->getAbsoluteUrl($testSameUrl));
     }
 
+    public function testSetRequestDelegatesToContentObjectRenderer(): void
+    {
+        $request = new ServerRequest('https://test-frontend.tld/');
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->expects(self::once())->method('setRequest')->with($request);
+
+        $fileUtility = $this->getFileUtility(null, null, $contentObjectRenderer);
+        $fileUtility->setRequest($request);
+    }
+
     public function testProcessFile()
     {
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.assetsCacheBusting'] = true;
@@ -982,8 +992,10 @@ class FileUtilityTest extends UnitTestCase
                 'getProperty',
                 'getUid',
                 'getPublicUrl',
+                'getExtension',
             ]
         );
+        $file->method('getExtension')->willReturn($data['extension'] ?? '');
         $resourceStorage = $this->createMock(ResourceStorage::class);
         $resourceStorage->method('getFileInfo')->with($file)->willReturn($data);
         $metaData = $this->createMock(MetaDataAspect::class);
@@ -1074,10 +1086,11 @@ class FileUtilityTest extends UnitTestCase
     {
         $processedFile = $this->createPartialMock(
             ProcessedFile::class,
-            ['getProperty', 'getMimeType', 'getSize', 'hasProperty', 'getPublicUrl']
+            ['getProperty', 'getMimeType', 'getSize', 'hasProperty', 'getPublicUrl', 'getExtension']
         );
         $processedFile->method('getMimeType')->willReturn('image/jpeg');
         $processedFile->method('getSize')->willReturn($data['size']);
+        $processedFile->method('getExtension')->willReturn($data['extension'] ?? 'jpg');
         $processedFile->method('getProperty')->willReturnCallback(static function ($key) use ($data) {
             return $data[$key] ?? null;
         });
@@ -1251,7 +1264,7 @@ class FileUtilityTest extends UnitTestCase
                         ],
                     'crop' => '{"default":{"cropArea":{"x":0,"y":0,"width":1,"height":1},"selectedRatio":"NaN","focusArea":null}}',
                     'autoplay' => 0,
-                    'extension' => 'jpg',
+                    'extension' => null,
                 ],
         ];
     }

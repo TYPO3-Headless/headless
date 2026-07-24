@@ -11,14 +11,14 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Json;
 
+use JsonException;
+
 use function is_array;
 use function is_numeric;
 use function is_object;
 use function is_string;
 use function json_decode;
 use function trim;
-
-use const PHP_VERSION_ID;
 
 class JsonDecoder implements JsonDecoderInterface
 {
@@ -30,7 +30,7 @@ class JsonDecoder implements JsonDecoderInterface
     {
         foreach ($data as $key => $singleData) {
             if (is_string($singleData)) {
-                $decoded = $this->tryDecodeJsonString($singleData);
+                $decoded = $this->tryDecode($singleData);
                 if ($decoded !== null) {
                     $data[$key] = $decoded;
                 }
@@ -47,13 +47,13 @@ class JsonDecoder implements JsonDecoderInterface
             return false;
         }
 
-        return $this->tryDecodeJsonString($possibleJson) !== null;
+        return $this->tryDecode($possibleJson) !== null;
     }
 
     /**
      * @return array<mixed>|object|null
      */
-    private function tryDecodeJsonString(string $value): array|object|null
+    protected function tryDecode(string $value): array|object|null
     {
         if (is_numeric($value)) {
             return null;
@@ -70,11 +70,11 @@ class JsonDecoder implements JsonDecoderInterface
             return null;
         }
 
-        if (PHP_VERSION_ID >= 80300 && !json_validate($trimmed)) {
+        try {
+            $decoded = json_decode($trimmed, false, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
             return null;
         }
-
-        $decoded = json_decode($trimmed);
 
         if (!is_object($decoded) && !is_array($decoded)) {
             return null;

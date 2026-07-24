@@ -65,6 +65,8 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
      * @var array<int, string>
      */
     public array $allowedConfigurationKeys = [
+        'cache',
+        'cache.',
         'cache_period',
         'entryLevel',
         'entryLevel.',

@@ -17,17 +17,19 @@ use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Routing\Event\AfterPageUriGeneratedEvent;
 
-final class AfterPageUriGeneratedListener implements LoggerAwareInterface
+#[AsEventListener(identifier: 'headless/AfterPageUriGenerated')]
+class AfterPageUriGeneratedListener implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     public function __construct(
-        private readonly HeadlessFrontendUrlInterface $urlUtility,
-        private readonly HeadlessModeInterface $headlessMode,
+        protected readonly HeadlessFrontendUrlInterface $urlUtility,
+        protected readonly HeadlessModeInterface $headlessMode,
     ) {}
 
     public function __invoke(AfterPageUriGeneratedEvent $event): void

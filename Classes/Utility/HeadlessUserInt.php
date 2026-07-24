@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Utility;
 
+use JsonException;
+
 use function json_decode;
 use function json_encode;
 use function json_last_error;
@@ -24,6 +26,7 @@ use function substr;
 use function trim;
 
 use const JSON_ERROR_NONE;
+use const JSON_THROW_ON_ERROR;
 use const PHP_VERSION_ID;
 
 class HeadlessUserInt
@@ -101,17 +104,24 @@ class HeadlessUserInt
                 return $rawContent;
             }
 
-            $encoded = json_encode($rawContent);
-            return $encoded !== false ? $encoded : 'null';
+            try {
+                return json_encode($rawContent, JSON_THROW_ON_ERROR);
+            } catch (JsonException) {
+                return 'null';
+            }
         }
 
-        $jsonEncoded = json_encode($rawContent);
+        try {
+            $jsonEncoded = json_encode($rawContent, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return '';
+        }
 
-        if ($jsonEncoded !== false && $jsonEncoded[0] === '"') {
+        if ($jsonEncoded[0] === '"') {
             return substr($jsonEncoded, 1, -1);
         }
 
-        return $jsonEncoded ?: '';
+        return $jsonEncoded;
     }
 
     protected function isJson(string $string): bool

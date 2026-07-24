@@ -14,19 +14,10 @@ namespace FriendsOfTYPO3\Headless\Form\Service;
 use InvalidArgumentException;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\Exception\MissingArrayPathException;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Service\TranslationService;
 
 class FormTranslationService extends TranslationService
 {
-    /**
-     * @return FormTranslationService
-     */
-    public static function getInstance(): self
-    {
-        return GeneralUtility::makeInstance(FormTranslationService::class);
-    }
-
     /**
      * @param array<string,mixed> $element
      * @param array<int,mixed> $propertyParts
@@ -68,11 +59,11 @@ class FormTranslationService extends TranslationService
 
         $translatePropertyValueIfEmpty = $renderingOptions['translation']['translatePropertyValueIfEmpty'] ?? true;
 
-        if (empty($defaultValue) && !$translatePropertyValueIfEmpty) {
+        if ($this->isEmptyTranslatedValue($defaultValue) && !$translatePropertyValueIfEmpty) {
             return $defaultValue;
         }
 
-        $defaultValue = empty($defaultValue) ? '' : $defaultValue;
+        $defaultValue = $this->isEmptyTranslatedValue($defaultValue) ? '' : $defaultValue;
         $translationFiles = $renderingOptions['translation']['translationFiles'] ?? [];
         if (empty($translationFiles)) {
             $formRuntime['renderingOptions'] = $formRuntime['renderingOptions'] ?? [];
@@ -108,7 +99,7 @@ class FormTranslationService extends TranslationService
                     $originalFormIdentifier,
                 );
                 $translatedValue = $this->processTranslationChain($chain, $language, $arguments);
-                $optionLabel = empty($translatedValue) ? $optionLabel : $translatedValue;
+                $optionLabel = $this->isEmptyTranslatedValue($translatedValue) ? $optionLabel : $translatedValue;
             }
             return $defaultValue;
         }
@@ -124,7 +115,7 @@ class FormTranslationService extends TranslationService
                     $originalFormIdentifier,
                 );
                 $translatedValue = $this->processTranslationChain($chain, $language, $arguments);
-                $propertyValue = empty($translatedValue) ? $propertyValue : $translatedValue;
+                $propertyValue = $this->isEmptyTranslatedValue($translatedValue) ? $propertyValue : $translatedValue;
             }
             return $defaultValue;
         }
@@ -139,7 +130,7 @@ class FormTranslationService extends TranslationService
         );
         $translatedValue = $this->processTranslationChain($chain, $language, $arguments);
 
-        return empty($translatedValue) ? $defaultValue : $translatedValue;
+        return $this->isEmptyTranslatedValue($translatedValue) ? $defaultValue : $translatedValue;
     }
 
     /**
@@ -265,6 +256,6 @@ class FormTranslationService extends TranslationService
 
         $translatedValue = $this->processTranslationChain($translationKeyChain, $language, $arguments);
 
-        return empty($translatedValue) ? $defaultValue : $translatedValue;
+        return $this->isEmptyTranslatedValue($translatedValue) ? $defaultValue : $translatedValue;
     }
 }

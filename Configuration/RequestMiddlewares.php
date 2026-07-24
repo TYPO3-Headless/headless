@@ -9,6 +9,7 @@
 
 use FriendsOfTYPO3\Headless\Middleware\ElementBodyResponseMiddleware;
 use FriendsOfTYPO3\Headless\Middleware\HeadlessModeSetter;
+use FriendsOfTYPO3\Headless\Middleware\RedirectModuleSourceUrlRewriter;
 use FriendsOfTYPO3\Headless\Middleware\ShortcutAndMountPointRedirect;
 use FriendsOfTYPO3\Headless\Middleware\SiteBaseRedirectResolver;
 use FriendsOfTYPO3\Headless\Middleware\UserIntMiddleware;
@@ -68,6 +69,14 @@ return (static function (): array {
     }
 
     return array_merge_recursive($middlewares, [
+        'backend' => [
+            'headless/cms-backend/redirect-module-source-url' => [
+                'after' => [
+                    'typo3/cms-backend/backend-routing',
+                ],
+                'target' => RedirectModuleSourceUrlRewriter::class,
+            ],
+        ],
         'frontend' => [
             'typo3/cms-frontend/shortcut-and-mountpoint-redirect' => [
                 'disabled' => true,

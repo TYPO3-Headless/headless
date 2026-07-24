@@ -1,0 +1,5 @@
+"sys_redirect",,,,,,,,
+,uid,pid,source_host,source_path,target,target_statuscode,keep_query_parameters,disabled
+,1,0,"*","/old-path","t3://page?uid=2",301,0,0
+,2,0,"*","/old-action","t3://page?uid=3 - - - &tx_demo[controller]=Demo&tx_demo[action]=show",307,0,0
+,3,0,"*","/old-keep","t3://page?uid=3 - - - &tx_demo[controller]=Demo&tx_demo[action]=show",302,1,0

@@ -7,7 +7,7 @@ tt_content.uploads {
                 media = TEXT
                 media {
                     dataProcessing {
-                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                        10 = headless-files
                         10 {
                             references.fieldName = media
                             collections.field = file_collections

@@ -24,9 +24,6 @@ use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
-use FriendsOfTYPO3\Headless\Event\Listener\AfterCacheableContentIsGeneratedListener;
-use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
-use FriendsOfTYPO3\Headless\Event\Listener\AfterPageUriGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\HeadlessHreflangGeneratorListener;
 use FriendsOfTYPO3\Headless\Event\Listener\HeadlessRedirectResponseListener;
 use FriendsOfTYPO3\Headless\Event\Listener\LoginConfirmedEventListener;
@@ -37,7 +34,11 @@ use FriendsOfTYPO3\Headless\Json\JsonDecoder;
 use FriendsOfTYPO3\Headless\Json\JsonDecoderInterface;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
+use FriendsOfTYPO3\Headless\Redirects\Form\Element\QrCodeElement;
+use FriendsOfTYPO3\Headless\Redirects\Form\Element\ShortUrlElement;
 use FriendsOfTYPO3\Headless\Resource\Service\HeadlessImageService;
+use FriendsOfTYPO3\Headless\Seo\MetaHandler;
+use FriendsOfTYPO3\Headless\Seo\MetaHandlerInterface;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use FriendsOfTYPO3\Headless\Utility\FileUtilityInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
@@ -86,6 +87,11 @@ return static function (ContainerConfigurator $configurator): void {
 
     $redirectsInstalled = class_exists(RedirectService::class, false);
 
+    if (!$redirectsInstalled) {
+        $excludes[] = '../Classes/Redirects/*';
+        $excludes[] = '../Classes/Middleware/RedirectModuleSourceUrlRewriter.php';
+    }
+
     $toLoad->exclude($excludes);
 
     $toLoad->set(JsonContentObject::class)->tag('frontend.contentobject', ['identifier' => 'JSON']);
@@ -107,14 +113,7 @@ return static function (ContainerConfigurator $configurator): void {
     $services->set(UrlUtility::class)
         ->arg('$resolver', service('headless.expression_language.resolver.site'));
     $services->alias(HeadlessFrontendUrlInterface::class, UrlUtility::class)->public();
-    $services->set(AfterLinkIsGeneratedListener::class)->tag(
-        'event.listener',
-        ['identifier' => 'headless/AfterLinkIsGenerated']
-    );
-    $services->set(AfterCacheableContentIsGeneratedListener::class)->tag(
-        'event.listener',
-        ['identifier' => 'headless/AfterCacheableContentIsGenerated']
-    );
+    $services->alias(MetaHandlerInterface::class, MetaHandler::class)->public();
 
     if ($feloginInstalled) {
         $services->set(LoginConfirmedEventListener::class)->tag(
@@ -128,12 +127,9 @@ return static function (ContainerConfigurator $configurator): void {
             'event.listener',
             ['identifier' => 'headless/RedirectWasHit']
         );
+        $services->set(QrCodeElement::class)->public();
+        $services->set(ShortUrlElement::class)->public();
     }
-
-    $services->set(AfterPageUriGeneratedListener::class)->tag(
-        'event.listener',
-        ['identifier' => 'headless/AfterPageUriGenerated']
-    );
 
     if (class_exists(\TYPO3\CMS\Seo\HrefLang\HrefLangGenerator::class)) {
         $services->set(HeadlessHreflangGeneratorListener::class)->tag(

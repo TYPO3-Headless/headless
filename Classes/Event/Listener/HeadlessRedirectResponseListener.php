@@ -11,20 +11,19 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Event\Listener;
 
-use FriendsOfTYPO3\Headless\Event\RedirectUrlEvent;
+use FriendsOfTYPO3\Headless\Redirects\TargetUrlResolver;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
-use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Redirects\Event\RedirectWasHitEvent;
 
-class HeadlessRedirectResponseListener
+readonly class HeadlessRedirectResponseListener
 {
     public function __construct(
-        private readonly HeadlessModeInterface $headlessMode,
-        private readonly HeadlessFrontendUrlInterface $urlUtility,
-        private readonly EventDispatcherInterface $eventDispatcher,
+        protected HeadlessModeInterface        $headlessMode,
+        protected HeadlessFrontendUrlInterface $urlUtility,
+        protected TargetUrlResolver            $targetUrlResolver,
     ) {}
 
     public function __invoke(RedirectWasHitEvent $event): void
@@ -36,24 +35,17 @@ class HeadlessRedirectResponseListener
         }
 
         $matchedRedirect = $event->getMatchedRedirect();
-        $uri = $event->getTargetUrl();
+        $uri = $this->targetUrlResolver->resolve($matchedRedirect, $event->getTargetUrl(), $request)
+            ?? $event->getTargetUrl();
 
         $urlUtility = $this->urlUtility->withRequest($request);
         $targetUrl = $urlUtility->prepareRelativeUrlIfPossible(
             $urlUtility->getFrontendUrlWithSite((string)$uri, $site)
         );
 
-        $urlEvent = $this->eventDispatcher->dispatch(new RedirectUrlEvent(
-            $request,
-            $uri,
-            $targetUrl,
-            (int)($matchedRedirect['target_statuscode'] ?? 0),
-            $matchedRedirect
-        ));
-
         $event->setResponse(new JsonResponse([
-            'redirectUrl' => $urlEvent->getTargetUrl(),
-            'statusCode' => $urlEvent->getTargetStatusCode(),
+            'redirectUrl' => $targetUrl,
+            'statusCode' => (int)($matchedRedirect['target_statuscode'] ?? 0),
         ]));
     }
 }

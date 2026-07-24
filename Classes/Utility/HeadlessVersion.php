@@ -11,9 +11,6 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Utility;
 
-/**
- * @codeCoverageIgnore
- */
 class HeadlessVersion
 {
     protected const VERSION = '5.0.0-rc1';

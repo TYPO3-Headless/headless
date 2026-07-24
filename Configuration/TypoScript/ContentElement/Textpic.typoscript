@@ -1,39 +1,13 @@
-tt_content.textpic =< lib.contentElementWithHeader
+tt_content.textpic =< lib.galleryContentElement
 tt_content.textpic {
     dataProcessing >
     fields {
         content {
             fields {
-                enlargeImageOnClick = BOOL
-                enlargeImageOnClick {
-                    field = image_zoom
-                }
                 bodytext = TEXT
                 bodytext {
                     field = bodytext
                     parseFunc =< lib.parseFunc_RTE
-                }
-                gallery = TEXT
-                gallery {
-                    dataProcessing {
-                        10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
-                        10 {
-                            references.fieldName = image
-                            as = files
-                            processingConfiguration {
-                                delayProcessing = 1
-                            }
-                        }
-                        20 = FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor
-                        20 {
-                            maxGalleryWidth = {$styles.content.textmedia.maxW}
-                            maxGalleryWidthInText = {$styles.content.textmedia.maxWInText}
-                            columnSpacing = {$styles.content.textmedia.columnSpacing}
-                            borderWidth = {$styles.content.textmedia.borderWidth}
-                            borderPadding = {$styles.content.textmedia.borderPadding}
-                            as = gallery
-                        }
-                    }
                 }
             }
         }

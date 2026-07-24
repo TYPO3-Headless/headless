@@ -32,9 +32,6 @@ call_user_func(
         $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'headless/Configuration/TypoScript/';
 
         $GLOBALS['TYPO3_CONF_VARS']['FE']['typolinkBuilder']['file'] = FileOrFolderLinkBuilder::class;
-        $GLOBALS['TYPO3_CONF_VARS']['SYS']['fluid']['namespaces']['headless'] = [
-            'FriendsOfTYPO3\Headless\ViewHelpers'
-        ];
 
         if (ExtensionManagementUtility::isLoaded('form')) {
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][FormFrontendController::class] = [
@@ -49,6 +46,20 @@ call_user_func(
         if (ExtensionManagementUtility::isLoaded('felogin')) {
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][LoginController::class] = [
                 'className' => FriendsOfTYPO3\Headless\XClass\Controller\LoginController::class
+            ];
+        }
+
+        if (ExtensionManagementUtility::isLoaded('redirects')) {
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1784600000] = [
+                'nodeName' => 'qrCode',
+                'priority' => 50,
+                'class' => FriendsOfTYPO3\Headless\Redirects\Form\Element\QrCodeElement::class,
+            ];
+
+            $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1784600002] = [
+                'nodeName' => 'shortUrl',
+                'priority' => 50,
+                'class' => FriendsOfTYPO3\Headless\Redirects\Form\Element\ShortUrlElement::class,
             ];
         }
 

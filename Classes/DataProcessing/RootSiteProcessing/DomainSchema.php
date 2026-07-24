@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -37,7 +38,14 @@ class DomainSchema implements SiteSchemaInterface
     public function process(SiteProviderInterface $provider, array $options = []): array
     {
         $processorConfiguration = $options['processorConfiguration'] ?? [];
-        $cObj = $options['cObj'] ?? GeneralUtility::makeInstance(ContentObjectRenderer::class);
+        $cObj = $options['cObj'] ?? null;
+        if (!$cObj instanceof ContentObjectRenderer) {
+            $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
+            $request = $options['request'] ?? $GLOBALS['TYPO3_REQUEST'] ?? null;
+            if ($request instanceof ServerRequestInterface) {
+                $cObj->setRequest($request);
+            }
+        }
         $result = [];
 
         foreach ($provider->getSites() as $site) {

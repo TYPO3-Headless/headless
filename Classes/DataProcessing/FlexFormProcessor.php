@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Configuration\FlexForm\FlexFormTools;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -72,7 +73,6 @@ use const JSON_THROW_ON_ERROR;
  *   }
  * }
  *
- * @codeCoverageIgnore
  */
 class FlexFormProcessor implements DataProcessorInterface
 {
@@ -123,17 +123,15 @@ class FlexFormProcessor implements DataProcessorInterface
         $targetVariableName = $cObj->stdWrapValue('as', $processorConfiguration);
 
         if (isset($processorConfiguration['overrideFields.'])) {
-            $flexformData = $this->processOverrideFields($cObj->data, $flexformData, $processorConfiguration);
+            $flexformData = $this->processOverrideFields($cObj->data, $flexformData, $processorConfiguration, $cObj->getRequest());
         }
 
         if (!empty($targetVariableName)) {
             $processedData[$targetVariableName] = $flexformData;
+        } elseif (isset($processedData['data'][$fieldName])) {
+            $processedData['data'][$fieldName] = $flexformData;
         } else {
-            if ($processedData['data'][$fieldName]) {
-                $processedData['data'][$fieldName] = $flexformData;
-            } else {
-                $processedData[$fieldName] = $flexformData;
-            }
+            $processedData[$fieldName] = $flexformData;
         }
 
         return $processedData;
@@ -145,9 +143,12 @@ class FlexFormProcessor implements DataProcessorInterface
      * @param array<string, mixed> $processorConfiguration
      * @return array<string, mixed>
      */
-    public function processOverrideFields(array $data, array $flexformData, array $processorConfiguration): array
+    public function processOverrideFields(array $data, array $flexformData, array $processorConfiguration, ?ServerRequestInterface $request = null): array
     {
         $recordContentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
+        if ($request !== null) {
+            $recordContentObjectRenderer->setRequest($request);
+        }
         $data = array_merge($data, $flexformData);
         $recordContentObjectRenderer->start($data);
 

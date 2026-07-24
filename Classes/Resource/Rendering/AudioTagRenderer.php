@@ -18,7 +18,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 /**
  * Audio tag renderer class
  *
- * @codeCoverageIgnore
  */
 class AudioTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\AudioTagRenderer
 {

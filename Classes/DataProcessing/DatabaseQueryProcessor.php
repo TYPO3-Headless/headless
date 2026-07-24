@@ -110,9 +110,10 @@ class DatabaseQueryProcessor implements DataProcessorInterface
             $overrideJsonCE = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $overrideFields, '_typoScriptNodeValue' => 'JSON']);
         }
 
+        $recordContentObjectRenderer = $this->createContentObjectRenderer();
+        $recordContentObjectRenderer->setRequest($request);
+
         foreach ($records as $key => $record) {
-            $recordContentObjectRenderer = $this->createContentObjectRenderer();
-            $recordContentObjectRenderer->setRequest($request);
             $recordContentObjectRenderer->start($record, $tableName);
 
             $processedRecordVariables[$key] = $objConf !== [] ? json_decode($recordContentObjectRenderer->cObjGetSingle($objName, $objConf), true, 512, JSON_THROW_ON_ERROR) : $record;

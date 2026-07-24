@@ -27,19 +27,16 @@ class JsonEncoder implements JsonEncoderInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const DEFAULT_FLAGS = JSON_HEX_APOS | JSON_HEX_AMP | JSON_THROW_ON_ERROR;
+    protected const DEFAULT_FLAGS = JSON_HEX_APOS | JSON_HEX_AMP | JSON_THROW_ON_ERROR;
 
-    private readonly bool $prettyPrint;
+    protected readonly bool $prettyPrint;
 
     public function __construct(Features $features)
     {
         $this->prettyPrint = $features->isFeatureEnabled('headless.prettyPrint');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function encode($data, int $options = 0): string
+    public function encode(mixed $data, int $options = 0): string
     {
         try {
             $options |= self::DEFAULT_FLAGS;

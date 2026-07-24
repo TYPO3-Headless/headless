@@ -18,12 +18,8 @@ use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 
 #[AsAlias(public: true)]
-final class HeadlessMode implements HeadlessModeInterface
+class HeadlessMode implements HeadlessModeInterface
 {
-    public const NONE = 0;
-    public const FULL = 1;
-    public const MIXED = 2;
-
     private ?ServerRequestInterface $request = null;
 
     public function withRequest(ServerRequestInterface $request): self

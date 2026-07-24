@@ -14,7 +14,7 @@ namespace FriendsOfTYPO3\Headless\Event;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use TYPO3\CMS\Core\Resource\FileInterface;
 
-final class EnrichFileDataEvent
+class EnrichFileDataEvent
 {
     /**
      * @var array<string, mixed>

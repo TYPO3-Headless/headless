@@ -43,6 +43,11 @@ class CookieDomainPerSite implements MiddlewareInterface
 
         $cookieDomain = null;
         foreach ($this->siteFinder->getAllSites() as $site) {
+            if (empty($site->getConfiguration()['baseVariants'])
+                && strtolower($site->getBase()->getHost()) !== $requestHost) {
+                continue;
+            }
+
             $urlUtility = $this->urlUtility->withSite($site);
             $base = $urlUtility->resolveKey('base');
 
@@ -58,21 +63,36 @@ class CookieDomainPerSite implements MiddlewareInterface
         }
 
         if ($cookieDomain === null) {
-            if (!($GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] ?? '')) {
+            if (!($GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] ?? '')
+                && !($GLOBALS['TYPO3_CONF_VARS']['FE']['cookieDomain'] ?? '')
+                && !($GLOBALS['TYPO3_CONF_VARS']['BE']['cookieDomain'] ?? '')
+            ) {
                 $this->logger->warning('missing cookieDomain configuration');
             }
             return $handler->handle($request);
         }
 
-        $previous = $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] ?? null;
+        $previous = [];
+        foreach (['SYS', 'FE', 'BE'] as $scope) {
+            $previous[$scope] = $GLOBALS['TYPO3_CONF_VARS'][$scope]['cookieDomain'] ?? null;
+        }
+
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] = $cookieDomain;
+        foreach (['FE', 'BE'] as $scope) {
+            if (($previous[$scope] ?? '') !== '') {
+                $GLOBALS['TYPO3_CONF_VARS'][$scope]['cookieDomain'] = $cookieDomain;
+            }
+        }
+
         try {
             return $handler->handle($request);
         } finally {
-            if ($previous === null) {
-                unset($GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain']);
-            } else {
-                $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] = $previous;
+            foreach (['SYS', 'FE', 'BE'] as $scope) {
+                if ($previous[$scope] === null) {
+                    unset($GLOBALS['TYPO3_CONF_VARS'][$scope]['cookieDomain']);
+                } else {
+                    $GLOBALS['TYPO3_CONF_VARS'][$scope]['cookieDomain'] = $previous[$scope];
+                }
             }
         }
     }

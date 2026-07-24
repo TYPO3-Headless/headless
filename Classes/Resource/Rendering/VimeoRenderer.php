@@ -16,7 +16,6 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 /**
  * Vimeo renderer class
  *
- * @codeCoverageIgnore
  */
 class VimeoRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VimeoRenderer
 {

@@ -62,6 +62,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
         array $processedData
     ) {
         $this->processorConfigurationObject = ProcessingConfiguration::fromOptions($processorConfiguration);
+        $this->fileUtility->setRequest($cObj->getRequest());
 
         $processedData = parent::process(
             $cObj,

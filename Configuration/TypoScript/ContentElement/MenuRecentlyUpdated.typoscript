@@ -7,7 +7,7 @@ tt_content.menu_recently_updated {
                 menu = TEXT
                 menu {
                     dataProcessing {
-                        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+                        10 = headless-menu
                         10 {
                             appendData = 1
                             special = updated
@@ -18,7 +18,7 @@ tt_content.menu_recently_updated {
                             }
                             as = menu
                             dataProcessing {
-                                10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
+                                10 = headless-files
                                 10 {
                                     references.fieldName = media
                                     as = media

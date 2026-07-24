@@ -133,6 +133,15 @@ class HeadlessPhpViewTest extends UnitTestCase
         $view->render('Does/Not/Exist');
     }
 
+    public function testThrowsWhenNoTemplateRootIsConfigured(): void
+    {
+        $view = new HeadlessPhpView(new ViewFactoryData());
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionCode(1747300000);
+        $view->render('Default');
+    }
+
     public function testCleansOutputBufferWhenTemplateThrows(): void
     {
         $root = $this->createTemplateRoot();
