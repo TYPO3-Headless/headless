@@ -14,6 +14,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Form\Decorator;
 use FriendsOfTYPO3\Headless\Form\Decorator\RichTextFormDefinitionDecorator;
 use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use ReflectionProperty;
+use stdClass;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\TypoScript\AST\Node\RootNode;
 use TYPO3\CMS\Core\TypoScript\FrontendTypoScript;
@@ -126,7 +127,7 @@ class RichTextFormDefinitionDecoratorTest extends HeadlessUnitTestCase
 
     public function testFinisherSuccessMessageIsSanitisedInActionAfterSuccess(): void
     {
-        $actionAfterSuccess = new \stdClass();
+        $actionAfterSuccess = new stdClass();
         $actionAfterSuccess->message = '<p>Thanks <script>alert(1)</script></p>';
 
         $decorator = $this->buildDecoratorWithFakeSanitizer(['actionAfterSuccess' => $actionAfterSuccess]);
@@ -143,7 +144,7 @@ class RichTextFormDefinitionDecoratorTest extends HeadlessUnitTestCase
 
     public function testPlainTextFinisherMessageIsLeftUntouched(): void
     {
-        $actionAfterSuccess = new \stdClass();
+        $actionAfterSuccess = new stdClass();
         $actionAfterSuccess->message = 'Plain thanks';
 
         $decorator = $this->buildDecoratorWithFakeSanitizer(['actionAfterSuccess' => $actionAfterSuccess]);

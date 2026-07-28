@@ -72,7 +72,6 @@ use const JSON_THROW_ON_ERROR;
  *     }
  *   }
  * }
- *
  */
 class FlexFormProcessor implements DataProcessorInterface
 {

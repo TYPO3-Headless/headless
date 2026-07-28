@@ -14,7 +14,9 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\DataProcessing;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider;
 use FriendsOfTYPO3\Headless\Tests\Functional\BaseHeadlessTesting;
 use InvalidArgumentException;
+use stdClass;
 use TYPO3\CMS\Core\Core\Environment;
+
 use TYPO3\CMS\Core\Site\Entity\Site;
 
 use function array_map;
@@ -68,7 +70,7 @@ class SiteProviderTest extends BaseHeadlessTesting
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $this->get(SiteProvider::class)->prepare(['sortingImplementation' => \stdClass::class], 110);
+        $this->get(SiteProvider::class)->prepare(['sortingImplementation' => stdClass::class], 110);
     }
 
     /**

@@ -21,9 +21,9 @@ use TYPO3\CMS\Redirects\Event\RedirectWasHitEvent;
 readonly class HeadlessRedirectResponseListener
 {
     public function __construct(
-        protected HeadlessModeInterface        $headlessMode,
+        protected HeadlessModeInterface $headlessMode,
         protected HeadlessFrontendUrlInterface $urlUtility,
-        protected TargetUrlResolver            $targetUrlResolver,
+        protected TargetUrlResolver $targetUrlResolver,
     ) {}
 
     public function __invoke(RedirectWasHitEvent $event): void

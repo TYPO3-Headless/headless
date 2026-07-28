@@ -15,7 +15,6 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 
 /**
  * YouTube renderer class
- *
  */
 class YouTubeRenderer extends \TYPO3\CMS\Core\Resource\Rendering\YouTubeRenderer
 {

@@ -18,7 +18,7 @@ class HeadlessVersionTest extends HeadlessUnitTestCase
 {
     public function testMajorVersionIsFirstSegmentOfVersion(): void
     {
-        $version = new class extends HeadlessVersion {
+        $version = new class () extends HeadlessVersion {
             protected const VERSION = '7.2.1-rc3';
         };
 
