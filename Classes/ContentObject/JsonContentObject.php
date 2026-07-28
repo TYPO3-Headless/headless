@@ -33,7 +33,12 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     /**
      * @var array<string, mixed>
      */
-    private array $conf = [];
+    protected array $conf = [];
+
+    /**
+     * @var list<string>
+     */
+    protected array $nullableFieldsIfEmpty = [];
 
     public function __construct(
         protected ContentDataProcessor $contentDataProcessor,
@@ -60,6 +65,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
         $data = [];
 
         $this->conf = $conf;
+        $this->nullableFieldsIfEmpty = GeneralUtility::trimExplode(',', $conf['nullableFieldsIfEmpty'] ?? '', true);
 
         if (isset($conf['fields.'])) {
             $data = $this->cObjGet($conf['fields.']);
@@ -96,14 +102,12 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     public function cObjGet(array $setup, string $addKey = ''): array
     {
         $content = [];
-        $nullableFieldsIfEmpty = GeneralUtility::trimExplode(',', $this->conf['nullableFieldsIfEmpty'] ?? '', true);
 
         $sKeyArray = $this->filterByStringKeys($setup);
         foreach ($sKeyArray as $theKey) {
             $theValue = $setup[$theKey];
             if ((string)$theKey && !str_contains($theKey, '.')) {
                 $conf = $setup[$theKey . '.'] ?? [];
-                $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
                 if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
@@ -117,28 +121,27 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ($theValue === 'USER_INT' || str_starts_with((string)$content[$theKey], '<!--INT_SCRIPT.')) {
                     $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey], (int)($conf['ifEmptyReturnNull'] ?? 0) === 1 ? HeadlessUserInt::STANDARD_NULLABLE : HeadlessUserInt::STANDARD);
                 }
-                if ($content[$theKey] === '' && ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 || in_array($theKey, $nullableFieldsIfEmpty, true))) {
+                if ($content[$theKey] === '' && ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 || in_array($theKey, $this->nullableFieldsIfEmpty, true))) {
                     $content[$theKey] = null;
                 }
                 if ((int)($conf['ifEmptyUnsetKey'] ?? 0) === 1 && ($content[$theKey] === '' || $content[$theKey] === false)) {
                     unset($content[$theKey]);
                 }
-                if (!empty($contentDataProcessing['dataProcessing.'])) {
-                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
+                if (!empty($conf['dataProcessing.'])) {
+                    $content[$theKey] = $this->processFieldWithDataProcessing(['dataProcessing.' => $conf['dataProcessing.']]);
                 }
             }
             if ((string)$theKey && strpos($theKey, '.') > 0 && !isset($setup[rtrim($theKey, '.')])) {
                 $contentFieldName = $theValue['source'] ?? rtrim($theKey, '.');
-                $contentFieldTypeProcessing['dataProcessing.'] = $theValue['dataProcessing.'] ?? [];
 
                 $fieldsData = null;
                 if (array_key_exists('fields.', $theValue)) {
                     $fieldsData = $this->cObjGet($theValue['fields.']);
                     $content[$contentFieldName] = $fieldsData;
                 }
-                if (!empty($contentFieldTypeProcessing['dataProcessing.'])) {
+                if (!empty($theValue['dataProcessing.'])) {
                     $shouldMerge = $this->shouldMergeWithFields($theValue);
-                    $processed = $this->processFieldWithDataProcessing($shouldMerge ? $theValue : $contentFieldTypeProcessing);
+                    $processed = $this->processFieldWithDataProcessing($shouldMerge ? $theValue : ['dataProcessing.' => $theValue['dataProcessing.']]);
                     $content[rtrim($theKey, '.')] = $shouldMerge && is_array($processed)
                         ? array_replace($fieldsData ?? [], $processed)
                         : $processed;
