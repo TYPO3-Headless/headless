@@ -22,6 +22,9 @@ The file rendering in `EXT:headless` is handled by `FileUtility` which renders t
     "uidLocal": "123",
     "fileReferenceUid": "234",
     "size": "50 KB",
+    "title": null,
+    "alternative": null,
+    "description": null,
     "dimensions": {
       "width": "300",
       "height": "100",
@@ -70,15 +73,18 @@ Will output:
   "uidLocal": "123",
   "fileReferenceUid": "234",
   "size": "50 KB",
+  "title": null,
+  "alternative": null,
+  "description": null,
   "dimensions": {
-     "width": "300",
-      "height": "100",
+    "width": "300",
+    "height": "100",
   },
   "cropDimensions": {
     "width": "300",
     "height": "100",
   },
-  "crop": { ... },
+  "cropVariants": { "default": "..." },
   "autoplay": null,
   "extension": null
 
@@ -131,7 +137,11 @@ The rendering configuration can be set via the property `processingConfiguration
 
 * `legacyReturn` (0|1): Allows to control new simplified output or old system (old system by default)
 * `linkResult` (0|1): Allows to define if file object should return only url of defined link or whole LinkResult object
-* `cacheBusting` (0|1): Allows to enable cacheBusting urls for processed files
+* `cacheBusting` (0|1): Allows to enable cacheBusting urls for processed files (enabled globally by the `headless.assetsCacheBusting` feature flag)
+* `width`, `height`, `minWidth`, `minHeight`, `maxWidth`, `maxHeight`: image processing instructions passed to the core processor
+* `cropVariant` (name): render a specific crop variant (default `default`)
+* `processGif` (0|1): enable optional processing of gif files (default off)
+* `outputCropArea` (0|1): include the resolved crop area in the output
 * `conditionalCropVariant` (0|1): Allows conditionally autogenerate files with defined variants if set (if not all variants are returned)
 * `processPdfAsImage` (0|1): Enabled optional processing pdf files as image (default off)
 * `processSvg` (0|1): Enabled optional processing svg files (default off)
@@ -219,3 +229,5 @@ The rendering configuration can be set directly. No `processingConfiguration` pr
 * `autogenerate`
   * `retina2x`
   * `lqip`
+  * custom keys with `factor` / `fileExtension` — same syntax as in the
+    FilesProcessor example above

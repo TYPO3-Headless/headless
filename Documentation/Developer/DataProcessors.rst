@@ -34,10 +34,10 @@ It's the `EXT:headless` equivalent of TYPO3's own DatabaseQueryProcessor.
 Apart from the properties of TYPO3's DatabaseQueryProcessor (`if`, `table`, `as` and `dataProcessing`)
 it provides the following properties:
 
-* `fields`
-* `overrideFields`
-* `returnFlattenObject` (Default: 0)
-* `returnFlattenLegacy` (Default: 1)
+* `fields` — JSON-style field map applied to every row
+* `overrideFields` — same, merged over already-processed rows
+* `returnFlattenObject` (Default: 0) — return the single row directly
+  instead of an array
 
 .. _dataprocessors-extractpropertyprocessor:
 
@@ -71,6 +71,14 @@ FilesProcessor
       20.as = media
     }
   }
+
+Sources besides `references.fieldName`: `references` (list of
+`sys_file_reference` uids, optionally `references.table`), `files`
+(`sys_file` uids), `collections` (file collection uids), `folders`
+(combined-identifier folder paths, `folders.recursive = 1` to descend).
+Further options: `sorting` (file property, `sorting.direction`),
+`appendData = 1` (keep the processed record data alongside the files)
+and the `processingConfiguration` block described in :ref:`images`.
 
 .. _dataprocessors-flexformprocessor:
 
@@ -108,14 +116,18 @@ MenuProcessor
 
 It's the `EXT:headless` equivalent of TYPO3's MenuProcessor.
 
-Have a look at `lib.breadcrumbs` for example:
+Have a look at `lib.breadcrumbs` for example (all shipped TypoScript
+uses the registered short identifiers — `headless-menu`,
+`headless-files`, `headless-gallery`, `headless-database-query`,
+`headless-language-menu`, `headless-root-sites`, `headless-flex-form`,
+`headless-extract-property` — the FQCNs work too):
 
 .. code-block:: typoscript
 
   lib.breadcrumbs = JSON
   lib.breadcrumbs {
     dataProcessing {
-      10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+      10 = headless-menu
       10 {
         special = rootline
         expandAll = 0
@@ -128,8 +140,8 @@ Have a look at `lib.breadcrumbs` for example:
 
 .. _dataprocessors-rootsiteprocessor:
 
-RootSiteProcessor
-=================
+RootSitesProcessor
+==================
 
 .. code-block:: typoscript
 

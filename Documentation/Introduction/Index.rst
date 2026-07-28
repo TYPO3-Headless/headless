@@ -4,33 +4,41 @@
 Introduction
 ==============
 
-This extension is designed to facilitate seamless integration between TYPO3 and modern frontend frameworks by providing a robust and flexible headless CMS solution. Its stable release, it ensures reliable performance and multiple features.
+EXT:headless renders TYPO3 pages and content as JSON. The response shape is
+plain TypoScript — field names, types and nesting are customised with tools
+TYPO3 integrators already know. Any frontend that speaks JSON can consume it;
+`nuxt-typo3 <https://github.com/TYPO3-Initiatives/nuxt-typo3>`__ is the
+reference implementation.
 
 .. _what-it-does:
 
-What does it do?
-================
+What you get
+============
 
-The headless extension provides a JSON API that serves as an endpoint for various types of applications. It utilizes standard TYPO3 features to render the page tree structure and page content into JSON format. The JSON response object and content elements can be customized using TypoScript.
+* JSON API for pages, content elements, menus, metadata — with full
+  language/fallback handling
+* Per-site modes: full JSON, mixed (JSON only for
+  `Accept: application/json`), off
+* Extensible via TypoScript: custom fields, custom content elements
+* Installed core extensions integrate automatically: `EXT:form`,
+  `EXT:felogin`, `EXT:redirects` (JSON envelopes), `EXT:seo`
+  (meta tags, XML sitemap); workspace preview works out of the box
+* Community add-ons: `news <https://github.com/TYPO3-Initiatives/headless_news>`__,
+  `solr <https://github.com/TYPO3-Initiatives/headless_solr>`__,
+  `powermail <https://github.com/TYPO3-Initiatives/headless_powermail>`__,
+  `gridelements <https://github.com/itplusx/headless_gridelements>`__,
+  `container <https://github.com/itplusx/headless-container>`__
 
-**Features**
+Version support
+===============
 
-* JSON API for content elements
-* JSON API for navigation page tree structure
-* Comprehensive support for language and translation configurations (e.g., fallback)
-* Easy extensibility with custom fields or custom Content Elements (CEs)
-* Integration support for EXT:felogin and EXT:form
-* Integration support for EXT:news (see additional extension `EXT:headless_news <https://github.com/TYPO3-Initiatives/headless_news>`__)
-* Integration support for EXT:solr (`EXT:headless_solr <https://github.com/TYPO3-Initiatives/headless_solr>`__)
-* Integration support for EXT:powermail (`EXT:headless_powermail <https://github.com/TYPO3-Initiatives/headless_powermail>`__)
-* Integration support for EXT:gridelements (`EXT:headless_gridelements <https://github.com/itplusx/headless_gridelements>`__)
-* Integration support for EXT:container (`EXT:headless_container <https://github.com/itplusx/headless-container>`__)
+==========  ================  ==========  ==============================
+headless    TYPO3             PHP         Status
+==========  ================  ==========  ==============================
+5.x         14                >= 8.2      Active development
+4.x         12.4 – 13         >= 8.2      Bug & security fixes
+3.x         11.5              —           End of life
+==========  ================  ==========  ==============================
 
-**Additional Benefits**
-
-* **Performance Optimization**: The headless architecture enhances performance by delivering only the necessary data to the client, reducing load times and improving the user experience.
-* **Scalability**: Easily scale your application by decoupling the backend from the frontend, allowing for independent scaling based on demand.
-* **Flexibility**: Provides the flexibility to integrate with various frontend frameworks and libraries, enabling developers to choose the best tools for their specific use case.
-* **Future-Proofing**: Stay ahead of the curve with a modern headless CMS approach, ensuring your application remains relevant and adaptable to future technological advancements.
-
-This extension is designed to empower developers to build dynamic, responsive, and high-performing web applications while leveraging the powerful features of TYPO3. Whether you are building a single-page application (SPA), a progressive web app (PWA), or any other type of frontend application, this extension provides the tools you need to succeed.
+Upgrading? See `UPGRADE.md
+<https://github.com/TYPO3-Headless/headless/blob/master/UPGRADE.md>`__.

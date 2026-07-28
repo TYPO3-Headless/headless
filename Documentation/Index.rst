@@ -66,15 +66,24 @@ or `report a problem <https://github.com/TYPO3-Initiatives/headless/issues/new>`
 .. toctree::
    :maxdepth: 3
    :titlesonly:
-   :glob:
 
    Introduction/Index
-   Installation/Index
+   GettingStarted/Index
    Configuration/Index
-   Configuration/Preview
-   Configuration/XmlSitemap
+   Configuration/MultiSite
    Developer/Index
+   Developer/CObjects
+   Developer/CustomContent
    Developer/DataProcessors
+   Developer/Events
    Developer/Images
+   Developer/Snippets
+   Integrations/Form
+   Integrations/FeLogin
+   Integrations/Redirects
+   Reference/Typoscript
+   Reference/Events
+   Reference/FeatureFlags
+   Reference/Interfaces
    FAQ/Index
    Sitemap
