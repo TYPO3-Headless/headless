@@ -77,6 +77,33 @@ when empty (bulk variant of `ifEmptyReturnNull`).
 **`dataProcessing`** — *replaces* the `fields` output: the processors
 run and the value registered under the last `as` key becomes the
 object's content (e.g. :ref:`MenuProcessor <dataprocessors-menuprocessor>`).
+Set `dataProcessingMerge` to keep both.
+
+**`dataProcessingMerge`** — merge instead of replace. With
+`dataProcessingMerge = 1` and `fields` present, the `fields` output is
+kept and every processor result is added to it under the processor's
+target (`as`) name; on a key collision the processor result wins.
+
+.. code-block:: typoscript
+
+  lib.page = JSON
+  lib.page {
+    dataProcessingMerge = 1
+    fields {
+      title = TEXT
+      title.field = title
+    }
+    dataProcessing {
+      10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+      10.as = mainMenu
+    }
+  }
+
+  # {"title":"…","mainMenu":[…]} instead of the menu replacing the title
+
+The flag also works on a nested field block that defines both `fields`
+and `dataProcessing`. Without the flag — or without `fields` — the
+behaviour is unchanged: the processors replace the whole object.
 
 **`stdWrap`** — `stdWrap` applied to the already-encoded JSON string.
 

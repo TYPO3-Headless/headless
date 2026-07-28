@@ -65,7 +65,10 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             $data = $this->cObjGet($conf['fields.']);
         }
         if (isset($conf['dataProcessing.'])) {
-            $data = $this->processFieldWithDataProcessing($conf);
+            $processed = $this->processFieldWithDataProcessing($conf);
+            $data = $this->shouldMergeWithFields($conf) && is_array($processed)
+                ? array_replace($data, $processed)
+                : $processed;
         }
 
         $json = '';
@@ -128,11 +131,17 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 $contentFieldName = $theValue['source'] ?? rtrim($theKey, '.');
                 $contentFieldTypeProcessing['dataProcessing.'] = $theValue['dataProcessing.'] ?? [];
 
+                $fieldsData = null;
                 if (array_key_exists('fields.', $theValue)) {
-                    $content[$contentFieldName] = $this->cObjGet($theValue['fields.']);
+                    $fieldsData = $this->cObjGet($theValue['fields.']);
+                    $content[$contentFieldName] = $fieldsData;
                 }
                 if (!empty($contentFieldTypeProcessing['dataProcessing.'])) {
-                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentFieldTypeProcessing);
+                    $shouldMerge = $this->shouldMergeWithFields($theValue);
+                    $processed = $this->processFieldWithDataProcessing($shouldMerge ? $theValue : $contentFieldTypeProcessing);
+                    $content[rtrim($theKey, '.')] = $shouldMerge && is_array($processed)
+                        ? array_replace($fieldsData ?? [], $processed)
+                        : $processed;
                 }
             }
         }
@@ -172,6 +181,12 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             ]
         );
 
+        if ($this->shouldMergeWithFields($dataProcessing)) {
+            unset($data['data'], $data['current']);
+
+            return $data;
+        }
+
         $dataProcessingData = null;
 
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
@@ -180,6 +195,14 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             }
         }
         return $dataProcessingData;
+    }
+
+    /**
+     * @param array<string, mixed> $conf
+     */
+    protected function shouldMergeWithFields(array $conf): bool
+    {
+        return isset($conf['fields.']) && (int)($conf['dataProcessingMerge'] ?? 0) === 1;
     }
 
     /**
