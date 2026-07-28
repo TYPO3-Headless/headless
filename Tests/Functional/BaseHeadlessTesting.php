@@ -26,6 +26,9 @@ abstract class BaseHeadlessTesting extends FunctionalTestCase
     protected array $testExtensionsToLoad = [
         'typo3conf/ext/headless',
     ];
+    protected array $typoScriptSetupFiles = [
+        'EXT:headless/Configuration/TypoScript/setup.typoscript',
+    ];
 
     /**
      * set up objects
@@ -40,7 +43,7 @@ abstract class BaseHeadlessTesting extends FunctionalTestCase
             1,
             [
                 'constants' => ['EXT:headless/Configuration/TypoScript/constants.typoscript'],
-                'setup' => ['EXT:headless/Configuration/TypoScript/setup.typoscript'],
+                'setup' => $this->typoScriptSetupFiles,
             ]
         );
 

@@ -20,9 +20,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
-/**
- * @codeCoverageIgnore
- */
 class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcessor
 {
     use DataProcessingTrait;
@@ -242,8 +239,13 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
                 $fileObj = $this->fileObjects[$fileKey] ?? null;
 
                 if ($fileObj !== null && (($fileObj['properties']['type'] ?? '') === 'image' || ($fileObj['type'] ?? '') === 'image')) {
-                    $src = $this->processorConfigurationObject->legacyReturn ? $fileObj['properties']['fileReferenceUid'] : $fileObj['fileReferenceUid'];
-                    $image = $this->getImageService()->getImage((string)$src, null, true);
+                    $properties = $this->processorConfigurationObject->legacyReturn ? $fileObj['properties'] : $fileObj;
+                    $fileReferenceUid = $properties['fileReferenceUid'] ?? null;
+                    $image = $this->getImageService()->getImage(
+                        (string)($fileReferenceUid ?? $properties['uidLocal']),
+                        null,
+                        $fileReferenceUid !== null
+                    );
                     $fileObj = $this->getFileUtility()->process(
                         $image,
                         $this->processorConfigurationObject->withOptions($this->mediaDimensions[$fileKey] ?? [])
