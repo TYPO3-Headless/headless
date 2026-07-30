@@ -93,7 +93,6 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $targetUri = new Uri($this->sanitizeBaseUrl($url));
 
         if (!$this->headlessMode->isEnabled() ||
-            $targetUri->getHost() === '' ||
             $this->isExternalUrl($targetUri->getHost()) ||
             $this->alreadyFrontendLink($targetUri->getHost())) {
             return $url;
@@ -376,6 +375,10 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
     protected function isExternalUrl(string $url): bool
     {
+        if ($url === '') {
+            return false;
+        }
+
         return !in_array($url, array_merge($this->backendDomains, $this->frontendDomains), true);
     }
 }

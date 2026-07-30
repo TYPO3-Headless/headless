@@ -54,7 +54,7 @@ class UrlUtilityTest extends UnitTestCase
         $headlessMode = $this->createHeadlessMode();
 
         $site = $this->prophesize(Site::class);
-        $site->getBase()->shouldBeCalled(2)->willReturn(new Uri('https://test-backend-api.tld/'));
+        $site->getBase()->willReturn(new Uri('https://test-backend-api.tld/'));
         $site->getConfiguration()->shouldBeCalled(3)->willReturn([
             'base' => 'https://www.typo3.org',
             'languages' => [],
@@ -140,7 +140,7 @@ class UrlUtilityTest extends UnitTestCase
         $headlessMode = $this->createHeadlessMode();
 
         $site = $this->prophesize(Site::class);
-        $site->getBase()->shouldBeCalled(1)->willReturn(new Uri('https://test-backend-api.tld/dev-path/'));
+        $site->getBase()->willReturn(new Uri('https://test-backend-api.tld/dev-path/'));
         $site->getConfiguration()->shouldBeCalled(3)->willReturn([
             'base' => 'https://www.typo3.org',
             'languages' => [],
@@ -169,6 +169,7 @@ class UrlUtilityTest extends UnitTestCase
     public function testFrontendUrlsWithBaseProductionAndLocalOverride(): void
     {
         $site = $this->prophesize(Site::class);
+        $site->getBase()->willReturn(new Uri('https://api.typo3.org/'));
         $site->getConfiguration()->shouldBeCalled(3)->willReturn([
             'base' => 'https://api.typo3.org/',
             'frontendBase' => 'https://www.typo3.org/',
@@ -275,9 +276,9 @@ class UrlUtilityTest extends UnitTestCase
             $urlUtility->prepareRelativeUrlIfPossible('https://test-second-frontend.tld/test-page')
         );
 
-        // do not touch already relative links
+        // relative links get frontend base prepended
         self::assertSame(
-            '/test-page',
+            'https://test-frontend.tld/test-page',
             $urlUtility->getFrontendUrlWithSite('/test-page', $site->reveal())
         );
 
@@ -334,6 +335,7 @@ class UrlUtilityTest extends UnitTestCase
         $headlessMode = $this->createHeadlessMode();
 
         $site = $this->prophesize(Site::class);
+        $site->getBase()->willReturn(new Uri('https://www.typo3.org'));
         $site->getConfiguration()->shouldBeCalled(2)->willReturn([
             'base' => 'https://www.typo3.org',
             'languages' => [],
