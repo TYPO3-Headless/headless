@@ -4,11 +4,11 @@ lib.meta {
     fields {
         title = TEXT
         title {
+            field = title
+        }
+        seoTitle = TEXT
+        seoTitle {
             field = seo_title
-            stdWrap.ifEmpty.cObject = TEXT
-            stdWrap.ifEmpty.cObject {
-                field = title
-            }
         }
         subtitle = TEXT
         subtitle {
