@@ -120,11 +120,6 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
                 $targetUri = $targetUri->withScheme($frontendBase->getScheme());
             }
 
-            if ($targetUri->getFragment() !== '') {
-                $targetUri = $targetUri->withHost('');
-                $targetUri = $targetUri->withScheme('');
-            }
-
             if ($frontExtraPath) {
                 $targetUri = $targetUri->withPath($this->handleFrontendAndBackendPaths($frontExtraPath, $targetUri, $site->getBase()->getPath()));
             }
