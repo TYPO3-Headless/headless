@@ -9,6 +9,10 @@ on:
   pull_request:
   schedule:
     - cron: '15 3 * * 1'
+
+permissions:
+  contents: read
+
 jobs:
   php-lint:
     name: "PHP linter"
@@ -101,6 +105,7 @@ jobs:
 
       - name: "Install composer dependencies"
         run: |
+          composer config policy.advisories.block false
           composer require typo3/cms-core:"^${{ matrix.typo3-versions.typo3 }}" typo3/minimal:"^${{ matrix.typo3-versions.typo3 }}" --prefer-dist --no-progress
           composer require --dev typo3/testing-framework:"${{ matrix.typo3-versions.testing }}" phpunit/phpunit:"${{ matrix.typo3-versions.phpunit }}" phpunit/phpcov:"${{ matrix.typo3-versions.phpcov }}" symfony/yaml:"${{ matrix.typo3-versions.yaml }}" --prefer-dist --no-progress
 
