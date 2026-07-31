@@ -623,10 +623,11 @@ class FileUtilityTest extends UnitTestCase
     {
         $processedFile = $this->createPartialMock(
             ProcessedFile::class,
-            ['getProperty', 'getMimeType', 'getSize', 'hasProperty', 'getPublicUrl']
+            ['getProperty', 'getMimeType', 'getSize', 'hasProperty', 'getPublicUrl', 'getExtension']
         );
         $processedFile->method('getMimeType')->willReturn('image/jpeg');
         $processedFile->method('getSize')->willReturn($data['size']);
+        $processedFile->method('getExtension')->willReturn((string)($data['extension'] ?? ''));
         $processedFile->method('getProperty')->willReturnCallback(static function ($key) use ($data) {
             return $data[$key] ?? null;
         });
@@ -762,7 +763,7 @@ class FileUtilityTest extends UnitTestCase
                         ],
                     'crop' => '{"default":{"cropArea":{"x":0,"y":0,"width":1,"height":1},"selectedRatio":"NaN","focusArea":null}}',
                     'autoplay' => 0,
-                    'extension' => 'jpg',
+                    'extension' => null,
                 ],
         ];
     }
