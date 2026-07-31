@@ -133,6 +133,7 @@ class UrlUtilityTest extends UnitTestCase
         self::assertSame('https://test-frontend3.tld/sitemap', $urlUtility->resolveKey('SpecialSitemapKey'));
         self::assertSame('https://test-frontend-api3.tld/headless', $urlUtility->getFrontendUrlWithSite('https://test-backend3-api.tld', $site->reveal(), 'frontendApiProxy'));
         self::assertSame('#fragment-123', $urlUtility->getFrontendUrlWithSite('#fragment-123', $site->reveal()));
+        self::assertSame('https://test-frontend3.tld/test-page#section', $urlUtility->getFrontendUrlWithSite('https://test-backend-api.tld/test-page#section', $site->reveal()));
     }
 
     public function testFrontendUrlsWithDifferentPaths(): void
