@@ -159,13 +159,12 @@ jobs:
             php-${{ matrix.php-versions }}-typo3-
 
       - name: "Install composer dependencies"
-        run: composer remove php-coveralls/php-coveralls --dev --no-progress && composer require typo3/minimal
-             "^${{ matrix.typo3-versions.typo3 }}"
-             typo3/testing-framework "${{ matrix.typo3-versions.testing }}"
-             phpunit/phpunit "${{ matrix.typo3-versions.phpunit }}"
-             phpunit/phpcov "${{ matrix.typo3-versions.phpcov }}"
-             symfony/yaml "${{ matrix.typo3-versions.yaml }}"
-             --prefer-dist --no-progress
+        run: 'composer remove php-coveralls/php-coveralls --dev --no-progress && composer typo3/cms-core:"^${{ matrix.typo3-versions.typo3 }}" typo3/minimal:"^${{ matrix.typo3-versions.typo3 }}"
+             typo3/testing-framework:"${{ matrix.typo3-versions.testing }}"
+             phpunit/phpunit:"${{ matrix.typo3-versions.phpunit }}"
+             phpunit/phpcov:"${{ matrix.typo3-versions.phpcov }}"
+             symfony/yaml:"${{ matrix.typo3-versions.yaml }}"
+             --prefer-dist --no-progress'
 
       - name: "Run Unit tests"
         run: composer ci:test:unit
