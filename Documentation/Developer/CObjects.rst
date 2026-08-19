@@ -10,9 +10,12 @@ EXT:headless registers a handful of new cObjects:
 * `CONTENT_JSON`
 * `BOOL`, `FLOAT`, `INT`
 
-`BOOL`, `FLOAT` and `INT` take `value` and `stdWrap` properties like
-`TEXT`, but return a real bool / float / int — they only work as
-fields *inside* a `JSON` cObject, not in generic TypoScript.
+`BOOL`, `FLOAT` and `INT` take `value` and `value.` (stdWrap applied
+to the value); every remaining top-level property is treated as stdWrap
+configuration directly — `noIndex.field = no_index` works, there is no
+`stdWrap.` sub-key like core `TEXT`. They return a real bool / float /
+int and only work as fields *inside* a `JSON` cObject, not in generic
+TypoScript.
 
 JSON
 ====
@@ -68,11 +71,19 @@ The JSON cObject understands these properties:
 * `intval` / `floatval` / `boolval` — cast the result.
 * `ifEmptyReturnNull` — return `null` when the result is empty.
 * `ifEmptyUnsetKey` — drop the key when the result is empty.
-* `source` — output the field under a different key.
+* `source` — nested field blocks only: output the block's `fields`
+  result under a different key. Ignored on plain fields, and ignored
+  when the block defines `dataProcessing` — that result is always
+  stored under the block's own key.
 * `dataProcessing` — run data processors (see `lib.meta.ogImage`).
 
 **`nullableFieldsIfEmpty`** — comma list of field names to null out
 when empty (bulk variant of `ifEmptyReturnNull`).
+
+A field whose cObject is `USER_INT` (or whose output starts with an
+`<!--INT_SCRIPT` placeholder) is wrapped in `HeadlessUserInt` markers,
+so the uncacheable value is substituted into the JSON on output; with
+`ifEmptyReturnNull = 1` the nullable marker variant is used.
 
 **`dataProcessing`** — *replaces* the `fields` output: the processors
 run and the value registered under the last `as` key becomes the
@@ -144,6 +155,9 @@ first — handy for the `slide` feature.
 expose a `colPos` field, otherwise rendering throws a
 `RuntimeException`. `1` returns a flat JSON array.
 
+An empty result is encoded as `{}` with grouping enabled and as `[]`
+with `doNotGroupByColPos = 1` — consumers must handle both types.
+
 .. code-block:: typoscript
 
   lib.content = CONTENT_JSON
@@ -164,4 +178,19 @@ backend layout instead of numerically.
 **returnSingleRow**
 
 Return the first matched element as a single object instead of an
-array — for one-record queries.
+array — for one-record queries. Only takes effect together with
+`doNotGroupByColPos = 1`; with the default `colPos` grouping the flag
+is silently ignored.
+
+.. code-block:: typoscript
+
+  lib.header = CONTENT_JSON
+  lib.header {
+    table = tt_content
+    select {
+      orderBy = sorting
+      max = 1
+    }
+    doNotGroupByColPos = 1
+    returnSingleRow = 1
+  }

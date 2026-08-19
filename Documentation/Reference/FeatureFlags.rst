@@ -1,8 +1,8 @@
 .. _ref-feature-flags:
 
-=======================
+========================
 Reference: Feature Flags
-=======================
+========================
 
 Quick lookup. For per-flag descriptions and usage see
 :ref:`configuration`.

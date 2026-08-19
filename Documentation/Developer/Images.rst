@@ -88,6 +88,9 @@ Will output:
   "autoplay": null,
   "extension": null
 
+`cropVariants` only appears for images whose crop configuration
+defines more than one crop variant.
+
 EnrichFileDataEvent
 -------------------
 
@@ -190,7 +193,7 @@ The rendering configuration can be set via the property `processingConfiguration
    10 {
       ...
       processingConfiguration {
-         # (1 by default, return new format of file object)
+         # (1 by default = legacy output; set 0 for the new simplified format)
          legacyReturn = 0
          # Return whole LinkResult object instead simple url
          linkResult = 1
@@ -219,7 +222,16 @@ GalleryProcessor
 Configuration
 -------------
 
-The rendering configuration can be set directly. No `processingConfiguration` property available!
+The rendering configuration is set directly on the processor: **all**
+options of the `processingConfiguration` block documented above
+(`legacyReturn`, `fileExtension`, `cropVariant`, …) are read from the
+processor's top-level configuration — there is no
+`processingConfiguration.` sub-key.
+
+Default `as` is `gallery`. The processor also supports `appendData`
+(`1` keeps the raw record data; absent or `0` — the default — strips
+`data` from the result) and `cropVariant` to select the crop variant
+used for the width/height calculation (default `default`).
 
 * `maxGalleryWidth`: set to the core constant `{$styles.content.textmedia.maxW}`
 * `maxGalleryWidthInText`: set to the core constant `{$styles.content.textmedia.maxWInText}`

@@ -52,9 +52,11 @@ Encode JSON safely from your own code
 =====================================
 
 Inject `FriendsOfTYPO3\Headless\Json\JsonEncoderInterface` instead of
-calling `json_encode` directly. It applies `JSON_THROW_ON_ERROR`,
-HTML-attribute-safe hex flags (`JSON_HEX_APOS | JSON_HEX_AMP`) and the
-`headless.prettyPrint` feature flag for free.
+calling `json_encode` directly. It applies HTML-attribute-safe hex
+flags (`JSON_HEX_APOS | JSON_HEX_AMP`) and the `headless.prettyPrint`
+feature flag for free. Note that it does **not** throw on encoding
+failures — a `JsonException` is caught, logged as critical, and the
+string `"[]"` is returned instead.
 
 Decode nested JSON inside an array
 ==================================

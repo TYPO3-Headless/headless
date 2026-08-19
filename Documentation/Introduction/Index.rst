@@ -7,7 +7,7 @@ Introduction
 EXT:headless renders TYPO3 pages and content as JSON. The response shape is
 plain TypoScript — field names, types and nesting are customised with tools
 TYPO3 integrators already know. Any frontend that speaks JSON can consume it;
-`nuxt-typo3 <https://github.com/TYPO3-Initiatives/nuxt-typo3>`__ is the
+`nuxt-typo3 <https://github.com/TYPO3-Headless/nuxt-typo3>`__ is the
 reference implementation.
 
 .. _what-it-does:
@@ -41,4 +41,4 @@ headless    TYPO3             PHP         Status
 ==========  ================  ==========  ==============================
 
 Upgrading? See `UPGRADE.md
-<https://github.com/TYPO3-Headless/headless/blob/master/UPGRADE.md>`__.
+<https://github.com/TYPO3-Headless/headless/blob/main/UPGRADE.md>`__.

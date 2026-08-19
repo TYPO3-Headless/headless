@@ -35,7 +35,10 @@ FileDataAfterCropVariantProcessingEvent
 
 Fired once per file, after all crop variants have been processed (and
 also when the file has none). Use it to post-process the complete file
-payload including its `cropVariants`.
+payload including its `cropVariants`. The event carries the base
+per-file `ProcessingConfiguration` that was passed into
+`processCropVariants()` — the per-variant configurations derived
+inside the loop never reach the event.
 
 ==================================  ====================================
 Method                              Returns
@@ -43,7 +46,8 @@ Method                              Returns
 `getProcessedFile(): array`         The whole processed-file payload.
 `setProcessedFile(array): void`     Replace it.
 `getOriginal(): FileInterface`      The original file reference.
-`getProcessingConfiguration()`      Effective config for this variant.
+`getProcessingConfiguration()`      The per-file `ProcessingConfiguration`
+                                    (not per-variant).
 ==================================  ====================================
 
 Core events you may also care about
@@ -73,6 +77,12 @@ These come from TYPO3 core but are commonly used alongside headless:
   workspace split-screen previews and similar admin tooling land on
   the configured `frontendBase`. It acts only on backend requests
   and only when headless mode is enabled for the resolved site.
+* `TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent` —
+  headless's `ProxyResourcePublicUrlListener` (identifier
+  `headless/ProxyResourcePublicUrl`) rewrites public URLs of local,
+  publicly capable storages through the configured storage proxy.
+  Registered only when the `headless.storageProxy` feature flag is
+  enabled, and acts only on frontend requests with headless mode on.
 * `TYPO3\CMS\FrontendLogin\Event\LoginConfirmedEvent` — headless
   assigns the `success` status to the JSON login response.
 

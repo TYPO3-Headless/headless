@@ -45,6 +45,10 @@ Both switches live in the site configuration:
      - friendsoftypo3/headless
    headless: 1  # 0 = NONE, 1 = FULL (always JSON), 2 = MIXED (Accept-driven)
 
+In MIXED mode the *first* `Accept` header value must be exactly
+`application/json` — `Accept: application/json, text/plain, */*` (the
+axios/fetch default) or `application/json; charset=utf-8` renders HTML.
+
 Do not add a root sys_template record — sites using sets don't need one,
 and its "Clear" flags would wipe the set TypoScript.
 

@@ -23,14 +23,19 @@ Interface                                                         What it gives 
                                                                   `prepareRelativeUrlIfPossible()`.
                                                                   (`withLanguage()` exists only on the concrete
                                                                   `UrlUtility`.)
-`Utility\FileUtilityInterface`                                    File / image rendering. Methods: `process()`,
-                                                                  `processCropVariants()` — returns the same shape that
+`Utility\FileUtilityInterface`                                    File / image rendering. Methods: `setRequest()`,
+                                                                  `processFile()`, `process()`, `processImageFile()`,
+                                                                  `processCropVariants()`, `getAbsoluteUrl()`,
+                                                                  `getErrors()`. `process()` returns the same shape that
                                                                   ships in `content.*.media` by default.
-`Json\JsonEncoderInterface`                                       `encode($data, $options = 0)`. Wrap `json_encode` with
-                                                                  HTML-safe flags, `JSON_THROW_ON_ERROR` and the
-                                                                  `headless.prettyPrint` feature flag.
+`Json\JsonEncoderInterface`                                       `encode($data, $options = 0)`. Wraps `json_encode` with
+                                                                  HTML-safe flags and the `headless.prettyPrint` feature
+                                                                  flag. Does **not** throw on invalid data: encoding
+                                                                  errors are caught, logged as critical, and `"[]"` is
+                                                                  returned.
 `Json\JsonDecoderInterface`                                       `decode(array)` recursively unwraps JSON strings nested
-                                                                  inside arrays. `isJson($mixed)` for cheap detection.
+                                                                  inside arrays. `isJson($mixed)` detects JSON by fully
+                                                                  decoding the value after cheap pre-checks.
 `Seo\MetaHandlerInterface`                                        `process($request, $content)` — runs the SEO meta-tag
                                                                   pipeline (page title, meta registry, hreflang) and
                                                                   merges it under `content.seo`.

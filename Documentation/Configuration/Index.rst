@@ -22,9 +22,14 @@ Headless is enabled per site in `config/sites/<identifier>/config.yaml`:
 * `friendsoftypo3/headless-legacy` — full 4.x-compatible response (upgrades).
 * `friendsoftypo3/headless-mixed` — JSON only for requests sent with exactly
   `Accept: application/json`; everything else renders your own HTML page.
+  The JSON it serves is the full 4.x-shaped (legacy) response, not the
+  trimmed default one.
 
 `headless` — run mode: `0` off, `1` always JSON, `2` mixed (Accept-driven —
-pair it with the mixed set). A site using sets must not carry a root
+pair it with the mixed set). In mixed mode the *first* `Accept` header
+value must match exactly: `Accept: application/json, text/plain, */*`
+(the axios/fetch default) or `application/json; charset=utf-8` renders
+HTML. A site using sets must not carry a root
 sys_template record: its "Clear" flags wipe all set-provided TypoScript.
 
 Headless 4.x ships sets as well (TYPO3 v13): `friendsoftypo3/headless`
@@ -72,6 +77,8 @@ plugin output for SPA form handling:
    responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&...
 
 Set `responseElementRecursive=1` to match a nested (child) element.
+On a mixed-mode site (`headless: 2`) the POST itself must carry the exact
+`Accept: application/json` header, or the middleware does not act.
 
 **headless.overrideFluidTemplates** — swap the core `ViewFactoryInterface`
 for `HeadlessViewFactory`: Fluid views render JSON templates, raw-PHP
@@ -260,6 +267,22 @@ backend preview URLs are rewritten to the frontend domain. The cookie
 requirements above apply here too. No feature flag is involved (in 4.x
 this ran through workspace XClasses, likewise enabled automatically).
 
+Backend preview of mixed-mode sites
+-----------------------------------
+
+Backend-initiated page previews of a `headless: 2` site render HTML by
+default. To preview JSON instead, set in the site's `settings.yaml`:
+
+.. code-block:: yaml
+
+   headless:
+     preview:
+       overrideMode: 1
+
+The value replaces the site's mode for backend previews only (`0` HTML —
+the default, `1` JSON). Sites with `headless: 0` or `headless: 1` are not
+affected.
+
 .. _xmlsitemap:
 
 XML sitemap
@@ -277,3 +300,13 @@ or point the sitemap at `frontendBase` via `settings.yaml`:
   headless:
     sitemap:
       key: frontendBase
+
+The sitemap-index links are detected by their page type. If your sitemap
+uses a custom typeNum, also set it (default `1533906435`) — otherwise the
+index links are not rewritten at all:
+
+.. code-block:: yaml
+
+  headless:
+    sitemap:
+      type: '2400000000'

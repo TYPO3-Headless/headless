@@ -33,7 +33,6 @@ class FilesProcessor implements DataProcessorInterface
      */
     public array $defaults = [
         'as' => 'media',
-        'filesAs' => 'files',
     ];
 
     public function __construct(private readonly FileUtilityInterface $fileUtility) {}

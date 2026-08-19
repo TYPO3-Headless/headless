@@ -9,6 +9,12 @@ JSON form definitions instead of HTML. Forms designed in the form
 editor work out of the box; this page documents the headless-specific
 hooks that help frontend developers.
 
+.. note::
+
+   On a MIXED-mode site (`headless: 2`) the JSON form definition — and
+   every submission — requires exactly `Accept: application/json` as
+   the first Accept header value; anything else renders HTML.
+
 Configuration (YAML)
 ====================
 
@@ -30,6 +36,16 @@ the form root. They land in the response's `i18n` section.
        requiredFields: 'These fields are required'
 
 Strings are translated through the standard TYPO3 XLF pipeline.
+Translation keys resolve against the form's *original* identifier
+(kept in `renderingOptions._originalIdentifier`), not the runtime
+identifier that headless suffixes with the content element uid — key
+your XLF entries on the identifier from the form YAML. A forced
+locale can be passed to `FormTranslationService::translateElementValue()`
+as its optional fourth parameter.
+
+On key collision, `i18n.properties` entries win over the
+`renderingOptions.submitButtonLabel` shortcut — both end up in the
+response's `i18n` object, YAML properties last.
 
 Form decorator
 --------------
@@ -57,10 +73,12 @@ to the shipped decorator:
      formDecorator: FriendsOfTYPO3\Headless\Form\Decorator\RichTextFormDefinitionDecorator
 
 HTML-carrying labels and static texts are then run through
-`lib.parseFunc_RTE` (resolving `t3://` links; the HTML sanitizer is the
-fallback when no parseFunc lib exists) and flagged with
-`labelFormat`/`textFormat: html` so the frontend knows to render them as
-markup.
+`lib.parseFunc_RTE` (resolving `t3://` links), falling back to
+`lib.parseFunc_links` and finally to the plain HTML sanitizer when
+neither lib exists, and flagged with `labelFormat`/`textFormat: html`
+so the frontend knows to render them as markup. The decorator also
+processes `api.actionAfterSuccess.message` the same way and flags it
+with `messageFormat: html`.
 
 Validator error codes
 ---------------------
@@ -108,7 +126,12 @@ point the field at it:
        customOptions: 'Your\Vendor\Form\CountryOptions'
 
 `CountryOptions::get()` is called per render and its return value
-replaces the field's `options`.
+replaces the field's `options`. Although the interface only declares
+`get(): array`, implementations are instantiated with four constructor
+arguments — `($field, $formFields, $identifier, $formRuntime)`: the
+field's definition array, all fields of the current page, the runtime
+form identifier and the `FormRuntime` — so options can depend on the
+surrounding form state.
 
 If your custom form type isn't a standard one (so the frontend
 wouldn't know what to render), override the *type* sent to the
@@ -144,12 +167,46 @@ directly in your form definition:
 
 On success it emits `{ redirectUrl, statusCode, message }`
 (`message` defaults to `null`, `statusCode` to `303` and is also an
-option); the `redirectUrl` is mapped to the site's `frontendBase` and
-made relative when possible. It does not redirect by itself. Further
+option). The `redirectUrl` is made relative only when its host already
+equals the site's `frontendBase` host; otherwise the absolute
+TYPO3-host URL is returned unchanged — it is *not* rewritten to
+`frontendBase`. It does not redirect by itself. Further
 options: `additionalParameters` (appended to the target URL) and
 `sameSiteOnly` — with it, a `pageUid` outside the current site (or an
 unresolvable one) falls back to the finisher's default target
 (`pageUid: 1`) instead of being used.
+
+Submitting the form
+===================
+
+POST the form to the content element's `link` value — headless builds
+it with `tx_form_formframework[action]=perform` and
+`tx_form_formframework[controller]=FormFrontend` already appended.
+Nothing inside the form definition itself is a valid submit target.
+
+Every field is submitted under its exact `name`,
+`tx_form_formframework[<formId>][<identifier>]`. Besides the visible
+fields, the JSON `elements` contain Hidden elements that **must** be
+posted back verbatim:
+
+* `__state` — the HMAC-protected form state; round-trip it unchanged.
+* `__currentPage` — the page index being submitted.
+* `__trustedProperties` — the extbase property-mapping token,
+  generated for the exact set of listed field names: omitting any
+  field (the honeypot included) fails property mapping.
+* `__session` — present only once the form is performing (after the
+  first POST); echo it back on subsequent steps.
+
+Honeypot
+--------
+
+When `renderingOptions.honeypot.enable` is true, an extra field with a
+**session-random identifier** appears in `elements` and its name is
+baked into `__trustedProperties`. Render it hidden from humans and
+submit it **empty** — filling or omitting it fails the submission.
+When using a custom honeypot element, its type must match
+`renderingOptions.honeypot.formElementToUse` (default `Honeypot`) for
+headless to expose it correctly in the JSON definition.
 
 .. _developer-ext-form:
 
@@ -183,6 +240,10 @@ element's `content.form` key:
      "i18n": { "submitButtonLabel": "Submit" },
      "elements": []
    }
+
+`elements` is abbreviated here — in a real response it lists the
+current page's fields plus the hidden round-trip fields described in
+`Submitting the form`_ above.
 
 Subclass `AbstractFormDefinitionDecorator` if you only need to tweak
 one element type or one form root field; implement

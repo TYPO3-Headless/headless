@@ -30,6 +30,36 @@ For customising the JSON redirect envelope, listen to the core
 Listener registration
 =====================
 
+The `#[AsEventListener]` attribute is the idiomatic TYPO3 v14 form —
+no YAML needed:
+
+.. code-block:: php
+
+   <?php
+
+   declare(strict_types=1);
+
+   namespace Vendor\MyExt\EventListener;
+
+   use FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent;
+   use TYPO3\CMS\Core\Attribute\AsEventListener;
+   use Vendor\MyExt\Service\CdnSigner;
+
+   #[AsEventListener(identifier: 'myext/file/signed-cdn-url')]
+   final readonly class AddSignedCdnUrl
+   {
+       public function __construct(private CdnSigner $cdn) {}
+
+       public function __invoke(EnrichFileDataEvent $event): void
+       {
+           $props = $event->getProperties();
+           $props['signedUrl'] = $this->cdn->sign($props['publicUrl']);
+           $event->setProperties($props);
+       }
+   }
+
+Alternatively, register the listener via a `Services.yaml` tag:
+
 .. code-block:: yaml
 
    # Configuration/Services.yaml
@@ -40,18 +70,5 @@ Listener registration
            identifier: 'myext/file/signed-cdn-url'
            event: FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent
 
-.. code-block:: php
-
-   // Classes/EventListener/AddSignedCdnUrl.php
-   final readonly class AddSignedCdnUrl
-   {
-       public function __invoke(EnrichFileDataEvent $event): void
-       {
-           $props = $event->getProperties();
-           $props['signedUrl'] = $this->cdn->sign($props['publicUrl']);
-           $event->setProperties($props);
-       }
-   }
-
-After editing `Services.yaml`, run `bin/typo3 cache:flush` — the
-container is compiled.
+After adding or re-registering a listener, run `bin/typo3 cache:flush`
+— the container is compiled.

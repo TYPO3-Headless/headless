@@ -177,6 +177,16 @@ too, set:
      sitemap:
        key: frontendBase
 
+Index links are matched by the sitemap page type. With a custom sitemap
+typeNum, set `headless.sitemap.type` (default `1533906435`) as well, or
+the index links keep pointing at the API host:
+
+.. code-block:: yaml
+
+   headless:
+     sitemap:
+       type: '2400000000'
+
 Storage proxy (asset routing)
 =============================
 

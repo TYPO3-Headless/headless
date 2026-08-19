@@ -11,9 +11,9 @@ FAQ
 How to use EXT:felogin?
 -----------------------
 
-Using `EXT:felogin` with the headless extension follows the standard setup as detailed in the `felogin documentation <https://docs.typo3.org/c/typo3/cms-felogin/master/en-us/Index.html>`__; the headless-specific JSON output is described in :ref:`integrations-felogin`.
+Using `EXT:felogin` with the headless extension follows the standard setup as detailed in the `felogin documentation <https://docs.typo3.org/c/typo3/cms-felogin/main/en-us/Index.html>`__; the headless-specific JSON output is described in :ref:`integrations-felogin`.
 
-To test the login without a frontend, POST the credentials to the login page with `curl` — if the response contains a `set-cookie` header, the login was successful.
+To test the login without a frontend, first GET the login page to obtain the nonce-signed `__RequestToken` hidden field and its `typo3nonce_*` cookie, then POST the credentials together with both — if the response contains a `set-cookie` header for the session, the login was successful. See :ref:`integrations-felogin` for the full flow.
 
 Does EXT:headless work with other extensions?
 ---------------------------------------------
@@ -104,6 +104,8 @@ To enable clean output middleware for plugins, which is available for POST/PUT/D
       headless: 1
 
 3. Send the `responseElementId` field with the ID of the plugin in the body of the plugin data during requests.
+
+On a mixed-mode site (`headless: 2`), the request must additionally carry the exact `Accept: application/json` header, or the middleware does not act.
 
 For example, a POST request might look like this:
 

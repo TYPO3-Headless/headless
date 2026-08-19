@@ -1,9 +1,9 @@
 # TYPO3 Extension `headless` - JSON Content API for TYPO3 Headless solution
 
+[![TYPO3 14](https://img.shields.io/badge/TYPO3-14-orange.svg)](https://get.typo3.org/version/14)
 [![TYPO3 13](https://img.shields.io/badge/TYPO3-13-orange.svg)](https://get.typo3.org/version/13)
 [![TYPO3 12](https://img.shields.io/badge/TYPO3-12-orange.svg)](https://get.typo3.org/version/12)
-[![TYPO3 11](https://img.shields.io/badge/TYPO3-11-orange.svg)](https://get.typo3.org/version/11)
-[![CI Status](https://github.com/TYPO3-Initiatives/headless/workflows/CI/badge.svg)](https://github.com/TYPO3-Initiatives/headless/actions)
+[![CI Status](https://github.com/TYPO3-Headless/headless/workflows/CI/badge.svg)](https://github.com/TYPO3-Headless/headless/actions)
 [![Latest Stable Version](https://poser.pugx.org/friendsoftypo3/headless/v)](//packagist.org/packages/friendsoftypo3/headless)
 [![Total Downloads](https://poser.pugx.org/friendsoftypo3/headless/downloads)](//packagist.org/packages/friendsoftypo3/headless)
 [![License](https://poser.pugx.org/friendsoftypo3/headless/license)](//packagist.org/packages/friendsoftypo3/headless)
@@ -51,15 +51,16 @@ If you have any questions just drop a line in #initiative-headless-pwa Slack cha
 
 | EXT:headless version  	 | TYPO3 support | PHP support       | Status 	                      |
 |-------------------------|---------------|-------------------|-------------------------------|
-| `>= 4.0`  	             | `12`, `13` 	  | `>= 8.1`  	       | Active development & support	 |
-| `>= 3.0`                | `11`	         | `>= 7.4, <= 8.2`	 | Critical bugfixes only 	      |
-| `>= 2.0` 	              | `9`, `10`	    | `>= 7.2, <=7.4`	  | Critical bugfixes only	       |
+| `>= 5.0`  	             | `14` 	        | `>= 8.2`  	       | Active development & support	 |
+| `>= 4.0`  	             | `12`, `13` 	  | `>= 8.2`  	       | Bug & security fixes	         |
+| `>= 3.0`                | `11`	         | `>= 7.4, <= 8.2`	 | End of life 	                 |
+| `>= 2.0` 	              | `9`, `10`	    | `>= 7.2, <=7.4`	  | End of life	                  |
 
 
 ## Quickstart / Demo
 
 If you want to take a look at working demo including frontend, backend and demo data, use our DDEV based demo project here:
-[https://github.com/TYPO3-Initiatives/pwa-demo](https://github.com/TYPO3-Headless/pwa-demo)
+[https://github.com/TYPO3-Headless/pwa-demo](https://github.com/TYPO3-Headless/pwa-demo)
 
 ## Installation
 Install extension using composer
@@ -77,39 +78,31 @@ Whether you are a developer, content manager, or a tech enthusiast, this tutoria
 
 ## Configuration
 
-Since versions: `4.2` | `3.5` Flag `headless` is required to configure in site configuration!
-
-This flag instructs how `EXT:headless` should behave in multisite instance.
-
-For each site you can set in which mode site is operated (standard aka HTML response, headless, or mixed mode).
-
-You can set `headless` flag manually in yaml file or via site configuration in the backend:
+Each site decides how it responds via two keys in its `config/sites/<identifier>/config.yaml`:
 
 ```yaml
-'headless': 0|1|2
+dependencies:
+  - friendsoftypo3/headless
+headless: 1
 ```
 
-### Possible values:
-While the legacy flag (`true`|`false`) is still recognized, transitioning to the integer notation is recommended.
-- **0** (formerly: `false`) = headless mode is deactivated for the site within the TYPO3 instance. **Default value!**
-- **1** (formerly: `true`) = headless mode is fully activated for the site within the TYPO3 instance.
-- **2** = mixed mode headless is activated (both fluid & json API are accessible within a single site in the TYPO3 instance).
+### Site set (`dependencies`) — pick one:
 
-### Configuration steps
-For a chosen site in TYPO3, follow these steps:
+- `friendsoftypo3/headless` — trimmed default response (new projects)
+- `friendsoftypo3/headless-legacy` — full 4.x-compatible response (upgrades)
+- `friendsoftypo3/headless-mixed` — full 4.x-compatible response, served as JSON only for requests whose `Accept` header is exactly `application/json`
 
-#### To enable Headless Mode:
-- In the typoscript template for the site, load the "Headless" setup file.
-- Set `headless` flag to a value of `1` in the site configuration file or configure the flag via editor in the Site's management backend.
+Do not add a root sys_template record to a site using sets — its "Clear" flags would wipe the set TypoScript.
 
-#### To enable Mixed Mode:
-- In the typoscript template for the site, load the "Headless - Mixed mode JSON response" setup file instead of the default headless one.
-- Set `headless` flag to a value of `2` in the site configuration file or configure the flag via editor in the Site's management backend.
+### Run mode (`headless`) — set in the yaml file or via the Site's management backend:
 
-The mixed mode flag (value of `2`) instructs the EXT:headless extension to additionally check for the `Accept` header with a value of `application/json` when processing requests to the particular site in the TYPO3 instance.
+- **0** = headless mode is deactivated for the site within the TYPO3 instance. **Default value!**
+- **1** = headless mode is fully activated for the site within the TYPO3 instance.
+- **2** = mixed mode headless is activated (both fluid & json API are accessible within a single site in the TYPO3 instance) — pair it with the mixed set.
 
-- In cases where a request lacks the `Accept` header or `Accept` has a different value than `application/json`, TYPO3 will respond with HTML content (standard TYPO3's response).
-- In cases where a request's header `Accept` matches the value of `application/json`, TYPO3 will respond with a JSON response.
+In mixed mode, TYPO3 responds with JSON only when the first `Accept` header value is exactly `application/json`. A list like `Accept: application/json, text/plain, */*` (the axios/fetch default) or `application/json; charset=utf-8` gets the standard HTML response.
+
+The legacy boolean values (`true`|`false`) are still recognized (the flag is cast to integer), but the integer notation is recommended. Full details, feature flags and multi-domain URL handling live in the [Configuration chapter](https://docs.typo3.org/p/friendsoftypo3/headless/main/en-us/Configuration/Index.html).
 
 ## JSON  Content Object
 In headless extension we implemented new JSON Content Object, which allows you to specify what fields you want to output, and how they will look. First, let's take a look at simple example

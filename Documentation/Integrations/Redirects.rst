@@ -21,6 +21,19 @@ Matched redirects from the redirect manager are turned into JSON by the
 `headless/RedirectWasHit` event listener (see below) — the core
 `redirecthandler` middleware stays in place.
 
+.. note::
+
+   The middleware swap only registers when `EXT:redirects` is
+   installed. Without it, *all* redirects — including plain shortcut
+   and mount-point pages — are served as real HTTP `30x` responses
+   even in headless mode. The same applies per request in MIXED mode:
+   without exactly `Accept: application/json` as the first Accept
+   header value, redirects degrade to real `30x` responses.
+
+Requests for the headless page-content type (`?type=834`) bypass
+shortcut and mount-point redirect handling entirely and are resolved
+downstream instead.
+
 JSON response shape
 ===================
 
@@ -36,6 +49,17 @@ A matched redirect produces:
 `redirectUrl` is run through `UrlUtility::prepareRelativeUrlIfPossible()`,
 so internal targets come back as relative paths (`/new-target`) when
 they land on the same frontend host.
+
+The HTTP response itself is always `200` — `statusCode` tells the
+frontend which redirect to perform, and the frontend must apply the
+usual method semantics itself (`301`/`302` may switch to GET,
+`307`/`308` preserve the request method). Its value depends on the
+source:
+
+* redirect-manager records: the record's configured target status
+  code;
+* shortcut/mount-point and site-base redirects: the HTTP code the core
+  middleware would have sent (typically `307`).
 
 Customising the redirect
 ========================
