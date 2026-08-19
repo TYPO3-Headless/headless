@@ -30,6 +30,8 @@ Top3",,,,,,,,1,,,,,,
 ,21,5,1,1,menu_sitemap_pages,SpaceBefore,SpaceAfter,default,,1,Header,SubHeader,0,2,,,,,,,,,,,,,,5,,
 ,22,1,1,1,menu_related_pages,SpaceBefore,SpaceAfter,default,,1,Header,SubHeader,0,2,,,,,,,,,,,,,,,,
 ,23,1,1,1,menu_abstract,SpaceBefore,SpaceAfter,default,,1,Header,SubHeader,0,2,,,,,,,,,,,,,,5,,
+,32,1,10,1,menu_section_pages,SpaceBefore,SpaceAfter,default,,,Header,SubHeader,0,2,,,,,,,,,,,,,,1,,
+,33,1,11,1,invalid_ctype,,,default,,,,,,,,,,,,,,,,,,,,,,
 sys_category,,,
 ,uid,pid,title
 ,1,0,SysCategory1Title

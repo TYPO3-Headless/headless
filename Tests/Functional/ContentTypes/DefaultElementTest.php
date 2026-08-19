@@ -13,9 +13,9 @@ namespace FriendsOfTYPO3\Headless\Tests\Functional\ContentTypes;
 
 use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
 
-class DefaultContentsTest extends BaseContentTypeTesting
+class DefaultElementTest extends BaseContentTypeTesting
 {
-    public function testContentStructure()
+    public function testElementWithoutRenderingDefinition()
     {
         $response = $this->executeFrontendSubRequest(
             new InternalRequest('https://website.local/')
@@ -25,16 +25,13 @@ class DefaultContentsTest extends BaseContentTypeTesting
 
         $fullTree = json_decode((string)$response->getBody(), true);
 
-        self::assertArrayHasKey('media', $fullTree);
-        self::assertIsArray($fullTree['media']);
+        $contentElement = $fullTree['content']['colPos1']['14'];
 
-        $contentTree = $fullTree['content'];
+        $this->checkDefaultContentFields($contentElement, 33, 1, 'invalid_ctype', 1);
 
-        self::assertArrayHasKey('colPos0', $contentTree);
-        self::assertNotEmpty($contentTree['colPos0']);
-        self::assertArrayHasKey('appearance', $contentTree['colPos0'][0]);
-        self::assertIsArray($contentTree['colPos0'][0]['appearance']);
-        self::assertArrayHasKey('colPos1', $contentTree);
-        self::assertNotEmpty($contentTree['colPos1']);
+        self::assertEquals(
+            'Content Element with uid "33" and type "invalid_ctype" has no rendering definition!',
+            $contentElement['content']['error']
+        );
     }
 }

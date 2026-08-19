@@ -136,7 +136,11 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
         if (isset($formRuntime->getFormDefinition()->getRenderingOptions()['honeypot']['enable']) &&
             $formRuntime->getFormDefinition()->getRenderingOptions()['honeypot']['enable'] === true) {
-            $honeyPot = array_pop($elements);
+            $honeypotType = $formRuntime->getFormDefinition()->getRenderingOptions()['honeypot']['formElementToUse'] ?? 'Honeypot';
+            $lastElement = end($elements);
+            if ($lastElement !== false && $lastElement->getType() === $honeypotType) {
+                $honeyPot = array_pop($elements);
+            }
         }
 
         $stateHash = $this->getHashService()->appendHmac(

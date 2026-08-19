@@ -1,0 +1,12 @@
+lib.contentElement {
+    fields {
+        categories < lib.categories
+        categories {
+            10 {
+                select {
+                    where.wrap = AND sys_category_record_mm.tablenames = 'tt_content' AND sys_category_record_mm.uid_foreign=|
+                }
+            }
+        }
+    }
+}

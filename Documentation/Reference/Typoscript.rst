@@ -123,7 +123,9 @@ Default page response
 
    {
      "id": 1,
+     "type": "Standard",
      "slug": "/",
+     "media": [],
      "seo": { "title": "…", "meta": [], "htmlAttrs": {}, "bodyAttrs": {} },
      "breadcrumbs": [],
      "appearance": { "layout": "layout-0", "backendLayout": "default" },
@@ -151,12 +153,8 @@ Removed key                           Replacement / how to get it back
 `page.10.fields.meta`                 Deprecated duplicate of `seo` — use `seo`, which the
                                       `MetaHandler` fills from the same page properties
                                       (title, description, OpenGraph/Twitter images, …).
-`page.10.fields.categories`           Opt-in; see "Re-enabling categories in the
-                                      default set" in the Configuration chapter.
-`page.10.fields.type`                 Doktype label strings — add a `CASE` over `doktype`
-                                      in your site package if consumed.
-`page.10.fields.media`                Re-add a `FilesProcessor` over `pages.media` in your
-                                      site package if consumed.
+`page.10.fields.categories`           Opt-in; see "Content element categories" in the
+                                      Configuration chapter (covers page categories too).
 `lib.contentElement.fields.categories`  Opt-in; same Configuration chapter section.
 `plugin.tx_headless.staticTemplate`   Not set by this set. Only relevant for third-party
                                       extensions probing it to detect headless rendering.

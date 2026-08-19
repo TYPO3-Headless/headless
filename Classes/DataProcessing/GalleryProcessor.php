@@ -25,12 +25,12 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
     use DataProcessingTrait;
 
     /**
-     * @var FileReference[]
+     * @var array<string, FileReference>
      */
     protected $fileReferenceCache = [];
 
     /**
-     * @var array<int, array{width:int, height:int}>
+     * @var array<string, array{width:int, height:int}>
      */
     private array $croppedDimensionCache = [];
 
@@ -68,7 +68,11 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
             $processedData
         );
 
-        return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
+        return $this->removeDataIfnotAppendInConfiguration(
+            $processorConfiguration,
+            $processedData,
+            (string)$cObj->stdWrapValue('as', $processorConfiguration, 'gallery')
+        );
     }
 
     /**
@@ -201,29 +205,29 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
             }
 
             $croppingConfiguration = $processedFile['properties']['crop'];
-            $uid = (int)$processedFile['properties']['uidLocal'];
         } else {
             if (empty($processedFile['crop'])) {
                 return (int)($this->processorConfigurationObject->flattenProperties ? ($processedFile[$property] ?? 0) : ($processedFile['dimensions'][$property] ?? 0));
             }
 
             $croppingConfiguration = $processedFile['crop'];
-            $uid = (int)$processedFile['uidLocal'];
         }
 
-        if (!isset($this->croppedDimensionCache[$uid])) {
+        $cacheKey = $this->createFileCacheKey($processedFile);
+
+        if (!isset($this->croppedDimensionCache[$cacheKey])) {
             $cropArea = CropVariantCollection::create((string)$croppingConfiguration)
                 ->getCropArea($this->cropVariant)
                 ->makeAbsoluteBasedOnFile($this->createFileObject($processedFile))
                 ->asArray();
 
-            $this->croppedDimensionCache[$uid] = [
+            $this->croppedDimensionCache[$cacheKey] = [
                 'width' => (int)($cropArea['width'] ?? 0),
                 'height' => (int)($cropArea['height'] ?? 0),
             ];
         }
 
-        return $this->croppedDimensionCache[$uid][$property] ?? 0;
+        return $this->croppedDimensionCache[$cacheKey][$property] ?? 0;
     }
 
     /**
@@ -292,8 +296,9 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
     private function createFileObject(array $processedFile): FileInterface
     {
         $uid = $this->processorConfigurationObject->legacyReturn ? (int)$processedFile['properties']['uidLocal'] : $processedFile['uidLocal'];
-        if (!isset($this->fileReferenceCache[$uid])) {
-            $this->fileReferenceCache[$uid] = GeneralUtility::makeInstance(
+        $cacheKey = $this->createFileCacheKey($processedFile);
+        if (!isset($this->fileReferenceCache[$cacheKey])) {
+            $this->fileReferenceCache[$cacheKey] = GeneralUtility::makeInstance(
                 FileReference::class,
                 array_merge(
                     $this->processorConfigurationObject->legacyReturn ? $processedFile['properties'] : $processedFile,
@@ -303,6 +308,20 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
             );
         }
 
-        return $this->fileReferenceCache[$uid];
+        return $this->fileReferenceCache[$cacheKey];
+    }
+
+    /**
+     * @param array<string, mixed> $processedFile
+     */
+    private function createFileCacheKey(array $processedFile): string
+    {
+        $properties = $this->processorConfigurationObject->legacyReturn ? $processedFile['properties'] : $processedFile;
+
+        if (isset($properties['fileReferenceUid'])) {
+            return 'ref-' . $properties['fileReferenceUid'];
+        }
+
+        return 'file-' . (int)$properties['uidLocal'];
     }
 }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Form\Service;
 
 use InvalidArgumentException;
+use TYPO3\CMS\Core\Localization\Locale;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\Exception\MissingArrayPathException;
 use TYPO3\CMS\Form\Service\TranslationService;
@@ -29,7 +30,8 @@ class FormTranslationService extends TranslationService
     public function translateElementValue(
         array $element,
         array $propertyParts,
-        array $formRuntime
+        array $formRuntime,
+        Locale|string|null $locale = null
     ) {
         if (empty($propertyParts)) {
             throw new InvalidArgumentException('The argument "propertyParts" is empty', 1476216007);
@@ -71,7 +73,9 @@ class FormTranslationService extends TranslationService
         }
 
         $translationFiles = $this->sortArrayWithIntegerKeysDescending($translationFiles);
-        $language = $renderingOptions['translation']['language'] ?? null;
+        if (!$locale && isset($renderingOptions['translation']['language'])) {
+            $locale = $renderingOptions['translation']['language'];
+        }
 
         try {
             $arguments = ArrayUtility::getValueByPath(
@@ -98,7 +102,7 @@ class FormTranslationService extends TranslationService
                     $property . '.' . $optionValue,
                     $originalFormIdentifier,
                 );
-                $translatedValue = $this->processTranslationChain($chain, $language, $arguments);
+                $translatedValue = $this->processTranslationChain($chain, $locale, $arguments);
                 $optionLabel = $this->isEmptyTranslatedValue($translatedValue) ? $optionLabel : $translatedValue;
             }
             return $defaultValue;
@@ -114,7 +118,7 @@ class FormTranslationService extends TranslationService
                     (string)$propertyName,
                     $originalFormIdentifier,
                 );
-                $translatedValue = $this->processTranslationChain($chain, $language, $arguments);
+                $translatedValue = $this->processTranslationChain($chain, $locale, $arguments);
                 $propertyValue = $this->isEmptyTranslatedValue($translatedValue) ? $propertyValue : $translatedValue;
             }
             return $defaultValue;
@@ -128,7 +132,7 @@ class FormTranslationService extends TranslationService
             $property,
             $originalFormIdentifier,
         );
-        $translatedValue = $this->processTranslationChain($chain, $language, $arguments);
+        $translatedValue = $this->processTranslationChain($chain, $locale, $arguments);
 
         return $this->isEmptyTranslatedValue($translatedValue) ? $defaultValue : $translatedValue;
     }
@@ -147,37 +151,63 @@ class FormTranslationService extends TranslationService
         string $leaf,
         ?string $originalFormIdentifier,
     ): array {
+        $formIdentifier = (string)($formRuntime['identifier'] ?? '');
+        $elementIdentifier = (string)($element['identifier'] ?? '');
+        $isFormItself = $elementIdentifier === '' || $elementIdentifier === $formIdentifier;
+        if ($isFormItself) {
+            $elementIdentifier = $formIdentifier;
+        }
+        $elementType = (string)($element['type'] ?? ($isFormItself ? 'Form' : ''));
+
         $chain = [];
         foreach ($translationFiles as $translationFile) {
             if (!empty($originalFormIdentifier)) {
-                $chain[] = sprintf(
-                    '%s:%s.element.%s.%s.%s',
-                    $translationFile,
-                    $originalFormIdentifier,
-                    $element['identifier'],
-                    $propertyType,
-                    $leaf,
-                );
+                if ($isFormItself) {
+                    $chain[] = sprintf(
+                        '%s:%s.element.%s.%s.%s',
+                        $translationFile,
+                        $originalFormIdentifier,
+                        $originalFormIdentifier,
+                        $propertyType,
+                        $leaf,
+                    );
+                    $chain[] = sprintf(
+                        '%s:element.%s.%s.%s',
+                        $translationFile,
+                        $originalFormIdentifier,
+                        $propertyType,
+                        $leaf,
+                    );
+                } else {
+                    $chain[] = sprintf(
+                        '%s:%s.element.%s.%s.%s',
+                        $translationFile,
+                        $originalFormIdentifier,
+                        $elementIdentifier,
+                        $propertyType,
+                        $leaf,
+                    );
+                }
             }
             $chain[] = sprintf(
                 '%s:%s.element.%s.%s.%s',
                 $translationFile,
-                $formRuntime['identifier'],
-                $element['identifier'],
+                $formIdentifier,
+                $elementIdentifier,
                 $propertyType,
                 $leaf,
             );
             $chain[] = sprintf(
                 '%s:element.%s.%s.%s',
                 $translationFile,
-                $element['identifier'],
+                $elementIdentifier,
                 $propertyType,
                 $leaf,
             );
             $chain[] = sprintf(
                 '%s:element.%s.%s.%s',
                 $translationFile,
-                $element['type'] ?? '',
+                $elementType,
                 $propertyType,
                 $leaf,
             );
@@ -214,16 +244,39 @@ class FormTranslationService extends TranslationService
         $language = $renderingOptions['language'] ?? null;
         $originalFormIdentifier = $formRuntime['renderingOptions']['_originalIdentifier'] ?? null;
 
+        $formIdentifier = (string)($formRuntime['identifier'] ?? '');
+        $elementIdentifier = (string)($element['identifier'] ?? '');
+        $isFormItself = $elementIdentifier === '' || $elementIdentifier === $formIdentifier;
+        if ($isFormItself) {
+            $elementIdentifier = $formIdentifier;
+        }
+
         $translationKeyChain = [];
         foreach ($translationFiles as $translationFile) {
             if (!empty($originalFormIdentifier)) {
-                $translationKeyChain[] = sprintf(
-                    '%s:%s.validation.error.%s.%s',
-                    $translationFile,
-                    $originalFormIdentifier,
-                    $element['identifier'],
-                    $code
-                );
+                if ($isFormItself) {
+                    $translationKeyChain[] = sprintf(
+                        '%s:%s.validation.error.%s.%s',
+                        $translationFile,
+                        $originalFormIdentifier,
+                        $originalFormIdentifier,
+                        $code
+                    );
+                    $translationKeyChain[] = sprintf(
+                        '%s:validation.error.%s.%s',
+                        $translationFile,
+                        $originalFormIdentifier,
+                        $code
+                    );
+                } else {
+                    $translationKeyChain[] = sprintf(
+                        '%s:%s.validation.error.%s.%s',
+                        $translationFile,
+                        $originalFormIdentifier,
+                        $elementIdentifier,
+                        $code
+                    );
+                }
 
                 $translationKeyChain[] = sprintf(
                     '%s:%s.validation.error.%s',
@@ -235,20 +288,20 @@ class FormTranslationService extends TranslationService
             $translationKeyChain[] = sprintf(
                 '%s:%s.validation.error.%s.%s',
                 $translationFile,
-                $formRuntime['identifier'],
-                $element['identifier'],
+                $formIdentifier,
+                $elementIdentifier,
                 $code
             );
             $translationKeyChain[] = sprintf(
                 '%s:%s.validation.error.%s',
                 $translationFile,
-                $formRuntime['identifier'],
+                $formIdentifier,
                 $code
             );
             $translationKeyChain[] = sprintf(
                 '%s:validation.error.%s.%s',
                 $translationFile,
-                $element['identifier'],
+                $elementIdentifier,
                 $code
             );
             $translationKeyChain[] = sprintf('%s:validation.error.%s', $translationFile, $code);

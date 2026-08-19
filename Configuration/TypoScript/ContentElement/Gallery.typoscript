@@ -1,0 +1,35 @@
+lib.galleryContentElement =< lib.contentElementWithHeader
+lib.galleryContentElement {
+    fields {
+        content {
+            fields {
+                enlargeImageOnClick = BOOL
+                enlargeImageOnClick {
+                    field = image_zoom
+                }
+                gallery = TEXT
+                gallery {
+                    dataProcessing {
+                        10 = headless-files
+                        10 {
+                            references.fieldName = image
+                            as = files
+                            processingConfiguration {
+                                delayProcessing = 1
+                            }
+                        }
+                        20 = headless-gallery
+                        20 {
+                            maxGalleryWidth = {$styles.content.textmedia.maxW}
+                            maxGalleryWidthInText = {$styles.content.textmedia.maxWInText}
+                            columnSpacing = {$styles.content.textmedia.columnSpacing}
+                            borderWidth = {$styles.content.textmedia.borderWidth}
+                            borderPadding = {$styles.content.textmedia.borderPadding}
+                            as = gallery
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

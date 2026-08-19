@@ -27,8 +27,8 @@ Site setup: static template → site sets
 TypoScript
 --
 
-* The default set ships a trimmed page response: no `meta` (use `seo`), no `categories`,
-  no `type`, no `media` page fields; `lib.contentElement` defines no `categories` field.
+* The default set ships a trimmed page response: no `meta` (use `seo`) and no `categories`
+  page fields; `lib.contentElement` defines no `categories` field.
   Use `friendsoftypo3/headless-legacy` for byte-compatible 4.x output.
 * Files moved — adjust direct `@import`s: `Page/Meta.typoscript`, `Page/Categories.typoscript`
   and `Configuration/PageConfiguration.typoscript` now live under `TypoScript/Legacy/`.

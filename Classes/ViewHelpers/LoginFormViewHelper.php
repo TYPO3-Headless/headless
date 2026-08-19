@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\ViewHelpers;
 
 use LogicException;
+use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\SecurityAspect;
@@ -25,15 +26,19 @@ use TYPO3\CMS\Extbase\Security\HashScope;
 use TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper;
 
 use function base64_encode;
+use function htmlspecialchars_decode;
 use function is_int;
 use function is_object;
 use function is_string;
 use function json_encode;
+use function preg_match;
 
 use function serialize;
 use function sprintf;
 use function strtolower;
 
+use const ENT_HTML5;
+use const ENT_QUOTES;
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -85,9 +90,8 @@ class LoginFormViewHelper extends FormViewHelper
      */
     public function render(): string
     {
-        $renderingContext = $this->renderingContext;
-        $request = $renderingContext->getRequest();
-        if (!$request instanceof RequestInterface) {
+        if (!$this->renderingContext->hasAttribute(ServerRequestInterface::class)
+            || !$this->renderingContext->getAttribute(ServerRequestInterface::class) instanceof RequestInterface) {
             throw new RuntimeException(
                 'ViewHelper f:form can be used only in extbase context and needs a request implementing extbase RequestInterface.',
                 1639821904
@@ -142,7 +146,12 @@ class LoginFormViewHelper extends FormViewHelper
         if ($this->viewHelperVariableContainer->exists(FormViewHelper::class, 'additionalIdentityProperties')) {
             $additionalIdentityProperties = $this->viewHelperVariableContainer->get(FormViewHelper::class, 'additionalIdentityProperties');
             foreach ($additionalIdentityProperties as $identity) {
-                $this->addHiddenField('identity', $identity);
+                if (preg_match('/name="([^"]*)" value="([^"]*)"/', (string)$identity, $matches) === 1) {
+                    $this->addHiddenField(
+                        htmlspecialchars_decode($matches[1], ENT_QUOTES | ENT_HTML5),
+                        htmlspecialchars_decode($matches[2], ENT_QUOTES | ENT_HTML5)
+                    );
+                }
             }
         }
 
@@ -158,9 +167,8 @@ class LoginFormViewHelper extends FormViewHelper
      */
     protected function renderHiddenReferrerFields(): string
     {
-        $renderingContext = $this->renderingContext;
         /** @var RequestInterface $request */
-        $request = $renderingContext->getRequest();
+        $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
         $extensionName = $request->getControllerExtensionName();
         $controllerName = $request->getControllerName();
         $actionName = $request->getControllerActionName();
@@ -200,15 +208,6 @@ class LoginFormViewHelper extends FormViewHelper
         );
 
         return '';
-    }
-
-    /**
-     * Adds the field name prefix to the ViewHelperVariableContainer
-     */
-    protected function addFieldNamePrefixToViewHelperVariableContainer(): void
-    {
-        $fieldNamePrefix = $this->getFieldNamePrefix();
-        $this->viewHelperVariableContainer->add(FormViewHelper::class, 'fieldNamePrefix', $fieldNamePrefix);
     }
 
     /**
@@ -259,7 +258,7 @@ class LoginFormViewHelper extends FormViewHelper
                 $formFieldNames,
                 $this->getFieldNamePrefix()
             );
-        $this->addHiddenField('__trustedProperties', $requestHash);
+        $this->addHiddenField($this->prefixFieldName('__trustedProperties'), $requestHash);
 
         return '';
     }

@@ -18,14 +18,19 @@ trait DataProcessingTrait
      * @param array<string, mixed> $processedData
      * @return array<string, mixed>
      */
-    protected function removeDataIfnotAppendInConfiguration(array $processorConfiguration, array $processedData): array
-    {
+    protected function removeDataIfnotAppendInConfiguration(
+        array $processorConfiguration,
+        array $processedData,
+        ?string $targetVariableName = null
+    ): array {
+        $targetVariableName ??= isset($processorConfiguration['as']) ? (string)$processorConfiguration['as'] : null;
         if (!isset($processorConfiguration['appendData']) ||
             (int)$processorConfiguration['appendData'] === 0) {
             unset($processedData['data']);
-            if (isset($processorConfiguration['as'], $processedData[$processorConfiguration['as']])
-                && is_array($processedData[$processorConfiguration['as']])) {
-                foreach ($processedData[$processorConfiguration['as']] as &$item) {
+            if ($targetVariableName !== null && $targetVariableName !== ''
+                && isset($processedData[$targetVariableName])
+                && is_array($processedData[$targetVariableName])) {
+                foreach ($processedData[$targetVariableName] as &$item) {
                     if (is_array($item) && isset($item['data'])) {
                         unset($item['data']);
                     }

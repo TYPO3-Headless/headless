@@ -1,0 +1,11 @@
+tt_content,,,,,,,
+,uid,pid,sorting,colPos,CType,imagecols,file_collections
+,30,1,100,2,image,2,"1,2"
+,31,1,110,2,uploads,0,"1,2"
+sys_file_collection,,,,,,
+,uid,pid,title,type,folder_identifier,recursive
+,1,1,FolderCollection,folder,0:/collection_gallery/,0
+,2,1,StaticCollection,static,,0
+sys_file_reference,,,,,,,
+,uid,pid,uid_local,uid_foreign,tablenames,fieldname,sorting_foreign
+,4,1,1,2,sys_file_collection,files,1
