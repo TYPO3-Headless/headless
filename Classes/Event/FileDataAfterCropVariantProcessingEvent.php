@@ -19,14 +19,14 @@ class FileDataAfterCropVariantProcessingEvent
     /**
      * @var array<string, mixed>
      */
-    private array $processedFile;
+    protected array $processedFile;
 
     /**
      * @param array<string, mixed> $processedFile
      */
     public function __construct(
-        private readonly FileInterface $originalFileReference,
-        private readonly ProcessingConfiguration $processingConfiguration,
+        protected readonly FileInterface $originalFileReference,
+        protected readonly ProcessingConfiguration $processingConfiguration,
         array $processedFile = []
     ) {
         $this->processedFile = $processedFile;

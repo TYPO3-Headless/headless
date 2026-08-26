@@ -16,6 +16,7 @@ use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use FriendsOfTYPO3\Headless\Utility\FileUtility;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionMethod;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Container;
 use Throwable;
@@ -33,11 +34,12 @@ use TYPO3\CMS\Core\Resource\MetaDataAspect;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
-use TYPO3\CMS\Extbase\Service\ImageService;
 
+use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Typolink\LinkResult;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+
 use UnexpectedValueException;
 
 use function array_merge;
@@ -924,6 +926,78 @@ class FileUtilityTest extends UnitTestCase
         self::assertSame(100, $result['width']);
         self::assertSame(100, $result['height']);
         self::assertArrayNotHasKey('dimensions', $result);
+    }
+
+    public function testGetErrorsExposesCaughtProcessingErrors(): void
+    {
+        $fileReference = $this->getMockFileReferenceForData($this->getFileReferenceBaselineData(), 'video');
+        $imageService = $this->createPartialMock(ImageService::class, ['applyProcessingInstructions', 'getImageUri']);
+        $imageService->method('getImageUri')->willReturn('');
+        $imageService->method('applyProcessingInstructions')->willThrowException(new RuntimeException('processing failed'));
+
+        $fileUtility = $this->getFileUtility(null, $imageService);
+        $fileUtility->processImageFile($fileReference, ProcessingConfiguration::fromOptions([]));
+
+        self::assertSame([RuntimeException::class], array_values($fileUtility->getErrors()['processImageFile']));
+    }
+
+    public function testFilterPropertiesUsesVideoFieldListForVideoType(): void
+    {
+        $properties = ['type' => 'video', 'autoplay' => 1, 'dimensions' => ['width' => 1], 'link' => '/x'];
+
+        $filtered = (new ReflectionMethod(FileUtility::class, 'filterProperties'))->invoke(
+            $this->getFileUtility(),
+            ProcessingConfiguration::fromOptions(['properties.' => ['byType' => 1]]),
+            $properties
+        );
+
+        self::assertSame(['type' => 'video', 'autoplay' => 1, 'dimensions' => ['width' => 1]], $filtered);
+    }
+
+    public function testFilterPropertiesUsesDefaultFieldListForOtherTypes(): void
+    {
+        $properties = ['type' => 'application', 'size' => 10, 'dimensions' => ['width' => 1], 'autoplay' => 1];
+
+        $filtered = (new ReflectionMethod(FileUtility::class, 'filterProperties'))->invoke(
+            $this->getFileUtility(),
+            ProcessingConfiguration::fromOptions(['properties.' => ['byType' => 1]]),
+            $properties
+        );
+
+        self::assertSame(['type' => 'application', 'size' => 10], $filtered);
+    }
+
+    public function testCropVariantWrapsDimensionsForLegacyReturn(): void
+    {
+        $file = [
+            'publicUrl' => '/fileadmin/test.jpg',
+            'properties' => ['dimensions' => ['width' => 100, 'height' => 50]],
+        ];
+
+        $result = (new ReflectionMethod(FileUtility::class, 'cropVariant'))->invoke(
+            $this->getFileUtility(),
+            ProcessingConfiguration::fromOptions([]),
+            $file
+        );
+
+        self::assertSame(
+            ['publicUrl' => '/fileadmin/test.jpg', 'properties' => ['dimensions' => ['width' => 100, 'height' => 50]]],
+            $result
+        );
+    }
+
+    public function testCropVariantFallsBackToZeroDimensionsWhenPathIsMissing(): void
+    {
+        $result = (new ReflectionMethod(FileUtility::class, 'cropVariant'))->invoke(
+            $this->getFileUtility(),
+            ProcessingConfiguration::fromOptions([]),
+            ['publicUrl' => '/fileadmin/test.jpg']
+        );
+
+        self::assertSame(
+            ['publicUrl' => '/fileadmin/test.jpg', 'properties' => ['dimensions' => ['width' => 0, 'height' => 0]]],
+            $result
+        );
     }
 
     protected function getFileUtility(

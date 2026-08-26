@@ -50,10 +50,10 @@ use const JSON_THROW_ON_ERROR;
  */
 class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendController
 {
-    private ?HeadlessModeInterface $headlessMode = null;
-    private ?Translator $translator = null;
+    protected ?HeadlessModeInterface $headlessMode = null;
+    protected ?Translator $translator = null;
 
-    private function getHeadlessMode(): HeadlessModeInterface
+    protected function getHeadlessMode(): HeadlessModeInterface
     {
         return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
     }
@@ -255,7 +255,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      * @param string $formIdentifier
      * @return array<string, string>|null
      */
-    private function prepareErrors(array $errors, string $formIdentifier): ?array
+    protected function prepareErrors(array $errors, string $formIdentifier): ?array
     {
         $parsedErrors = [];
 
@@ -266,7 +266,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         return count($parsedErrors) ? $parsedErrors : null;
     }
 
-    private function getNextPage(\TYPO3\CMS\Form\Domain\Runtime\FormRuntime $formRuntime): ?int
+    protected function getNextPage(\TYPO3\CMS\Form\Domain\Runtime\FormRuntime $formRuntime): ?int
     {
         if ($formRuntime->getCurrentPage() && $formRuntime->getNextEnabledPage()) {
             return $formRuntime->getNextEnabledPage()->getIndex();
@@ -279,7 +279,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      * @param array<mixed> $formFields
      * @return array<int, string>
      */
-    private function generateFieldNamesAndReplaceCustomOptions(
+    protected function generateFieldNamesAndReplaceCustomOptions(
         array &$formFields,
         string $identifier,
         FormRuntime $formRuntime
@@ -324,12 +324,12 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         return $formFieldsNames;
     }
 
-    private function getHashService(): HashService
+    protected function getHashService(): HashService
     {
         return $this->hashService;
     }
 
-    private function getFormTranslator(): Translator
+    protected function getFormTranslator(): Translator
     {
         return $this->translator ??= GeneralUtility::makeInstance(Translator::class);
     }

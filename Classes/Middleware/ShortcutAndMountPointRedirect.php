@@ -27,8 +27,8 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 class ShortcutAndMountPointRedirect extends \TYPO3\CMS\Frontend\Middleware\ShortcutAndMountPointRedirect
 {
     public function __construct(
-        private readonly HeadlessModeInterface $headlessMode,
-        private readonly HeadlessFrontendUrlInterface $urlUtility,
+        protected readonly HeadlessModeInterface $headlessMode,
+        protected readonly HeadlessFrontendUrlInterface $urlUtility,
         PageTypeLinkResolver $pageTypeLinkResolver,
     ) {
         parent::__construct($pageTypeLinkResolver);
@@ -63,7 +63,7 @@ class ShortcutAndMountPointRedirect extends \TYPO3\CMS\Frontend\Middleware\Short
         return $coreResponse;
     }
 
-    private function isHeadlessEnabled(ServerRequestInterface $request): bool
+    protected function isHeadlessEnabled(ServerRequestInterface $request): bool
     {
         return $this->headlessMode->isEnabledFor($request);
     }

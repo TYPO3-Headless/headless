@@ -157,6 +157,131 @@ class MetaHandlerTest extends HeadlessUnitTestCase
         self::assertSame($content, $handler->process($request, $content));
     }
 
+    public function testGenerateMetaTagsHookIsCalledAndSeoLinksAreCollected(): void
+    {
+        $handler = $this->buildHandlerWithStubbedContentObjectRenderer();
+
+        $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['TYPO3\CMS\Frontend\Page\PageGenerator']['generateMetaTags'] = [
+            static function (array &$params): void {
+                $params['_seoLinks'][] = ['rel' => 'canonical', 'href' => 'https://example.com/'];
+            },
+        ];
+
+        try {
+            $result = $handler->process($this->buildRequest(), []);
+        } finally {
+            unset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']);
+        }
+
+        self::assertSame([['rel' => 'canonical', 'href' => 'https://example.com/']], $result['seo']['link']);
+    }
+
+    public function testHeadlessMetaTagManagerPropertiesAreMergedAsArrays(): void
+    {
+        $headlessManager = $this->createMock(\FriendsOfTYPO3\Headless\Seo\MetaTag\AbstractMetaTagManager::class);
+        $headlessManager->method('renderAllHeadlessPropertiesAsArray')->willReturn([
+            ['property' => 'og:title', 'content' => 'OG Title'],
+        ]);
+
+        $registry = $this->createMock(MetaTagManagerRegistry::class);
+        $registry->method('getAllManagers')->willReturn(['og' => $headlessManager]);
+
+        $handler = $this->buildHandlerWithStubbedContentObjectRenderer($registry);
+
+        $result = $handler->process($this->buildRequest(), []);
+
+        self::assertSame([['property' => 'og:title', 'content' => 'OG Title']], $result['seo']['meta']);
+    }
+
+    public function testBodyTagAddClassIsMergedWithDefaultAttributes(): void
+    {
+        $handler = $this->buildHandlerWithStubbedContentObjectRenderer();
+
+        $request = $this->buildRequest([
+            'page.' => ['bodyTagAdd' => 'class="custom"'],
+        ]);
+
+        $result = $handler->process($request, ['appearance' => ['layout' => 'default']]);
+
+        self::assertSame(['class' => 'pid-42 layout-default custom'], $result['seo']['bodyAttrs']);
+    }
+
+    public function testHtmlTagAttributesAreResolvedWithStdWrap(): void
+    {
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->expects(self::once())->method('setRequest');
+        $contentObjectRenderer->expects(self::once())->method('start')->with(['uid' => 42, 'title' => 'Test'], 'pages');
+        $contentObjectRenderer->method('stdWrap')->willReturn('wrapped');
+
+        $container = new Container();
+        $container->set(ContentObjectRenderer::class, $contentObjectRenderer);
+        GeneralUtility::setContainer($container);
+
+        $registry = $this->createMock(MetaTagManagerRegistry::class);
+        $registry->method('getAllManagers')->willReturn([]);
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->method('dispatch')->willReturnArgument(0);
+
+        $titleProvider = $this->createMock(PageTitleProviderManager::class);
+        $titleProvider->method('getTitle')->willReturn('Title');
+
+        $handler = new MetaHandler(
+            $registry,
+            $eventDispatcher,
+            $titleProvider,
+            new \TYPO3\CMS\Core\TypoScript\TypoScriptService()
+        );
+
+        $request = $this->buildRequest([
+            'config.' => [
+                'htmlTag.' => [
+                    'attributes.' => [
+                        'data-plain' => 'plain-value',
+                        'data-wrapped' => 'base',
+                        'data-wrapped.' => ['wrap' => '|'],
+                        'data-dotonly.' => ['wrap' => '|'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $result = $handler->process($request, []);
+
+        self::assertSame(
+            [
+                'lang' => 'en',
+                'dir' => null,
+                'data-plain' => 'plain-value',
+                'data-wrapped' => 'wrapped',
+                'data-dotonly' => 'wrapped',
+            ],
+            $result['seo']['htmlAttrs']
+        );
+    }
+
+    private function buildHandlerWithStubbedContentObjectRenderer(?MetaTagManagerRegistry $registry = null): MetaHandler
+    {
+        if ($registry === null) {
+            $registry = $this->createMock(MetaTagManagerRegistry::class);
+            $registry->method('getAllManagers')->willReturn([]);
+        }
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->method('dispatch')->willReturnArgument(0);
+
+        $titleProvider = $this->createMock(PageTitleProviderManager::class);
+        $titleProvider->method('getTitle')->willReturn('Title');
+
+        $handler = $this->getMockBuilder(MetaHandler::class)
+            ->setConstructorArgs([$registry, $eventDispatcher, $titleProvider, new \TYPO3\CMS\Core\TypoScript\TypoScriptService()])
+            ->onlyMethods(['createContentObjectRenderer'])
+            ->getMock();
+        $handler->method('createContentObjectRenderer')->willReturn($this->createMock(ContentObjectRenderer::class));
+
+        return $handler;
+    }
+
     private function buildRequest(array $typoScriptSetup = []): ServerRequestInterface
     {
         $pageInfo = new PageInformation();

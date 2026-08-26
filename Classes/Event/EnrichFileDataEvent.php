@@ -19,15 +19,15 @@ class EnrichFileDataEvent
     /**
      * @var array<string, mixed>
      */
-    private array $properties;
+    protected array $properties;
 
     /**
      * @param array<string, mixed> $properties
      */
     public function __construct(
-        private readonly FileInterface $originalFileReference,
-        private readonly FileInterface $processedFileReference,
-        private readonly ProcessingConfiguration $processingConfiguration,
+        protected readonly FileInterface $originalFileReference,
+        protected readonly FileInterface $processedFileReference,
+        protected readonly ProcessingConfiguration $processingConfiguration,
         array $properties = []
     ) {
         $this->properties = $properties;

@@ -50,7 +50,9 @@ In MIXED mode the *first* `Accept` header value must be exactly
 axios/fetch default) or `application/json; charset=utf-8` renders HTML.
 
 Do not add a root sys_template record — sites using sets don't need one,
-and its "Clear" flags would wipe the set TypoScript.
+and its "Clear" flags would wipe the set TypoScript. Sites not using sets
+can select the equivalent statics in a root TypoScript record instead:
+"Headless", "Headless Legacy (4.x)" or "Headless - Mixed mode JSON response".
 
 Headless 4.x ships sets too (TYPO3 v13): `friendsoftypo3/headless` (full
 response) and `friendsoftypo3/headless-mixed`. On TYPO3 v12 include the

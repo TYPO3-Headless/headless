@@ -39,4 +39,18 @@ class YouTubeRendererTest extends HeadlessUnitTestCase
             $renderer->render($file, 0, 0, ['returnUrl' => true])
         );
     }
+
+    public function testFallsBackToCoreIframeRenderingWithoutReturnUrlOption(): void
+    {
+        $file = $this->createMock(FileInterface::class);
+
+        $renderer = $this->createPartialMock(YouTubeRenderer::class, ['collectOptions', 'createYouTubeUrl', 'collectIframeAttributes']);
+        $renderer->method('collectOptions')->willReturn(['allow' => 'fullscreen']);
+        $renderer->method('createYouTubeUrl')->willReturn('https://www.youtube.com/embed/abc');
+        $renderer->method('collectIframeAttributes')->willReturn(['allow' => 'fullscreen']);
+
+        $html = $renderer->render($file, 640, 360);
+
+        self::assertStringContainsString('<iframe src="https://www.youtube.com/embed/abc"', $html);
+    }
 }

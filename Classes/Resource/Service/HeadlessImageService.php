@@ -25,8 +25,8 @@ readonly class HeadlessImageService extends ImageService
 {
     public function __construct(
         ResourceFactory $resourceFactory,
-        private HeadlessModeInterface $headlessMode,
-        private HeadlessFrontendUrlInterface $urlUtility,
+        protected HeadlessModeInterface $headlessMode,
+        protected HeadlessFrontendUrlInterface $urlUtility,
     ) {
         parent::__construct($resourceFactory);
     }
@@ -36,7 +36,7 @@ readonly class HeadlessImageService extends ImageService
         return parent::getImage($this->stripProxyPrefix($src), $image, $treatIdAsReference);
     }
 
-    private function stripProxyPrefix(string $src): string
+    protected function stripProxyPrefix(string $src): string
     {
         $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
         // headlessMode check first so we short-circuit before

@@ -47,11 +47,11 @@ class FileUtility implements FileUtilityInterface
     protected array $errors = [];
 
     public function __construct(
-        private readonly ContentObjectRenderer $contentObjectRenderer,
-        private readonly RendererRegistry $rendererRegistry,
-        private readonly ImageService $imageService,
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly Features $features
+        protected readonly ContentObjectRenderer $contentObjectRenderer,
+        protected readonly RendererRegistry $rendererRegistry,
+        protected readonly ImageService $imageService,
+        protected readonly EventDispatcherInterface $eventDispatcher,
+        protected readonly Features $features
     ) {}
 
     public function setRequest(ServerRequestInterface $request): void
@@ -228,7 +228,7 @@ class FileUtility implements FileUtilityInterface
      * @param array<string, mixed> $properties
      * @return array<string, mixed>
      */
-    private function onDemandProperties(ProcessingConfiguration $processingConfiguration, array $properties): array
+    protected function onDemandProperties(ProcessingConfiguration $processingConfiguration, array $properties): array
     {
         $props = [];
 
@@ -265,7 +265,7 @@ class FileUtility implements FileUtilityInterface
      * @param array<string, mixed> $properties
      * @return array<string, mixed>
      */
-    private function filterProperties(ProcessingConfiguration $processingConfiguration, array $properties): array
+    protected function filterProperties(ProcessingConfiguration $processingConfiguration, array $properties): array
     {
         $allowedDefault = $processingConfiguration->defaultFieldsByType !== [] ? $processingConfiguration->defaultFieldsByType : [
             'type',
@@ -397,10 +397,10 @@ class FileUtility implements FileUtilityInterface
     }
 
     /** @var array<string, CropVariantCollection> */
-    private array $cropVariantCache = [];
+    protected array $cropVariantCache = [];
 
     /** @var list<string>|null */
-    private ?array $fileSizeUnits = null;
+    protected ?array $fileSizeUnits = null;
 
     protected function createCropVariant(string $cropString): CropVariantCollection
     {
@@ -419,7 +419,7 @@ class FileUtility implements FileUtilityInterface
      * @param array<string, mixed> $processedFile
      * @return array<string, mixed>
      */
-    private function processAutogenerate(
+    protected function processAutogenerate(
         FileInterface $originalReference,
         FileInterface $fileReference,
         array $processedFile,
@@ -508,7 +508,7 @@ class FileUtility implements FileUtilityInterface
      * @param array<string, mixed> $cropVariant
      * @return array<string, mixed>
      */
-    private function cropVariant(
+    protected function cropVariant(
         ProcessingConfiguration $processingConfiguration,
         array $file,
         array $cropVariant = []

@@ -16,6 +16,7 @@ use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use ReflectionMethod;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -372,6 +373,40 @@ class AfterLinkIsGeneratedListenerTest extends HeadlessUnitTestCase
         $listener($event);
 
         self::assertSame('#section1', $event->getLinkResult()->getUrl());
+    }
+
+    public function testEmptyLinkParameterWithAnchorTagParamsResolvesAsInPageLink(): void
+    {
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->method('stdWrapValue')->with('ATagParams', self::anything())->willReturn('id="section1"');
+
+        $linkDetails = (new ReflectionMethod(AfterLinkIsGeneratedListener::class, 'resolveLinkDetails'))
+            ->invoke($this->buildListener(), '', [], $cObj);
+
+        self::assertSame(['type' => LinkService::TYPE_INPAGE, 'url' => '', 'typoLinkParameter' => ''], $linkDetails);
+    }
+
+    public function testEmptyLinkParameterWithoutAnchorTagParamsResolvesToNull(): void
+    {
+        $cObj = $this->createMock(ContentObjectRenderer::class);
+        $cObj->method('stdWrapValue')->with('ATagParams', self::anything())->willReturn('class="btn"');
+
+        $linkDetails = (new ReflectionMethod(AfterLinkIsGeneratedListener::class, 'resolveLinkDetails'))
+            ->invoke($this->buildListener(), '', [], $cObj);
+
+        self::assertNull($linkDetails);
+    }
+
+    private function buildListener(): AfterLinkIsGeneratedListener
+    {
+        return new AfterLinkIsGeneratedListener(
+            $this->createMock(Logger::class),
+            $this->createMock(UrlUtility::class),
+            $this->createMock(LinkService::class),
+            new TypoLinkCodecService($this->createMock(EventDispatcherInterface::class)),
+            $this->createMock(SiteFinder::class),
+            new HeadlessMode()
+        );
     }
 
     public function testInsecureSchemeIsRejectedAndLogged(): void

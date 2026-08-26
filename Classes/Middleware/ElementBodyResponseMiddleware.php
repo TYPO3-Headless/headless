@@ -97,7 +97,7 @@ class ElementBodyResponseMiddleware implements MiddlewareInterface
      * @param int $elementId
      * @return array<string, mixed>
      */
-    private function extractElement(array $content, int $elementId, bool $recursiveElement = false): array
+    protected function extractElement(array $content, int $elementId, bool $recursiveElement = false): array
     {
         $body = [];
 

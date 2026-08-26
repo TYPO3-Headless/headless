@@ -20,7 +20,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class VideoTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VideoTagRenderer
 {
-    private ?FileUtilityInterface $fileUtility = null;
+    protected ?FileUtilityInterface $fileUtility = null;
 
     public function getPriority(): int
     {

@@ -92,7 +92,7 @@ headless: 1
 - `friendsoftypo3/headless-legacy` — full 4.x-compatible response (upgrades)
 - `friendsoftypo3/headless-mixed` — full 4.x-compatible response, served as JSON only for requests whose `Accept` header is exactly `application/json`
 
-Do not add a root sys_template record to a site using sets — its "Clear" flags would wipe the set TypoScript.
+Do not add a root sys_template record to a site using sets — its "Clear" flags would wipe the set TypoScript. Sites not using sets can include the equivalent statics in a root sys_template record instead: `Headless`, `Headless Legacy (4.x)` or `Headless - Mixed mode JSON response`.
 
 ### Run mode (`headless`) — set in the yaml file or via the Site's management backend:
 

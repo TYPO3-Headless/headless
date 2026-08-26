@@ -179,6 +179,49 @@ class TargetUrlResolverTest extends HeadlessUnitTestCase
         return $site;
     }
 
+    public function testReturnsNullWithoutSiteAttribute(): void
+    {
+        $this->setUpContainer();
+
+        $request = (new ServerRequest())->withUri(new Uri('https://test.domain3.tld/testtest'));
+
+        self::assertNull($this->getResolver()->resolve(
+            ['target' => 't3://page?uid=1 - - - tx_test[action]=test&tx_test[controller]=Test'],
+            new Uri('https://test.domain2.tld/123'),
+            $request
+        ));
+    }
+
+    public function testReturnsNullWhenTargetLinkCannotBeResolved(): void
+    {
+        $this->setUpContainer();
+
+        $request = (new ServerRequest())
+            ->withUri(new Uri('https://test.domain3.tld/testtest'))
+            ->withAttribute('site', $this->createMock(Site::class));
+
+        self::assertNull($this->getResolver()->resolve(
+            ['target' => 't3://unknownhandler?uid=1 - - - tx_test[action]=test&tx_test[controller]=Test'],
+            new Uri('https://test.domain2.tld/123'),
+            $request
+        ));
+    }
+
+    public function testReturnsNullForNonPageTargets(): void
+    {
+        $this->setUpContainer();
+
+        $request = (new ServerRequest())
+            ->withUri(new Uri('https://test.domain3.tld/testtest'))
+            ->withAttribute('site', $this->createMock(Site::class));
+
+        self::assertNull($this->getResolver()->resolve(
+            ['target' => 'https://external.tld/page - - - tx_test[action]=test&tx_test[controller]=Test'],
+            new Uri('https://test.domain2.tld/123'),
+            $request
+        ));
+    }
+
     protected function setUpContainer(): void
     {
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);

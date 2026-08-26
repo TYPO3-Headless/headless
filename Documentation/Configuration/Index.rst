@@ -31,6 +31,8 @@ value must match exactly: `Accept: application/json, text/plain, */*`
 (the axios/fetch default) or `application/json; charset=utf-8` renders
 HTML. A site using sets must not carry a root
 sys_template record: its "Clear" flags wipe all set-provided TypoScript.
+Sites not using sets can select the equivalent sys_template statics instead
+("Headless", "Headless Legacy (4.x)", "Headless - Mixed mode JSON response").
 
 Headless 4.x ships sets as well (TYPO3 v13): `friendsoftypo3/headless`
 (there: the full response) and `friendsoftypo3/headless-mixed`. On TYPO3

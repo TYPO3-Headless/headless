@@ -61,7 +61,7 @@ class ProcessingConfiguration
      * @param array<string, array<string, mixed>> $autogenerate
      * @param array<string, mixed> $rawOptions
      */
-    private function __construct(
+    protected function __construct(
         public readonly string $width = '',
         public readonly string $height = '',
         public readonly int $minWidth = 0,
@@ -94,7 +94,7 @@ class ProcessingConfiguration
      * @param array<string, mixed> $configuration
      * @return array<string, mixed>
      */
-    private static function handleLegacyOptions(array $configuration): array
+    protected static function handleLegacyOptions(array $configuration): array
     {
         if ((int)($configuration['retina2x'] ?? 0)) {
             $configuration['urlRetina'] = ['factor' => self::RETINA_RATIO];

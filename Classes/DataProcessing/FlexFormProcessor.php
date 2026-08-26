@@ -80,7 +80,7 @@ class FlexFormProcessor implements DataProcessorInterface
      */
     public function __construct(
         protected FlexFormTools $flexFormTools,
-        private readonly TypoScriptService $typoScriptService,
+        protected readonly TypoScriptService $typoScriptService,
     ) {}
 
     /**

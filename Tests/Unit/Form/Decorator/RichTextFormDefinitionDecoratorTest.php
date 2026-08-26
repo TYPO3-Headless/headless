@@ -13,6 +13,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Form\Decorator;
 
 use FriendsOfTYPO3\Headless\Form\Decorator\RichTextFormDefinitionDecorator;
 use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
+use ReflectionMethod;
 use ReflectionProperty;
 use stdClass;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -33,6 +34,8 @@ use TYPO3\HtmlSanitizer\Sanitizer;
  */
 class RichTextFormDefinitionDecoratorTest extends HeadlessUnitTestCase
 {
+    protected bool $resetSingletonInstances = true;
+
     public function testSanitizesStaticTextPropertiesTextAndAddsFormatMarker(): void
     {
         $decorator = $this->buildDecoratorWithFakeSanitizer();
@@ -212,6 +215,85 @@ class RichTextFormDefinitionDecoratorTest extends HeadlessUnitTestCase
         } finally {
             unset($GLOBALS['TYPO3_REQUEST']);
         }
+    }
+
+    public function testResolveUrlsReturnsNullWithoutTypoScriptSetup(): void
+    {
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())
+            ->withAttribute('frontend.typoscript', new FrontendTypoScript(new RootNode(), [], [], []));
+
+        try {
+            $result = (new ReflectionMethod(RichTextFormDefinitionDecorator::class, 'resolveUrls'))
+                ->invoke(new RichTextFormDefinitionDecorator([]), '<p>x</p>');
+        } finally {
+            unset($GLOBALS['TYPO3_REQUEST']);
+        }
+
+        self::assertNull($result);
+    }
+
+    public function testResolveUrlsReturnsNullWithoutParseFuncConfiguration(): void
+    {
+        $typoScript = new FrontendTypoScript(new RootNode(), [], [], []);
+        $typoScript->setSetupTree(new RootNode());
+        $typoScript->setSetupArray(['lib.' => []]);
+
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('frontend.typoscript', $typoScript);
+
+        try {
+            $result = (new ReflectionMethod(RichTextFormDefinitionDecorator::class, 'resolveUrls'))
+                ->invoke(new RichTextFormDefinitionDecorator([]), '<p>x</p>');
+        } finally {
+            unset($GLOBALS['TYPO3_REQUEST']);
+        }
+
+        self::assertNull($result);
+    }
+
+    public function testResolveUrlsBuildsContentObjectRendererViaContainer(): void
+    {
+        $parseFuncConf = ['tags.' => []];
+
+        $typoScript = new FrontendTypoScript(new RootNode(), [], [], []);
+        $typoScript->setSetupTree(new RootNode());
+        $typoScript->setSetupArray(['lib.' => ['parseFunc_RTE.' => $parseFuncConf]]);
+
+        $request = (new ServerRequest())->withAttribute('frontend.typoscript', $typoScript);
+        $GLOBALS['TYPO3_REQUEST'] = $request;
+
+        $contentObject = $this->createMock(ContentObjectRenderer::class);
+        $contentObject->expects(self::once())->method('setRequest')->with($request);
+        $contentObject->expects(self::once())->method('start')->with([]);
+        $contentObject->expects(self::once())->method('parseFunc')->willReturn('resolved');
+
+        $container = new \Symfony\Component\DependencyInjection\Container();
+        $container->set(ContentObjectRenderer::class, $contentObject);
+        \TYPO3\CMS\Core\Utility\GeneralUtility::setContainer($container);
+
+        try {
+            $result = (new ReflectionMethod(RichTextFormDefinitionDecorator::class, 'resolveUrls'))
+                ->invoke(new RichTextFormDefinitionDecorator([]), '<p>x</p>');
+        } finally {
+            unset($GLOBALS['TYPO3_REQUEST']);
+        }
+
+        self::assertSame('resolved', $result);
+    }
+
+    public function testSanitizerIsBuiltOnDemandWhenUrlsCannotBeResolved(): void
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['htmlSanitizer']['default'] = \TYPO3\CMS\Core\Html\DefaultSanitizerBuilder::class;
+
+        try {
+            $result = (new ReflectionMethod(RichTextFormDefinitionDecorator::class, 'processRichText'))
+                ->invoke(new RichTextFormDefinitionDecorator([]), '<p onclick="evil()">x</p><script>bad()</script>');
+        } finally {
+            unset($GLOBALS['TYPO3_CONF_VARS']['SYS']['htmlSanitizer']);
+        }
+
+        self::assertStringNotContainsString('<script>', $result);
+        self::assertStringNotContainsString('onclick', $result);
+        self::assertStringContainsString('<p>x</p>', $result);
     }
 
     private function buildDecoratorWithFakeSanitizer(array $formStatus = []): RichTextFormDefinitionDecorator

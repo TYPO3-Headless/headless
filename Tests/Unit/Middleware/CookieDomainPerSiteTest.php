@@ -13,6 +13,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\CookieDomainPerSite;
 use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
+use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
@@ -159,6 +160,104 @@ class CookieDomainPerSiteTest extends HeadlessUnitTestCase
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] ?? null,
             'cookieDomain must not persist past the middleware call',
         );
+    }
+
+    #[Test]
+    public function requestWithoutNormalizedParamsIsPassedThrough(): void
+    {
+        $urlUtility = $this->createMock(HeadlessFrontendUrlInterface::class);
+        $urlUtility->expects(self::never())->method('withSite');
+
+        $middleware = new CookieDomainPerSite(
+            $urlUtility,
+            $this->createMock(SiteFinder::class),
+            $this->createMock(LoggerInterface::class)
+        );
+
+        $response = new JsonResponse([]);
+
+        self::assertSame(
+            $response,
+            $middleware->process(new ServerRequest(), $this->getMockHandlerWithResponse($response))
+        );
+    }
+
+    #[Test]
+    public function sitesNotMatchingRequestHostAreSkipped(): void
+    {
+        $siteWithForeignHost = $this->createMock(Site::class);
+        $siteWithForeignHost->method('getConfiguration')->willReturn(['base' => 'https://other.tld']);
+        $siteWithForeignHost->method('getBase')->willReturn(new \TYPO3\CMS\Core\Http\Uri('https://other.tld'));
+
+        $siteWithUnresolvableBase = $this->createMock(Site::class);
+        $siteWithUnresolvableBase->method('getConfiguration')->willReturn(['baseVariants' => [['base' => 'https://x.tld']]]);
+        $siteWithUnresolvableBase->method('getBase')->willReturn(new \TYPO3\CMS\Core\Http\Uri('https://x.tld'));
+
+        $siteFinder = $this->createMock(SiteFinder::class);
+        $siteFinder->method('getAllSites')->willReturn([$siteWithForeignHost, $siteWithUnresolvableBase]);
+
+        $urlUtility = $this->createMock(HeadlessFrontendUrlInterface::class);
+        $urlUtility->expects(self::once())->method('withSite')->with($siteWithUnresolvableBase)->willReturnSelf();
+        $urlUtility->method('resolveKey')->willReturn('');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('warning');
+
+        $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $logger);
+
+        $request = new ServerRequest('https://backend.tld', 'GET', null, [], ['HTTP_HOST' => 'backend.tld', 'HTTPS' => 'on']);
+        $request = $request->withAttribute('normalizedParams', NormalizedParams::createFromRequest($request));
+
+        $response = new JsonResponse([]);
+
+        self::assertSame(
+            $response,
+            $middleware->process($request, $this->getMockHandlerWithResponse($response))
+        );
+    }
+
+    #[Test]
+    public function cookieDomainOverridesScopesDuringHandlingAndRestoresPreviousValues(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getConfiguration')->willReturn(['baseVariants' => [['base' => 'https://backend.tld']]]);
+        $site->method('getBase')->willReturn(new \TYPO3\CMS\Core\Http\Uri('https://backend.tld'));
+
+        $siteFinder = $this->createMock(SiteFinder::class);
+        $siteFinder->method('getAllSites')->willReturn([$site]);
+
+        $urlUtility = $this->createMock(HeadlessFrontendUrlInterface::class);
+        $urlUtility->method('withSite')->willReturnSelf();
+        $urlUtility->method('resolveKey')->willReturnCallback(
+            static fn(string $key): string => $key === 'base' ? 'https://backend.tld' : '.new.tld'
+        );
+
+        $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->createMock(LoggerInterface::class));
+
+        $request = new ServerRequest('https://backend.tld', 'GET', null, [], ['HTTP_HOST' => 'backend.tld', 'HTTPS' => 'on']);
+        $request = $request->withAttribute('normalizedParams', NormalizedParams::createFromRequest($request));
+
+        $response = new JsonResponse([]);
+        $handler = $this->createPartialMock(RequestHandler::class, ['handle']);
+        $handler->method('handle')->willReturnCallback(static function () use ($response): JsonResponse {
+            self::assertSame('.new.tld', $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain']);
+            self::assertSame('.new.tld', $GLOBALS['TYPO3_CONF_VARS']['FE']['cookieDomain']);
+            self::assertArrayNotHasKey('cookieDomain', $GLOBALS['TYPO3_CONF_VARS']['BE'] ?? []);
+            return $response;
+        });
+
+        $GLOBALS['TYPO3_CONF_VARS']['FE']['cookieDomain'] = 'old.tld';
+        unset($GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'], $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieDomain']);
+
+        try {
+            self::assertSame($response, $middleware->process($request, $handler));
+
+            self::assertSame('old.tld', $GLOBALS['TYPO3_CONF_VARS']['FE']['cookieDomain']);
+            self::assertArrayNotHasKey('cookieDomain', $GLOBALS['TYPO3_CONF_VARS']['SYS'] ?? []);
+            self::assertArrayNotHasKey('cookieDomain', $GLOBALS['TYPO3_CONF_VARS']['BE'] ?? []);
+        } finally {
+            unset($GLOBALS['TYPO3_CONF_VARS']['FE']['cookieDomain']);
+        }
     }
 
     protected function getMockHandlerWithResponse($response)

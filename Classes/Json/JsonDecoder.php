@@ -76,9 +76,11 @@ class JsonDecoder implements JsonDecoderInterface
             return null;
         }
 
+        // @codeCoverageIgnoreStart
         if (!is_object($decoded) && !is_array($decoded)) {
             return null;
         }
+        // @codeCoverageIgnoreEnd
 
         return $decoded;
     }

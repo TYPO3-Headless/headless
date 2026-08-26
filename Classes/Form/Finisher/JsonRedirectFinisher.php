@@ -49,7 +49,7 @@ class JsonRedirectFinisher extends AbstractFinisher
     protected RequestInterface $request;
     protected UriBuilder $uriBuilder;
 
-    private ?HeadlessFrontendUrlInterface $urlUtility = null;
+    protected ?HeadlessFrontendUrlInterface $urlUtility = null;
 
     /**
      * Executes this finisher
@@ -137,7 +137,7 @@ class JsonRedirectFinisher extends AbstractFinisher
         }
     }
 
-    private function restrictToCurrentSite(int $pageUid, mixed $currentSite): int
+    protected function restrictToCurrentSite(int $pageUid, mixed $currentSite): int
     {
         if (!$currentSite instanceof Site || $pageUid <= 0) {
             return $pageUid;

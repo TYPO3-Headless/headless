@@ -164,6 +164,45 @@ class HeadlessPhpViewTest extends UnitTestCase
         }
     }
 
+    public function testThrowsWhenNeitherDirectFileNorTemplateNameIsGiven(): void
+    {
+        $view = new HeadlessPhpView(new ViewFactoryData());
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionCode(1747300000);
+        $view->render();
+    }
+
+    public function testThrowsWhenDirectTemplateFileIsMissing(): void
+    {
+        $view = new HeadlessPhpView(new ViewFactoryData(
+            templatePathAndFilename: Environment::getPublicPath() . '/typo3temp/var/tests/headless-does-not-exist.php',
+        ));
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionCode(1747300000);
+        $view->render();
+    }
+
+    public function testInvalidTemplateRootsAreSkippedAndRootsAreResolvedOnce(): void
+    {
+        $root = $this->createTemplateRoot();
+        $this->writeTemplate($root, 'Value.php', '<?php echo $value;');
+
+        $view = new HeadlessPhpView(new ViewFactoryData(templateRootPaths: [
+            '',
+            'typo3temp/../../../escape',
+            $root . 'missing-subdir',
+            $root,
+        ]));
+
+        $view->assign('value', 'first');
+        self::assertSame('first', $view->render('Value'));
+
+        $view->assign('value', 'second');
+        self::assertSame('second', $view->render('Value'));
+    }
+
     private function createTemplateRoot(): string
     {
         // Must live under publicPath/typo3temp/ so it satisfies

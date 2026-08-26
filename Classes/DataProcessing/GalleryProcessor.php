@@ -32,7 +32,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
     /**
      * @var array<string, array{width:int, height:int}>
      */
-    private array $croppedDimensionCache = [];
+    protected array $croppedDimensionCache = [];
 
     /**
      * @var array<int, array<string, string|array<mixed>>>
@@ -42,8 +42,8 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
     protected ProcessingConfiguration $processorConfigurationObject;
 
     public function __construct(
-        private readonly FileUtilityInterface $fileUtility,
-        private readonly ImageService $imageService,
+        protected readonly FileUtilityInterface $fileUtility,
+        protected readonly ImageService $imageService,
     ) {}
 
     /**
@@ -197,7 +197,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      *
      * @param array<string, mixed> $processedFile
      */
-    private function getCroppedDimensionalPropertyFromProcessedFile(array $processedFile, string $property): int
+    protected function getCroppedDimensionalPropertyFromProcessedFile(array $processedFile, string $property): int
     {
         if ($this->processorConfigurationObject->legacyReturn) {
             if (empty($processedFile['properties']['crop'])) {
@@ -293,7 +293,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
      *
      * @param array<string, mixed> $processedFile
      */
-    private function createFileObject(array $processedFile): FileInterface
+    protected function createFileObject(array $processedFile): FileInterface
     {
         $uid = $this->processorConfigurationObject->legacyReturn ? (int)$processedFile['properties']['uidLocal'] : $processedFile['uidLocal'];
         $cacheKey = $this->createFileCacheKey($processedFile);
@@ -314,7 +314,7 @@ class GalleryProcessor extends \TYPO3\CMS\Frontend\DataProcessing\GalleryProcess
     /**
      * @param array<string, mixed> $processedFile
      */
-    private function createFileCacheKey(array $processedFile): string
+    protected function createFileCacheKey(array $processedFile): string
     {
         $properties = $this->processorConfigurationObject->legacyReturn ? $processedFile['properties'] : $processedFile;
 

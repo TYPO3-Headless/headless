@@ -102,6 +102,21 @@ class AfterPageUriGeneratedListenerTest extends HeadlessUnitTestCase
         self::assertSame($originalUri, $event->getUri());
     }
 
+    public function testKeepsUriWhenRewrittenUriIsInvalid(): void
+    {
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())
+            ->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE);
+
+        $urlUtility = $this->createMock(HeadlessFrontendUrlInterface::class);
+        $urlUtility->method('withRequest')->willReturnSelf();
+        $urlUtility->method('getFrontendUrlWithSite')->willReturn('http:///invalid');
+
+        $event = $this->createEvent('https://api.example.tld/page', $this->createSite(['headless' => 1]));
+        (new AfterPageUriGeneratedListener($urlUtility, new HeadlessMode()))($event);
+
+        self::assertSame('https://api.example.tld/page', (string)$event->getUri());
+    }
+
     /**
      * @param array<string, mixed> $configuration
      */

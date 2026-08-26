@@ -32,11 +32,11 @@ use const JSON_THROW_ON_ERROR;
 class UserIntMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private readonly HeadlessUserInt $headlessUserInt,
-        private readonly HeadlessModeInterface $headlessMode,
-        private readonly MetaHandlerInterface $metaHandler,
-        private readonly JsonEncoderInterface $jsonEncoder,
-        private readonly JsonDecoderInterface $jsonDecoder,
+        protected readonly HeadlessUserInt $headlessUserInt,
+        protected readonly HeadlessModeInterface $headlessMode,
+        protected readonly MetaHandlerInterface $metaHandler,
+        protected readonly JsonEncoderInterface $jsonEncoder,
+        protected readonly JsonDecoderInterface $jsonDecoder,
     ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface

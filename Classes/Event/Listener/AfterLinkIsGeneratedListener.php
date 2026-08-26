@@ -98,7 +98,7 @@ class AfterLinkIsGeneratedListener
         }
     }
 
-    private function getTargetSite(AfterLinkIsGeneratedEvent $event): Site
+    protected function getTargetSite(AfterLinkIsGeneratedEvent $event): Site
     {
         $linkConfiguration = $event->getLinkResult()->getLinkConfiguration();
 
@@ -188,7 +188,7 @@ class AfterLinkIsGeneratedListener
      * @param array<string, mixed> $linkConfiguration
      * @return array<int, string>
      */
-    private function resolveTypolinkParameterString(string $mixedLinkParameter, array &$linkConfiguration = []): array
+    protected function resolveTypolinkParameterString(string $mixedLinkParameter, array &$linkConfiguration = []): array
     {
         $linkParameterParts = $this->typoLinkCodecService->decode($mixedLinkParameter);
         [$linkHandlerKeyword] = explode(':', $linkParameterParts['url'] ?? '', 2);

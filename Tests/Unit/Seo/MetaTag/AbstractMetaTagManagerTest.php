@@ -48,4 +48,15 @@ class AbstractMetaTagManagerTest extends HeadlessUnitTestCase
             $manager->renderProperty('special')
         );
     }
+
+    public function testEmptyNameAttributeYieldsNoMetaTags(): void
+    {
+        $manager = new class () extends AbstractMetaTagManager {
+            protected $defaultNameAttribute = '';
+            protected $handledProperties = ['special' => []];
+        };
+        $manager->addProperty('special', 'value', [], true);
+
+        self::assertSame([], $manager->renderHeadlessPropertyAsArray('special'));
+    }
 }

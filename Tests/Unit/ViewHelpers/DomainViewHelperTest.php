@@ -58,6 +58,13 @@ class DomainViewHelperTest extends HeadlessUnitTestCase
         self::assertSame('https://front.tld', $this->render($urlUtility, 'frontendBase'));
     }
 
+    public function testDeclaresReturnArgument(): void
+    {
+        $viewHelper = new DomainViewHelper($this->createMock(HeadlessFrontendUrlInterface::class));
+
+        self::assertSame(['return'], array_keys($viewHelper->prepareArguments()));
+    }
+
     private function render(HeadlessFrontendUrlInterface $urlUtility, ?string $return): mixed
     {
         $viewHelper = new DomainViewHelper($urlUtility);

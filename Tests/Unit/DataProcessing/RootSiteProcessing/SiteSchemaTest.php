@@ -14,6 +14,7 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\DataProcessing\RootSiteProcessing;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProviderInterface;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteSchema;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use ReflectionProperty;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -78,6 +79,37 @@ class SiteSchemaTest extends UnitTestCase
         ]);
 
         self::assertSame('Custom', $result[0]['title']);
+    }
+
+    public function testProcessCreatesContentObjectRendererWhenNotProvided(): void
+    {
+        $site = new Site('site-a', 1, ['base' => 'https://a.tld']);
+
+        $provider = $this->createMock(SiteProviderInterface::class);
+        $provider->method('getSites')->willReturn([$site]);
+        $provider->method('getPages')->willReturn([1 => ['uid' => 1, 'title' => 'Site A']]);
+        $provider->method('getCurrentRootPage')->willReturn($site);
+
+        $urlUtility = $this->createMock(HeadlessFrontendUrlInterface::class);
+        $urlUtility->method('getFrontendUrlForPage')->willReturn('https://a.tld/page');
+
+        $request = new \TYPO3\CMS\Core\Http\ServerRequest();
+
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->expects(self::once())->method('setRequest')->with($request);
+
+        $container = new \Symfony\Component\DependencyInjection\Container();
+        $container->set(ContentObjectRenderer::class, $contentObjectRenderer);
+        \TYPO3\CMS\Core\Utility\GeneralUtility::setContainer($container);
+
+        try {
+            $result = (new SiteSchema($urlUtility, $this->createMock(ContentDataProcessor::class)))
+                ->process($provider, ['request' => $request, 'siteUid' => 1]);
+        } finally {
+            (new ReflectionProperty(\TYPO3\CMS\Core\Utility\GeneralUtility::class, 'container'))->setValue(null, null);
+        }
+
+        self::assertSame('Site A', $result[0]['title']);
     }
 
     public function testProcessFallsBackToDefaultTitleFieldWhenBlank(): void

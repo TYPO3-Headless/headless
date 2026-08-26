@@ -20,7 +20,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class AudioTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\AudioTagRenderer
 {
-    private ?FileUtilityInterface $fileUtility = null;
+    protected ?FileUtilityInterface $fileUtility = null;
 
     public function getPriority(): int
     {

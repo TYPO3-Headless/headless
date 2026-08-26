@@ -100,14 +100,18 @@ only loads the `Legacy/` delta on top: the full 4.x `page` object, `lib.meta`
 and the `categories` fields. It is the quick upgrade path for existing
 installs.
 
-There is no selectable sys_template static any more — sites are expected to
-load the extension via sets. Existing sys_template records that still carry
-`EXT:headless/Configuration/TypoScript` in `include_static_file`, and site
-packages that `@import` `EXT:headless/Configuration/TypoScript/setup.typoscript`
-directly, keep working: the file remains as a shim that imports the default
-set plus the legacy delta, producing the full 4.x response. Note that a root
-sys_template record with "Clear" flags wipes all set-provided TypoScript —
-delete the record when switching a site to sets.
+Sites not (yet) on sets can select the equivalent sys_template statics
+instead: "Headless" (`EXT:headless/Configuration/TypoScript/Headless`, the
+trimmed default response), "Headless Legacy (4.x)"
+(`EXT:headless/Configuration/TypoScript`, the full 4.x response) and
+"Headless - Mixed mode JSON response"
+(`EXT:headless/Configuration/TypoScript/Mixed`). 4.x records keep working
+unchanged — the 4.x "Headless" static stored the path that is now registered
+as the legacy item, and the mixed static kept its path. Site packages that
+`@import` `EXT:headless/Configuration/TypoScript/setup.typoscript` directly
+also still get the full 4.x response. Note that a root sys_template record
+with "Clear" flags wipes all set-provided TypoScript — delete the record when
+switching a site to sets.
 
 The default set imports the same `lib.*` helpers as the legacy setup —
 everything in the table above still applies — with two exceptions: `lib.meta`

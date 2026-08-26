@@ -68,7 +68,7 @@ class Translator
      * @param array<string, mixed> $sentValues
      * @return array<int, mixed>
      */
-    private function translateRenderables(array $renderables, array $formRuntime, array $sentValues): array
+    protected function translateRenderables(array $renderables, array $formRuntime, array $sentValues): array
     {
         $translated = [];
 

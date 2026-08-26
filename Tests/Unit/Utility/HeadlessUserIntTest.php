@@ -109,6 +109,22 @@ class HeadlessUserIntTest extends HeadlessUnitTestCase
         );
     }
 
+    public function testUnwrapQuotedContentWithInvalidUtf8BecomesNull(): void
+    {
+        self::assertSame(
+            '{"v":null}',
+            $this->headlessUserInt->unwrap('{"v":"HEADLESS_INT_START<<' . "\xB1" . '>>HEADLESS_INT_END"}')
+        );
+    }
+
+    public function testUnwrapUnquotedContentWithInvalidUtf8IsRemoved(): void
+    {
+        self::assertSame(
+            'a  b',
+            $this->headlessUserInt->unwrap('a HEADLESS_INT_START<<' . "\xB1" . '>>HEADLESS_INT_END b')
+        );
+    }
+
     public function testUnwrapLeavesContentWithoutMarkersUntouched(): void
     {
         self::assertSame('{"foo":"bar"}', $this->headlessUserInt->unwrap('{"foo":"bar"}'));

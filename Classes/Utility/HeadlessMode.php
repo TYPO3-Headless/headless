@@ -20,7 +20,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 #[AsAlias(public: true)]
 class HeadlessMode implements HeadlessModeInterface
 {
-    private ?ServerRequestInterface $request = null;
+    protected ?ServerRequestInterface $request = null;
 
     public function withRequest(ServerRequestInterface $request): self
     {
@@ -39,7 +39,7 @@ class HeadlessMode implements HeadlessModeInterface
         return $this->checkRequest($request);
     }
 
-    private function checkRequest(ServerRequestInterface $request): bool
+    protected function checkRequest(ServerRequestInterface $request): bool
     {
         $mode = ($request->getAttribute('headless') ?? new Headless())->getMode();
 

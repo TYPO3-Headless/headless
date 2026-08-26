@@ -1,85 +1,110 @@
-Upgrade from 4.x to 5.x
-=======================
+# Upgrade from 4.x to 5.x
 
-Requirements
---
+## Requirements
 
-* TYPO3 v14, PHP >= 8.2. Staying on TYPO3 v12.4/v13? Use the `4.x` branch (bug & security fixes).
-* Composer install is recommended. Classic mode still works, but `ext_emconf.php` was
-  removed — install manually by unpacking the release into `typo3conf/ext/headless`.
+* TYPO3 v14, PHP >= 8.2. Staying on TYPO3 v12.4/v13? Use the `4.x` branch
+  (bug & security fixes).
+* Composer installation is recommended. Classic mode still works, but
+  `ext_emconf.php` was removed — install by unpacking the release into
+  `typo3conf/ext/headless`.
 
-Site setup: static template → site sets
---
+## Pick a response variant
 
-1. Add one set to your site config `dependencies`:
-   `friendsoftypo3/headless` (new, trimmed response), `friendsoftypo3/headless-legacy`
-   (full 4.x-compatible response — the upgrade default), or `friendsoftypo3/headless-mixed`.
-   Already on sets (TYPO3 v13)? `friendsoftypo3/headless` shipped the *full* response in
-   4.x but the *trimmed* one in 5.x — switch the dependency to
-   `friendsoftypo3/headless-legacy` to keep your output unchanged.
-2. Delete the root sys_template record. A record with "Clear" flags wipes all
-   set-provided TypoScript (symptom: `No page configured for type=0`).
-3. The old static includes are no longer selectable. Existing sys_template records
-   referencing `EXT:headless/Configuration/TypoScript`, and site packages importing
-   `.../TypoScript/setup.typoscript` directly, keep working — the file remains as a
-   shim producing the full 4.x response.
+5.x ships three variants. Each is available both as a site set and as a
+sys_template static include:
 
-TypoScript
---
+| Site set | Static include | Output |
+| --- | --- | --- |
+| `friendsoftypo3/headless` | Headless | Trimmed default response (new projects) |
+| `friendsoftypo3/headless-legacy` | Headless Legacy (4.x) | Full 4.x-compatible response (recommended for upgrades) |
+| `friendsoftypo3/headless-mixed` | Headless - Mixed mode JSON response | Full 4.x-compatible response, served as JSON only for requests with exactly `Accept: application/json` |
 
-* The default set ships a trimmed page response: no `meta` (use `seo`) and no `categories`
-  page fields; `lib.contentElement` defines no `categories` field.
-  Use `friendsoftypo3/headless-legacy` for byte-compatible 4.x output.
-* Files moved — adjust direct `@import`s: `Page/Meta.typoscript`, `Page/Categories.typoscript`
-  and `Configuration/PageConfiguration.typoscript` now live under `TypoScript/Legacy/`.
-* Removed: `lib.baseImage` (orphaned since 4.x; gallery CEs now share
-  `lib.galleryContentElement`) and the unused constants `styles.content.allowTags`,
+The trimmed response drops `meta` (use `seo`) and the page/content element
+`categories` fields — details in the TypoScript section below.
+
+## Upgrading a site configured via sets (TYPO3 v13)
+
+`friendsoftypo3/headless` shipped the *full* response in 4.x but ships the
+*trimmed* one in 5.x. To keep your output unchanged, switch the dependency in
+`config/sites/<identifier>/config.yaml` to the legacy set:
+
+```yaml
+dependencies:
+  - friendsoftypo3/headless-legacy
+```
+
+Make sure the site has no root sys_template record: a record with "Clear"
+flags wipes all set-provided TypoScript (symptom:
+`No page configured for type=0`).
+
+## Upgrading a site configured via sys_template
+
+Existing records keep working without changes — but note what the include
+selector items map to in 5.x:
+
+* Records that include the 4.x "Headless" static keep the stored path
+  (`EXT:headless/Configuration/TypoScript`) and keep producing the full 4.x
+  response. That item is labelled **Headless Legacy (4.x)** in 5.x.
+* The **Headless** item now points at the new trimmed response
+  (`EXT:headless/Configuration/TypoScript/Headless`) — select it only once
+  your frontend handles the 5.x output.
+* The mixed-mode static kept its 4.x path
+  (`EXT:headless/Configuration/TypoScript/Mixed`) — records including it are
+  unaffected.
+* Site packages that `@import`
+  `EXT:headless/Configuration/TypoScript/setup.typoscript` directly also keep
+  working and get the full 4.x response.
+
+## TypoScript
+
+* The trimmed response ships no `meta` (use `seo`) and no `categories` page
+  fields; `lib.contentElement` defines no `categories` field.
+* Files moved — adjust direct `@import`s: `Page/Meta.typoscript`,
+  `Page/Categories.typoscript` and `Configuration/PageConfiguration.typoscript`
+  now live under `TypoScript/Legacy/`.
+* Removed: `lib.baseImage` (orphaned since 4.x; gallery content elements now
+  share `lib.galleryContentElement`).
+* Removed constants (define locally if referenced): `styles.content.allowTags`,
   `styles.content.shortcut.tables`, `styles.content.links.*`,
-  `styles.content.textmedia.rowSpacing|textMargin|borderColor` — define locally if referenced.
-* Legacy response: the content element `categories` key moved after `appearance`
-  (key order only, same values).
+  `styles.content.textmedia.rowSpacing|textMargin|borderColor`.
+* Legacy response: the content element `categories` key moved after
+  `appearance` (key order only, same values).
 
-Feature flags
---
+## Feature flags
 
-* Removed: `headless.redirectMiddlewares` — the redirects integration is now auto-enabled
-  when EXT:redirects is installed. (Older flags `nextMajor`, `jsonViewModule`,
-  `pageTitleProviders` were already gone before 4.8; `headless.workspaces` never existed
-  in 4.x — workspace preview was auto-enabled there too.)
-* Reworked: `headless.overrideFluidTemplates` — swaps the core `ViewFactoryInterface`
-  for `HeadlessViewFactory`; templates may now also be raw-PHP (`HeadlessPhpView`).
+* Removed: `headless.redirectMiddlewares` — the redirects integration is now
+  auto-enabled when EXT:redirects is installed.
+* Reworked: `headless.overrideFluidTemplates` — swaps the core
+  `ViewFactoryInterface` for `HeadlessViewFactory`; templates may now also be
+  raw-PHP (`HeadlessPhpView`).
 
-API
---
+## API
 
-* `Event\RedirectUrlEvent` + `Event\Listener\RedirectUrlAdditionalParamsListener` and
-  `Middleware\RedirectHandler` were removed. The JSON redirect envelope is built by
-  `Event\Listener\HeadlessRedirectResponseListener` on the core `RedirectWasHitEvent`
-  (identifier `headless/RedirectWasHit`) — register your own listener `after` it to
-  customise the payload. Extbase `additionalParams` targets are resolved by
-  `Redirects\TargetUrlResolver` (overridable via `Services.yaml`).
-* XClasses removed in favour of core APIs:
-  `XClass\Controller\PreviewController`, `XClass\Preview\PreviewUriBuilder` and
-  `Hooks\PreviewUrlHook` → `Event\Listener\AfterPageUriGeneratedListener`;
-  `XClass\ImageService` → `Resource\Service\HeadlessImageService` (aliased over the core
-  service); `XClass\ResourceLocalDriver` → `Event\Listener\ProxyResourcePublicUrlListener`;
-  `XClass\TemplateView` → `View\HeadlessViewFactory`.
-* `Hooks\FileOrFolderLinkBuilder` moved to `Typolink\FileOrFolderLinkBuilder`.
-* Type against `Utility\FileUtilityInterface` instead of the concrete `FileUtility`.
-* Service and middleware wiring moved from `ext_localconf.php` to
-  `Configuration/Services.php` / `Configuration/RequestMiddlewares.php`;
-  `ext_localconf.php` keeps only registrations without a DI seam (XCLASSes,
-  typolink builder, FormEngine nodes, meta-tag managers, media renderers).
+Removed or replaced:
 
-New in 5.x
---
+| 4.x | 5.x replacement |
+| --- | --- |
+| `Event\RedirectUrlEvent`, `Event\Listener\RedirectUrlAdditionalParamsListener`, `Middleware\RedirectHandler` | `Event\Listener\HeadlessRedirectResponseListener` on the core `RedirectWasHitEvent` (identifier `headless/RedirectWasHit`); register your own listener `after` it to customise the JSON redirect payload. Extbase `additionalParams` targets are resolved by `Redirects\TargetUrlResolver` (overridable via `Services.yaml`). |
+| `XClass\Controller\PreviewController`, `XClass\Preview\PreviewUriBuilder`, `Hooks\PreviewUrlHook` | `Event\Listener\AfterPageUriGeneratedListener` |
+| `XClass\ImageService` | `Resource\Service\HeadlessImageService` (aliased over the core service) |
+| `XClass\ResourceLocalDriver` | `Event\Listener\ProxyResourcePublicUrlListener` |
+| `XClass\TemplateView` | `View\HeadlessViewFactory` |
+| `Hooks\FileOrFolderLinkBuilder` | `Typolink\FileOrFolderLinkBuilder` (moved) |
 
-* Installed core extensions are detected and integrated automatically — `EXT:form`,
-  `EXT:felogin`, `EXT:redirects`, `EXT:seo` — honouring the site's headless/mixed mode.
+Other changes:
 
-* Redirect "Short URLs" / "QR Codes" backend modules resolve source URLs against the
-  site's `frontendBase`.
-* `Form\Decorator\RichTextFormDefinitionDecorator` for TYPO3 v14.2 RTE-enabled form fields.
+* Type against `Utility\FileUtilityInterface` instead of the concrete
+  `FileUtility`.
+
+## New in 5.x
+
+* Installed core extensions are detected and integrated automatically —
+  `EXT:form`, `EXT:felogin`, `EXT:redirects`, `EXT:seo` — honouring the
+  site's headless/mixed mode.
+* Redirect "Short URLs" / "QR Codes" backend modules resolve source URLs
+  against the site's `frontendBase`.
+* `Form\Decorator\RichTextFormDefinitionDecorator` for TYPO3 v14.2
+  RTE-enabled form fields.
 * `JsonRedirect` form finisher is auto-registered in the form editor
   (set `friendsoftypo3/headless-form`).
 * Workspace preview works through core rendering plus the generic backend

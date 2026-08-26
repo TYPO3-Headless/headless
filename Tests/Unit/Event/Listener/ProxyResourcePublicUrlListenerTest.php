@@ -161,6 +161,29 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
         self::assertNull($event->getPublicUrl());
     }
 
+    public function testEmptyStorageProxyUrlKeepsPublicUrlUnsetAndIsCachedPerRequest(): void
+    {
+        $headlessMode = $this->createMock(HeadlessModeInterface::class);
+        $headlessMode->method('isEnabledFor')->willReturn(true);
+
+        $urlUtility = $this->createMock(HeadlessFrontendUrlInterface::class);
+        $urlUtility->method('withRequest')->willReturnSelf();
+        $urlUtility->expects(self::once())->method('getStorageProxyUrl')->willReturn('');
+
+        $listener = new ProxyResourcePublicUrlListener($headlessMode, $urlUtility);
+
+        $event = $this->event(
+            driver: $this->localDriver(public: true),
+            storage: $this->storage([]),
+            identifier: '/foo/bar.jpg',
+        );
+
+        $listener($event);
+        $listener($event);
+
+        self::assertNull($event->getPublicUrl());
+    }
+
     private function listener(bool $headlessEnabled = true): ProxyResourcePublicUrlListener
     {
         $headlessMode = $this->createMock(HeadlessModeInterface::class);

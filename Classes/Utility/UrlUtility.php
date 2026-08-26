@@ -42,21 +42,21 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     use LoggerAwareTrait;
 
     /** @var array<string, mixed> */
-    private array $conf = [];
+    protected array $conf = [];
     /** @var array<int, array<string, mixed>> */
-    private array $variants = [];
+    protected array $variants = [];
     /** @var array<int, string> */
-    private array $frontendDomains = [];
+    protected array $frontendDomains = [];
     /** @var array<int, string> */
-    private array $backendDomains = [];
+    protected array $backendDomains = [];
 
     /** @var array<string, bool> */
-    private array $variantConditionCache = [];
+    protected array $variantConditionCache = [];
 
     public function __construct(
-        private readonly Resolver $resolver,
-        private readonly SiteFinder $siteFinder,
-        private HeadlessModeInterface $headlessMode,
+        protected readonly Resolver $resolver,
+        protected readonly SiteFinder $siteFinder,
+        protected HeadlessModeInterface $headlessMode,
     ) {}
 
     public function withSite(Site $site): HeadlessFrontendUrlInterface
@@ -203,7 +203,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
      * If a site base contains "/" or "www.domain.com", it is ensured that
      * parse_url() can handle this kind of configuration properly.
      */
-    private function sanitizeBaseUrl(string $base): string
+    protected function sanitizeBaseUrl(string $base): string
     {
         if (str_starts_with($base, '#')) {
             return $base;
@@ -228,7 +228,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     /**
      * @param array<int, array<string, mixed>> $variants
      */
-    private function resolveWithVariants(
+    protected function resolveWithVariants(
         string $frontendUrl,
         array $variants = [],
         string $returnField = 'frontendBase'
@@ -259,7 +259,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $frontendUrl;
     }
 
-    private function applySite(Site $site): void
+    protected function applySite(Site $site): void
     {
         $this->conf = $site->getConfiguration();
         $this->variants = $this->conf['baseVariants'] ?? [];
@@ -280,7 +280,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         }
     }
 
-    private function applyLanguage(SiteLanguage $language): void
+    protected function applyLanguage(SiteLanguage $language): void
     {
         $langConf = $language->toArray();
         $variants = $langConf['baseVariants'] ?? [];
@@ -312,7 +312,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         }
     }
 
-    private function applyRequest(ServerRequestInterface $request): void
+    protected function applyRequest(ServerRequestInterface $request): void
     {
         $site = $request->getAttribute('site');
         if ($site instanceof Site) {
@@ -327,7 +327,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $this->headlessMode = $this->headlessMode->withRequest($request);
     }
 
-    private function handleFrontendAndBackendPaths(string $frontendPath, UriInterface $targetUri, string $baseBackendPath = ''): string
+    protected function handleFrontendAndBackendPaths(string $frontendPath, UriInterface $targetUri, string $baseBackendPath = ''): string
     {
         $frontendPath = rtrim($frontendPath, '/');
         $targetPath = $targetUri->getPath();
@@ -337,7 +337,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $frontendPath . '/' . ltrim(substr($targetPath, strlen($baseBackendPath)), '/');
     }
 
-    private function collectLanguageDomainsAndMatch(SiteInterface $site, string $backendUrl): ?SiteLanguage
+    protected function collectLanguageDomainsAndMatch(SiteInterface $site, string $backendUrl): ?SiteLanguage
     {
         $backendUri = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($backendUrl));
         $matchedLanguage = null;
@@ -365,7 +365,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $matchedLanguage;
     }
 
-    private function hostFromBase(string $base): string
+    protected function hostFromBase(string $base): string
     {
         return (new Uri($this->sanitizeBaseUrl($base)))->getHost();
     }

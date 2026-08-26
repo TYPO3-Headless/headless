@@ -34,7 +34,7 @@ use function str_contains;
  */
 class RichTextFormDefinitionDecorator extends AbstractFormDefinitionDecorator
 {
-    private ?Sanitizer $sanitizer = null;
+    protected ?Sanitizer $sanitizer = null;
 
     protected function overrideElement(array $element): array
     {

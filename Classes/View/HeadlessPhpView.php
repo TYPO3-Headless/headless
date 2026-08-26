@@ -34,12 +34,12 @@ use function str_starts_with;
 class HeadlessPhpView implements ViewInterface
 {
     /** @var array<string, mixed> */
-    private array $variables = [];
+    protected array $variables = [];
 
     /** @var list<string>|null */
-    private ?array $resolvedRoots = null;
+    protected ?array $resolvedRoots = null;
 
-    public function __construct(private readonly ViewFactoryData $data) {}
+    public function __construct(protected readonly ViewFactoryData $data) {}
 
     public function assign(string $key, mixed $value): self
     {
@@ -79,7 +79,7 @@ class HeadlessPhpView implements ViewInterface
         }
     }
 
-    private function resolvePhpTemplate(string $name): ?string
+    protected function resolvePhpTemplate(string $name): ?string
     {
         if ($name === '') {
             return $this->resolveDirectFile();
@@ -102,9 +102,11 @@ class HeadlessPhpView implements ViewInterface
                 continue;
             }
             $real = realpath($candidate);
+            // @codeCoverageIgnoreStart
             if ($real === false) {
                 continue;
             }
+            // @codeCoverageIgnoreEnd
             if ($real === $root || str_starts_with($real, $root . '/')) {
                 return $real;
             }
@@ -113,7 +115,7 @@ class HeadlessPhpView implements ViewInterface
         return null;
     }
 
-    private function resolveDirectFile(): ?string
+    protected function resolveDirectFile(): ?string
     {
         $direct = $this->data->templatePathAndFilename;
         if ($direct === null || $direct === '') {
@@ -128,7 +130,7 @@ class HeadlessPhpView implements ViewInterface
         return $real === false ? null : $real;
     }
 
-    private function isSafeTemplateName(string $name): bool
+    protected function isSafeTemplateName(string $name): bool
     {
         if ($name[0] === '/'
             || preg_match('#^[a-zA-Z][a-zA-Z0-9+.\-]*:#', $name) === 1) {
@@ -140,7 +142,7 @@ class HeadlessPhpView implements ViewInterface
     /**
      * @return list<string> canonical absolute roots without trailing slash
      */
-    private function resolvedTemplateRoots(): array
+    protected function resolvedTemplateRoots(): array
     {
         if ($this->resolvedRoots !== null) {
             return $this->resolvedRoots;

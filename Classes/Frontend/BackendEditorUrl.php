@@ -30,7 +30,7 @@ class BackendEditorUrl
         return $this->generateUrl();
     }
 
-    private function generateUrl(string $table = 'tt_content'): string
+    protected function generateUrl(string $table = 'tt_content'): string
     {
         $beUser = $GLOBALS['BE_USER'] ?? null;
 

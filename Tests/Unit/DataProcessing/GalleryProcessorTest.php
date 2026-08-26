@@ -16,8 +16,12 @@ use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use FriendsOfTYPO3\Headless\Utility\FileUtilityInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionMethod;
+use ReflectionProperty;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Resource\FileInterface;
+use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
@@ -154,6 +158,153 @@ class GalleryProcessorTest extends HeadlessUnitTestCase
         self::assertSame(2, $result['gallery']['count']['files']);
         self::assertSame(2, $result['gallery']['count']['columns']);
         self::assertSame(1, $result['gallery']['count']['rows']);
+    }
+
+    public function testEqualMediaHeightScalesMediaDimensionsAndGalleryWidth(): void
+    {
+        $this->contentObjectRenderer->data['imagecols'] = 2;
+
+        $configurations = [];
+        $this->fileUtility->method('process')->willReturnCallback(
+            static function (FileInterface $image, ProcessingConfiguration $configuration) use (&$configurations): array {
+                $configurations[] = [$configuration->width, $configuration->height];
+                return ['publicUrl' => '/processed.gif', 'properties' => []];
+            }
+        );
+        $this->fileUtility->method('processCropVariants')->willReturnArgument(2);
+        $this->imageService->method('getImage')->willReturn($this->createMock(FileInterface::class));
+
+        $result = $this->subject->process(
+            $this->contentObjectRenderer,
+            [],
+            ['equalMediaHeight' => '100'],
+            ['files' => [$this->fileReferenceData(1, 7), $this->fileReferenceData(2, 8), $this->fileReferenceData(3, 9)]]
+        );
+
+        self::assertEquals(400, $result['gallery']['width']);
+        self::assertSame([['200', '100'], ['200', '100'], ['200', '100']], $configurations);
+    }
+
+    public function testEqualMediaWidthScalesMediaDimensionsAndGalleryWidth(): void
+    {
+        $this->contentObjectRenderer->data['imagecols'] = 2;
+
+        $configurations = [];
+        $this->fileUtility->method('process')->willReturnCallback(
+            static function (FileInterface $image, ProcessingConfiguration $configuration) use (&$configurations): array {
+                $configurations[] = [$configuration->width, $configuration->height];
+                return ['publicUrl' => '/processed.gif', 'properties' => []];
+            }
+        );
+        $this->fileUtility->method('processCropVariants')->willReturnArgument(2);
+        $this->imageService->method('getImage')->willReturn($this->createMock(FileInterface::class));
+
+        $result = $this->subject->process(
+            $this->contentObjectRenderer,
+            [],
+            ['equalMediaWidth' => '400'],
+            ['files' => [$this->fileReferenceData(1, 7), $this->fileReferenceData(2, 8)]]
+        );
+
+        self::assertEquals(600, $result['gallery']['width']);
+        self::assertSame([['300', '150'], ['300', '150']], $configurations);
+    }
+
+    public function testBorderSettingsShrinkTheAvailableGalleryWidth(): void
+    {
+        $configurations = [];
+        $this->fileUtility->method('process')->willReturnCallback(
+            static function (FileInterface $image, ProcessingConfiguration $configuration) use (&$configurations): array {
+                $configurations[] = [$configuration->width, $configuration->height];
+                return ['publicUrl' => '/processed.gif', 'properties' => []];
+            }
+        );
+        $this->fileUtility->method('processCropVariants')->willReturnArgument(2);
+        $this->imageService->method('getImage')->willReturn($this->createMock(FileInterface::class));
+
+        $result = $this->subject->process(
+            $this->contentObjectRenderer,
+            [],
+            ['borderEnabled' => '1', 'borderWidth' => '3', 'borderPadding' => '2'],
+            ['files' => [$this->fileReferenceData(1, 7)]]
+        );
+
+        self::assertSame(
+            ['enabled' => true, 'width' => 3, 'padding' => 2],
+            $result['gallery']['border']
+        );
+        self::assertSame([['100', '50']], $configurations);
+    }
+
+    public function testCroppedDimensionsAreCalculatedOnceFromLegacyCropConfiguration(): void
+    {
+        $this->setProcessorConfiguration([]);
+
+        $fileReference = $this->createMock(FileReference::class);
+        $fileReference->method('getProperty')->willReturnMap([['width', 200], ['height', 100]]);
+        GeneralUtility::addInstance(FileReference::class, $fileReference);
+
+        $processedFile = [
+            'properties' => [
+                'crop' => '{"default":{"cropArea":{"x":0.1,"y":0.1,"width":0.5,"height":0.5}}}',
+                'fileReferenceUid' => 7,
+                'uidLocal' => 3,
+                'dimensions' => ['width' => 200, 'height' => 100],
+            ],
+        ];
+
+        self::assertSame(100, $this->getCroppedDimension($processedFile, 'width'));
+        self::assertSame(50, $this->getCroppedDimension($processedFile, 'height'));
+    }
+
+    public function testCroppedDimensionsWithoutCropReadFlatDimensionsWhenLegacyReturnIsDisabled(): void
+    {
+        $this->setProcessorConfiguration(['legacyReturn' => 0]);
+
+        $processedFile = [
+            'crop' => null,
+            'uidLocal' => 3,
+            'dimensions' => ['width' => 123, 'height' => 45],
+        ];
+
+        self::assertSame(123, $this->getCroppedDimension($processedFile, 'width'));
+        self::assertSame(45, $this->getCroppedDimension($processedFile, 'height'));
+    }
+
+    public function testCroppedDimensionsFromCropConfigurationWhenLegacyReturnIsDisabled(): void
+    {
+        $this->setProcessorConfiguration(['legacyReturn' => 0]);
+
+        $fileReference = $this->createMock(FileReference::class);
+        $fileReference->method('getProperty')->willReturnMap([['width', 300], ['height', 200]]);
+        GeneralUtility::addInstance(FileReference::class, $fileReference);
+
+        $processedFile = [
+            'crop' => '{"default":{"cropArea":{"x":0,"y":0,"width":0.5,"height":0.5}}}',
+            'uidLocal' => 3,
+            'dimensions' => ['width' => 300, 'height' => 200],
+        ];
+
+        self::assertSame(150, $this->getCroppedDimension($processedFile, 'width'));
+        self::assertSame(100, $this->getCroppedDimension($processedFile, 'height'));
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function setProcessorConfiguration(array $options): void
+    {
+        (new ReflectionProperty(GalleryProcessor::class, 'processorConfigurationObject'))
+            ->setValue($this->subject, ProcessingConfiguration::fromOptions($options));
+    }
+
+    /**
+     * @param array<string, mixed> $processedFile
+     */
+    private function getCroppedDimension(array $processedFile, string $property): int
+    {
+        return (new ReflectionMethod($this->subject, 'getCroppedDimensionalPropertyFromProcessedFile'))
+            ->invoke($this->subject, $processedFile, $property);
     }
 
     /**

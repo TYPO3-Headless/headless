@@ -44,4 +44,16 @@ class VideoTagRendererTest extends HeadlessUnitTestCase
             (new VideoTagRenderer())->render($file, 0, 0, ['returnUrl' => true])
         );
     }
+
+    public function testFallsBackToCoreTagRenderingWithoutReturnUrlOption(): void
+    {
+        $file = $this->createMock(FileInterface::class);
+        $file->method('getPublicUrl')->willReturn('/fileadmin/video.mp4');
+        $file->method('getMimeType')->willReturn('video/mp4');
+
+        self::assertSame(
+            '<video width="200" height="100" controls><source src="/fileadmin/video.mp4" type="video/mp4"></video>',
+            (new VideoTagRenderer())->render($file, 200, 100)
+        );
+    }
 }

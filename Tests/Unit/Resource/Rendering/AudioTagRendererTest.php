@@ -44,4 +44,16 @@ class AudioTagRendererTest extends HeadlessUnitTestCase
             (new AudioTagRenderer())->render($file, 0, 0, ['returnUrl' => true])
         );
     }
+
+    public function testFallsBackToCoreTagRenderingWithoutReturnUrlOption(): void
+    {
+        $file = $this->createMock(FileInterface::class);
+        $file->method('getPublicUrl')->willReturn('/fileadmin/audio.mp3');
+        $file->method('getMimeType')->willReturn('audio/mpeg');
+
+        self::assertSame(
+            '<audio controls><source src="/fileadmin/audio.mp3" type="audio/mpeg"></audio>',
+            (new AudioTagRenderer())->render($file, 0, 0)
+        );
+    }
 }

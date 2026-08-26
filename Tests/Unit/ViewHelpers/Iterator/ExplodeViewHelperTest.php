@@ -40,4 +40,25 @@ class ExplodeViewHelperTest extends HeadlessUnitTestCase
 
         self::assertSame(['x', 'y'], $viewHelper->render());
     }
+
+    public function testDeclaresContentGlueAndAsArguments(): void
+    {
+        self::assertSame(['content', 'glue', 'as'], array_keys((new ExplodeViewHelper())->prepareArguments()));
+    }
+
+    public function testUnknownGlueTypePrefixFallsBackToRawValue(): void
+    {
+        $viewHelper = new ExplodeViewHelper();
+        $viewHelper->setArguments(['content' => 'a;b', 'glue' => 'raw:;', 'as' => null]);
+
+        self::assertSame(['a', 'b'], $viewHelper->render());
+    }
+
+    public function testAsArgumentReturnsTrimmedContent(): void
+    {
+        $viewHelper = new ExplodeViewHelper();
+        $viewHelper->setArguments(['content' => ' a,b ', 'glue' => ',', 'as' => 'items']);
+
+        self::assertSame('a,b', $viewHelper->render());
+    }
 }

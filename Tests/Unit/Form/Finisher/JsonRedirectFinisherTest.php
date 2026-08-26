@@ -16,6 +16,7 @@ use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -92,6 +93,95 @@ class JsonRedirectFinisherTest extends HeadlessUnitTestCase
             $this->getSite('main'),
             $this->getSiteFinderFor(5, $this->getSite('main'))
         );
+
+        $this->getFinisher(['pageUid' => 5, 'sameSiteOnly' => true])->execute($finisherContext);
+    }
+
+    public function testPagesPrefixedStringPageUidIsResolvedToInteger(): void
+    {
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->expects(self::once())->method('typoLink_URL')
+            ->with(['parameter' => 7, 'additionalParams' => '&', 'forceAbsoluteUrl' => 1])
+            ->willReturn('https://backend.tld/');
+
+        $this->getFinisher(['pageUid' => 'pages_7'])->execute($this->getFinisherContext($contentObjectRenderer));
+    }
+
+    public function testFallsBackToGlobalRequestAndFreshContentObjectRenderer(): void
+    {
+        $serverRequest = new ServerRequest();
+
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->expects(self::once())->method('setRequest')->with($serverRequest);
+        $contentObjectRenderer->expects(self::once())->method('start')->with([], 'pages');
+        $contentObjectRenderer->expects(self::once())->method('typoLink_URL')->willReturn('https://backend.tld/');
+
+        $extbaseRequest = $this->createMock(RequestInterface::class);
+        $extbaseRequest->method('getAttribute')->willReturn(null);
+
+        $formRuntime = $this->createMock(FormRuntime::class);
+        $formRuntime->method('getRequest')->willReturn($extbaseRequest);
+
+        $finisherContext = $this->createMock(FinisherContext::class);
+        $finisherContext->method('getFormRuntime')->willReturn($formRuntime);
+
+        $urlUtility = $this->createMock(HeadlessFrontendUrlInterface::class);
+        $urlUtility->method('withRequest')->willReturnSelf();
+        $urlUtility->method('prepareRelativeUrlIfPossible')->willReturnArgument(0);
+
+        $container = new Container();
+        $container->set(UriBuilder::class, $this->createMock(UriBuilder::class));
+        $container->set(HeadlessFrontendUrlInterface::class, $urlUtility);
+        $container->set(ContentObjectRenderer::class, $contentObjectRenderer);
+        GeneralUtility::setContainer($container);
+
+        $GLOBALS['TYPO3_REQUEST'] = $serverRequest;
+
+        try {
+            $result = $this->getFinisher([])->execute($finisherContext);
+        } finally {
+            unset($GLOBALS['TYPO3_REQUEST']);
+        }
+
+        self::assertSame(
+            ['redirectUrl' => 'https://backend.tld/', 'statusCode' => 303, 'message' => null],
+            json_decode((string)$result, true)
+        );
+    }
+
+    public function testReturnsNullWhenMessageCannotBeJsonEncoded(): void
+    {
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->method('typoLink_URL')->willReturn('https://backend.tld/');
+
+        $result = $this->getFinisher(['message' => "\xB1\x31"])
+            ->execute($this->getFinisherContext($contentObjectRenderer));
+
+        self::assertNull($result);
+    }
+
+    public function testSameSiteOnlyWithoutSiteAttributeKeepsTarget(): void
+    {
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->expects(self::once())->method('typoLink_URL')
+            ->with(['parameter' => 5, 'additionalParams' => '&', 'forceAbsoluteUrl' => 1])
+            ->willReturn('https://backend.tld/');
+
+        $this->getFinisher(['pageUid' => 5, 'sameSiteOnly' => true])
+            ->execute($this->getFinisherContext($contentObjectRenderer));
+    }
+
+    public function testSameSiteOnlyFallsBackToDefaultPageWhenTargetSiteUnknown(): void
+    {
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->expects(self::once())->method('typoLink_URL')
+            ->with(['parameter' => 1, 'additionalParams' => '&', 'forceAbsoluteUrl' => 1])
+            ->willReturn('https://backend.tld/');
+
+        $siteFinder = $this->createMock(SiteFinder::class);
+        $siteFinder->method('getSiteByPageId')->willThrowException(new SiteNotFoundException());
+
+        $finisherContext = $this->getFinisherContext($contentObjectRenderer, $this->getSite('main'), $siteFinder);
 
         $this->getFinisher(['pageUid' => 5, 'sameSiteOnly' => true])->execute($finisherContext);
     }

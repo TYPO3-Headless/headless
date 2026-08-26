@@ -114,6 +114,21 @@ class RedirectModuleSourceUrlRewriterTest extends HeadlessUnitTestCase
         self::assertSame($handlerResponse, $response);
     }
 
+    public function testEmptyModuleResponseBodyIsPassedThrough(): void
+    {
+        $resolver = $this->createMock(SourceUrlResolver::class);
+        $resolver->expects(self::never())->method('resolve');
+
+        $handlerResponse = new HtmlResponse('');
+
+        $response = $this->getMiddleware($resolver)->process(
+            $this->getModuleRequest('qrcodes'),
+            $this->getHandler($handlerResponse)
+        );
+
+        self::assertSame($handlerResponse, $response);
+    }
+
     private function process(SourceUrlResolver $resolver, string $html, string $moduleIdentifier): HtmlResponse
     {
         $response = $this->getMiddleware($resolver)->process(

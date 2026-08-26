@@ -123,6 +123,19 @@ class FlexFormProcessorTest extends HeadlessUnitTestCase
         self::assertSame(['already' => 'converted'], $result['flexform']);
     }
 
+    public function testNonStringNonArrayValueIsPassedThrough(): void
+    {
+        $flexFormTools = $this->createMock(FlexFormTools::class);
+        $flexFormTools->expects(self::never())->method('convertFlexFormContentToArray');
+
+        $processedData = ['data' => ['pi_flexform' => 123]];
+
+        self::assertSame(
+            $processedData,
+            $this->getProcessor($flexFormTools)->process($this->getContentObjectRenderer(), [], [], $processedData)
+        );
+    }
+
     public function testOverrideFieldsAreRenderedAndMergedIntoFlexFormData(): void
     {
         $request = new ServerRequest();

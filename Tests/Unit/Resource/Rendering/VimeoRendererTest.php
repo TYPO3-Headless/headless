@@ -39,4 +39,19 @@ class VimeoRendererTest extends HeadlessUnitTestCase
             $renderer->render($file, 0, 0, ['returnUrl' => true])
         );
     }
+
+    public function testFallsBackToCoreIframeRenderingWithoutReturnUrlOption(): void
+    {
+        $file = $this->createMock(FileInterface::class);
+
+        $renderer = $this->createPartialMock(VimeoRenderer::class, ['collectOptions', 'createVimeoUrl', 'collectIframeAttributes']);
+        $renderer->method('collectOptions')->willReturn(['allow' => 'fullscreen']);
+        $renderer->method('createVimeoUrl')->willReturn('https://player.vimeo.com/video/123');
+        $renderer->method('collectIframeAttributes')->willReturn(['allow' => 'fullscreen']);
+
+        $html = $renderer->render($file, 640, 360);
+
+        self::assertStringContainsString('<iframe src="https://player.vimeo.com/video/123"', $html);
+        self::assertStringContainsString('allow="fullscreen"', $html);
+    }
 }

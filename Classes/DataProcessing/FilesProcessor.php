@@ -35,7 +35,7 @@ class FilesProcessor implements DataProcessorInterface
         'as' => 'media',
     ];
 
-    public function __construct(private readonly FileUtilityInterface $fileUtility) {}
+    public function __construct(protected readonly FileUtilityInterface $fileUtility) {}
 
     protected ContentObjectRenderer $contentObjectRenderer;
 
@@ -102,7 +102,7 @@ class FilesProcessor implements DataProcessorInterface
     /**
      * @param array<string, mixed> $processorConfiguration
      */
-    private function hasFileSources(array $processorConfiguration): bool
+    protected function hasFileSources(array $processorConfiguration): bool
     {
         foreach (['references', 'references.', 'files', 'files.', 'collections', 'collections.', 'folders', 'folders.'] as $key) {
             if (!empty($processorConfiguration[$key])) {

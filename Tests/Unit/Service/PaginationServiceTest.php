@@ -14,6 +14,9 @@ namespace FriendsOfTYPO3\Headless\Tests\Unit\Service;
 use FriendsOfTYPO3\Headless\Service\PaginationService;
 use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionProperty;
+use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
@@ -110,6 +113,61 @@ class PaginationServiceTest extends HeadlessUnitTestCase
 
         self::assertSame(3, $pagination['numberOfPages']);
         self::assertSame(['itemsPerPage' => 1, 'maximumNumberOfLinks' => 99, 'insertAbove' => false, 'insertBelow' => true], (new PaginationService($this->getObjects(3, $query), 0))->paginate()['configuration']);
+    }
+
+    public function testLastPageIsCappedByInitialLimit(): void
+    {
+        $query = $this->createMock(QueryInterface::class);
+        $query->expects(self::once())->method('setLimit')->with(2);
+        $query->expects(self::once())->method('setOffset')->with(20);
+        $query->method('execute')->willReturn($this->createMock(QueryResultInterface::class));
+
+        $service = new PaginationService($this->getObjects(25, $query));
+        (new ReflectionProperty($service, 'initialLimit'))->setValue($service, 22);
+
+        $service->paginate(3);
+    }
+
+    public function testLastPageFallsBackToItemsPerPageWhenInitialLimitIsExhausted(): void
+    {
+        $query = $this->createMock(QueryInterface::class);
+        $query->expects(self::once())->method('setLimit')->with(10);
+        $query->method('execute')->willReturn($this->createMock(QueryResultInterface::class));
+
+        $service = new PaginationService($this->getObjects(25, $query));
+        (new ReflectionProperty($service, 'initialLimit'))->setValue($service, 15);
+
+        $service->paginate(3);
+    }
+
+    public function testFirstPageAppliesInitialOffset(): void
+    {
+        $query = $this->createMock(QueryInterface::class);
+        $query->expects(self::once())->method('setLimit')->with(10);
+        $query->expects(self::once())->method('setOffset')->with(4);
+        $query->method('execute')->willReturn($this->createMock(QueryResultInterface::class));
+
+        $service = new PaginationService($this->getObjects(25, $query));
+        (new ReflectionProperty($service, 'initialOffset'))->setValue($service, 4);
+
+        $service->paginate();
+    }
+
+    public function testPageIdIsTakenFromRequestRouting(): void
+    {
+        $query = $this->createMock(QueryInterface::class);
+        $query->method('execute')->willReturn($this->createMock(QueryResultInterface::class));
+
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())
+            ->withAttribute('routing', new PageArguments(42, '0', []));
+
+        try {
+            $result = (new PaginationService($this->getObjects(25, $query)))->paginate();
+        } finally {
+            unset($GLOBALS['TYPO3_REQUEST']);
+        }
+
+        self::assertSame(42, $result['pageId']);
     }
 
     /**

@@ -26,9 +26,9 @@ use function strtolower;
 class CookieDomainPerSite implements MiddlewareInterface
 {
     public function __construct(
-        private readonly HeadlessFrontendUrlInterface $urlUtility,
-        private readonly SiteFinder $siteFinder,
-        private readonly LoggerInterface $logger,
+        protected readonly HeadlessFrontendUrlInterface $urlUtility,
+        protected readonly SiteFinder $siteFinder,
+        protected readonly LoggerInterface $logger,
     ) {}
 
     public function process(

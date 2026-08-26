@@ -34,12 +34,12 @@ class SiteProvider implements SiteProviderInterface
     /**
      * @var Site[]
      */
-    private array $sites;
+    protected array $sites;
     /**
      * @var array<int, array<string, mixed>>
      */
-    private array $pagesData;
-    private Site $currentRootPage;
+    protected array $pagesData;
+    protected Site $currentRootPage;
 
     public function __construct(protected ConnectionPool $connectionPool, protected SiteFinder $siteFinder) {}
 
@@ -121,7 +121,7 @@ class SiteProvider implements SiteProviderInterface
      * @param array<int> $allowedSites
      * @return array<Site>
      */
-    private function filterSites(array $allowedSites = []): array
+    protected function filterSites(array $allowedSites = []): array
     {
         return array_filter(
             $this->siteFinder->getAllSites(),
@@ -136,7 +136,7 @@ class SiteProvider implements SiteProviderInterface
      * @return array<int>
      * @throws Exception
      */
-    private function fetchAvailableRootSitesByPid(int $pid): array
+    protected function fetchAvailableRootSitesByPid(int $pid): array
     {
         $queryBuilder = $this->connectionPool->getQueryBuilderForTable('pages');
 
@@ -163,7 +163,7 @@ class SiteProvider implements SiteProviderInterface
      * @return array<int, array<string, mixed>>
      * @throws Exception
      */
-    private function fetchPageData(array $sites, array $config = []): array
+    protected function fetchPageData(array $sites, array $config = []): array
     {
         $rootPagesId = array_values(array_map(static function (Site $item) {
             return $item->getRootPageId();

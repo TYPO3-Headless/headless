@@ -143,7 +143,7 @@ class FormTranslationService extends TranslationService
      * @param array<string, mixed> $formRuntime
      * @return list<string>
      */
-    private function buildElementTranslationKeyChain(
+    protected function buildElementTranslationKeyChain(
         array $translationFiles,
         array $element,
         array $formRuntime,

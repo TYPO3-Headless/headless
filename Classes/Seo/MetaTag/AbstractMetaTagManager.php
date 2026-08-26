@@ -26,9 +26,9 @@ use const JSON_THROW_ON_ERROR;
  */
 abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMetaTagManager
 {
-    private ?HeadlessModeInterface $headlessMode = null;
+    protected ?HeadlessModeInterface $headlessMode = null;
 
-    private function getHeadlessMode(): HeadlessModeInterface
+    protected function getHeadlessMode(): HeadlessModeInterface
     {
         return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
     }
@@ -51,7 +51,7 @@ abstract class AbstractMetaTagManager extends \TYPO3\CMS\Core\MetaTag\AbstractMe
         return parent::renderProperty($property, $docType);
     }
 
-    private function isHeadlessRequest(): bool
+    protected function isHeadlessRequest(): bool
     {
         $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
         return $request instanceof ServerRequestInterface

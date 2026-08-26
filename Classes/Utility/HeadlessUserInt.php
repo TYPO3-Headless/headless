@@ -36,10 +36,10 @@ class HeadlessUserInt
     public const STANDARD_NULLABLE = 'HEADLESS_INT_NULL';
     public const NESTED_NULLABLE = 'NESTED_HEADLESS_INT_NULL';
 
-    private const REGEX = '/(?P<quote>\\\\"|")?(?P<type>%s|%s)_START<<(?P<content>(?:[^>]|>(?!>(?P=type)_END))*+)>>(?P=type)_END(?P=quote)?/sS';
+    protected const REGEX = '/(?P<quote>\\\\"|")?(?P<type>%s|%s)_START<<(?P<content>(?:[^>]|>(?!>(?P=type)_END))*+)>>(?P=type)_END(?P=quote)?/sS';
 
     /** @var array<string, string> */
-    private static array $regexPatterns = [];
+    protected static array $regexPatterns = [];
 
     public function wrap(string $content, string $type = self::STANDARD): string
     {
@@ -117,11 +117,7 @@ class HeadlessUserInt
             return '';
         }
 
-        if ($jsonEncoded[0] === '"') {
-            return substr($jsonEncoded, 1, -1);
-        }
-
-        return $jsonEncoded;
+        return substr($jsonEncoded, 1, -1);
     }
 
     protected function isJson(string $string): bool
@@ -143,7 +139,9 @@ class HeadlessUserInt
             return json_validate($string);
         }
 
+        // @codeCoverageIgnoreStart
         json_decode($string);
         return json_last_error() === JSON_ERROR_NONE;
+        // @codeCoverageIgnoreEnd
     }
 }

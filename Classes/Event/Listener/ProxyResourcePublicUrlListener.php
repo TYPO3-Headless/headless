@@ -31,11 +31,11 @@ use function trim;
 class ProxyResourcePublicUrlListener
 {
     /** @var array<string, string> */
-    private array $baseUriCache = [];
+    protected array $baseUriCache = [];
 
     public function __construct(
-        private readonly HeadlessModeInterface $headlessMode,
-        private readonly HeadlessFrontendUrlInterface $urlUtility,
+        protected readonly HeadlessModeInterface $headlessMode,
+        protected readonly HeadlessFrontendUrlInterface $urlUtility,
     ) {}
 
     public function __invoke(GeneratePublicUrlForResourceEvent $event): void
@@ -74,7 +74,7 @@ class ProxyResourcePublicUrlListener
     /**
      * @param array<string, mixed> $config
      */
-    private function buildBaseUri(array $config, ServerRequestInterface $request): string
+    protected function buildBaseUri(array $config, ServerRequestInterface $request): string
     {
         $storagePath = match (true) {
             ($config['baseUri'] ?? '') !== '' => (string)$config['baseUri'],
@@ -102,7 +102,7 @@ class ProxyResourcePublicUrlListener
         return $this->baseUriCache[$cacheKey] = (string)$frontend->withPath('/' . trim($path, '/'));
     }
 
-    private function encodeIdentifier(string $identifier): string
+    protected function encodeIdentifier(string $identifier): string
     {
         $parts = explode('/', ltrim($identifier, '/'));
 

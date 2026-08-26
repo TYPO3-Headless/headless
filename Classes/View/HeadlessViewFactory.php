@@ -20,12 +20,12 @@ use TYPO3\CMS\Core\View\ViewInterface;
 
 class HeadlessViewFactory implements ViewFactoryInterface
 {
-    private readonly bool $enabled;
+    protected readonly bool $enabled;
 
     public function __construct(
-        private readonly ViewFactoryInterface $inner,
+        protected readonly ViewFactoryInterface $inner,
         Features $features,
-        private readonly HeadlessModeInterface $headlessMode,
+        protected readonly HeadlessModeInterface $headlessMode,
     ) {
         $this->enabled = $features->isFeatureEnabled('headless.overrideFluidTemplates');
     }

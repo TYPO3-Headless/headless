@@ -1094,6 +1094,109 @@ class UrlUtilityTest extends \FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTes
         return $site;
     }
 
+    public function testVariantWithoutConditionIsSkipped(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendBase' => 'https://fallback.tld',
+            'baseVariants' => [
+                ['frontendBase' => 'https://skipped.tld'],
+                ['base' => 'https://backend.tld', 'condition' => 'applicationContext == "Development"', 'frontendBase' => 'https://front.tld'],
+            ],
+        ]);
+
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturn(true);
+
+        $urlUtility = (new UrlUtility($resolver, $this->createMock(SiteFinder::class), $this->createHeadlessMode()))->withSite($site);
+
+        self::assertSame('https://front.tld', $urlUtility->getFrontendUrl());
+    }
+
+    public function testGetFrontendUrlWithSiteKeepsUrlForNonHttpFrontendBase(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendBase' => 'ws://front.tld',
+        ]);
+        $site->method('getLanguages')->willReturn([]);
+
+        $urlUtility = new UrlUtility($this->createMock(Resolver::class), $this->createMock(SiteFinder::class), $this->createHeadlessMode());
+
+        self::assertSame(
+            'https://backend.tld/page',
+            $urlUtility->getFrontendUrlWithSite('https://backend.tld/page', $site)
+        );
+    }
+
+    public function testGetFrontendUrlWithSiteAddsSchemeToSchemeRelativeUrl(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendBase' => 'https://front.tld',
+        ]);
+        $site->method('getLanguages')->willReturn([]);
+
+        $urlUtility = new UrlUtility($this->createMock(Resolver::class), $this->createMock(SiteFinder::class), $this->createHeadlessMode());
+
+        self::assertSame(
+            'https://front.tld/page',
+            $urlUtility->getFrontendUrlWithSite('backend.tld/page', $site)
+        );
+    }
+
+    public function testGetFrontendUrlWithSiteKeepsUrlWhenSiteResolutionThrows(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendBase' => 'https://front.tld',
+            'baseVariants' => [
+                ['base' => 'https://backend.tld', 'condition' => 'applicationContext == "Development"', 'frontendBase' => 'https://front.tld'],
+            ],
+        ]);
+        $site->method('getLanguages')->willReturn([]);
+
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willThrowException(new SiteNotFoundException());
+
+        $urlUtility = new UrlUtility($resolver, $this->createMock(SiteFinder::class), $this->createHeadlessMode());
+
+        self::assertSame(
+            'https://backend.tld/page',
+            $urlUtility->getFrontendUrlWithSite('https://backend.tld/page', $site)
+        );
+    }
+
+    public function testGetFrontendUrlWithSiteMatchesLanguageByBasePath(): void
+    {
+        $language = new SiteLanguage(1, 'en_US.UTF-8', new Uri('/en/'), [
+            'frontendBase' => 'https://front-en.tld',
+        ]);
+
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendBase' => 'https://front.tld',
+        ]);
+        $site->method('getLanguages')->willReturn([$language]);
+
+        $urlUtility = new UrlUtility($this->createMock(Resolver::class), $this->createMock(SiteFinder::class), $this->createHeadlessMode());
+
+        self::assertSame(
+            'https://front-en.tld/en/page',
+            $urlUtility->getFrontendUrlWithSite('https://backend.tld/en/page', $site)
+        );
+    }
+
     private function createHeadlessMode(int $mode =  HeadlessModeInterface::FULL): HeadlessModeInterface
     {
         $headlessMode = new HeadlessMode();

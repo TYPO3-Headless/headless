@@ -55,7 +55,7 @@ trait DataProcessingTrait
      *
      * @param array<int|string, array<string, mixed>> $children
      */
-    private function removeDataInChildrenNodes(array &$children, string $nodeName = 'children'): void
+    protected function removeDataInChildrenNodes(array &$children, string $nodeName = 'children'): void
     {
         foreach ($children as &$childrenItem) {
             unset($childrenItem['data']);

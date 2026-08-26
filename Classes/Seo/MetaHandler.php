@@ -34,10 +34,10 @@ use const JSON_THROW_ON_ERROR;
 class MetaHandler implements MetaHandlerInterface
 {
     public function __construct(
-        private readonly MetaTagManagerRegistry $metaTagRegistry,
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly PageTitleProviderManager $pageTitleProviderManager,
-        private readonly TypoScriptService $typoScriptService,
+        protected readonly MetaTagManagerRegistry $metaTagRegistry,
+        protected readonly EventDispatcherInterface $eventDispatcher,
+        protected readonly PageTitleProviderManager $pageTitleProviderManager,
+        protected readonly TypoScriptService $typoScriptService,
     ) {}
 
     /**
@@ -210,7 +210,7 @@ class MetaHandler implements MetaHandlerInterface
      *
      * @param array<string, mixed> $subProperties
      */
-    private function setMetaTag(
+    protected function setMetaTag(
         string $type,
         string $name,
         string $content,
@@ -262,7 +262,7 @@ class MetaHandler implements MetaHandlerInterface
      * @param array<string, mixed> $rawHtmlAttrs
      * @return array<string, string>
      */
-    private function normalizeAttr(array $rawHtmlAttrs): array
+    protected function normalizeAttr(array $rawHtmlAttrs): array
     {
         $htmlAttrs = [];
 
