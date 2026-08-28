@@ -74,7 +74,7 @@
       },
       "app-dir": ".Build",
       "extension-key": "headless",
-      "version": "5.0.0-rc1",
+      "version": "5.0.0-rc2",
       "web-dir": ".Build/public"
     }
   },
