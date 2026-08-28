@@ -86,6 +86,35 @@ On a mixed-mode site (`headless: 2`) the POST itself must carry the exact
 for `HeadlessViewFactory`: Fluid views render JSON templates, raw-PHP
 templates (`HeadlessPhpView`) are supported too.
 
+To render an Extbase plugin through a raw-PHP template, set the plugin's
+request format and place the template at
+`<templateRootPaths>/<ControllerName>/<ActionName>.php` (highest-keyed
+root path wins):
+
+.. code-block:: typoscript
+
+   plugin.tx_myext.view.templateRootPaths.100 = EXT:site_package/Resources/Private/Templates/
+   plugin.tx_myext_pi1.format = php
+
+An explicit `$view->render('Path/Name')` from your own code resolves
+`Path/Name.php` against the same root paths.
+
+Template selection is not user-controllable: `format` is a regular Extbase
+request parameter, but `HeadlessViewFactory` serves the raw-PHP view only
+when the dispatched plugin's **TypoScript** sets `format = php`. A
+request-supplied `tx_myext_pi1[format]=php` on any other plugin falls back
+to Fluid with the format stripped, so Fluid never parses a `.php` file as
+a template. A visitor forcing `format=html` on a php-configured plugin
+just gets the plugin's regular Fluid resolution — standard Extbase format
+behavior.
+
+Unlike Fluid, raw-PHP templates apply **no output escaping**. Build a PHP
+array and `echo json_encode($data, JSON_THROW_ON_ERROR)` — never
+concatenate JSON strings from record data, that is a JSON injection the
+moment a value contains a quote. As everywhere in the headless pipeline,
+JSON encoding is not HTML safety: the consuming frontend still escapes on
+render.
+
 **headless.cookieDomainPerSite** — derive the auth cookie domain per site
 (FE & BE middleware); see :ref:`multisite`.
 

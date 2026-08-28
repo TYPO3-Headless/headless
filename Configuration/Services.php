@@ -49,6 +49,7 @@ use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Fluid\View\FluidViewFactory;
 use TYPO3\CMS\Form\Controller\FormFrontendController;
@@ -149,6 +150,7 @@ return static function (ContainerConfigurator $configurator): void {
     if ($features->isFeatureEnabled('headless.overrideFluidTemplates')) {
         $services->set(HeadlessViewFactory::class)
             ->arg('$inner', service(FluidViewFactory::class))
+            ->arg('$configurationManager', service(ConfigurationManagerInterface::class)->nullOnInvalid())
             ->public();
         $services->alias(ViewFactoryInterface::class, HeadlessViewFactory::class)->public();
     }

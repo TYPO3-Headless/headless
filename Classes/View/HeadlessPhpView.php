@@ -16,6 +16,7 @@ use Throwable;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewInterface;
+use TYPO3\CMS\Extbase\Mvc\RequestInterface as ExtbaseRequestInterface;
 
 use function array_replace;
 use function array_reverse;
@@ -29,7 +30,9 @@ use function ob_start;
 use function preg_match;
 use function realpath;
 use function rtrim;
+use function str_ends_with;
 use function str_starts_with;
+use function ucfirst;
 
 class HeadlessPhpView implements ViewInterface
 {
@@ -82,7 +85,7 @@ class HeadlessPhpView implements ViewInterface
     protected function resolvePhpTemplate(string $name): ?string
     {
         if ($name === '') {
-            return $this->resolveDirectFile();
+            return $this->resolveDirectFile() ?? $this->resolveFromExtbaseRequest();
         }
 
         if (!$this->isSafeTemplateName($name)) {
@@ -115,6 +118,22 @@ class HeadlessPhpView implements ViewInterface
         return null;
     }
 
+    protected function resolveFromExtbaseRequest(): ?string
+    {
+        $request = $this->data->request;
+        if (!$request instanceof ExtbaseRequestInterface) {
+            return null;
+        }
+
+        $controller = $request->getControllerName();
+        $action = $request->getControllerActionName();
+        if ($controller === '' || $action === '') {
+            return null;
+        }
+
+        return $this->resolvePhpTemplate($controller . '/' . ucfirst($action));
+    }
+
     protected function resolveDirectFile(): ?string
     {
         $direct = $this->data->templatePathAndFilename;
@@ -127,7 +146,10 @@ class HeadlessPhpView implements ViewInterface
             return null;
         }
         $real = realpath($absolute);
-        return $real === false ? null : $real;
+        if ($real === false || !str_ends_with($real, '.php')) {
+            return null;
+        }
+        return $real;
     }
 
     protected function isSafeTemplateName(string $name): bool

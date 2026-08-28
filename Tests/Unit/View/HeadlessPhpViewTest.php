@@ -15,7 +15,10 @@ use FriendsOfTYPO3\Headless\View\HeadlessPhpView;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\View\ViewFactoryData;
+use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
+use TYPO3\CMS\Extbase\Mvc\Request;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class HeadlessPhpViewTest extends UnitTestCase
@@ -164,9 +167,58 @@ class HeadlessPhpViewTest extends UnitTestCase
         }
     }
 
+    public function testResolvesControllerAndActionFromExtbaseRequestOnEmptyName(): void
+    {
+        $root = $this->createTemplateRoot();
+        mkdir($root . 'News');
+        $this->writeTemplate($root, 'News/List.php', '<?php echo "extbase {$name}";');
+
+        $parameters = (new ExtbaseRequestParameters())
+            ->setControllerName('News')
+            ->setControllerActionName('list');
+        $request = new Request((new ServerRequest())->withAttribute('extbase', $parameters));
+
+        $view = new HeadlessPhpView(new ViewFactoryData(
+            templateRootPaths: [$root],
+            request: $request,
+        ));
+        $view->assign('name', 'fallback');
+
+        self::assertSame('extbase fallback', $view->render());
+    }
+
+    public function testThrowsWhenExtbaseRequestActionTemplateIsMissing(): void
+    {
+        $parameters = (new ExtbaseRequestParameters())
+            ->setControllerName('News')
+            ->setControllerActionName('detail');
+        $request = new Request((new ServerRequest())->withAttribute('extbase', $parameters));
+
+        $view = new HeadlessPhpView(new ViewFactoryData(
+            templateRootPaths: [$this->createTemplateRoot()],
+            request: $request,
+        ));
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionCode(1747300000);
+        $view->render();
+    }
+
     public function testThrowsWhenNeitherDirectFileNorTemplateNameIsGiven(): void
     {
         $view = new HeadlessPhpView(new ViewFactoryData());
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionCode(1747300000);
+        $view->render();
+    }
+
+    public function testRejectsDirectTemplateFileWithoutPhpSuffix(): void
+    {
+        $root = $this->createTemplateRoot();
+        $file = $this->writeTemplate($root, 'disguised.jpg', '<?php echo "executed";');
+
+        $view = new HeadlessPhpView(new ViewFactoryData(templatePathAndFilename: $file));
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionCode(1747300000);

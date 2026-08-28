@@ -17,6 +17,8 @@ use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Core\View\ViewInterface;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use TYPO3\CMS\Extbase\Mvc\RequestInterface as ExtbaseRequestInterface;
 
 class HeadlessViewFactory implements ViewFactoryInterface
 {
@@ -26,6 +28,7 @@ class HeadlessViewFactory implements ViewFactoryInterface
         protected readonly ViewFactoryInterface $inner,
         Features $features,
         protected readonly HeadlessModeInterface $headlessMode,
+        protected readonly ?ConfigurationManagerInterface $configurationManager = null,
     ) {
         $this->enabled = $features->isFeatureEnabled('headless.overrideFluidTemplates');
     }
@@ -43,6 +46,34 @@ class HeadlessViewFactory implements ViewFactoryInterface
             return $this->inner->create($data);
         }
 
+        if ($request instanceof ExtbaseRequestInterface && !$this->isPhpFormatConfigured()) {
+            return $this->inner->create($this->withoutFormat($data));
+        }
+
         return new HeadlessPhpView($data);
+    }
+
+    protected function isPhpFormatConfigured(): bool
+    {
+        if ($this->configurationManager === null) {
+            return false;
+        }
+
+        $configuration = $this->configurationManager->getConfiguration(
+            ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK
+        );
+
+        return ($configuration['format'] ?? '') === 'php';
+    }
+
+    protected function withoutFormat(ViewFactoryData $data): ViewFactoryData
+    {
+        return new ViewFactoryData(
+            templateRootPaths: $data->templateRootPaths,
+            partialRootPaths: $data->partialRootPaths,
+            layoutRootPaths: $data->layoutRootPaths,
+            templatePathAndFilename: $data->templatePathAndFilename,
+            request: $data->request,
+        );
     }
 }
