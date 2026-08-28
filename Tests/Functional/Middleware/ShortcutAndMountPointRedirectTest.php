@@ -22,13 +22,6 @@ use TYPO3\TestingFramework\Core\Functional\Framework\Frontend\InternalRequest;
  */
 class ShortcutAndMountPointRedirectTest extends BaseHeadlessTesting
 {
-    // The headless shortcut/mountpoint middleware replaces the core one only
-    // when EXT:redirects is installed (see Configuration/RequestMiddlewares.php).
-    protected array $coreExtensionsToLoad = [
-        'install',
-        'redirects',
-    ];
-
     public function setUp(): void
     {
         parent::setUp();

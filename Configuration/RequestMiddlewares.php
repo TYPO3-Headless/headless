@@ -35,6 +35,21 @@ return (static function (): array {
                 ],
                 'target' => HeadlessModeSetter::class,
             ],
+            'typo3/cms-frontend/shortcut-and-mountpoint-redirect' => [
+                'disabled' => true,
+            ],
+            'typo3/cms-frontend/base-redirect-resolver' => [
+                'target' => SiteBaseRedirectResolver::class,
+            ],
+            'headless/cms-frontend/shortcut-and-mountpoint-redirect' => [
+                'target' => ShortcutAndMountPointRedirect::class,
+                'after' => [
+                    'typo3/cms-frontend/prepare-tsfe-rendering',
+                ],
+                'before' => [
+                    'typo3/cms-frontend/content-length-headers',
+                ],
+            ],
         ],
     ];
 
@@ -75,23 +90,6 @@ return (static function (): array {
                     'typo3/cms-backend/backend-routing',
                 ],
                 'target' => RedirectModuleSourceUrlRewriter::class,
-            ],
-        ],
-        'frontend' => [
-            'typo3/cms-frontend/shortcut-and-mountpoint-redirect' => [
-                'disabled' => true,
-            ],
-            'typo3/cms-frontend/base-redirect-resolver' => [
-                'target' => SiteBaseRedirectResolver::class,
-            ],
-            'headless/cms-frontend/shortcut-and-mountpoint-redirect' => [
-                'target' => ShortcutAndMountPointRedirect::class,
-                'after' => [
-                    'typo3/cms-frontend/prepare-tsfe-rendering',
-                ],
-                'before' => [
-                    'typo3/cms-frontend/content-length-headers',
-                ],
             ],
         ],
     ]);
