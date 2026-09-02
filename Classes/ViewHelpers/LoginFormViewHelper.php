@@ -12,24 +12,34 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\ViewHelpers;
 
 use LogicException;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\SecurityAspect;
+use TYPO3\CMS\Core\Crypto\HashAlgo;
 use TYPO3\CMS\Core\Security\RequestToken;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
+use TYPO3\CMS\Extbase\Mvc\RequestInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy;
+use TYPO3\CMS\Extbase\Security\HashScope;
 use TYPO3\CMS\Fluid\ViewHelpers\FormViewHelper;
 
 use function base64_encode;
+use function htmlspecialchars_decode;
 use function is_int;
 use function is_object;
 use function is_string;
 use function json_encode;
+use function preg_match;
+
 use function serialize;
 use function sprintf;
 use function strtolower;
+
+use const ENT_HTML5;
+use const ENT_QUOTES;
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Form ViewHelper. Generates a :html:`<form>` Tag.
@@ -64,8 +74,6 @@ use function strtolower;
  *
  * This automatically inserts the value of ``{customer.name}`` inside the
  * textbox and adjusts the name of the textbox accordingly.
- *
- * @codeCoverageIgnore
  */
 class LoginFormViewHelper extends FormViewHelper
 {
@@ -82,9 +90,8 @@ class LoginFormViewHelper extends FormViewHelper
      */
     public function render(): string
     {
-        $renderingContext = $this->renderingContext;
-        $request = $renderingContext->getRequest();
-        if (!$request instanceof RequestInterface) {
+        if (!$this->renderingContext->hasAttribute(ServerRequestInterface::class)
+            || !$this->renderingContext->getAttribute(ServerRequestInterface::class) instanceof RequestInterface) {
             throw new RuntimeException(
                 'ViewHelper f:form can be used only in extbase context and needs a request implementing extbase RequestInterface.',
                 1639821904
@@ -125,7 +132,7 @@ class LoginFormViewHelper extends FormViewHelper
         $this->removeFormFieldNamesFromViewHelperVariableContainer();
         $this->removeCheckboxFieldNamesFromViewHelperVariableContainer();
 
-        return json_encode($this->data);
+        return json_encode($this->data, JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -139,7 +146,12 @@ class LoginFormViewHelper extends FormViewHelper
         if ($this->viewHelperVariableContainer->exists(FormViewHelper::class, 'additionalIdentityProperties')) {
             $additionalIdentityProperties = $this->viewHelperVariableContainer->get(FormViewHelper::class, 'additionalIdentityProperties');
             foreach ($additionalIdentityProperties as $identity) {
-                $this->addHiddenField('identity', $identity);
+                if (preg_match('/name="([^"]*)" value="([^"]*)"/', (string)$identity, $matches) === 1) {
+                    $this->addHiddenField(
+                        htmlspecialchars_decode($matches[1], ENT_QUOTES | ENT_HTML5),
+                        htmlspecialchars_decode($matches[2], ENT_QUOTES | ENT_HTML5)
+                    );
+                }
             }
         }
 
@@ -155,9 +167,8 @@ class LoginFormViewHelper extends FormViewHelper
      */
     protected function renderHiddenReferrerFields(): string
     {
-        $renderingContext = $this->renderingContext;
         /** @var RequestInterface $request */
-        $request = $renderingContext->getRequest();
+        $request = $this->renderingContext->getAttribute(ServerRequestInterface::class);
         $extensionName = $request->getControllerExtensionName();
         $controllerName = $request->getControllerName();
         $actionName = $request->getControllerActionName();
@@ -168,42 +179,35 @@ class LoginFormViewHelper extends FormViewHelper
         ];
 
         $this->addHiddenField(
-            '__referrer[@extension]',
+            $this->prefixFieldName('__referrer[@extension]'),
             $extensionName
         );
         $this->addHiddenField(
-            '__referrer[@controller]',
+            $this->prefixFieldName('__referrer[@controller]'),
             $controllerName
         );
         $this->addHiddenField(
-            '__referrer[@action]',
+            $this->prefixFieldName('__referrer[@action]'),
             $actionName
         );
         $this->addHiddenField(
-            '__referrer[arguments]',
+            $this->prefixFieldName('__referrer[arguments]'),
             $this->hashService->appendHmac(
                 base64_encode(serialize($request->getArguments())),
-                class_exists(\TYPO3\CMS\Extbase\Security\HashScope::class) ? \TYPO3\CMS\Extbase\Security\HashScope::class::ReferringArguments->prefix() : ''
+                HashScope::ReferringArguments->prefix(),
+                HashAlgo::SHA3_256
             )
         );
         $this->addHiddenField(
-            '__referrer[@request]',
+            $this->prefixFieldName('__referrer[@request]'),
             $this->hashService->appendHmac(
-                json_encode($actionRequest),
-                class_exists(\TYPO3\CMS\Extbase\Security\HashScope::class) ? \TYPO3\CMS\Extbase\Security\HashScope::class::ReferringRequest->prefix() : ''
+                json_encode($actionRequest, JSON_THROW_ON_ERROR),
+                HashScope::ReferringRequest->prefix(),
+                HashAlgo::SHA3_256
             )
         );
 
         return '';
-    }
-
-    /**
-     * Adds the field name prefix to the ViewHelperVariableContainer
-     */
-    protected function addFieldNamePrefixToViewHelperVariableContainer(): void
-    {
-        $fieldNamePrefix = $this->getFieldNamePrefix();
-        $this->viewHelperVariableContainer->add(FormViewHelper::class, 'fieldNamePrefix', $fieldNamePrefix);
     }
 
     /**
@@ -235,6 +239,8 @@ class LoginFormViewHelper extends FormViewHelper
         $this->registerFieldNameForFormTokenGeneration($name);
 
         $this->addHiddenField($name, $identifier);
+
+        return '';
     }
 
     /**
@@ -252,7 +258,7 @@ class LoginFormViewHelper extends FormViewHelper
                 $formFieldNames,
                 $this->getFieldNamePrefix()
             );
-        $this->addHiddenField('__trustedProperties', $requestHash);
+        $this->addHiddenField($this->prefixFieldName('__trustedProperties'), $requestHash);
 
         return '';
     }

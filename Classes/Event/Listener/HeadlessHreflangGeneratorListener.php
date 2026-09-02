@@ -12,24 +12,37 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use TYPO3\CMS\Frontend\Event\ModifyHrefLangTagsEvent;
 
-/**
- * @codeCoverageIgnore
- */
 class HeadlessHreflangGeneratorListener
 {
-    public function __construct(private readonly HeadlessFrontendUrlInterface $urlUtility) {}
+    public function __construct(
+        protected readonly HeadlessFrontendUrlInterface $urlUtility,
+        protected readonly HeadlessModeInterface $headlessMode,
+    ) {}
 
     public function __invoke(ModifyHrefLangTagsEvent $event): void
     {
-        $hrefLangs = [];
-        $urlUtility = $this->urlUtility->withRequest($event->getRequest());
+        $request = $event->getRequest();
 
-        foreach ($event->getHrefLangs() as $lang => $hrefLang) {
-            $hrefLangs[$lang] = $urlUtility->getFrontendUrlWithSite($hrefLang, $event->getRequest()->getAttribute('site'));
+        if (!$this->headlessMode->isEnabledFor($request)) {
+            return;
         }
 
-        $event->setHrefLangs($hrefLangs);
+        $hrefLangs = $event->getHrefLangs();
+        if ($hrefLangs === []) {
+            return;
+        }
+
+        $urlUtility = $this->urlUtility->withRequest($request);
+        $site = $request->getAttribute('site');
+        $data = [];
+
+        foreach ($hrefLangs as $lang => $href) {
+            $data[$lang] = $urlUtility->getFrontendUrlWithSite($href, $site);
+        }
+
+        $event->setHrefLangs($data);
     }
 }

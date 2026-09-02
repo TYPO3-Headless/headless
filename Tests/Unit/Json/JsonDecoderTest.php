@@ -68,6 +68,15 @@ class JsonDecoderTest extends UnitTestCase
         self::assertEquals(json_decode($encoded), $jsonDecoder->decode(['teststring']));
     }
 
+    #[Test]
+    public function invalidJsonStringIsKeptAsIs(): void
+    {
+        $jsonDecoder = GeneralUtility::makeInstance(JsonDecoder::class);
+
+        self::assertSame(['{"broken":}'], $jsonDecoder->decode(['{"broken":}']));
+        self::assertFalse($jsonDecoder->isJson('{"broken":}'));
+    }
+
     public static function possibleJsonProvider(): array
     {
         return [

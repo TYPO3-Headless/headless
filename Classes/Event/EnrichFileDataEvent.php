@@ -14,24 +14,36 @@ namespace FriendsOfTYPO3\Headless\Event;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use TYPO3\CMS\Core\Resource\FileInterface;
 
-final class EnrichFileDataEvent
+class EnrichFileDataEvent
 {
-    private array $properties;
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $properties;
 
+    /**
+     * @param array<string, mixed> $properties
+     */
     public function __construct(
-        private readonly FileInterface $originalFileReference,
-        private readonly FileInterface $processedFileReference,
-        private readonly ProcessingConfiguration $processingConfiguration,
+        protected readonly FileInterface $originalFileReference,
+        protected readonly FileInterface $processedFileReference,
+        protected readonly ProcessingConfiguration $processingConfiguration,
         array $properties = []
     ) {
         $this->properties = $properties;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getProperties(): array
     {
         return $this->properties;
     }
 
+    /**
+     * @param array<string, mixed> $properties
+     */
     public function setProperties(array $properties): void
     {
         $this->properties = $properties;

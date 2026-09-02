@@ -11,18 +11,16 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Resource\Rendering;
 
-use FriendsOfTYPO3\Headless\Utility\FileUtility;
+use FriendsOfTYPO3\Headless\Utility\FileUtilityInterface;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Video tag renderer class
- *
- * @codeCoverageIgnore
  */
 class VideoTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VideoTagRenderer
 {
-    private ?FileUtility $fileUtility = null;
+    protected ?FileUtilityInterface $fileUtility = null;
 
     public function getPriority(): int
     {
@@ -35,15 +33,14 @@ class VideoTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VideoTagRender
      * @param FileInterface $file
      * @param int|string $width TYPO3 known format; examples: 220, 200m or 200c
      * @param int|string $height TYPO3 known format; examples: 220, 200m or 200c
-     * @param array $options
-     * @param bool $usedPathsRelativeToCurrentScript See $file->getPublicUrl()
+     * @param array<string, mixed> $options
      * @return string
      */
     public function render(FileInterface $file, $width, $height, array $options = []): string
     {
         if (($options['returnUrl'] ?? false) === true) {
-            $fileUtility = $this->fileUtility ??= GeneralUtility::makeInstance(FileUtility::class);
-            return htmlspecialchars($fileUtility->getAbsoluteUrl($file->getPublicUrl()), ENT_QUOTES | ENT_HTML5);
+            $fileUtility = $this->fileUtility ??= GeneralUtility::makeInstance(FileUtilityInterface::class);
+            return htmlspecialchars($fileUtility->getAbsoluteUrl((string)$file->getPublicUrl()), ENT_QUOTES | ENT_HTML5);
         }
         return parent::render(...func_get_args());
     }

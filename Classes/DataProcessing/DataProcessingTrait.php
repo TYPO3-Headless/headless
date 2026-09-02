@@ -14,18 +14,23 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
 trait DataProcessingTrait
 {
     /**
-     * @param array $processorConfiguration
-     * @param array $processedData
-     * @return array
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
      */
-    protected function removeDataIfnotAppendInConfiguration(array $processorConfiguration, array $processedData): array
-    {
+    protected function removeDataIfnotAppendInConfiguration(
+        array $processorConfiguration,
+        array $processedData,
+        ?string $targetVariableName = null
+    ): array {
+        $targetVariableName ??= isset($processorConfiguration['as']) ? (string)$processorConfiguration['as'] : null;
         if (!isset($processorConfiguration['appendData']) ||
             (int)$processorConfiguration['appendData'] === 0) {
             unset($processedData['data']);
-            if (isset($processorConfiguration['as'], $processedData[$processorConfiguration['as']])
-                && is_array($processedData[$processorConfiguration['as']])) {
-                foreach ($processedData[$processorConfiguration['as']] as &$item) {
+            if ($targetVariableName !== null && $targetVariableName !== ''
+                && isset($processedData[$targetVariableName])
+                && is_array($processedData[$targetVariableName])) {
+                foreach ($processedData[$targetVariableName] as &$item) {
                     if (is_array($item) && isset($item['data'])) {
                         unset($item['data']);
                     }
@@ -42,16 +47,15 @@ trait DataProcessingTrait
 
     protected function isMenuProcessor(): bool
     {
-        return __CLASS__ === MenuProcessor::class;
+        return $this instanceof MenuProcessor;
     }
 
     /**
      * Removes recursively "data" in children nodes
      *
-     * @param array $children
-     * @param string $nodeName
+     * @param array<int|string, array<string, mixed>> $children
      */
-    private function removeDataInChildrenNodes(array &$children, string $nodeName = 'children'): void
+    protected function removeDataInChildrenNodes(array &$children, string $nodeName = 'children'): void
     {
         foreach ($children as &$childrenItem) {
             unset($childrenItem['data']);

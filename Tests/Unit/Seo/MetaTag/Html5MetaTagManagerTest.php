@@ -1,0 +1,86 @@
+<?php
+
+/*
+ * This file is part of the "headless" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.md file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace FriendsOfTYPO3\Headless\Tests\Unit\Seo\MetaTag;
+
+use FriendsOfTYPO3\Headless\Seo\MetaTag\Html5MetaTagManager;
+use FriendsOfTYPO3\Headless\Seo\MetaTag\OpenGraphMetaTagManager;
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
+use FriendsOfTYPO3\Headless\Utility\Headless;
+use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
+use Symfony\Component\DependencyInjection\Container;
+use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
+use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\Type\DocType;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
+class Html5MetaTagManagerTest extends HeadlessUnitTestCase
+{
+    protected bool $resetSingletonInstances = true;
+
+    protected function tearDown(): void
+    {
+        unset($GLOBALS['TYPO3_REQUEST']);
+        parent::tearDown();
+    }
+
+    public function testRegistryRoutedManagersRenderHtmlAndJsonPerHeadlessMode(): void
+    {
+        $container = new Container();
+        $pageRenderer = $this->createMock(PageRenderer::class);
+        $pageRenderer->method('getDocType')->willReturn(DocType::html5);
+
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        $container->set(PageRenderer::class, $pageRenderer);
+
+        GeneralUtility::setContainer($container);
+
+        $GLOBALS['TYPO3_REQUEST'] = new ServerRequest();
+
+        $registry = GeneralUtility::makeInstance(MetaTagManagerRegistry::class);
+        $registry->registerManager('html5', Html5MetaTagManager::class);
+        $registry->registerManager('opengraph', OpenGraphMetaTagManager::class);
+
+        $htmlManager = $registry->getManagerForProperty('generator');
+        $htmlManager->addProperty('generator', 'TYPO3 CMS x T3Headless', [], true, 'name');
+        $htmlManager->addProperty('content-language', 'pl-PL', [], true, 'name');
+
+        $ogManager = $registry->getManagerForProperty('og:image');
+        $ogManager->addProperty('og:image', 'Powered by TYPO3', ['url' => 'https://example.com/image.jpg'], true, 'name');
+
+        self::assertSame('<meta name="generator" content="TYPO3 CMS x T3Headless">
+<meta http-equiv="content-language" content="pl-PL">', $htmlManager->renderAllProperties());
+
+        $GLOBALS['TYPO3_REQUEST'] = (new ServerRequest())->withAttribute('headless', new Headless(HeadlessModeInterface::FULL));
+
+        self::assertSame('[{"http-equiv":"content-language","content":"pl-PL"}]', $htmlManager->renderProperty('content-language'));
+        self::assertSame('[{"name":"generator","content":"TYPO3 CMS x T3Headless"}]', $htmlManager->renderProperty('generator'));
+        self::assertSame('[{"name":"generator","content":"TYPO3 CMS x T3Headless"},{"http-equiv":"content-language","content":"pl-PL"}]', $htmlManager->renderAllProperties());
+        self::assertSame('[{"property":"og:image","content":"Powered by TYPO3"},{"property":"og:image:url","content":"https:\/\/example.com\/image.jpg"}]', $ogManager->renderAllProperties());
+    }
+
+    public function testRenderHeadlessPropertyAsArrayReturnsRawStructure(): void
+    {
+        $container = new Container();
+        $container->set(HeadlessModeInterface::class, new HeadlessMode());
+        GeneralUtility::setContainer($container);
+
+        $manager = new Html5MetaTagManager();
+        $manager->addProperty('generator', 'TYPO3 CMS x T3Headless', [], true, 'name');
+
+        self::assertSame(
+            [['name' => 'generator', 'content' => 'TYPO3 CMS x T3Headless']],
+            $manager->renderHeadlessPropertyAsArray('generator')
+        );
+    }
+}

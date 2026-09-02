@@ -23,8 +23,8 @@ use TYPO3\CMS\Core\Site\Entity\NullSite;
 class SiteBaseRedirectResolver extends \TYPO3\CMS\Frontend\Middleware\SiteBaseRedirectResolver
 {
     public function __construct(
-        private readonly HeadlessModeInterface $headlessMode,
-        private readonly HeadlessFrontendUrlInterface $urlUtility,
+        protected readonly HeadlessModeInterface $headlessMode,
+        protected readonly HeadlessFrontendUrlInterface $urlUtility,
     ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -37,7 +37,7 @@ class SiteBaseRedirectResolver extends \TYPO3\CMS\Frontend\Middleware\SiteBaseRe
             return $response;
         }
 
-        if (!$this->headlessMode->withRequest($request)->isEnabled()) {
+        if (!$this->headlessMode->isEnabledFor($request)) {
             return $response;
         }
 

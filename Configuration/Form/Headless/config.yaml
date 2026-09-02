@@ -1,0 +1,82 @@
+name: friendsoftypo3/headless-form
+label: 'TYPO3 Headless — Form Configuration'
+priority: 20
+
+prototypes:
+  standard:
+    formElementsDefinition:
+      Form:
+        formEditor:
+          editors:
+            900:
+              selectOptions:
+                200:
+                  value: JsonRedirect
+                  label: 'JSON redirect (headless)'
+          propertyCollections:
+            finishers:
+              200:
+                identifier: JsonRedirect
+                editors:
+                  100:
+                    identifier: header
+                    templateName: Inspector-CollectionElementHeaderEditor
+                    label: 'JSON redirect (headless)'
+                  200:
+                    identifier: pageUid
+                    templateName: Inspector-Typo3WinBrowserEditor
+                    label: 'Redirect to page'
+                    buttonLabel: formEditor.elements.Form.finisher.Redirect.editor.pageUid.buttonLabel
+                    browsableType: pages
+                    iconIdentifier: apps-pagetree-page-default
+                    propertyPath: options.pageUid
+                    propertyValidatorsMode: OR
+                    propertyValidators:
+                      10: Integer
+                      20: FormElementIdentifierWithinCurlyBracesExclusive
+                  300:
+                    identifier: additionalParameters
+                    templateName: Inspector-TextEditor
+                    label: formEditor.elements.Form.finisher.Redirect.editor.additionalParameters.label
+                    propertyPath: options.additionalParameters
+                  400:
+                    identifier: message
+                    templateName: Inspector-TextEditor
+                    label: 'Message shown before the frontend redirects'
+                    propertyPath: options.message
+                  9999:
+                    identifier: removeButton
+                    templateName: Inspector-RemoveElementEditor
+    finishersDefinition:
+      JsonRedirect:
+        implementationClassName: FriendsOfTYPO3\Headless\Form\Finisher\JsonRedirectFinisher
+        formEditor:
+          iconIdentifier: form-finisher
+          label: 'JSON redirect (headless)'
+          predefinedDefaults:
+            options:
+              pageUid: ''
+              additionalParameters: ''
+              message: ''
+        FormEngine:
+          label: 'JSON redirect (headless)'
+          elements:
+            pageUid:
+              label: tt_content.finishersDefinition.Redirect.pageUid.label
+              config:
+                type: group
+                allowed: pages
+                size: 1
+                minitems: 1
+                maxitems: 1
+                fieldWizard:
+                  recordsOverview:
+                    disabled: 1
+            additionalParameters:
+              label: tt_content.finishersDefinition.Redirect.additionalParameters.label
+              config:
+                type: input
+            message:
+              label: 'Message shown before the frontend redirects'
+              config:
+                type: input

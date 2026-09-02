@@ -38,11 +38,14 @@
     "helmich/typo3-typoscript-lint": "^v3",
     "justinrainbow/json-schema": "^5",
     "phpstan/extension-installer": "^1.1",
-    "phpstan/phpstan": "^1.12",
+    "phpstan/phpstan": "^2",
     "phpunit/phpcov": "^8 || ^9 || ^10",
     "seld/jsonlint": "^1.11",
     "symfony/yaml": "^6.1 || ^7.1",
+    "typo3/cms-felogin": "^14.3",
     "typo3/cms-form": "^14.0",
+    "typo3/cms-redirects": "^14.3",
+    "typo3/cms-seo": "^14.3",
     "typo3/cms-workspaces": "^14.3",
     "typo3/coding-standards": "^0.8",
     "typo3/testing-framework": "^9.0"
@@ -66,8 +69,12 @@
   },
   "extra": {
     "typo3/cms": {
+      "Package": {
+        "providesPackages": {}
+      },
       "app-dir": ".Build",
       "extension-key": "headless",
+      "version": "5.0.0-rc2",
       "web-dir": ".Build/public"
     }
   },

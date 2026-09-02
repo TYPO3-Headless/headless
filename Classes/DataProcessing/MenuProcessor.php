@@ -12,15 +12,16 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
 use TYPO3\CMS\Core\Utility\ArrayUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 use function is_array;
 
 /**
- * This menu processor utilizes HMENU to generate a json encoded menu
- * string that will be decoded again and assigned to JSON as
- * variable, then remove page data from content object. Additional DataProcessing is supported and will be applied
- * to each record.
+ * This menu processor extends the core MenuProcessor and prepares the
+ * generated menu for JSON output: page data is removed from every menu
+ * item unless appendData is set. Additional DataProcessing is supported
+ * and will be applied to each record.
  *
  * Options:
  * as - The variable to be used within the result
@@ -61,9 +62,11 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
     use DataProcessingTrait;
 
     /**
-     * @inheritDoc
+     * @var array<int, string>
      */
     public array $allowedConfigurationKeys = [
+        'cache',
+        'cache.',
         'cache_period',
         'entryLevel',
         'entryLevel.',
@@ -112,7 +115,7 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
     ];
 
     /**
-     * @inheritDoc
+     * @var array<int, string>
      */
     public array $removeConfigurationKeysForHmenu = [
         'levels',
@@ -155,7 +158,10 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
     }
 
     /**
-     * @inheritDoc
+     * @param array<string, mixed> $contentObjectConfiguration
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
      */
     public function process(
         ContentObjectRenderer $cObj,
@@ -170,26 +176,37 @@ class MenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\MenuProcessor
             $processedData
         );
 
+        $menuTargetVariableName = (string)$cObj->stdWrapValue('as', $processorConfiguration, $this->menuDefaults['as'] ?? '');
+
         $additionalFields = $this->getAdditionalFields($processorConfiguration);
-        if ($additionalFields !== [] && isset($processedData[$this->menuTargetVariableName])) {
-            $processedData[$this->menuTargetVariableName] = $this->addAdditionalFieldsToMenuItems(
-                $processedData[$this->menuTargetVariableName],
+        if ($additionalFields !== [] && isset($processedData[$menuTargetVariableName])) {
+            $processedData[$menuTargetVariableName] = $this->addAdditionalFieldsToMenuItems(
+                $processedData[$menuTargetVariableName],
                 $additionalFields
             );
         }
 
-        return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
+        return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData, $menuTargetVariableName);
     }
 
+    /**
+     * @param array<string, mixed> $processorConfiguration
+     * @return array<int, string>
+     */
     protected function getAdditionalFields(array $processorConfiguration): array
     {
-        $additionalFields = $processorConfiguration['additionalFields'] ?? '';
+        $additionalFields = (string)($processorConfiguration['additionalFields'] ?? '');
         if ($additionalFields === '') {
             return [];
         }
-        return array_map('trim', explode(',', $additionalFields));
+        return GeneralUtility::trimExplode(',', $additionalFields, true);
     }
 
+    /**
+     * @param array<int|string, array<string, mixed>> $menuItems
+     * @param array<int, string> $additionalFields
+     * @return array<int|string, array<string, mixed>>
+     */
     protected function addAdditionalFieldsToMenuItems(array $menuItems, array $additionalFields): array
     {
         foreach ($menuItems as $key => $item) {

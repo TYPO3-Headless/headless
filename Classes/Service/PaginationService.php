@@ -14,13 +14,10 @@ namespace FriendsOfTYPO3\Headless\Service;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
-/**
- * @codeCoverageIgnore
- */
 class PaginationService
 {
     /**
-     * @var array
+     * @var array<string, int|bool>
      */
     protected $configuration = [
         'itemsPerPage' => 10,
@@ -30,7 +27,7 @@ class PaginationService
     ];
 
     /**
-     * @var QueryResultInterface
+     * @var QueryResultInterface<int, object>
      */
     protected $objects;
 
@@ -75,12 +72,7 @@ class PaginationService
     protected $displayRangeEnd = 0;
 
     /**
-     * PaginationService constructor.
-     * @param QueryResultInterface $objects
-     * @param int $itemsPerPage
-     * @param int $maximumNumberOfLinks
-     * @param bool $insertAbove
-     * @param bool $insertBelow
+     * @param QueryResultInterface<int, object> $objects
      */
     public function __construct(
         QueryResultInterface $objects,
@@ -90,15 +82,20 @@ class PaginationService
         bool $insertBelow = true
     ) {
         $this->objects = $objects;
+        $itemsPerPage = max(1, $itemsPerPage);
         $this->configuration = [
             'itemsPerPage' => $itemsPerPage,
             'maximumNumberOfLinks' => $maximumNumberOfLinks,
             'insertAbove' => $insertAbove,
             'insertBelow' => $insertBelow,
         ];
+        $this->maximumNumberOfLinks = $maximumNumberOfLinks;
         $this->numberOfPages = (int)ceil(count($this->objects) / $itemsPerPage);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function paginate(int $currentPage = 1): array
     {
         // set current page
@@ -157,6 +154,8 @@ class PaginationService
 
     /**
      * Returns an array with the keys "pages", "current", "numberOfPages", "nextPage" & "previousPage"
+     *
+     * @return array<string, mixed>
      */
     protected function buildPagination(): array
     {
@@ -193,7 +192,7 @@ class PaginationService
         if ($maximumNumberOfLinks > $this->numberOfPages) {
             $maximumNumberOfLinks = $this->numberOfPages;
         }
-        $delta = floor($maximumNumberOfLinks / 2);
+        $delta = (int)floor($maximumNumberOfLinks / 2);
         $this->displayRangeStart = $this->currentPage - $delta;
         $this->displayRangeEnd = $this->currentPage + $delta - ($maximumNumberOfLinks % 2 === 0 ? 1 : 0);
         if ($this->displayRangeStart < 1) {

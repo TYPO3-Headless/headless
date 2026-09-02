@@ -30,7 +30,13 @@ class UserIntMiddlewareTest extends UnitTestCase
     #[Test]
     public function process(): void
     {
-        $middleware = new UserIntMiddleware(new HeadlessUserInt(), new HeadlessMode(), $this->createMock(MetaHandler::class));
+        $middleware = new UserIntMiddleware(
+            new HeadlessUserInt(),
+            new HeadlessMode(),
+            $this->createMock(MetaHandler::class),
+            new \FriendsOfTYPO3\Headless\Json\JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
+            new \FriendsOfTYPO3\Headless\Json\JsonDecoder(),
+        );
 
         $request = new ServerRequest();
 
@@ -60,7 +66,13 @@ class UserIntMiddlewareTest extends UnitTestCase
             )->getBody()->__toString()
         );
 
-        $middleware = new UserIntMiddleware(new HeadlessUserInt(), new HeadlessMode(), $this->createMock(MetaHandler::class));
+        $middleware = new UserIntMiddleware(
+            new HeadlessUserInt(),
+            new HeadlessMode(),
+            $this->createMock(MetaHandler::class),
+            new \FriendsOfTYPO3\Headless\Json\JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
+            new \FriendsOfTYPO3\Headless\Json\JsonDecoder(),
+        );
 
         $request = new ServerRequest();
         $request = $request->withAttribute('headless', new Headless());
@@ -91,7 +103,13 @@ class UserIntMiddlewareTest extends UnitTestCase
         $metaHandlerMock = $this->createMock(MetaHandler::class);
         $metaHandlerMock->method('process')->withAnyParameters()->willReturn(['seo' => ['title' => 'test2']]);
 
-        $middleware = new UserIntMiddleware(new HeadlessUserInt(), new HeadlessMode(), $metaHandlerMock);
+        $middleware = new UserIntMiddleware(
+            new HeadlessUserInt(),
+            new HeadlessMode(),
+            $metaHandlerMock,
+            new \FriendsOfTYPO3\Headless\Json\JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
+            new \FriendsOfTYPO3\Headless\Json\JsonDecoder(),
+        );
         $c = json_encode(['seo' => ['title' => 'test']]);
 
         $responseString = '"' . HeadlessUserInt::STANDARD . '_START<<' . $c . '>>' . HeadlessUserInt::STANDARD . '_END"';

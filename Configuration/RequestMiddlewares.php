@@ -9,7 +9,7 @@
 
 use FriendsOfTYPO3\Headless\Middleware\ElementBodyResponseMiddleware;
 use FriendsOfTYPO3\Headless\Middleware\HeadlessModeSetter;
-use FriendsOfTYPO3\Headless\Middleware\RedirectHandler;
+use FriendsOfTYPO3\Headless\Middleware\RedirectModuleSourceUrlRewriter;
 use FriendsOfTYPO3\Headless\Middleware\ShortcutAndMountPointRedirect;
 use FriendsOfTYPO3\Headless\Middleware\SiteBaseRedirectResolver;
 use FriendsOfTYPO3\Headless\Middleware\UserIntMiddleware;
@@ -31,9 +31,24 @@ return (static function (): array {
             'headless/mode-setter' => [
                 'before' => [
                     'typo3/cms-frontend/base-redirect-resolver',
-                    'headless/cms-redirects/redirecthandler',
+                    'typo3/cms-redirects/redirecthandler',
                 ],
                 'target' => HeadlessModeSetter::class,
+            ],
+            'typo3/cms-frontend/shortcut-and-mountpoint-redirect' => [
+                'disabled' => true,
+            ],
+            'typo3/cms-frontend/base-redirect-resolver' => [
+                'target' => SiteBaseRedirectResolver::class,
+            ],
+            'headless/cms-frontend/shortcut-and-mountpoint-redirect' => [
+                'target' => ShortcutAndMountPointRedirect::class,
+                'after' => [
+                    'typo3/cms-frontend/prepare-tsfe-rendering',
+                ],
+                'before' => [
+                    'typo3/cms-frontend/content-length-headers',
+                ],
             ],
         ],
     ];
@@ -64,47 +79,17 @@ return (static function (): array {
         ];
     }
 
-    if (!$features->isFeatureEnabled('headless.redirectMiddlewares')) {
-        return $middlewares;
-    }
-
-    $middlewares = array_merge_recursive($middlewares, [
-        'frontend' => [
-            'typo3/cms-frontend/shortcut-and-mountpoint-redirect' => [
-                'disabled' => true,
-            ],
-            'typo3/cms-frontend/base-redirect-resolver' => [
-                'target' => SiteBaseRedirectResolver::class,
-            ],
-            'headless/cms-frontend/shortcut-and-mountpoint-redirect' => [
-                'target' => ShortcutAndMountPointRedirect::class,
-                'after' => [
-                    'typo3/cms-frontend/prepare-tsfe-rendering',
-                ],
-                'before' => [
-                    'typo3/cms-frontend/content-length-headers',
-                ],
-            ],
-        ],
-    ]);
-
     if (!ExtensionManagementUtility::isLoaded('redirects')) {
         return $middlewares;
     }
 
     return array_merge_recursive($middlewares, [
-        'frontend' => [
-            'typo3/cms-redirects/redirecthandler' => [
-                'disabled' => true,
-            ],
-            'headless/cms-redirects/redirecthandler' => [
-                'target' => RedirectHandler::class,
-                'before' => [
-                    'typo3/cms-frontend/base-redirect-resolver',
-                ],
+        'backend' => [
+            'headless/cms-backend/redirect-module-source-url' => [
                 'after' => [
-                    'typo3/cms-frontend/authentication',
+                    'typo3/cms-backend/backend-routing',
                 ],
+                'target' => RedirectModuleSourceUrlRewriter::class,
             ],
         ],
     ]);

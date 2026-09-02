@@ -8,7 +8,7 @@ tt_content.table {
                 bodytext {
                     field = bodytext
                     dataProcessing {
-                        10 = TYPO3\CMS\Frontend\DataProcessing\CommaSeparatedValueProcessor
+                        10 = comma-separated-value
                         10 {
                             fieldName = bodytext
                             fieldDelimiter.char.cObject = TEXT

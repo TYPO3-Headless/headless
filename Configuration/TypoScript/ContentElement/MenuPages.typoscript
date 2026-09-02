@@ -7,7 +7,7 @@ tt_content.menu_pages {
                 menu = TEXT
                 menu {
                     dataProcessing {
-                        10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+                        10 = headless-menu
                         10 {
                             special = list
                             special.value.field = pages

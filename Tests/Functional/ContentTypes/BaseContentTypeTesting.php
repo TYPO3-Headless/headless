@@ -51,7 +51,7 @@ abstract class BaseContentTypeTesting extends BaseHeadlessTesting
         self::assertEquals($subheader, $contentElementContent['subheader'], 'subheader mismatch');
         self::assertEquals($headerLayout, $contentElementContent['headerLayout'], 'headerLayout mismatch');
         self::assertEquals($headerPosition, $contentElementContent['headerPosition'], 'headerPosition mismatch');
-        self::assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
+        self::assertArrayHasKey('headerLink', $contentElementContent, 'headerLink not set');
     }
 
     protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target)
@@ -95,7 +95,7 @@ abstract class BaseContentTypeTesting extends BaseHeadlessTesting
 
     protected function checkGalleryFile($fileElement, $originalUrl, $mimeType, $title, $width, $height, $autoplay)
     {
-        self::assertTrue(isset($fileElement['publicUrl']), 'publicUrl not set');
+        self::assertArrayHasKey('publicUrl', $fileElement, 'publicUrl not set');
 
         self::assertIsArray($fileElement['properties'], 'properties not set');
         self::assertEquals($originalUrl, $fileElement['properties']['originalUrl'], 'properties originalUrl mismatch');

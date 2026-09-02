@@ -1,5 +1,3 @@
-.. include:: Includes.txt
-
 .. _start:
 
 =============================================================
@@ -18,7 +16,7 @@ EXT:headless
 
    This extension provides the backend part (JSON API) for TYPO3 PWA solution.
    The frontend part exists as JavaScript application
-   `nuxt-typo3 <https://github.com/TYPO3-Initiatives/nuxt-typo3>`__
+   `nuxt-typo3 <https://github.com/TYPO3-Headless/nuxt-typo3>`__
    which consumes the JSON API and renders the content using Nuxt framework of VueJS.
    You can find the frontend documentation `here <https://t3headless.macopedia.io/nuxt-typo3/>`__.
 
@@ -26,7 +24,7 @@ EXT:headless
    headless, json, api
 
 :Copyright:
-   2020 by TYPO3 Association
+   2026 by TYPO3 Association
 
 :Authors:
    * Tymoteusz Motylewski (Macopedia)
@@ -59,22 +57,31 @@ a GNU/GPL CMS/Framework available from `typo3.org <https://typo3.org/>`_ .
 
 You are welcome to help improve this guide if you missing something.
 Just click on "Edit me on GitHub" on the top right to submit your change request
-or `report a problem <https://github.com/TYPO3-Initiatives/headless/issues/new>`__
+or `report a problem <https://github.com/TYPO3-Headless/headless/issues/new>`__
 
 **Table of Contents**
 
 .. toctree::
    :maxdepth: 3
    :titlesonly:
-   :glob:
 
    Introduction/Index
-   Installation/Index
+   GettingStarted/Index
    Configuration/Index
-   Configuration/Preview
-   Configuration/XmlSitemap
+   Configuration/MultiSite
    Developer/Index
+   Developer/CObjects
+   Developer/CustomContent
    Developer/DataProcessors
+   Developer/Events
    Developer/Images
+   Developer/Snippets
+   Integrations/Form
+   Integrations/FeLogin
+   Integrations/Redirects
+   Reference/Typoscript
+   Reference/Events
+   Reference/FeatureFlags
+   Reference/Interfaces
    FAQ/Index
    Sitemap

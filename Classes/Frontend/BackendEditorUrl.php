@@ -14,9 +14,6 @@ namespace FriendsOfTYPO3\Headless\Frontend;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Attribute\AsAllowedCallable;
 
-/**
- * @codeCoverageIgnore
- */
 class BackendEditorUrl
 {
     public function __construct(protected UriBuilder $uriBuilder) {}
@@ -33,7 +30,7 @@ class BackendEditorUrl
         return $this->generateUrl();
     }
 
-    private function generateUrl(string $table = 'tt_content'): string
+    protected function generateUrl(string $table = 'tt_content'): string
     {
         $beUser = $GLOBALS['BE_USER'] ?? null;
 

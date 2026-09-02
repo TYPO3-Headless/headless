@@ -13,14 +13,14 @@ namespace FriendsOfTYPO3\Headless\Utility\File;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-/**
- * @codeCoverageIgnore
- */
 class ProcessingConfiguration
 {
-    private const RETINA_RATIO = 2;
-    private const LQIP_RATIO = 0.1;
+    protected const RETINA_RATIO = 2;
+    protected const LQIP_RATIO = 0.1;
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public static function fromOptions(array $options): static
     {
         return new static(
@@ -53,7 +53,15 @@ class ProcessingConfiguration
         );
     }
 
-    private function __construct(
+    /**
+     * @param array<int, string> $includeProperties
+     * @param array<int, string> $defaultFieldsByType
+     * @param array<int, string> $defaultImageFields
+     * @param array<int, string> $defaultVideoFields
+     * @param array<string, array<string, mixed>> $autogenerate
+     * @param array<string, mixed> $rawOptions
+     */
+    protected function __construct(
         public readonly string $width = '',
         public readonly string $height = '',
         public readonly int $minWidth = 0,
@@ -82,7 +90,11 @@ class ProcessingConfiguration
         public readonly array $rawOptions = [],
     ) {}
 
-    private static function handleLegacyOptions(array $configuration): array
+    /**
+     * @param array<string, mixed> $configuration
+     * @return array<string, mixed>
+     */
+    protected static function handleLegacyOptions(array $configuration): array
     {
         if ((int)($configuration['retina2x'] ?? 0)) {
             $configuration['urlRetina'] = ['factor' => self::RETINA_RATIO];
@@ -97,6 +109,9 @@ class ProcessingConfiguration
         return $configuration;
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function withOptions(array $options): static
     {
         return self::fromOptions(array_merge($this->rawOptions, $options));

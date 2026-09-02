@@ -1,1 +1,6 @@
-@import 'EXT:headless/Configuration/TypoScript/setup.typoscript'
+@import 'EXT:headless/Configuration/TypoScript/Page/*.typoscript'
+@import 'EXT:headless/Configuration/TypoScript/Helpers/*.typoscript'
+@import 'EXT:headless/Configuration/TypoScript/ContentElement/*.typoscript'
+@import 'EXT:headless/Configuration/TypoScript/Configuration/*.typoscript'
+@import 'EXT:headless/Configuration/TypoScript/LoggedUser/*.typoscript'
+@import 'EXT:headless/Configuration/TypoScript/PageResponse.typoscript'

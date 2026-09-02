@@ -11,14 +11,12 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Utility;
 
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\PluginUtility;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
-use PHPUnit\Framework\TestCase;
-use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
-use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\PropagateResponseException;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -29,7 +27,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function json_decode;
 
-class PluginUtilityTest extends TestCase
+class PluginUtilityTest extends HeadlessUnitTestCase
 {
     protected function setUp(): void
     {
@@ -40,15 +38,9 @@ class PluginUtilityTest extends TestCase
         GeneralUtility::setContainer($container);
     }
 
-    protected function tearDown(): void
-    {
-        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
-        parent::tearDown();
-    }
-
     public function testProperException(): void
     {
-        $urlUtility = new UrlUtility(new Features(), $this->createMock(Resolver::class), $this->createMock(SiteFinder::class), new HeadlessMode());
+        $urlUtility = new UrlUtility($this->createMock(Resolver::class), $this->createMock(SiteFinder::class), new HeadlessMode());
 
         $pluginRedirect = new PluginUtility($urlUtility);
 
@@ -59,7 +51,7 @@ class PluginUtilityTest extends TestCase
 
     public function testResponse(): void
     {
-        $urlUtility = new UrlUtility(new Features(), $this->createMock(Resolver::class), $this->createMock(SiteFinder::class), new HeadlessMode());
+        $urlUtility = new UrlUtility($this->createMock(Resolver::class), $this->createMock(SiteFinder::class), new HeadlessMode());
 
         $pluginRedirect = new PluginUtility($urlUtility);
 

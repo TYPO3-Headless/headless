@@ -21,7 +21,7 @@ class SchemaPageTypesTest extends BasePageTypesHeadlessTesting
             new InternalRequest('https://website.local/?type=834')
         );
 
-        self::assertEquals(200, $response->getStatusCode());
+        self::assertSame(200, $response->getStatusCode());
     }
 
     public function testGetPage()
@@ -30,6 +30,6 @@ class SchemaPageTypesTest extends BasePageTypesHeadlessTesting
             new InternalRequest('https://website.local/')
         );
 
-        self::assertEquals(200, $response->getStatusCode());
+        self::assertSame(200, $response->getStatusCode());
     }
 }

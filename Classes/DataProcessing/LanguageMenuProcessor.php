@@ -13,13 +13,44 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
 
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
-/**
- * @codeCoverageIgnore
- */
 class LanguageMenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\LanguageMenuProcessor
 {
     use DataProcessingTrait;
 
+    /**
+     * @var array<int, string>
+     */
+    protected array $allowedConfigurationKeys = [
+        'if',
+        'if.',
+        'languages',
+        'languages.',
+        'as',
+        'addQueryString',
+        'addQueryString.',
+
+        // New properties for EXT:headless
+        'appendData',
+    ];
+
+    /**
+     * @var array<int, string>
+     */
+    protected array $removeConfigurationKeysForHmenu = [
+        'languages',
+        'languages.',
+        'as',
+
+        // New properties for EXT:headless
+        'appendData',
+    ];
+
+    /**
+     * @param array<string, mixed> $contentObjectConfiguration
+     * @param array<string, mixed> $processorConfiguration
+     * @param array<string, mixed> $processedData
+     * @return array<string, mixed>
+     */
     public function process(
         ContentObjectRenderer $cObj,
         array $contentObjectConfiguration,
@@ -33,6 +64,10 @@ class LanguageMenuProcessor extends \TYPO3\CMS\Frontend\DataProcessing\LanguageM
             $processedData
         );
 
-        return $this->removeDataIfnotAppendInConfiguration($processorConfiguration, $processedData);
+        return $this->removeDataIfnotAppendInConfiguration(
+            $processorConfiguration,
+            $processedData,
+            (string)$cObj->stdWrapValue('as', $processorConfiguration, $this->menuDefaults['as'] ?? '')
+        );
     }
 }

@@ -23,5 +23,7 @@ interface HeadlessModeInterface
 
     public function withRequest(ServerRequestInterface $request): self;
     public function isEnabled(): bool;
+
+    public function isEnabledFor(ServerRequestInterface $request): bool;
     public function overrideBackendRequestBySite(SiteInterface $site, ?SiteLanguage $language = null): ServerRequestInterface;
 }

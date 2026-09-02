@@ -1,0 +1,5 @@
+"pages",,,,,,,,,
+,uid,pid,title,slug,deleted,perms_everybody,sorting,is_siteroot,doktype
+,110,0,"Site A","/",0,15,20,1,1
+,120,0,"Site B","/",0,15,10,1,1
+,130,999,"Site C","/",0,15,30,1,1

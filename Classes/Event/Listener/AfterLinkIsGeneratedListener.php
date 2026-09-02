@@ -12,8 +12,10 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
+use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\LinkHandling\Exception\UnknownLinkHandlerException;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\LinkHandling\TypoLinkCodecService;
@@ -29,14 +31,16 @@ use function is_numeric;
 use function is_string;
 use function str_starts_with;
 
-final class AfterLinkIsGeneratedListener
+#[AsEventListener(identifier: 'headless/AfterLinkIsGenerated')]
+class AfterLinkIsGeneratedListener
 {
     public function __construct(
-        private readonly LoggerInterface $logger,
-        private readonly HeadlessFrontendUrlInterface $urlUtility,
-        private readonly LinkService $linkService,
-        private readonly TypoLinkCodecService $typoLinkCodecService,
-        private readonly SiteFinder $siteFinder
+        protected readonly LoggerInterface $logger,
+        protected readonly HeadlessFrontendUrlInterface $urlUtility,
+        protected readonly LinkService $linkService,
+        protected readonly TypoLinkCodecService $typoLinkCodecService,
+        protected readonly SiteFinder $siteFinder,
+        protected readonly HeadlessModeInterface $headlessMode,
     ) {}
 
     public function __invoke(AfterLinkIsGeneratedEvent $event): void
@@ -44,6 +48,11 @@ final class AfterLinkIsGeneratedListener
         $result = $event->getLinkResult();
 
         if ($result->getType() !== 'page') {
+            return;
+        }
+
+        $request = $event->getContentObjectRenderer()->getRequest();
+        if (!$this->headlessMode->isEnabledFor($request)) {
             return;
         }
 
@@ -55,7 +64,7 @@ final class AfterLinkIsGeneratedListener
             $pageId = (int)($this->linkService->resolve($event->getContentObjectRenderer()->parameters['href'] ?? '')['pageuid'] ?? 0);
         }
 
-        $urlUtility = $this->urlUtility->withRequest($event->getContentObjectRenderer()->getRequest());
+        $urlUtility = $this->urlUtility->withRequest($request);
 
         if (is_numeric($pageId) && ((int)$pageId) > 0) {
             $href = $urlUtility->getFrontendUrlForPage(
@@ -89,7 +98,7 @@ final class AfterLinkIsGeneratedListener
         }
     }
 
-    private function getTargetSite(AfterLinkIsGeneratedEvent $event): Site
+    protected function getTargetSite(AfterLinkIsGeneratedEvent $event): Site
     {
         $linkConfiguration = $event->getLinkResult()->getLinkConfiguration();
 
@@ -139,6 +148,10 @@ final class AfterLinkIsGeneratedListener
         return $this->siteFinder->getSiteByPageId((int)$linkDetails['pageuid']);
     }
 
+    /**
+     * @param array<string, mixed> $linkConfiguration
+     * @return array<string, mixed>|null
+     */
     protected function resolveLinkDetails(
         string $linkParameter,
         array $linkConfiguration,
@@ -171,7 +184,11 @@ final class AfterLinkIsGeneratedListener
         return $linkDetails;
     }
 
-    private function resolveTypolinkParameterString(string $mixedLinkParameter, array &$linkConfiguration = []): array
+    /**
+     * @param array<string, mixed> $linkConfiguration
+     * @return array<int, string>
+     */
+    protected function resolveTypolinkParameterString(string $mixedLinkParameter, array &$linkConfiguration = []): array
     {
         $linkParameterParts = $this->typoLinkCodecService->decode($mixedLinkParameter);
         [$linkHandlerKeyword] = explode(':', $linkParameterParts['url'] ?? '', 2);
@@ -182,16 +199,16 @@ final class AfterLinkIsGeneratedListener
         )) {
             // Disallow insecure scheme's like javascript: or data:
             throw new UnableToLinkException(
-                'Insuecure scheme for linking detected with "' . $mixedLinkParameter . "'",
+                'Insecure scheme for linking detected with "' . $mixedLinkParameter . "'",
                 1641986533
             );
         }
 
         // additional parameters that need to be set
         if (($linkParameterParts['additionalParams'] ?? '') !== '') {
-            $forceParams = $linkParameterParts['additionalParams'];
-            // params value
-            $linkConfiguration['additionalParams'] = ($linkConfiguration['additionalParams'] ?? '') . $forceParams[0] === '&' ? $forceParams : '&' . $forceParams;
+            $forceParams = (string)$linkParameterParts['additionalParams'];
+            $prefix = $forceParams[0] === '&' ? '' : '&';
+            $linkConfiguration['additionalParams'] = ($linkConfiguration['additionalParams'] ?? '') . $prefix . $forceParams;
         }
 
         return [

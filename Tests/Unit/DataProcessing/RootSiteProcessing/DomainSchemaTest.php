@@ -17,7 +17,7 @@ use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Message\UriInterface;
-use TYPO3\CMS\Core\Configuration\Features;
+use ReflectionProperty;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
@@ -68,6 +68,33 @@ class DomainSchemaTest extends UnitTestCase
                 ['cObj' => $cObj, 'processorConfiguration' => ['dataProcessing.' => []]]
             )
         );
+    }
+
+    public function testProcessCreatesContentObjectRendererWhenNotProvided(): void
+    {
+        $testUri = new Uri('https://test.domain.tld');
+        $mainSite = $this->getSite($testUri, 1);
+
+        $siteProvider = $this->createMock(SiteProvider::class);
+        $siteProvider->method('getSites')->willReturn([$mainSite]);
+
+        $request = new ServerRequest();
+
+        $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
+        $contentObjectRenderer->expects(self::once())->method('setRequest')->with($request);
+
+        $container = new \Symfony\Component\DependencyInjection\Container();
+        $container->set(ContentObjectRenderer::class, $contentObjectRenderer);
+        \TYPO3\CMS\Core\Utility\GeneralUtility::setContainer($container);
+
+        try {
+            $result = (new DomainSchema($this->getUrlUtility($mainSite), $this->createMock(ContentDataProcessor::class)))
+                ->process($siteProvider, ['request' => $request]);
+        } finally {
+            (new ReflectionProperty(\TYPO3\CMS\Core\Utility\GeneralUtility::class, 'container'))->setValue(null, null);
+        }
+
+        self::assertSame($testUri->getHost(), $result[0]['name']);
     }
 
     protected function getSite(UriInterface $domainUri, int $rootPageId, array $languages = ['de'])
@@ -129,7 +156,7 @@ class DomainSchemaTest extends UnitTestCase
         $dummyRequest = (new ServerRequest())->withAttribute('site', $site);
         $dummyRequest = $dummyRequest->withAttribute('headless', new Headless());
 
-        return (new UrlUtility(new Features(), $resolver, $mock, (new HeadlessMode())->withRequest($dummyRequest)))->withRequest($dummyRequest);
+        return (new UrlUtility($resolver, $mock, (new HeadlessMode())->withRequest($dummyRequest)))->withRequest($dummyRequest);
     }
 
     protected function getSiteWithBase(UriInterface $uri, $withLanguage = null)

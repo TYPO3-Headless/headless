@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Utility;
 
+use JsonException;
+
 use function json_decode;
 use function json_encode;
 use function json_last_error;
@@ -24,6 +26,7 @@ use function substr;
 use function trim;
 
 use const JSON_ERROR_NONE;
+use const JSON_THROW_ON_ERROR;
 use const PHP_VERSION_ID;
 
 class HeadlessUserInt
@@ -33,10 +36,10 @@ class HeadlessUserInt
     public const STANDARD_NULLABLE = 'HEADLESS_INT_NULL';
     public const NESTED_NULLABLE = 'NESTED_HEADLESS_INT_NULL';
 
-    private const REGEX = '/(?P<quote>\\\\"|")?(?P<type>%s|%s)_START<<(?P<content>(?:[^>]|>(?!>(?P=type)_END))*+)>>(?P=type)_END(?P=quote)?/sS';
+    protected const REGEX = '/(?P<quote>\\\\"|")?(?P<type>%s|%s)_START<<(?P<content>(?:[^>]|>(?!>(?P=type)_END))*+)>>(?P=type)_END(?P=quote)?/sS';
 
     /** @var array<string, string> */
-    private static array $regexPatterns = [];
+    protected static array $regexPatterns = [];
 
     public function wrap(string $content, string $type = self::STANDARD): string
     {
@@ -71,13 +74,16 @@ class HeadlessUserInt
 
     protected function buildPattern(string $primary, string $nullable): string
     {
-        return self::$regexPatterns[$primary] ??= sprintf(
+        return self::$regexPatterns[$primary . '|' . $nullable] ??= sprintf(
             self::REGEX,
             preg_quote($nullable, '/'),
             preg_quote($primary, '/')
         );
     }
 
+    /**
+     * @param array<string, string> $m
+     */
     protected function replace(array $m, bool $isNullable): string
     {
         $hasQuotes  = $m['quote'] !== '';
@@ -98,16 +104,20 @@ class HeadlessUserInt
                 return $rawContent;
             }
 
-            return json_encode($rawContent);
+            try {
+                return json_encode($rawContent, JSON_THROW_ON_ERROR);
+            } catch (JsonException) {
+                return 'null';
+            }
         }
 
-        $jsonEncoded = json_encode($rawContent);
-
-        if ($jsonEncoded !== false && $jsonEncoded[0] === '"') {
-            return substr($jsonEncoded, 1, -1);
+        try {
+            $jsonEncoded = json_encode($rawContent, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return '';
         }
 
-        return $jsonEncoded ?: '';
+        return substr($jsonEncoded, 1, -1);
     }
 
     protected function isJson(string $string): bool
@@ -129,7 +139,9 @@ class HeadlessUserInt
             return json_validate($string);
         }
 
+        // @codeCoverageIgnoreStart
         json_decode($string);
         return json_last_error() === JSON_ERROR_NONE;
+        // @codeCoverageIgnoreEnd
     }
 }

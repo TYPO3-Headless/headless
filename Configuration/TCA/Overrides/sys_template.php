@@ -7,23 +7,25 @@
  * LICENSE.md file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 defined('TYPO3') || die();
 
 call_user_func(static function () {
-    /**
-     * Default TypoScript for Headless
-     */
     ExtensionManagementUtility::addStaticFile(
         'headless',
-        'Configuration/TypoScript',
+        'Configuration/TypoScript/Headless',
         'Headless'
     );
 
-    /**
-     * Mixed-Mode TypoScript for Headless
-     */
+    ExtensionManagementUtility::addStaticFile(
+        'headless',
+        'Configuration/TypoScript',
+        'Headless Legacy (4.x)'
+    );
+
     ExtensionManagementUtility::addStaticFile(
         'headless',
         'Configuration/TypoScript/Mixed',

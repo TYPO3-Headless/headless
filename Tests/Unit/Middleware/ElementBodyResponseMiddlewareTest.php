@@ -26,7 +26,11 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
 {
     public function testProcess(): void
     {
-        $middleware = new ElementBodyResponseMiddleware(new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()), new HeadlessMode());
+        $middleware = new ElementBodyResponseMiddleware(
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
+            new HeadlessMode(),
+            new \FriendsOfTYPO3\Headless\Json\JsonDecoder(),
+        );
 
         $responseArray = ['content' => ['colPos1' => [['id' => 1]]]];
         $result = json_encode($responseArray['content']['colPos1'][0]);
@@ -117,7 +121,11 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
             )
         );
 
-        $middleware = new ElementBodyResponseMiddleware(new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()), new HeadlessMode());
+        $middleware = new ElementBodyResponseMiddleware(
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
+            new HeadlessMode(),
+            new \FriendsOfTYPO3\Headless\Json\JsonDecoder(),
+        );
 
         $responseArray = ['content' => ['colPos2' => null, 'colPos1' => [['id' => 1]]]];
         $result = json_encode($responseArray['content']['colPos1'][0]);
@@ -149,6 +157,56 @@ class ElementBodyResponseMiddlewareTest extends UnitTestCase
         );
 
         self::assertSame(json_encode(['id' => 1]), $testResponse->getBody()->__toString());
+    }
+
+    public function testEmptyResponseBodyIsPassedThrough(): void
+    {
+        $middleware = new ElementBodyResponseMiddleware(
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
+            new HeadlessMode(),
+            new \FriendsOfTYPO3\Headless\Json\JsonDecoder(),
+        );
+
+        $response = new HtmlResponse('');
+
+        self::assertSame($response, $middleware->process(
+            $this->getTestRequest(['responseElementId' => 1], 'POST'),
+            $this->getMockHandlerWithResponse($response)
+        ));
+    }
+
+    public function testNonArrayJsonResponseIsPassedThrough(): void
+    {
+        $middleware = new ElementBodyResponseMiddleware(
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
+            new HeadlessMode(),
+            new \FriendsOfTYPO3\Headless\Json\JsonDecoder(),
+        );
+
+        $response = new HtmlResponse('"just-a-string"');
+
+        self::assertSame($response, $middleware->process(
+            $this->getTestRequest(['responseElementId' => 1], 'POST'),
+            $this->getMockHandlerWithResponse($response)
+        ));
+    }
+
+    public function testNonArrayContentYieldsEmptyElementResponse(): void
+    {
+        $middleware = new ElementBodyResponseMiddleware(
+            new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
+            new HeadlessMode(),
+            new \FriendsOfTYPO3\Headless\Json\JsonDecoder(),
+        );
+
+        $response = new HtmlResponse(json_encode(['content' => 'not-an-array']));
+
+        $result = $middleware->process(
+            $this->getTestRequest(['responseElementId' => 1], 'POST'),
+            $this->getMockHandlerWithResponse($response)
+        );
+
+        self::assertSame('[]', $result->getBody()->__toString());
     }
 
     protected function getMockHandlerWithResponse($response)

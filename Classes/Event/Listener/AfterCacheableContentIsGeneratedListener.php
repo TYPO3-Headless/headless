@@ -15,32 +15,37 @@ use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Seo\MetaHandlerInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Throwable;
-
+use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Frontend\Event\AfterCacheableContentIsGeneratedEvent;
 
 use function json_decode;
 
 use const JSON_THROW_ON_ERROR;
 
-class AfterCacheableContentIsGeneratedListener
+#[AsEventListener(identifier: 'headless/AfterCacheableContentIsGenerated')]
+class AfterCacheableContentIsGeneratedListener implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     public function __construct(
-        private readonly JsonEncoderInterface $encoder,
-        private readonly MetaHandlerInterface $metaHandler,
-        private readonly HeadlessUserInt $headlessUserInt,
-        private readonly HeadlessModeInterface $headlessMode,
+        protected readonly JsonEncoderInterface $encoder,
+        protected readonly MetaHandlerInterface $metaHandler,
+        protected readonly HeadlessUserInt $headlessUserInt,
+        protected readonly HeadlessModeInterface $headlessMode,
     ) {}
 
     public function __invoke(AfterCacheableContentIsGeneratedEvent $event): void
     {
         try {
-            if (!$this->headlessMode->withRequest($event->getRequest())->isEnabled()) {
+            if (!$this->headlessMode->isEnabledFor($event->getRequest())) {
                 return;
             }
 
             if ($this->headlessUserInt->hasNonCacheableContent($event->getContent())) {
-                // we have dynamic content on page, we fire MetaHandler later on middleware
+                // dynamic content on the page → MetaHandler runs later in the middleware
                 return;
             }
 
@@ -54,7 +59,10 @@ class AfterCacheableContentIsGeneratedListener
 
             $event->setContent($this->encoder->encode($content));
         } catch (Throwable $e) {
-            return;
+            $this->logger?->warning(
+                'Failed to post-process cacheable content for headless SEO meta tags',
+                ['exception' => $e]
+            );
         }
     }
 }

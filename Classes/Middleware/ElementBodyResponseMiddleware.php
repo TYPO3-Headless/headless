@@ -11,56 +11,80 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Middleware;
 
-use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Json\JsonDecoderInterface;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
+use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\Stream;
+
 use TYPO3\CMS\Core\Site\Entity\Site;
 
 use function in_array;
 use function is_array;
+
 use function json_decode;
+
+use const JSON_THROW_ON_ERROR;
 
 class ElementBodyResponseMiddleware implements MiddlewareInterface
 {
-    public function __construct(protected JsonEncoder $jsonEncoder, protected HeadlessModeInterface $headlessMode) {}
+    public function __construct(
+        protected JsonEncoderInterface $jsonEncoder,
+        protected HeadlessModeInterface $headlessMode,
+        protected JsonDecoderInterface $jsonDecoder,
+    ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = $handler->handle($request);
 
-        /**
-         * @var Site
-         */
         $site = $request->getAttribute('site');
 
         if (!($site instanceof Site)) {
             return $response;
         }
 
-        if (!$this->headlessMode->withRequest($request)->isEnabled()) {
+        if (!$this->headlessMode->isEnabledFor($request)) {
             return $response;
         }
 
         $elementId = (int)($request->getParsedBody()['responseElementId'] ?? 0);
 
-        if (!$elementId || !in_array($request->getMethod(), ['POST', 'PUT', 'DELETE'], true)) {
+        if ($elementId <= 0 || !in_array($request->getMethod(), ['POST', 'PUT', 'DELETE'], true)) {
             return $response;
         }
 
         $recursiveElement = (bool)(int)($request->getParsedBody()['responseElementRecursive'] ?? 0);
-        $responseJson = json_decode($response->getBody()->__toString(), true);
 
-        if ($responseJson === null) {
+        $body = $response->getBody()->__toString();
+        if ($body === '') {
             return $response;
+        }
+
+        try {
+            $responseJson = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return $response;
+        }
+
+        if (!is_array($responseJson)) {
+            return $response;
+        }
+
+        $content = $responseJson['content'] ?? [];
+        if (is_array($content)) {
+            $content = $this->jsonDecoder->decode($content);
+        } else {
+            $content = [];
         }
 
         $stream = new Stream('php://temp', 'r+');
         $stream->write($this->jsonEncoder->encode($this->extractElement(
-            $responseJson['content'] ?? [],
+            $content,
             $elementId,
             $recursiveElement
         )));
@@ -73,7 +97,7 @@ class ElementBodyResponseMiddleware implements MiddlewareInterface
      * @param int $elementId
      * @return array<string, mixed>
      */
-    private function extractElement(array $content, int $elementId, bool $recursiveElement = false): array
+    protected function extractElement(array $content, int $elementId, bool $recursiveElement = false): array
     {
         $body = [];
 

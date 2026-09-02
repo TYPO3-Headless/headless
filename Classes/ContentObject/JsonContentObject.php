@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\ContentObject;
 
 use FriendsOfTYPO3\Headless\Json\JsonDecoderInterface;
-use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use Generator;
 use Psr\Log\LoggerAwareInterface;
@@ -30,39 +30,51 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
 {
     use LoggerAwareTrait;
 
-    private array $conf;
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $conf = [];
+
+    /**
+     * @var list<string>
+     */
+    protected array $nullableFieldsIfEmpty = [];
 
     public function __construct(
         protected ContentDataProcessor $contentDataProcessor,
-        protected JsonEncoder $jsonEncoder,
+        protected JsonEncoderInterface $jsonEncoder,
         protected JsonDecoderInterface $jsonDecoder,
         protected HeadlessUserInt $headlessUserInt
     ) {}
 
     /**
      * Rendering the cObject, JSON
-     * @param array $conf Array of TypoScript properties
+     * @param array<string, mixed>|null $conf Array of TypoScript properties
      * @return string The HTML output
      */
     public function render($conf = []): string
     {
+        if (!is_array($conf)) {
+            $conf = [];
+        }
+
         if (!empty($conf['if.']) && !$this->cObj->checkIf($conf['if.'])) {
             return '';
         }
 
         $data = [];
 
-        if (!is_array($conf)) {
-            $conf = [];
-        }
-
         $this->conf = $conf;
+        $this->nullableFieldsIfEmpty = GeneralUtility::trimExplode(',', $conf['nullableFieldsIfEmpty'] ?? '', true);
 
         if (isset($conf['fields.'])) {
             $data = $this->cObjGet($conf['fields.']);
         }
         if (isset($conf['dataProcessing.'])) {
-            $data = $this->processFieldWithDataProcessing($conf);
+            $processed = $this->processFieldWithDataProcessing($conf);
+            $data = $this->shouldMergeWithFields($conf) && is_array($processed)
+                ? array_replace($data, $processed)
+                : $processed;
         }
 
         $json = '';
@@ -82,22 +94,20 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
      * Rendering of a "string array" of cObjects from TypoScript
      * Will call ->cObjGetSingle() for each cObject found and accumulate the output.
      *
-     * @param array $setup array with cObjects as values.
+     * @param array<string, mixed> $setup array with cObjects as values.
      * @param string $addKey A prefix for the debugging information
-     * @return array Rendered output from the cObjects in the array.
+     * @return array<string, mixed> Rendered output from the cObjects in the array.
      * @see cObjGetSingle()
      */
     public function cObjGet(array $setup, string $addKey = ''): array
     {
         $content = [];
-        $nullableFieldsIfEmpty = GeneralUtility::trimExplode(',', $this->conf['nullableFieldsIfEmpty'] ?? '', true);
 
         $sKeyArray = $this->filterByStringKeys($setup);
         foreach ($sKeyArray as $theKey) {
             $theValue = $setup[$theKey];
             if ((string)$theKey && !str_contains($theKey, '.')) {
                 $conf = $setup[$theKey . '.'] ?? [];
-                $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
                 if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
@@ -111,25 +121,30 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ($theValue === 'USER_INT' || str_starts_with((string)$content[$theKey], '<!--INT_SCRIPT.')) {
                     $content[$theKey] = $this->headlessUserInt->wrap($content[$theKey], (int)($conf['ifEmptyReturnNull'] ?? 0) === 1 ? HeadlessUserInt::STANDARD_NULLABLE : HeadlessUserInt::STANDARD);
                 }
-                if ($content[$theKey] === '' && ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 || in_array($theKey, $nullableFieldsIfEmpty, true))) {
+                if ($content[$theKey] === '' && ((int)($conf['ifEmptyReturnNull'] ?? 0) === 1 || in_array($theKey, $this->nullableFieldsIfEmpty, true))) {
                     $content[$theKey] = null;
                 }
                 if ((int)($conf['ifEmptyUnsetKey'] ?? 0) === 1 && ($content[$theKey] === '' || $content[$theKey] === false)) {
                     unset($content[$theKey]);
                 }
-                if (!empty($contentDataProcessing['dataProcessing.'])) {
-                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
+                if (!empty($conf['dataProcessing.'])) {
+                    $content[$theKey] = $this->processFieldWithDataProcessing(['dataProcessing.' => $conf['dataProcessing.']]);
                 }
             }
             if ((string)$theKey && strpos($theKey, '.') > 0 && !isset($setup[rtrim($theKey, '.')])) {
                 $contentFieldName = $theValue['source'] ?? rtrim($theKey, '.');
-                $contentFieldTypeProcessing['dataProcessing.'] = $theValue['dataProcessing.'] ?? [];
 
+                $fieldsData = null;
                 if (array_key_exists('fields.', $theValue)) {
-                    $content[$contentFieldName] = $this->cObjGet($theValue['fields.']);
+                    $fieldsData = $this->cObjGet($theValue['fields.']);
+                    $content[$contentFieldName] = $fieldsData;
                 }
-                if (!empty($contentFieldTypeProcessing['dataProcessing.'])) {
-                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentFieldTypeProcessing);
+                if (!empty($theValue['dataProcessing.'])) {
+                    $shouldMerge = $this->shouldMergeWithFields($theValue);
+                    $processed = $this->processFieldWithDataProcessing($shouldMerge ? $theValue : ['dataProcessing.' => $theValue['dataProcessing.']]);
+                    $content[rtrim($theKey, '.')] = $shouldMerge && is_array($processed)
+                        ? array_replace($fieldsData ?? [], $processed)
+                        : $processed;
                 }
             }
         }
@@ -139,9 +154,9 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     /**
      * Takes a TypoScript array as input and returns an array which contains all string properties found which had a value (not only properties).
      *
-     * @param array $setupArr TypoScript array with string array in
+     * @param array<string, mixed> $setupArr TypoScript array with string array in
      * @param bool $acceptAnyKeys If set, then a value is not required - the properties alone will be enough.
-     * @return array An array with all string properties.
+     * @return array<int, string> An array with all string properties.
      */
     protected function filterByStringKeys(array $setupArr, bool $acceptAnyKeys = false): array
     {
@@ -156,7 +171,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     }
 
     /**
-     * @param array $dataProcessing
+     * @param array<string, mixed> $dataProcessing
      */
     protected function processFieldWithDataProcessing(array $dataProcessing): mixed
     {
@@ -169,6 +184,12 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             ]
         );
 
+        if ($this->shouldMergeWithFields($dataProcessing)) {
+            unset($data['data'], $data['current']);
+
+            return $data;
+        }
+
         $dataProcessingData = null;
 
         foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
@@ -177,6 +198,14 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             }
         }
         return $dataProcessingData;
+    }
+
+    /**
+     * @param array<string, mixed> $conf
+     */
+    protected function shouldMergeWithFields(array $conf): bool
+    {
+        return isset($conf['fields.']) && (int)($conf['dataProcessingMerge'] ?? 0) === 1;
     }
 
     /**

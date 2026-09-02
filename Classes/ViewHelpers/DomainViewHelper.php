@@ -16,7 +16,7 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 class DomainViewHelper extends AbstractViewHelper
 {
-    public function __construct(private readonly HeadlessFrontendUrlInterface $urlUtility) {}
+    public function __construct(protected readonly HeadlessFrontendUrlInterface $urlUtility) {}
 
     public function initializeArguments(): void
     {

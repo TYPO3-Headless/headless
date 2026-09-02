@@ -21,16 +21,20 @@ class DefaultContentsTest extends BaseContentTypeTesting
             new InternalRequest('https://website.local/')
         );
 
-        self::assertEquals(200, $response->getStatusCode());
+        self::assertSame(200, $response->getStatusCode());
 
         $fullTree = json_decode((string)$response->getBody(), true);
+
+        self::assertArrayHasKey('media', $fullTree);
+        self::assertIsArray($fullTree['media']);
+
         $contentTree = $fullTree['content'];
 
-        self::assertTrue(isset($contentTree['colPos0']));
-        self::assertTrue(count($contentTree['colPos0']) > 0);
-        self::assertTrue(isset($contentTree['colPos0'][0]['appearance']));
+        self::assertArrayHasKey('colPos0', $contentTree);
+        self::assertNotEmpty($contentTree['colPos0']);
+        self::assertArrayHasKey('appearance', $contentTree['colPos0'][0]);
         self::assertIsArray($contentTree['colPos0'][0]['appearance']);
-        self::assertTrue(isset($contentTree['colPos1']));
-        self::assertTrue(count($contentTree['colPos1']) > 0);
+        self::assertArrayHasKey('colPos1', $contentTree);
+        self::assertNotEmpty($contentTree['colPos1']);
     }
 }

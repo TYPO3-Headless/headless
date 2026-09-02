@@ -38,7 +38,7 @@ use const JSON_FORCE_OBJECT;
  * grouped by colPol & encoded into JSON by default.
  *
  * CONTENT_JSON has the same options as CONTENT but also
- * offers two new options for edge cases in json context.
+ * offers a few new options for edge cases in json context.
  *
  * ** merge ** option
  * This option allows to generate another CONTENT_JSON call
@@ -106,6 +106,13 @@ use const JSON_FORCE_OBJECT;
  */
 class JsonContentContentObject extends ContentContentObject
 {
+    protected const CORE_ERROR_MARKER = 'Oops, an error occurred!';
+
+    /**
+     * @var array<string, int>
+     */
+    protected array $recordRegister = [];
+
     public function __construct(
         protected TimeTracker $timeTracker,
         protected EventDispatcherInterface $eventDispatcher,
@@ -119,6 +126,10 @@ class JsonContentContentObject extends ContentContentObject
      */
     public function render($conf = []): string
     {
+        if (!is_array($conf)) {
+            $conf = [];
+        }
+
         if (!empty($conf['if.']) && !$this->cObj->checkIf($conf['if.'])) {
             return '';
         }
@@ -131,13 +142,13 @@ class JsonContentContentObject extends ContentContentObject
 
         $encodeFlags = 0;
 
-        if ($theValue === [] && $this->isColPolsGroupingEnabled($conf)) {
+        if ($theValue === [] && $this->isColPosGroupingEnabled($conf)) {
             $encodeFlags |= JSON_FORCE_OBJECT;
         }
 
         $theValue = $this->jsonEncoder->encode($theValue, $encodeFlags);
 
-        $wrap = $this->cObj->stdWrapValue('wrap', $conf ?? []);
+        $wrap = $this->cObj->stdWrapValue('wrap', $conf);
         if ($wrap) {
             $theValue = $this->cObj->wrap($theValue, $wrap);
         }
@@ -149,18 +160,18 @@ class JsonContentContentObject extends ContentContentObject
     }
 
     /**
-     * @param array<string, mixed> $contentElements
+     * @param list<string> $contentElements
      * @param array<string, mixed> $conf
-     * @return array<string,<array<int, mixed>>
+     * @return array<int|string, mixed>
      */
     protected function groupContentElementsByColPos(array $contentElements, array $conf): array
     {
         $data = [];
 
-        $groupingEnabled = $this->isColPolsGroupingEnabled($conf);
+        $groupingEnabled = $this->isColPosGroupingEnabled($conf);
 
         foreach ($contentElements as $element) {
-            if ($element === '' || str_contains($element, 'Oops, an error occurred!')) {
+            if ($element === '' || str_contains($element, self::CORE_ERROR_MARKER)) {
                 continue;
             }
 
@@ -168,27 +179,33 @@ class JsonContentContentObject extends ContentContentObject
                 $element = $this->headlessUserInt->wrap($element);
             }
 
-            $element = json_decode($element, true);
+            $decoded = json_decode($element, true);
 
-            if ($element === []) {
+            if (!is_array($decoded) || $decoded === []) {
                 continue;
             }
+            $element = $decoded;
 
-            $colPos = $this->getColPosFromElement($groupingEnabled, $element);
-
-            if ($groupingEnabled && $colPos >= 0) {
-                $data['colPos' . $colPos][] = $element;
-            } else {
-                $data[] = $element;
+            if ($groupingEnabled) {
+                $colPos = $this->getColPosFromElement($element);
+                if ($colPos >= 0) {
+                    $data['colPos' . $colPos][] = $element;
+                    continue;
+                }
             }
+
+            $data[] = $element;
         }
 
         if ($groupingEnabled && $this->isSortByBackendLayoutEnabled($conf)) {
-            $backendLayout = $this->backendLayoutView->getSelectedBackendLayout($this->request->getAttribute('routing')->getPageId());
+            $routing = $this->request->getAttribute('routing');
+            $backendLayout = $routing !== null
+                ? $this->backendLayoutView->getSelectedBackendLayout($routing->getPageId())
+                : null;
 
             $sorted = [];
             foreach ($backendLayout['__colPosList'] ?? [] as $value) {
-                $sorted['colPos' . $value] = $data['colPos' . $value];
+                $sorted['colPos' . $value] = $data['colPos' . $value] ?? [];
             }
 
             $data = $sorted;
@@ -199,13 +216,11 @@ class JsonContentContentObject extends ContentContentObject
         return $data;
     }
 
-    private array $recordRegister = [];
-
     /**
      * @param array<string, mixed> $conf
      * @return array<string, mixed>
      */
-    private function prepareValue(array $conf): array
+    protected function prepareValue(array $conf): array
     {
         $theValue = [];
         $originalRec = $this->cObj->currentRecord;
@@ -218,19 +233,14 @@ class JsonContentContentObject extends ContentContentObject
                 $this->recordRegister[$originalRec] = 1;
             }
         }
-        $conf['table'] = trim((string)$this->cObj->stdWrapValue('table', $conf ?? []));
+        $conf['table'] = trim((string)$this->cObj->stdWrapValue('table', $conf));
         $conf['select.'] = !empty($conf['select.']) ? $conf['select.'] : [];
-        $renderObjName = ($conf['renderObj'] ?? false) ? $conf['renderObj'] : '<' . $conf['table'];
-        $renderObjKey = ($conf['renderObj'] ?? false) ? 'renderObj' : '';
+        $hasRenderObj = !empty($conf['renderObj']);
+        $renderObjName = $hasRenderObj ? $conf['renderObj'] : '<' . $conf['table'];
+        $renderObjKey = $hasRenderObj ? 'renderObj' : '';
         $renderObjConf = $conf['renderObj.'] ?? [];
-        $slide = (int)$this->cObj->stdWrapValue('slide', $conf ?? []);
-        if (!$slide) {
-            $slide = 0;
-        }
+        $slide = (int)$this->cObj->stdWrapValue('slide', $conf);
         $slideCollect = (int)$this->cObj->stdWrapValue('collect', $conf['slide.'] ?? []);
-        if (!$slideCollect) {
-            $slideCollect = 0;
-        }
         $slideCollectReverse = (bool)$this->cObj->stdWrapValue('collectReverse', $conf['slide.'] ?? []);
         $slideCollectFuzzy = (bool)$this->cObj->stdWrapValue('collectFuzzy', $conf['slide.'] ?? []);
         if (!$slideCollect) {
@@ -240,10 +250,12 @@ class JsonContentContentObject extends ContentContentObject
         $tmpValue = '';
 
         do {
+            $cobjValue = [];
+            $encodedValue = json_encode($theValue, JSON_THROW_ON_ERROR);
             $modifyRecordsEvent = $this->eventDispatcher->dispatch(
                 new ModifyRecordsAfterFetchingContentEvent(
                     $this->cObj->getRecords($conf['table'], $conf['select.']),
-                    json_encode($theValue, JSON_THROW_ON_ERROR),
+                    $encodedValue,
                     $slide,
                     $slideCollect,
                     $slideCollectReverse,
@@ -253,26 +265,28 @@ class JsonContentContentObject extends ContentContentObject
             );
 
             $records = $modifyRecordsEvent->getRecords();
-            $theValue = json_decode($modifyRecordsEvent->getFinalContent(), true, 512, JSON_THROW_ON_ERROR);
+            $finalContent = $modifyRecordsEvent->getFinalContent();
+            if ($finalContent !== $encodedValue) {
+                $theValue = json_decode($finalContent, true, 512, JSON_THROW_ON_ERROR);
+            }
             $slide = $modifyRecordsEvent->getSlide();
             $slideCollect = $modifyRecordsEvent->getSlideCollect();
             $slideCollectReverse = $modifyRecordsEvent->getSlideCollectReverse();
             $slideCollectFuzzy = $modifyRecordsEvent->getSlideCollectFuzzy();
             $conf = $modifyRecordsEvent->getConfiguration();
 
-            $cobjValue = [];
-            if (!empty($records)) {
+            if ($records !== []) {
                 $this->timeTracker->setTSlogMessage('NUMROWS: ' . count($records));
 
                 $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
                 $cObj->setParent($this->cObj->data, $this->cObj->currentRecord);
-                $this->cObj->currentRecordNumber = 0;
+                $recordNumber = 0;
 
                 foreach ($records as $row) {
                     $registerField = $conf['table'] . ':' . ($row['uid'] ?? 0);
                     if (!($this->recordRegister[$registerField] ?? false)) {
-                        $this->cObj->currentRecordNumber++;
-                        $cObj->parentRecordNumber = $this->cObj->currentRecordNumber;
+                        $recordNumber++;
+                        $cObj->parentRecordNumber = $recordNumber;
                         $this->cObj->currentRecord = $registerField;
                         $this->cObj->lastChanged($row['tstamp'] ?? 0);
                         $cObj->setRequest($this->request);
@@ -315,27 +329,39 @@ class JsonContentContentObject extends ContentContentObject
         return $theValue;
     }
 
-    private function isSortByBackendLayoutEnabled(array $conf): bool
+    /**
+     * @param array<string, mixed> $conf
+     */
+    protected function isSortByBackendLayoutEnabled(array $conf): bool
     {
-        return isset($conf['sortByBackendLayout']) && (int)$conf['sortByBackendLayout'] === 1;
+        return (int)($conf['sortByBackendLayout'] ?? 0) === 1;
     }
 
-    private function isColPolsGroupingEnabled(array $conf): bool
+    /**
+     * @param array<string, mixed> $conf
+     */
+    protected function isColPosGroupingEnabled(array $conf): bool
     {
-        return !isset($conf['doNotGroupByColPos']) || (int)$conf['doNotGroupByColPos'] === 0;
+        return (int)($conf['doNotGroupByColPos'] ?? 0) === 0;
     }
 
-    private function returnSingleRowEnabled(array $conf): bool
+    /**
+     * @param array<string, mixed> $conf
+     */
+    protected function returnSingleRowEnabled(array $conf): bool
     {
-        return isset($conf['returnSingleRow']) && (int)$conf['returnSingleRow'] === 1;
+        return (int)($conf['returnSingleRow'] ?? 0) === 1;
     }
 
-    private function getColPosFromElement(bool $groupingEnabled, array $element): int
+    /**
+     * @param array<string, mixed> $element
+     */
+    protected function getColPosFromElement(array $element): int
     {
-        if ($groupingEnabled && !array_key_exists('colPos', $element)) {
+        if (!array_key_exists('colPos', $element)) {
             throw new RuntimeException('Content element by ID: "' . ($element['id'] ?? 0) . '" does not have "colPos" field defined. Disable grouping or fix TypoScript definition of the element.', 1739347200);
         }
 
-        return (int)($element['colPos'] ?? 0);
+        return (int)$element['colPos'];
     }
 }

@@ -18,10 +18,10 @@ use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
 use FriendsOfTYPO3\Headless\Json\JsonDecoder;
 use FriendsOfTYPO3\Headless\Json\JsonEncoder;
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use ReflectionProperty;
 use stdClass;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -49,12 +49,10 @@ use TYPO3\CMS\Frontend\ContentObject\UserContentObject;
 use TYPO3\CMS\Frontend\ContentObject\UserInternalContentObject;
 use TYPO3\CMS\Frontend\DataProcessing\DataProcessorRegistry;
 
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
-
 use function json_encode;
 use function md5;
 
-class JsonContentObjectTest extends UnitTestCase
+class JsonContentObjectTest extends HeadlessUnitTestCase
 {
     private JsonContentObject $contentObject;
 
@@ -223,12 +221,14 @@ class JsonContentObjectTest extends UnitTestCase
             [['fields.' => ['test' => 'FLOAT', 'test.' => ['value' => 12.34]]], json_encode(['test' => 12.34])],
             [['fields.' => ['test' => 'USER_INT', 'test.' => ['userFunc' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\ExampleUserFunc->someUserFunc']]], json_encode(['test' => 'HEADLESS_INT_START<<<!--INT_SCRIPT.202cb962ac59075b964b07152d234b70-->>>HEADLESS_INT_END'])],
             [['fields.' => ['test' => 'USER', 'test.' => ['userFunc' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\ExampleUserFunc->someUserFunc']]], json_encode(['test' => ['test2' => 'someExtraCustomData']])],
+            [['fields.' => ['test' => 'TEXT', 'test.' => ['value' => '1']], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]], json_encode(['SomeCustomProcessing'])],
+            [['dataProcessingMerge' => 1, 'fields.' => ['test' => 'TEXT', 'test.' => ['value' => '1']], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]], json_encode(['test' => '1', 'sites' => ['SomeCustomProcessing']])],
+            [['dataProcessingMerge' => 1, 'fields.' => ['sites' => 'TEXT', 'sites.' => ['value' => 'fromFields']], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]], json_encode(['sites' => ['SomeCustomProcessing']])],
+            [['dataProcessingMerge' => 1, 'fields.' => ['test' => 'TEXT', 'test.' => ['value' => '1']], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites'], '20' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '20.' => ['as' => 'menu']]], json_encode(['test' => '1', 'sites' => ['SomeCustomProcessing'], 'menu' => ['SomeCustomProcessing']])],
+            [['dataProcessingMerge' => 1, 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]], json_encode(['SomeCustomProcessing'])],
+            [['fields.' => ['nested.' => ['dataProcessingMerge' => 1, 'fields.' => ['nestedTest' => 'INT', 'nestedTest.' => ['value' => 10]], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]]]], json_encode(['nested' => ['nestedTest' => 10, 'sites' => ['SomeCustomProcessing']]])],
+            [['fields.' => ['nested.' => ['fields.' => ['nestedTest' => 'INT', 'nestedTest.' => ['value' => 10]], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]]]], json_encode(['nested' => ['SomeCustomProcessing']])],
         ];
     }
 
-    protected function tearDown(): void
-    {
-        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
-        parent::tearDown();
-    }
 }

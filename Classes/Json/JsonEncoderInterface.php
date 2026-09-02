@@ -13,10 +13,5 @@ namespace FriendsOfTYPO3\Headless\Json;
 
 interface JsonEncoderInterface
 {
-    /**
-     * @param mixed $data
-     * @param int $options
-     * @return string
-     */
-    public function encode($data, int $options = 0): string;
+    public function encode(mixed $data, int $options = 0): string;
 }

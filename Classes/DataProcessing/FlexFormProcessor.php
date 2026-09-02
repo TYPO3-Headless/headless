@@ -11,7 +11,8 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\DataProcessing;
 
-use TYPO3\CMS\Core\Service\FlexFormService;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Configuration\FlexForm\FlexFormTools;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -20,6 +21,8 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 use function is_array;
 use function is_string;
 use function json_decode;
+
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Basic TypoScript configuration:
@@ -69,8 +72,6 @@ use function json_decode;
  *     }
  *   }
  * }
- *
- * @codeCoverageIgnore
  */
 class FlexFormProcessor implements DataProcessorInterface
 {
@@ -78,16 +79,16 @@ class FlexFormProcessor implements DataProcessorInterface
      * Constructor
      */
     public function __construct(
-        protected FlexFormService $flexFormService,
-        private readonly TypoScriptService $typoScriptService,
+        protected FlexFormTools $flexFormTools,
+        protected readonly TypoScriptService $typoScriptService,
     ) {}
 
     /**
      * @param ContentObjectRenderer $cObj The data of the content element or page
-     * @param array $contentObjectConfiguration The configuration of Content Object
-     * @param array $processorConfiguration The configuration of this processor
-     * @param array $processedData Key/value store of processed data (e.g. to be passed to a Fluid View)
-     * @return array the processed data as key/value store
+     * @param array<string, mixed> $contentObjectConfiguration The configuration of Content Object
+     * @param array<string, mixed> $processorConfiguration The configuration of this processor
+     * @param array<string, mixed> $processedData Key/value store of processed data (e.g. to be passed to a Fluid View)
+     * @return array<string, mixed> the processed data as key/value store
      */
     public function process(ContentObjectRenderer $cObj, array $contentObjectConfiguration, array $processorConfiguration, array $processedData)
     {
@@ -112,7 +113,7 @@ class FlexFormProcessor implements DataProcessorInterface
         if (is_array($originalValue)) {
             $flexformData = $originalValue;
         } elseif (is_string($originalValue)) {
-            $flexformData = $this->flexFormService->convertFlexFormContentToArray($originalValue);
+            $flexformData = $this->flexFormTools->convertFlexFormContentToArray($originalValue);
         } else {
             return $processedData;
         }
@@ -121,37 +122,38 @@ class FlexFormProcessor implements DataProcessorInterface
         $targetVariableName = $cObj->stdWrapValue('as', $processorConfiguration);
 
         if (isset($processorConfiguration['overrideFields.'])) {
-            $flexformData = $this->processOverrideFields($cObj->data, $flexformData, $processorConfiguration);
+            $flexformData = $this->processOverrideFields($cObj->data, $flexformData, $processorConfiguration, $cObj->getRequest());
         }
 
         if (!empty($targetVariableName)) {
             $processedData[$targetVariableName] = $flexformData;
+        } elseif (isset($processedData['data'][$fieldName])) {
+            $processedData['data'][$fieldName] = $flexformData;
         } else {
-            if ($processedData['data'][$fieldName]) {
-                $processedData['data'][$fieldName] = $flexformData;
-            } else {
-                $processedData[$fieldName] = $flexformData;
-            }
+            $processedData[$fieldName] = $flexformData;
         }
 
         return $processedData;
     }
 
     /**
-     * @param array $data Current data-record
-     * @param array $flexformData
-     * @param array $processorConfiguration
-     * @return array
+     * @param array<string, mixed> $data Current data-record
+     * @param array<string, mixed> $flexformData
+     * @param array<string, mixed> $processorConfiguration
+     * @return array<string, mixed>
      */
-    public function processOverrideFields(array $data, array $flexformData, array $processorConfiguration): array
+    public function processOverrideFields(array $data, array $flexformData, array $processorConfiguration, ?ServerRequestInterface $request = null): array
     {
         $recordContentObjectRenderer = GeneralUtility::makeInstance(ContentObjectRenderer::class);
+        if ($request !== null) {
+            $recordContentObjectRenderer->setRequest($request);
+        }
         $data = array_merge($data, $flexformData);
         $recordContentObjectRenderer->start($data);
 
         $overrideFields = $this->typoScriptService->convertTypoScriptArrayToPlainArray($processorConfiguration['overrideFields.']);
         $jsonCE = $this->typoScriptService->convertPlainArrayToTypoScriptArray(['fields' => $overrideFields, '_typoScriptNodeValue' => 'JSON']);
-        $record = json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true);
+        $record = json_decode($recordContentObjectRenderer->cObjGetSingle('JSON', $jsonCE), true, 512, JSON_THROW_ON_ERROR);
 
         foreach ($record as $fieldName => $overrideData) {
             $flexformData[$fieldName] = $overrideData;

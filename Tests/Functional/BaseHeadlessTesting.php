@@ -26,6 +26,9 @@ abstract class BaseHeadlessTesting extends FunctionalTestCase
     protected array $testExtensionsToLoad = [
         'typo3conf/ext/headless',
     ];
+    protected array $typoScriptSetupFiles = [
+        'EXT:headless/Configuration/TypoScript/setup.typoscript',
+    ];
 
     /**
      * set up objects
@@ -40,7 +43,7 @@ abstract class BaseHeadlessTesting extends FunctionalTestCase
             1,
             [
                 'constants' => ['EXT:headless/Configuration/TypoScript/constants.typoscript'],
-                'setup' => ['EXT:headless/Configuration/TypoScript/setup.typoscript'],
+                'setup' => $this->typoScriptSetupFiles,
             ]
         );
 
@@ -117,7 +120,7 @@ abstract class BaseHeadlessTesting extends FunctionalTestCase
         self::assertEquals($subheader, $contentElementContent['subheader'], 'subheader mismatch');
         self::assertEquals($headerLayout, $contentElementContent['headerLayout'], 'headerLayout mismatch');
         self::assertEquals($headerPosition, $contentElementContent['headerPosition'], 'headerPosition mismatch');
-        self::assertTrue(isset($contentElementContent['headerLink']), 'headerLink not set');
+        self::assertArrayHasKey('headerLink', $contentElementContent, 'headerLink not set');
     }
 
     protected function checkHeaderFieldsLink($contentElement, $link, $urlPrefix, $target)

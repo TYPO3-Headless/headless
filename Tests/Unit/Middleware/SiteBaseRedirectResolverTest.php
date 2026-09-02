@@ -12,14 +12,13 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\Tests\Unit\Middleware;
 
 use FriendsOfTYPO3\Headless\Middleware\SiteBaseRedirectResolver;
+use FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTestCase;
 use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
 use Psr\Http\Server\RequestHandlerInterface;
-use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
-use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -31,11 +30,10 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\ErrorController;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 use function json_decode;
 
-class SiteBaseRedirectResolverTest extends UnitTestCase
+class SiteBaseRedirectResolverTest extends HeadlessUnitTestCase
 {
     protected bool $resetSingletonInstances = true;
 
@@ -67,7 +65,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $container->set(HeadlessModeInterface::class, new HeadlessMode());
         GeneralUtility::setContainer($container);
 
-        $urlUtility = new UrlUtility(new Features(), $this->createMock(Resolver::class), $siteFinder, new HeadlessMode());
+        $urlUtility = new UrlUtility($this->createMock(Resolver::class), $siteFinder, new HeadlessMode());
         $container->set(UrlUtility::class, $urlUtility);
 
         GeneralUtility::setContainer($container);
@@ -140,7 +138,7 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         $container = new Container();
         $container->set(HeadlessModeInterface::class, new HeadlessMode());
 
-        $urlUtility = new UrlUtility(new Features(), $this->createMock(Resolver::class), $siteFinder, new HeadlessMode());
+        $urlUtility = new UrlUtility($this->createMock(Resolver::class), $siteFinder, new HeadlessMode());
         $container->set(UrlUtility::class, $urlUtility);
         $errorController = $this->createMock(ErrorController::class);
         $errorController->method('pageNotFoundAction')->willReturn(new JsonResponse(['ErrorController' => true]));
@@ -175,9 +173,4 @@ class SiteBaseRedirectResolverTest extends UnitTestCase
         self::assertSame(['ErrorController' => true], json_decode($response->getBody()->getContents(), true));
     }
 
-    protected function tearDown(): void
-    {
-        (new ReflectionProperty(GeneralUtility::class, 'container'))->setValue(null, null);
-        parent::tearDown();
-    }
 }

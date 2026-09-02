@@ -21,7 +21,7 @@ class BasicListElementTest extends BaseContentTypeTesting
             new InternalRequest('https://website.local/')
         );
 
-        self::assertEquals(200, $response->getStatusCode());
+        self::assertSame(200, $response->getStatusCode());
 
         $fullTree = json_decode((string)$response->getBody(), true);
 
@@ -31,6 +31,6 @@ class BasicListElementTest extends BaseContentTypeTesting
         $this->checkAppearanceFields($contentElement, 'layout-1', 'Frame', 'SpaceBefore', 'SpaceAfter');
         $this->checkHeaderFields($contentElement, 'Header', 'SubHeader', 1, 2);
         $this->checkHeaderFieldsLink($contentElement, 'Page 1', '/page1?parameter=999&cHash=', '_blank');
-        self::assertFalse(isset($contentElement['content']['bodytext']));
+        self::assertArrayNotHasKey('bodytext', $contentElement['content']);
     }
 }

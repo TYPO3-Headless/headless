@@ -4,451 +4,340 @@
 Configuration
 ===================
 
-Feature Flags
+
+Site configuration
+==================
+
+Headless is enabled per site in `config/sites/<identifier>/config.yaml`:
+
+.. code-block:: yaml
+
+   dependencies:
+     - friendsoftypo3/headless
+   headless: 1
+
+`dependencies` — pick one site set:
+
+* `friendsoftypo3/headless` — trimmed default response (new projects).
+* `friendsoftypo3/headless-legacy` — full 4.x-compatible response (upgrades).
+* `friendsoftypo3/headless-mixed` — JSON only for requests sent with exactly
+  `Accept: application/json`; everything else renders your own HTML page.
+  The JSON it serves is the full 4.x-shaped (legacy) response, not the
+  trimmed default one.
+
+`headless` — run mode: `0` off, `1` always JSON, `2` mixed (Accept-driven —
+pair it with the mixed set). In mixed mode the *first* `Accept` header
+value must match exactly: `Accept: application/json, text/plain, */*`
+(the axios/fetch default) or `application/json; charset=utf-8` renders
+HTML. A site using sets must not carry a root
+sys_template record: its "Clear" flags wipe all set-provided TypoScript.
+Sites not using sets can select the equivalent sys_template statics instead
+("Headless", "Headless Legacy (4.x)", "Headless - Mixed mode JSON response").
+
+Headless 4.x ships sets as well (TYPO3 v13): `friendsoftypo3/headless`
+(there: the full response) and `friendsoftypo3/headless-mixed`. On TYPO3
+v12 include the `headless` static template in the root TypoScript record
+instead.
+
+URLs pointing at the frontend domain (`frontendBase`, `frontendApiProxy`,
+per-language variants) are covered in :ref:`multisite`.
+
+Automatic integrations
+======================
+
+Headless detects installed core extensions and integrates them without
+further setup: `EXT:form` (JSON form definitions, form editor additions),
+`EXT:felogin` (JSON login plugin), `EXT:redirects` (JSON redirect
+envelopes, frontend-aware backend modules) and `EXT:seo`
+(canonical/meta-tag managers, hreflang rewriting). Workspace preview needs
+no setup either — core rendering plus the backend preview-URL rewrite
+cover it. Whether a request gets the headless behaviour follows the
+site's mode: always with `headless: 1`, only for exact
+`Accept: application/json` requests with `headless: 2`.
+
+Feature flags
 =============
 
-To modify the settings for this extension, you can use either `LocalConfiguration.php` or `AdditionalConfiguration.php`.
-
-**headless.storageProxy**
-
-Enables the ability to set a storage proxy in the site configuration (and its variants) & serve files via proxy from the same domain.
-
-Feature flag requires TYPO3 >= 10.4.10.
-
-*WARNING* If you install `TYPO3 >= 10.4.18`, please update `ext:headless` to version `>= 2.5.3`.
+Set flags in `settings.php`/`additional.php`:
 
 .. code-block:: php
 
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.storageProxy'] = true;
+   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['<flag>'] = true;
 
-**headless.redirectMiddlewares**
+**headless.storageProxy** — serve processed files through the site's
+`frontendApiProxy`/`frontendFileApi` instead of the TYPO3 host.
 
-Enables new and replaces core middlewares for handling redirects. Headless mode requires redirects to be handled by the frontend app.
+**headless.elementBodyResponse** — on POST/PUT/DELETE requests return only
+the element matching `responseElementId` from the request body — clean
+plugin output for SPA form handling:
 
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.redirectMiddlewares'] = true;
-
-To enable headless support for `EXT:redirect`, add the following flag to your site configuration's YAML file:
-
-.. code-block:: yaml
-
-   headless: true
-
-**headless.nextMajor**
-
-Enables new APIs/behaviors of `ext:headless`, which may contain breaking changes and require an upgrade path for your application. Use with caution.
-
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.nextMajor'] = true;
-
-**headless.elementBodyResponse**
-
-Available since `2.6`.
-
-Enables clean output middleware for plugins. Clean output is available for POST/PUT/DELETE method requests. To get clean output for plugins on a page, enable this flag and add `headless` to the site configuration, then send the `responseElementId` field with the ID of the plugin in the body with plugin data.
-
-`LocalConfiguration.php`
-
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.elementBodyResponse'] = true;
-
-`Site configuration`:
-
-Add the following flag to your site configuration's YAML file:
-
-.. code-block:: yaml
-
-   headless: true
-
-Example POST request with plugin form. Replace `#ELEMENT_ID#` with the ID of the plugin from the page response.
-
-.. code-block:: php
+.. code-block:: none
 
    POST https://example.tld/path-to-form-plugin
    Content-Type: application/x-www-form-urlencoded
 
-   responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
+   responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&...
 
-To find a nested element, use the new flag `responseElementRecursive`, where `responseElementId` is the child (nested element). Example request:
+Set `responseElementRecursive=1` to match a nested (child) element.
+On a mixed-mode site (`headless: 2`) the POST itself must carry the exact
+`Accept: application/json` header, or the middleware does not act.
 
-.. code-block:: php
+**headless.overrideFluidTemplates** — swap the core `ViewFactoryInterface`
+for `HeadlessViewFactory`: Fluid views render JSON templates, raw-PHP
+templates (`HeadlessPhpView`) are supported too.
 
-   POST https://example.tld/path-to-form-plugin
-   Content-Type: application/x-www-form-urlencoded
+To render an Extbase plugin through a raw-PHP template, set the plugin's
+request format and place the template at
+`<templateRootPaths>/<ControllerName>/<ActionName>.php` (highest-keyed
+root path wins):
 
-   responseElementId=#ELEMENT_ID#&responseElementRecursive=1&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
+.. code-block:: typoscript
 
-**headless.simplifiedLinkTarget**
+   plugin.tx_myext.view.templateRootPaths.100 = EXT:site_package/Resources/Private/Templates/
+   plugin.tx_myext_pi1.format = php
 
-Available since `2.6`.
+An explicit `$view->render('Path/Name')` from your own code resolves
+`Path/Name.php` against the same root paths.
 
-Enables simplified target links' property.
+Template selection is not user-controllable: `format` is a regular Extbase
+request parameter, but `HeadlessViewFactory` serves the raw-PHP view only
+when the dispatched plugin's **TypoScript** sets `format = php`. A
+request-supplied `tx_myext_pi1[format]=php` on any other plugin falls back
+to Fluid with the format stripped, so Fluid never parses a `.php` file as
+a template. A visitor forcing `format=html` on a php-configured plugin
+just gets the plugin's regular Fluid resolution — standard Extbase format
+behavior.
 
-.. code-block:: php
+Unlike Fluid, raw-PHP templates apply **no output escaping**. Build a PHP
+array and `echo json_encode($data, JSON_THROW_ON_ERROR)` — never
+concatenate JSON strings from record data, that is a JSON injection the
+moment a value contains a quote. As everywhere in the headless pipeline,
+JSON encoding is not HTML safety: the consuming frontend still escapes on
+render.
 
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.simplifiedLinkTarget'] = true;
+**headless.cookieDomainPerSite** — derive the auth cookie domain per site
+(FE & BE middleware); see :ref:`multisite`.
 
-Simplified output returns only the value, e.g., `_blank` for the target attribute instead of the HTML string ` target="_blank"`.
+**headless.assetsCacheBusting** — append the file mtime as a query string
+to processed-file URLs.
 
-**headless.jsonViewModule**
+**headless.prettyPrint** — `JSON_PRETTY_PRINT` on every response (debugging).
 
-Available since `3.0`.
-
-Enables the experimental JsonView backend module, which allows previewing the page JSON response in the backend module when passing specific pageType, pageArguments, usergroups, language.
-
-This flag requires an additional extension `friendsoftypo3/headless-dev-tools`.
-
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.jsonViewModule'] = true;
-
-**headless.workspaces**
-
-Enables `EXT:workspaces` preview support.
-
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.workspaces'] = true;
-
-To enable headless support for `EXT:workspaces`, add the following flag to your site configuration's YAML file:
-
-.. code-block:: yaml
-
-   headless: true
-
-**headless.pageTitleProviders**
-
-Enables support for the PageTitle API.
-
-Note: this flag is now obsolete, please adjust your frontend app to use `page.seo` instead of `page.meta`
-You will have full TYPO3 core features, and when using nuxt-typo3 you will have automatically generated meta tags from TYPO3 without manual work.
-
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.pageTitleProviders'] = true;
-
-Availability of Feature Toggles by Version
-------------------------------------------
-
-.. t3-field-list-table::
-   :header-rows: 1
-
-   -  :Header1:   Flag
-      :Header2:   2.x
-      :Header3:   3.x
-      :Header4:   4.x
-
-   -  :Header1:   FrontendBaseUrlInPagePreview
-      :Header2:   available
-      :Header3:   removed
-      :Header4:   removed
-
-   -  :Header1:   headless.frontendUrls
-      :Header2:   >= 2.5
-      :Header3:   available
-      :Header4:   removed
-
-   -  :Header1:   headless.storageProxy
-      :Header2:   >= 2.4
-      :Header3:   available
-      :Header4:   available
-
-   -  :Header1:   headless.redirectMiddlewares
-      :Header2:   >= 2.5
-      :Header3:   available
-      :Header4:   available
-
-   -  :Header1:   headless.nextMajor
-      :Header2:   >= 2.2
-      :Header3:   currently not used
-      :Header4:   currently not used
-
-   -  :Header1:   headless.elementBodyResponse
-      :Header2:   >= 2.6
-      :Header3:   available
-      :Header4:   available
-
-   -  :Header1:   headless.simplifiedLinkTarget
-      :Header2:   >= 2.6
-      :Header3:   removed
-      :Header4:   not available
-
-   -  :Header1:   headless.jsonViewModule
-      :Header2:   not available
-      :Header3:   >= 3.0
-      :Header4:   >= 3.0
-
-   -  :Header1:   headless.workspaces
-      :Header2:   not available
-      :Header3:   >= 3.1
-      :Header4:   >= 3.1
-
-   -  :Header1:   headless.pageTitleProviders
-      :Header2:   not available
-      :Header3:   not available
-      :Header4:   >= 4.2.3 <= 4.4
-
-.. _configuration-ext-form:
+Older versions: the per-release availability matrix lives in
+:ref:`ref-feature-flags`. The only flag dropped between 4.x and 5.x is
+`headless.redirectMiddlewares` — the redirects integration is now
+auto-enabled when EXT:redirects is installed.
 
 EXT:form
 ========
 
-If `EXT:form` is enabled in the TYPO3 instance, `EXT:headless` provides support for handling forms in headless mode.
-
-Standard forms designed in the form editor in TYPO3 backend should work out of the box, but the headless extension supports additional small tweaks/features to help frontend developers better handle forms on their end.
-
-All options are added in YAML files with standard form configuration in TYPO3.
-
-**i18n**
-
-In many cases in headless mode, frontend developers need some translated strings for common elements like buttons, help messages, etc.
-
-With `EXT:headless`, you can add additional configuration in the root line of the form config:
-
-.. code-block:: yaml
-
-   i18n:
-     identifier: 'i18n'
-     properties:
-        someButtonLabel: 'Submit or Cancel'
-        someHelpMessage: 'You need to fill out this form'
-        requiredFields: 'These fields are required'
-
-The above block will be automatically translated by provided XLF files like a standard form in fluid.
-
-This block will be translated & available in the "i18n" part of the response. More about form output can be found in the Form Decorator section.
-
-**Form Decorator**
-
-The headless extension provides an out-of-the-box simple decorator for form definition output. The decorator simplifies the response and provides an API to customize your response for your specific needs.
-
-In the rendering options of the form, you can define your custom project/form decorator. If the option is not defined, the headless extension defaults to:
-
-`FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator`
-
-You can override this at any time by specifying it in the form's config YAML:
-
-.. code-block:: yaml
-
-   renderingOptions:
-     formDecorator: Your-Vendor\YourExtension\Form\CustomDefinitionDecorator
-
-More about form output decorators can be found in :ref:`customize form output <developer-ext-form>`.
-
-**Validators**
-
-To help frontend developers create validation handling in a frontend context, you can add small tweaks to form element definitions to ease development for your frontend team.
-
-In the form element definition, you can add an option to `errorMessage` for your defined validators with the error code value. This code will be picked up and translated by standard TYPO3 XLF form files.
-
-For example:
-
-.. code-block:: yaml
-
-   renderables:
-      -
-         type: 'Page'
-         identifier: 'page-1'
-         label: 'Step'
-         renderables:
-            -
-               properties:
-                  options:
-                     Mr: 'Mr'
-                     Mrs: 'Mrs'
-                  elementDescription: ''
-                  fluidAdditionalAttributes:
-                     required: required
-               type: 'RadioButton'
-               identifier: 'salutation'
-               label: 'Salutation'
-               validators:
-                  -
-                    identifier: 'NotEmpty'
-                    errorMessage: 1221560910
-
-When creating a RegexValidator, there are some differences when handling regular expressions by PHP & JS. To help frontend developers create consistent frontend/backend validation, we introduced a small option for regex validators in TYPO3.
-
-For example:
-
-.. code-block:: yaml
-
-   renderables:
-      -
-         type: 'Page'
-         renderables:
-            -
-              type: 'Text'
-              identifier: 'testField'
-              label: 'Test field'
-              validators:
-                -
-                   identifier: 'RegularExpression'
-                   options:
-                     regularExpression: '/^[a-z]+$/'
-                   FERegularExpression:
-                     expression: '^[a-z]+$'
-                     flags: 'i'
-                   errorMessage: 1221565130
-
-If the headless form decorator finds the option `FERegularExpression` in the validator definition, it will override `options.regularExpression` with the value of the `FERegularExpression` option before sending the output to the frontend developer.
-
-**Custom Options**
-
-When you need a select/radio/checkbox with custom options fetched from, for example, a database or another external source, you need to create a Custom FormModel. In headless mode, we do not render HTML and render all the options, so we introduced a small interface:
-
-`FriendsOfTYPO3\Headless\Form\CustomOptionsInterface`
-
-and `customOptions` in the definition of the form element:
-
-.. code-block:: yaml
-
-   - defaultValue: ''
-     type: 'SingleSelectWithCountryList'
-     identifier: 'country'
-     label: 'Country'
-     properties:
-        customOptions: 'YourVendor\Your-Ext\Domain\Model\YourCustomOptionClassImplementingInterface'
-
-When the above option is set with a class that implements the correct interface, the options of the select element will be replaced by the values returned by the specified class.
-
-To make rendering of the element easier for frontend developers, we introduced the option to override the type returned to the frontend developer. For example, when you set `FEOverrideType` in the renderingOptions of a custom element:
-
-.. code-block:: yaml
-
-   type: 'SingleSelectWithCountryList'
-   renderingOptions:
-     FEOverrideType: 'Select'
-
-We use this value to override the type, so the response to the frontend developer will be:
-
-.. code-block:: yaml
-
-   {
-     "type": "Select"
-   }
-
-instead of:
-
-.. code-block:: yaml
-
-   {
-     "type": "SingleSelectWithCountryList"
-   }
-
-**JSON Redirect**
-
-`EXT:headless` supports handling finishers. For example, after handling correctly sent form data, you can use TYPO3 core's RedirectFinisher to redirect to a thank you page. To have more control on the frontend side, we provide in the headless extension:
-
-`JsonRedirectFinisher`
-
-This is based on the core RedirectFinisher but, instead of delay & statusCode options, has an option for a message that can be handled by the frontend developer to display a message for the user before redirecting to the defined page.
-
-Also, JsonRedirect does not redirect by itself but generates a message (default is null) and URI for redirection by the frontend developer.
-
-To use JsonRedirect, define it in the setup.yaml of your extension form's setup:
-
-.. code-block:: yaml
-
-   TYPO3:
-     CMS:
-       Form:
-         prototypes:
-           standard:
-             finishersDefinition:
-               JsonRedirect:
-                 implementationClassName: 'FriendsOfTYPO3\Headless\Form\Finisher\JsonRedirectFinisher'
-
-[BETA] JsonView Backend Module
-==============================
-
-.. image:: ../Images/Configuration/JsonViewModule.png
-    :alt: JsonView Module icon with label
-
-
-The JsonView module is an experimental approach for previewing JSON responses of a page in different contexts like pageType, page arguments, usergroup, language, and show/hide hidden content.
-
-``!WARNING This is an experimental module, please don't use it on a production environment at this time.``
-
-.. image:: ../Images/Configuration/JsonViewModule-settings.png
-  :alt: Root page for the API endpoint
-
-.. image:: ../Images/Configuration/JsonViewModule-example.png
-  :alt: Root page for the API endpoint
-
-
-**PageTypeModes**
-
-You can set the context in which you want to preview a page.
-
-By default, there are 3 settings available:
-
-- *default* - standard response with page data and content
-- *initialData* - standard response from pageType=834
-- *detailNews* (commented out) - example of calling the detail action of the news extension for test purposes
-
-
-.. code-block:: yaml
-
-    pageTypeModes:
-      default:
-        title: Default page view
-        pageType: 0
-        bootContent: 1
-        parserClassname: FriendsOfTYPO3\Headless\Service\Parser\PageJsonParser
-
-      initialData:
-        title: Initial Data
-        pageType: 834
-        parserClassname: FriendsOfTYPO3\Headless\Service\Parser\DefaultJsonParser
-
-    #  Example of detail news preset
-    #
-    #  detailNews:
-    #    title: Detail news
-    #    pageType: 0
-    #    bootContent: 1
-    #    arguments:
-    #      tx_news_pi1:
-    #        action: detail
-    #        controller: News
-    #        news: 1
-..
-
-**Custom YAML Configuration**
-
-You can always create your own YAML configuration and set it in the extension configuration.
-
-.. image:: ../Images/Configuration/JsonViewModule-extconf.png
-  :alt: Root page for the API endpoint
+Form integration — JSON form definitions, i18n, decorators, validators and
+the `JsonRedirect` finisher — is documented in :ref:`integrations-form`.
 
 Content element categories
 ==========================
 
-Headless default configuration for content element categories in TypoScript `lib.contentElement` is to look in root (`page uid=0`). However depending on your project needs this may not ideal.
+The default `TYPO3 Headless` site set (`friendsoftypo3/headless`) does not render
+categories at all: `lib.contentElement` does not define a `categories` field
+(and therefore no content element carries one), and the page response does not contain
+a `categories` field either. This avoids one `sys_category` join per content
+element on every uncached render for projects that do not use categories.
 
-(as of TYPO3 v12 you cannot use together `pidInList = root` and `recursive = 99`)
+If your project needs them, re-add the field in your site package TypoScript,
+loaded after the set. Point `pidInList` at the place your categories are actually
+stored — either the storage folder uid, or the current root page with `recursive`
+as shown below.
 
-Alternative approach for categories may be to use categories from current rootPage which mitigates this problem.
+Content element categories:
 
-To begin you need to unset previous `pidInList` value
+.. code-block:: typoscript
 
-.. code-block:: text
-      lib.contentElement.fields.categories.10.select.pidInList >
+   lib.contentElement.fields.categories = COA
+   lib.contentElement.fields.categories {
+       10 = CONTENT
+       10 {
+           table = sys_category
+           select {
+               pidInList.data = leveluid : 0
+               recursive = 99
+               selectFields = sys_category.title
+               join = sys_category_record_mm on sys_category_record_mm.uid_local = sys_category.uid
+               where {
+                   field = uid
+                   wrap = AND sys_category_record_mm.tablenames = 'tt_content' AND sys_category_record_mm.uid_foreign=|
+               }
+           }
+           renderObj = TEXT
+           renderObj {
+               field = title
+               wrap = |###BREAK###
+           }
+       }
+       stdWrap.split {
+           token = ###BREAK###
+           cObjNum = 1 |*|2|*| 3
+           1 {
+               current = 1
+               stdWrap.wrap = |
+           }
+           2 {
+               current = 1
+               stdWrap.wrap = ,|
+           }
+           3 {
+               current = 1
+               stdWrap.wrap = |
+           }
+       }
+   }
 
-If you need categories from current rootPage
+Page categories — the legacy `lib.categories` definition is still shipped
+(the legacy and mixed sets load it; the default set does not). Import it,
+fix the storage pid the same way, and
+add the field back to the page response:
 
-.. code-block:: text
-      lib.contentElement.fields.categories.10.select.pidInList >
-      lib.contentElement.fields.categories.10.select.pidInList.data = leveluid : 0
+.. code-block:: typoscript
 
-You can add 'recursive' if categories may be stored under current rootPage
+   @import 'EXT:headless/Configuration/TypoScript/Legacy/Categories.typoscript'
 
-.. code-block:: text
-      lib.contentElement.fields.categories.10.select.pidInList >
-      lib.contentElement.fields.categories.10.select.pidInList.data = leveluid : 0
-      lib.contentElement.fields.categories.10.select.recursive = 99
+   lib.categories.10.select.pidInList >
+   lib.categories.10.select.pidInList.data = leveluid : 0
+   lib.categories.10.select.recursive = 99
 
+   page.10.fields.categories =< lib.categories
+
+Both snippets render a comma-separated string of category titles, matching the
+output of the legacy set — use them when the consuming frontend should not need
+any changes.
+
+Alternative: categories as a JSON array
+---------------------------------------
+
+If your frontend does not depend on the legacy string format, prefer structured
+output. This variant uses the `EXT:headless` DatabaseQueryProcessor and renders
+each category as an object, so the field becomes
+`"categories": [{"id": 2, "title": "News"}, ...]` instead of `"News,Events"`:
+
+.. code-block:: typoscript
+
+   lib.contentElement.fields.categories = JSON
+   lib.contentElement.fields.categories {
+       dataProcessing {
+           10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
+           10 {
+               table = sys_category
+               pidInList.data = leveluid : 0
+               recursive = 99
+               join = sys_category_record_mm ON sys_category_record_mm.uid_local = sys_category.uid
+               where.data = field:uid
+               where.wrap = sys_category_record_mm.tablenames = 'tt_content' AND sys_category_record_mm.uid_foreign=|
+               orderBy = sys_category.sorting
+               as = categories
+               fields {
+                   id = INT
+                   id {
+                       field = uid
+                   }
+                   title = TEXT
+                   title {
+                       field = title
+                   }
+               }
+           }
+       }
+   }
+
+For page categories use the same definition with
+`where.wrap = sys_category_record_mm.tablenames = 'pages' AND sys_category_record_mm.uid_foreign=|`
+and assign it to the page response instead:
+
+.. code-block:: typoscript
+
+   page.10.fields.categories = JSON
+   page.10.fields.categories {
+       dataProcessing {
+           # same processor configuration as above, with tablenames = 'pages'
+       }
+   }
+
+Note this changes the shape of the `categories` field — frontends migrating from
+the legacy set must be updated accordingly.
+
+
+
+.. _preview:
+
+Preview of hidden pages
+=======================
+
+The frontend can preview hidden pages if backend cookies reach it. Since
+there are no cross-domain cookies, backend and frontend must share a root
+domain (e.g. `api.domain.com` / `domain.com`); set it as `cookieDomain`
+(note the leading dot):
+
+.. code-block:: php
+
+   $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieDomain'] = '.domain.com';
+
+.. important::
+
+   If you are logged into the backend when this changes, delete the
+   `be_typo_user` cookie in your browser — the old cookie blocks login.
+
+If the frontend forwards all backend cookies, previewing hidden content
+works. For multi-domain setups (`api.domain1.com`/`domain1.com`,
+`api.domain2.com`/`domain2.com`) use the `headless.cookieDomainPerSite`
+feature flag instead of a static `cookieDomain`.
+
+Workspace preview
+-----------------
+
+Previewing workspace versions from the Workspaces module works out of the
+box — the JSON output renders the workspace overlay of the content, and
+backend preview URLs are rewritten to the frontend domain. The cookie
+requirements above apply here too. No feature flag is involved (in 4.x
+this ran through workspace XClasses, likewise enabled automatically).
+
+Backend preview of mixed-mode sites
+-----------------------------------
+
+Backend-initiated page previews of a `headless: 2` site render HTML by
+default. To preview JSON instead, set in the site's `settings.yaml`:
+
+.. code-block:: yaml
+
+   headless:
+     preview:
+       overrideMode: 1
+
+The value replaces the site's mode for backend previews only (`0` HTML —
+the default, `1` JSON). Sites with `headless: 0` or `headless: 1` are not
+affected.
+
+.. _xmlsitemap:
+
+XML sitemap
+===========
+
+Since 4.0 the XML sitemap is plain core `EXT:seo` — headless only ships the
+rendering templates. If URLs in the sitemap index (`/sitemap.xml`) point at
+the API host instead of the frontend, set `frontendApiProxy` in the site's
+`config.yaml` (the field shows up in the backend site module only with
+`headless.storageProxy` enabled — editing the YAML directly always works),
+or point the sitemap at `frontendBase` via `settings.yaml`:
+
+.. code-block:: yaml
+
+  headless:
+    sitemap:
+      key: frontendBase
+
+The sitemap-index links are detected by their page type. If your sitemap
+uses a custom typeNum, also set it (default `1533906435`) — otherwise the
+index links are not rewritten at all:
+
+.. code-block:: yaml
+
+  headless:
+    sitemap:
+      type: '2400000000'

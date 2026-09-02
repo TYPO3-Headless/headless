@@ -13,10 +13,7 @@ namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use TYPO3\CMS\FrontendLogin\Event\LoginConfirmedEvent;
 
-/**
- * @codeCoverageIgnore
- */
-final class LoginConfirmedEventListener
+class LoginConfirmedEventListener
 {
     public function __invoke(LoginConfirmedEvent $event): void
     {

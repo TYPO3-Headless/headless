@@ -13,6 +13,8 @@ plugin.tx_headless {
     @import "EXT:headless/Configuration/TypoScript/ContentElement/*.typoscript"
     ## Include configuration
     @import "EXT:headless/Configuration/TypoScript/Configuration/*.typoscript"
+    ## Include legacy (4.x) full response additions
+    @import "EXT:headless/Configuration/TypoScript/Legacy/*.typoscript"
 [END]
 
 [request && traverse(request.getHeaders(), 'accept/0') == 'application/json' && frontend.user.isLoggedIn]

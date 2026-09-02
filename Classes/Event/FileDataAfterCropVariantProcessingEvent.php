@@ -14,26 +14,35 @@ namespace FriendsOfTYPO3\Headless\Event;
 use FriendsOfTYPO3\Headless\Utility\File\ProcessingConfiguration;
 use TYPO3\CMS\Core\Resource\FileInterface;
 
-/**
- * @codeCoverageIgnore
- */
-final class FileDataAfterCropVariantProcessingEvent
+class FileDataAfterCropVariantProcessingEvent
 {
-    private array $processedFile;
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $processedFile;
 
+    /**
+     * @param array<string, mixed> $processedFile
+     */
     public function __construct(
-        private readonly FileInterface $originalFileReference,
-        private readonly ProcessingConfiguration $processingConfiguration,
+        protected readonly FileInterface $originalFileReference,
+        protected readonly ProcessingConfiguration $processingConfiguration,
         array $processedFile = []
     ) {
         $this->processedFile = $processedFile;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getProcessedFile(): array
     {
         return $this->processedFile;
     }
 
+    /**
+     * @param array<string, mixed> $processedFile
+     */
     public function setProcessedFile(array $processedFile): void
     {
         $this->processedFile = $processedFile;

@@ -28,7 +28,7 @@ class OpenGraphMetaTagManager extends AbstractMetaTagManager
     /**
      * Array of properties that can be handled by this manager
      *
-     * @var array
+     * @var array<string, array<string, mixed>>
      */
     protected $handledProperties = [
         'og:type' => [],

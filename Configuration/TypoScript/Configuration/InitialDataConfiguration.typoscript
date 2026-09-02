@@ -7,7 +7,7 @@ initialData {
             navigation = JSON
             navigation {
                 dataProcessing {
-                    10 = FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor
+                    10 = headless-menu
                     10 {
                         special = rootline
                         special.value = -8

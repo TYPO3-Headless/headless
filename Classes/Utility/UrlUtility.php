@@ -16,7 +16,6 @@ use Psr\Http\Message\UriInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
-use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\Uri;
@@ -29,53 +28,76 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use function array_key_exists;
 use function array_merge;
 use function array_unique;
+use function in_array;
 use function ltrim;
 use function rtrim;
 use function str_contains;
 use function str_starts_with;
 use function strlen;
+use function strtolower;
 use function substr;
 
 class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 {
     use LoggerAwareTrait;
 
-    private array $conf = [];
-    private array $variants = [];
-    private array $frontendDomains = [];
+    /** @var array<string, mixed> */
+    protected array $conf = [];
+    /** @var array<int, array<string, mixed>> */
+    protected array $variants = [];
+    /** @var array<int, string> */
+    protected array $frontendDomains = [];
+    /** @var array<int, string> */
+    protected array $backendDomains = [];
+
+    /** @var array<string, bool> */
+    protected array $variantConditionCache = [];
 
     public function __construct(
-        private readonly Features $features,
-        private readonly Resolver $resolver,
-        private readonly SiteFinder $siteFinder,
-        private HeadlessModeInterface $headlessMode,
+        protected readonly Resolver $resolver,
+        protected readonly SiteFinder $siteFinder,
+        protected HeadlessModeInterface $headlessMode,
     ) {}
 
     public function withSite(Site $site): HeadlessFrontendUrlInterface
     {
-        return $this->handleSiteConfiguration($site, clone $this);
+        $clone = clone $this;
+        $clone->applySite($site);
+        return $clone;
     }
 
     public function withRequest(ServerRequestInterface $request): HeadlessFrontendUrlInterface
     {
-        return $this->extractConfigurationFromRequest($request, clone $this);
+        $clone = clone $this;
+        $clone->applyRequest($request);
+        return $clone;
     }
 
     public function withLanguage(SiteLanguage $language): HeadlessFrontendUrlInterface
     {
-        return $this->handleLanguageConfiguration($language, clone $this);
+        $clone = clone $this;
+        $clone->applyLanguage($language);
+        return $clone;
     }
 
+    /**
+     * @param string|null $url
+     */
     public function getFrontendUrlWithSite($url, SiteInterface $site, string $returnField = 'frontendBase'): string
     {
         $clone = clone $this;
-        $clone->handleSiteConfiguration($site, $clone);
-        $siteLanguage = $clone->overrideByLanguageIfNecessary($clone, $site, $url);
+        $clone->applySite($site);
+        $siteLanguage = $clone->collectLanguageDomainsAndMatch($site, $url);
         if ($siteLanguage !== null) {
-            $clone->handleLanguageConfiguration($siteLanguage, $clone);
+            $clone->applyLanguage($siteLanguage);
         }
 
-        if (!$clone->headlessMode->isEnabled() || $clone->alreadyFrontendLink($url)) {
+        $targetUri = new Uri($clone->sanitizeBaseUrl($url));
+
+        if (!$clone->headlessMode->isEnabled() ||
+            $targetUri->getHost() === '' ||
+            $clone->isExternalUrl($targetUri->getHost()) ||
+            $clone->alreadyFrontendLink($targetUri->getHost())) {
             return $url;
         }
 
@@ -91,31 +113,26 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             }
 
             $frontendBase = GeneralUtility::makeInstance(Uri::class, $clone->sanitizeBaseUrl($frontendBaseUrl));
-            $frontBase = $frontendBase->getHost();
-            $frontExtraPath = $frontendBase->getPath();
-            $frontPort = $frontendBase->getPort();
-            $targetUri = new Uri($clone->sanitizeBaseUrl($url));
-            $targetUri = $targetUri->withHost($frontBase);
+
+            $scheme = strtolower($frontendBase->getScheme());
+            if ($scheme !== '' && !in_array($scheme, ['http', 'https'], true)) {
+                return $url;
+            }
+
+            $targetUri = $targetUri->withHost($frontendBase->getHost());
+
             if ($targetUri->getScheme() === '') {
                 $targetUri = $targetUri->withScheme($frontendBase->getScheme());
             }
 
-            if ($targetUri->getFragment() !== '') {
-                $targetUri = $targetUri->withHost('');
-                $targetUri = $targetUri->withScheme('');
-            }
-
+            $frontExtraPath = $frontendBase->getPath();
             if ($frontExtraPath) {
-                $targetUri = $targetUri->withPath($clone->handleFrontendAndBackendPaths($frontExtraPath, $targetUri, $site->getBase()->getPath()));
+                $targetUri = $targetUri->withPath(
+                    $clone->handleFrontendAndBackendPaths($frontExtraPath, $targetUri, $site->getBase()->getPath())
+                );
             }
 
-            if ($site->getBase()->getPort() === $frontPort) {
-                return (string)$targetUri;
-            }
-
-            if ($frontPort) {
-                $targetUri = $targetUri->withPort($frontPort);
-            }
+            $targetUri = $targetUri->withPort($frontendBase->getPort());
 
             return (string)$targetUri;
         } catch (SiteNotFoundException $e) {
@@ -186,7 +203,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
      * If a site base contains "/" or "www.domain.com", it is ensured that
      * parse_url() can handle this kind of configuration properly.
      */
-    private function sanitizeBaseUrl(string $base): string
+    protected function sanitizeBaseUrl(string $base): string
     {
         if (str_starts_with($base, '#')) {
             return $base;
@@ -208,7 +225,10 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $base;
     }
 
-    private function resolveWithVariants(
+    /**
+     * @param array<int, array<string, mixed>> $variants
+     */
+    protected function resolveWithVariants(
         string $frontendUrl,
         array $variants = [],
         string $returnField = 'frontendBase'
@@ -219,8 +239,15 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         }
 
         foreach ($variants as $baseVariant) {
+            $condition = (string)($baseVariant['condition'] ?? '');
+            if ($condition === '') {
+                continue;
+            }
             try {
-                if ($this->resolver->evaluate($baseVariant['condition'])) {
+                if (!array_key_exists($condition, $this->variantConditionCache)) {
+                    $this->variantConditionCache[$condition] = (bool)$this->resolver->evaluate($condition);
+                }
+                if ($this->variantConditionCache[$condition]) {
                     return rtrim($baseVariant[$returnField] ?? '', '/');
                 }
             } catch (SyntaxError $e) {
@@ -232,7 +259,28 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $frontendUrl;
     }
 
-    private function handleLanguageConfiguration(SiteLanguage $language, HeadlessFrontendUrlInterface $object): HeadlessFrontendUrlInterface
+    protected function applySite(Site $site): void
+    {
+        $this->conf = $site->getConfiguration();
+        $this->variants = $this->conf['baseVariants'] ?? [];
+        $this->variantConditionCache = [];
+        $this->frontendDomains = [];
+        $this->backendDomains = [$site->getBase()->getHost()];
+
+        foreach ($this->variants as $variant) {
+            $variantBase = trim($variant['base'] ?? '');
+            if ($variantBase !== '') {
+                $this->backendDomains[] = $this->hostFromBase($variantBase);
+            }
+        }
+
+        $base = trim($this->conf['frontendBase'] ?? '');
+        if ($base !== '') {
+            $this->frontendDomains[] = $this->hostFromBase($base);
+        }
+    }
+
+    protected function applyLanguage(SiteLanguage $language): void
     {
         $langConf = $language->toArray();
         $variants = $langConf['baseVariants'] ?? [];
@@ -241,83 +289,68 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $frontendFileApi = trim($langConf['frontendFileApi'] ?? '');
         $overrides = [];
 
+        if ($language->getBase()->getHost() !== '') {
+            $this->backendDomains[] = $language->getBase()->getHost();
+        }
+
         if ($frontendBase !== '') {
-            $overrides['frontendBase'] =  $frontendBase;
-            $object->frontendDomains[] = (new Uri($this->sanitizeBaseUrl($frontendBase)))->getHost();
+            $overrides['frontendBase'] = $frontendBase;
+            $this->frontendDomains[] = $this->hostFromBase($frontendBase);
         }
-
         if ($frontendApiProxy !== '') {
-            $overrides['frontendApiProxy'] =  $frontendApiProxy;
+            $overrides['frontendApiProxy'] = $frontendApiProxy;
         }
-
         if ($frontendFileApi !== '') {
-            $overrides['frontendFileApi'] =  $frontendFileApi;
+            $overrides['frontendFileApi'] = $frontendFileApi;
         }
 
-        $object->conf = array_merge($object->conf, $overrides);
+        $this->conf = array_merge($this->conf, $overrides);
 
         if ($variants !== []) {
-            $object->variants = $variants;
+            $this->variants = $variants;
+            $this->variantConditionCache = [];
         }
-
-        return $object;
     }
 
-    private function handleSiteConfiguration(Site $site, UrlUtility $object): self
-    {
-        $object->conf = $site->getConfiguration();
-        $object->variants = $object->conf['baseVariants'] ?? [];
-        $object->frontendDomains = [];
-
-        $base = trim($object->conf['frontendBase'] ?? '');
-        if ($base !== '') {
-            $object->frontendDomains[] = (new Uri($this->sanitizeBaseUrl($base)))->getHost();
-        }
-
-        return $object;
-    }
-
-    private function extractConfigurationFromRequest(ServerRequestInterface $request, HeadlessFrontendUrlInterface $object): HeadlessFrontendUrlInterface
+    protected function applyRequest(ServerRequestInterface $request): void
     {
         $site = $request->getAttribute('site');
-
         if ($site instanceof Site) {
-            $object->handleSiteConfiguration($site, $object);
+            $this->applySite($site);
         }
 
         $language = $request->getAttribute('language');
         if ($language instanceof SiteLanguage) {
-            $object->handleLanguageConfiguration($language, $object);
+            $this->applyLanguage($language);
         }
 
-        $object->headlessMode = $object->headlessMode->withRequest($request);
-
-        return $object;
+        $this->headlessMode = $this->headlessMode->withRequest($request);
     }
 
-    private function handleFrontendAndBackendPaths(string $frontendPath, UriInterface $targetUri, string $baseBackendPath = ''): string
+    protected function handleFrontendAndBackendPaths(string $frontendPath, UriInterface $targetUri, string $baseBackendPath = ''): string
     {
-        return rtrim($frontendPath, '/') . ($targetUri->getPath() !== '' ? '/' . ltrim(substr($targetUri->getPath(), strlen($baseBackendPath)), '/') : '');
+        $frontendPath = rtrim($frontendPath, '/');
+        $targetPath = $targetUri->getPath();
+        if ($targetPath === '') {
+            return $frontendPath;
+        }
+        return $frontendPath . '/' . ltrim(substr($targetPath, strlen($baseBackendPath)), '/');
     }
 
-    private function overrideByLanguageIfNecessary(UrlUtility $object, SiteInterface $site, string $backendUrl): ?SiteLanguage
+    protected function collectLanguageDomainsAndMatch(SiteInterface $site, string $backendUrl): ?SiteLanguage
     {
         $backendUri = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($backendUrl));
         $matchedLanguage = null;
         foreach ($site->getLanguages() as $language) {
-            $conf = $language->toArray();
-
-            if (!array_key_exists('frontendBase', $conf)) {
-                continue;
-            }
-
-            $base = trim($conf['frontendBase'] ?? '');
-
+            $base = trim($language->toArray()['frontendBase'] ?? '');
             if ($base === '') {
                 continue;
             }
 
-            $object->frontendDomains[] = (new Uri($this->sanitizeBaseUrl($base)))->getHost();
+            if ($language->getBase()->getHost() !== '') {
+                $this->backendDomains[] = $language->getBase()->getHost();
+            }
+            $this->frontendDomains[] = $this->hostFromBase($base);
 
             if ($language->getBase()->getHost() === $backendUri->getHost()) {
                 $matchedLanguage = $language;
@@ -326,15 +359,25 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             }
         }
 
-        $object->frontendDomains = array_unique($object->frontendDomains);
+        $this->backendDomains = array_unique($this->backendDomains);
+        $this->frontendDomains = array_unique($this->frontendDomains);
 
         return $matchedLanguage;
     }
 
+    protected function hostFromBase(string $base): string
+    {
+        return (new Uri($this->sanitizeBaseUrl($base)))->getHost();
+    }
+
     protected function alreadyFrontendLink(string $url): bool
     {
-        $targetUri = new Uri($this->sanitizeBaseUrl($url));
+        return in_array($url, $this->frontendDomains, true);
+    }
 
-        return in_array($targetUri->getHost(), $this->frontendDomains, true);
+    protected function isExternalUrl(string $url): bool
+    {
+        return !in_array($url, $this->backendDomains, true)
+            && !in_array($url, $this->frontendDomains, true);
     }
 }

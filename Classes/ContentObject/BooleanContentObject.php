@@ -22,14 +22,14 @@ class BooleanContentObject extends AbstractContentObject
 {
     /**
      * Rendering the cObject, JSON
-     * @param array $conf Array of TypoScript properties
-     * @return bool
+     * @param array<string, mixed> $conf Array of TypoScript properties
      */
     public function render($conf = []): bool
     {
         if (!is_array($conf)) {
             return false;
         }
+
         $content = false;
         if (isset($conf['value'])) {
             $content = $conf['value'];

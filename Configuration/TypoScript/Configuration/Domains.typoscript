@@ -4,7 +4,7 @@ headless_domains {
 
     10 {
         dataProcessing {
-            10 = FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor
+            10 = headless-root-sites
             10 {
                 as = sites
                 siteSchema = FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema

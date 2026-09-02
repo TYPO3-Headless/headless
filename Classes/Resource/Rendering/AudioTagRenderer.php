@@ -11,18 +11,16 @@ declare(strict_types=1);
 
 namespace FriendsOfTYPO3\Headless\Resource\Rendering;
 
-use FriendsOfTYPO3\Headless\Utility\FileUtility;
+use FriendsOfTYPO3\Headless\Utility\FileUtilityInterface;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Audio tag renderer class
- *
- * @codeCoverageIgnore
  */
 class AudioTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\AudioTagRenderer
 {
-    private ?FileUtility $fileUtility = null;
+    protected ?FileUtilityInterface $fileUtility = null;
 
     public function getPriority(): int
     {
@@ -35,14 +33,14 @@ class AudioTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\AudioTagRender
      * @param FileInterface $file
      * @param int|string $width TYPO3 known format; examples: 220, 200m or 200c
      * @param int|string $height TYPO3 known format; examples: 220, 200m or 200c
-     * @param array $options
+     * @param array<string, mixed> $options
      * @return string
      */
     public function render(FileInterface $file, $width, $height, array $options = []): string
     {
         if (($options['returnUrl'] ?? false) === true) {
-            $fileUtility = $this->fileUtility ??= GeneralUtility::makeInstance(FileUtility::class);
-            return htmlspecialchars($fileUtility->getAbsoluteUrl($file->getPublicUrl()), ENT_QUOTES | ENT_HTML5);
+            $fileUtility = $this->fileUtility ??= GeneralUtility::makeInstance(FileUtilityInterface::class);
+            return htmlspecialchars($fileUtility->getAbsoluteUrl((string)$file->getPublicUrl()), ENT_QUOTES | ENT_HTML5);
         }
         return parent::render(...func_get_args());
     }

@@ -1,0 +1,4 @@
+name: friendsoftypo3/headless-legacy
+label: TYPO3 Headless Legacy (4.x)
+dependencies:
+  - friendsoftypo3/headless

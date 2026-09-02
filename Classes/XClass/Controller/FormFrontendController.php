@@ -28,16 +28,19 @@ use TYPO3\CMS\Extbase\Mvc\ExtbaseRequestParameters;
 use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 
+use TYPO3\CMS\Form\Security\HashScope;
+
 use function array_merge;
 use function array_pop;
 use function base64_encode;
-use function class_exists;
 use function count;
 use function in_array;
 use function is_array;
 use function json_decode;
 use function serialize;
 use function str_replace;
+
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Overridden form implementation with headless flavor
@@ -47,10 +50,10 @@ use function str_replace;
  */
 class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendController
 {
-    private ?HeadlessModeInterface $headlessMode = null;
-    private ?Translator $translator = null;
+    protected ?HeadlessModeInterface $headlessMode = null;
+    protected ?Translator $translator = null;
 
-    private function getHeadlessMode(): HeadlessModeInterface
+    protected function getHeadlessMode(): HeadlessModeInterface
     {
         return $this->headlessMode ??= GeneralUtility::makeInstance(HeadlessModeInterface::class);
     }
@@ -66,7 +69,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      */
     public function renderAction(): ResponseInterface
     {
-        if (!$this->getHeadlessMode()->withRequest($this->request)->isEnabled()) {
+        if (!$this->getHeadlessMode()->isEnabledFor($this->request)) {
             return parent::renderAction();
         }
 
@@ -133,12 +136,16 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
         if (isset($formRuntime->getFormDefinition()->getRenderingOptions()['honeypot']['enable']) &&
             $formRuntime->getFormDefinition()->getRenderingOptions()['honeypot']['enable'] === true) {
-            $honeyPot = array_pop($elements);
+            $honeypotType = $formRuntime->getFormDefinition()->getRenderingOptions()['honeypot']['formElementToUse'] ?? 'Honeypot';
+            $lastElement = end($elements);
+            if ($lastElement !== false && $lastElement->getType() === $honeypotType) {
+                $honeyPot = array_pop($elements);
+            }
         }
 
         $stateHash = $this->getHashService()->appendHmac(
             base64_encode(serialize($formState)),
-            class_exists(\TYPO3\CMS\Form\Security\HashScope::class) ? \TYPO3\CMS\Form\Security\HashScope::FormState->prefix() : '',
+            HashScope::FormState->prefix(),
             HashAlgo::SHA3_256
         );
 
@@ -212,7 +219,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
         $formStatus['status'] = null;
         $formStatus['errors'] = null;
-        $formStatus['actionAfterSuccess'] = $finisherResponse ? json_decode($finisherResponse) : null;
+        $formStatus['actionAfterSuccess'] = $finisherResponse ? json_decode((string)$finisherResponse, false, 512, JSON_THROW_ON_ERROR) : null;
         $formStatus['page'] = [
             'current' => $currentPageIndex,
             'nextPage' => $this->getNextPage($formRuntime),
@@ -233,14 +240,10 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
             $formStatus['errors'] = $this->prepareErrors($errors, $formDefinition['identifier']);
         }
 
-        /**
-         * @var DefinitionDecoratorInterface $definitionDecorator
-         */
-        $definitionDecorator = GeneralUtility::makeInstance($decoratorClass, $formStatus);
-
-        if (!($definitionDecorator instanceof DefinitionDecoratorInterface)) {
-            $definitionDecorator = GeneralUtility::makeInstance(FormDefinitionDecorator::class, $formStatus);
+        if (!is_string($decoratorClass) || !is_a($decoratorClass, DefinitionDecoratorInterface::class, true)) {
+            $decoratorClass = FormDefinitionDecorator::class;
         }
+        $definitionDecorator = GeneralUtility::makeInstance($decoratorClass, $formStatus);
 
         $this->view->assign('formConfiguration', $definitionDecorator($formDefinition, $currentPageIndex));
 
@@ -252,7 +255,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      * @param string $formIdentifier
      * @return array<string, string>|null
      */
-    private function prepareErrors(array $errors, string $formIdentifier): ?array
+    protected function prepareErrors(array $errors, string $formIdentifier): ?array
     {
         $parsedErrors = [];
 
@@ -263,7 +266,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         return count($parsedErrors) ? $parsedErrors : null;
     }
 
-    private function getNextPage(\TYPO3\CMS\Form\Domain\Runtime\FormRuntime $formRuntime): ?int
+    protected function getNextPage(\TYPO3\CMS\Form\Domain\Runtime\FormRuntime $formRuntime): ?int
     {
         if ($formRuntime->getCurrentPage() && $formRuntime->getNextEnabledPage()) {
             return $formRuntime->getNextEnabledPage()->getIndex();
@@ -276,7 +279,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      * @param array<mixed> $formFields
      * @return array<int, string>
      */
-    private function generateFieldNamesAndReplaceCustomOptions(
+    protected function generateFieldNamesAndReplaceCustomOptions(
         array &$formFields,
         string $identifier,
         FormRuntime $formRuntime
@@ -293,15 +296,15 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
                 );
             } else {
                 if (!empty($field['properties']['customOptions'])) {
-                    $customOptions = GeneralUtility::makeInstance(
-                        $field['properties']['customOptions'],
-                        $field,
-                        $formFields,
-                        $identifier,
-                        $formRuntime
-                    );
-
-                    if ($customOptions instanceof CustomOptionsInterface) {
+                    $customOptionsClass = $field['properties']['customOptions'];
+                    if (is_string($customOptionsClass) && is_a($customOptionsClass, CustomOptionsInterface::class, true)) {
+                        $customOptions = GeneralUtility::makeInstance(
+                            $customOptionsClass,
+                            $field,
+                            $formFields,
+                            $identifier,
+                            $formRuntime
+                        );
                         $field['properties']['options'] = $customOptions->get();
                     }
 
@@ -321,12 +324,12 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         return $formFieldsNames;
     }
 
-    private function getHashService(): HashService
+    protected function getHashService(): HashService
     {
         return $this->hashService;
     }
 
-    private function getFormTranslator(): Translator
+    protected function getFormTranslator(): Translator
     {
         return $this->translator ??= GeneralUtility::makeInstance(Translator::class);
     }

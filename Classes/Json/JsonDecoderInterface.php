@@ -14,14 +14,10 @@ namespace FriendsOfTYPO3\Headless\Json;
 interface JsonDecoderInterface
 {
     /**
-     * @param array $data
-     * @return array
+     * @param array<mixed> $data
+     * @return array<mixed>
      */
     public function decode(array $data): array;
 
-    /**
-     * @param mixed $possibleJson
-     * @return bool
-     */
-    public function isJson($possibleJson): bool;
+    public function isJson(mixed $possibleJson): bool;
 }
