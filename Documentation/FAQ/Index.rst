@@ -11,9 +11,7 @@ FAQ
 How to use EXT:felogin?
 -----------------------
 
-Using `EXT:felogin` with the headless extension follows the standard setup as detailed in the `felogin documentation <https://docs.typo3.org/c/typo3/cms-felogin/main/en-us/Index.html>`__; the headless-specific JSON output is described in :ref:`integrations-felogin`.
-
-To test the login without a frontend, first GET the login page to obtain the nonce-signed `__RequestToken` hidden field and its `typo3nonce_*` cookie, then POST the credentials together with both — if the response contains a `set-cookie` header for the session, the login was successful. See :ref:`integrations-felogin` for the full flow.
+Using `EXT:felogin` with the headless extension follows the standard setup as detailed in the `felogin documentation <https://docs.typo3.org/c/typo3/cms-felogin/main/en-us/Index.html>`__. The headless-specific JSON output, and how to test the two-step login flow with `curl`, is described in :ref:`integrations-felogin`.
 
 Does EXT:headless work with other extensions?
 ---------------------------------------------
@@ -23,13 +21,14 @@ Yes, the output of virtually any extension can be rendered into the JSON respons
 How to handle redirects in a headless setup?
 --------------------------------------------
 
-The frontend application performs the actual redirect: a matched redirect from
-`EXT:redirects` is returned as JSON (`{ "redirectUrl": "...", "statusCode": 301 }`)
-instead of an HTTP `30x` response.
+The frontend application performs the actual redirect: TYPO3 returns JSON
+(`{ "redirectUrl": "...", "statusCode": 301 }`) instead of an HTTP `30x`
+response.
 
-On headless 5.x (TYPO3 v14) this works automatically as soon as `EXT:redirects`
-is installed — no feature flag. See :ref:`integrations-redirects` for the response
-shape and customisation.
+On headless 5.x (TYPO3 v14) this is always on for shortcut, mount-point and
+site-base redirects; redirect-manager records additionally need
+`EXT:redirects` installed — no feature flag. See :ref:`integrations-redirects`
+for the response shape and customisation.
 
 On headless 4.x and below, enable it with the `headless.redirectMiddlewares`
 feature flag:
@@ -41,87 +40,98 @@ feature flag:
 Can I use custom fields or content elements with EXT:headless?
 --------------------------------------------------------------
 
-Yes, `EXT:headless` supports the customization of JSON responses using TypoScript. You can define custom fields or content elements and extend the JSON output to include these customizations.
-
-For example, to add a custom field, you can modify the TypoScript setup like this:
-
-.. code-block:: typoscript
-
-   lib.customField = TEXT
-   lib.customField.value = My Custom Field
-
-This value can then be included in the JSON response as needed.
+Yes — the JSON shape is plain TypoScript. Adding a field to every page or
+content element is shown in :ref:`developer-snippets`; custom content
+elements, Extbase plugins and third-party plugins in
+:ref:`developer-custom-content`.
 
 How to configure language and translation settings?
 ---------------------------------------------------
 
-`EXT:headless` fully supports TYPO3's language and translation configurations, including fallback settings. To configure languages, follow these steps:
-
-1. Define your languages in the site configuration YAML file.
-2. Ensure that your content elements and page properties are translated according to TYPO3's multilingual guidelines.
-
-For example, in your site configuration:
-
-.. code-block:: yaml
-
-   languages:
-     - languageId: 0
-       title: English
-       enabled: true
-       base: /en/
-       typo3Language: default
-       locale: en_US.UTF-8
-       navigationTitle: English
-       hreflang: en
-       flag: global
-     - languageId: 1
-       title: German
-       enabled: true
-       base: /de/
-       typo3Language: de
-       locale: de_DE.UTF-8
-       navigationTitle: Deutsch
-       hreflang: de
-       flag: de
-
-The JSON API will respect these settings and provide the appropriate language versions of the content.
+Languages are the site configuration's `languages` — nothing headless-specific.
+TYPO3 resolves the language from the URL (`/de/about`), not from an
+`Accept-Language` header, so the frontend requests the language base it wants.
+Every page response carries the available languages under `i18n` (rendered by
+:ref:`LanguageMenuProcessor <dataprocessors-languagemenuprocessor>`), and
+`?type=834` returns them without page content — see :ref:`requests`.
+Translation fallback and overlay behaviour follow the core `fallbackType` /
+`fallbacks` settings of each language.
 
 How to enable clean output for plugins in EXT:headless?
 -------------------------------------------------------
 
-To enable clean output middleware for plugins, which is available for POST/PUT/DELETE method requests, follow these steps:
+Enable the `headless.elementBodyResponse` feature flag and send
+`responseElementId` (plus `responseElementRecursive=1` for nested
+elements) in the body of the POST/PUT/DELETE request. The feature flag
+section in :ref:`configuration` has the example request and the mixed-mode
+caveat.
 
-1. Set the `headless.elementBodyResponse` feature flag in `config/system/settings.php`:
 
-   .. code-block:: php
+.. _troubleshooting:
 
-      $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.elementBodyResponse'] = true;
+Troubleshooting
+---------------
 
-2. Enable the headless mode in your site configuration's YAML file:
+**"No page configured for type=0"**
+   The site has no `page` object: the set is missing from `dependencies`, a
+   root sys_template record with "Clear" flags wipes the set TypoScript, or
+   the site uses the mixed set and the request came without the JSON `Accept`
+   header while no HTML `page` is configured.
 
-   .. code-block:: yaml
+**HTML instead of JSON**
+   Mixed-mode site and the first `Accept` value is not exactly
+   `application/json`; the axios/fetch default list renders HTML. Send the
+   header explicitly. See :ref:`requests`.
 
-      headless: 1
+**Forms, login or menus render HTML fragments, or `HEADLESS_INT_START` markers appear in the output**
+   The headless TypoScript is loaded but the site runs with `headless: 0`, so
+   the PHP-side integrations and the `USER_INT` middleware stay off. Set
+   `headless: 1` or `2`.
 
-3. Send the `responseElementId` field with the ID of the plugin in the body of the plugin data during requests.
+**Links point at the API host**
+   `frontendBase` is missing for that site, language or `baseVariants` entry.
+   Variants do not fall back to the site-level value. See :ref:`multisite`.
 
-On a mixed-mode site (`headless: 2`), the request must additionally carry the exact `Accept: application/json` header, or the middleware does not act.
+**Real `30x` response instead of the JSON redirect envelope**
+   The request was outside headless mode: mode `0`, or mixed mode without
+   the `Accept` header. See :ref:`integrations-redirects`.
 
-For example, a POST request might look like this:
+**`seo` is missing or empty**
+   The `seo.fields.title` placeholder was removed from `page.10.fields`. The
+   `MetaHandler` only runs when the rendered JSON has a `seo.title` key.
 
-.. code-block:: none
+**The response is `[]`**
+   The encoder caught a `JsonException`, usually invalid UTF-8 in a record,
+   logged it as critical and returned `[]`. Check the TYPO3 log.
 
-   POST https://example.tld/path-to-form-plugin
-   Content-Type: application/x-www-form-urlencoded
+**Logged-in user is anonymous, hidden pages stay hidden, login works with curl but not through the frontend**
+   The cookies do not reach TYPO3. Browser requests to the API host need
+   `credentials: 'include'` (fetch) or `withCredentials: true` (axios) and,
+   across hosts, a shared `cookieDomain`. Requests made by the frontend server
+   (server-side rendering) carry no browser cookies at all: forward the
+   incoming `Cookie` header to TYPO3 and relay `Set-Cookie` back. nuxt-typo3:
+   `typo3.api.proxyReqHeaders: ['cookie']` and
+   `typo3.api.proxyHeaders: ['set-cookie']`. See :ref:`requests`.
 
-   responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
+**Login or form submission is rejected before validation**
+   A hidden field (`__RequestToken`, `__trustedProperties`, `__state`, the
+   honeypot) was not echoed back, or the `typo3nonce_*` cookie from the GET
+   did not travel with the POST. See :ref:`requests` and
+   :ref:`integrations-form`.
 
-To handle nested elements, use the `responseElementRecursive` flag:
+**A CDN or proxy serves the wrong format on a mixed-mode site**
+   The cache does not key on `Accept`. Add `Vary: Accept` to the page, for
+   the JSON and the HTML representation. See :ref:`caching`.
 
-.. code-block:: none
+**The browser console shows a CORS error**
+   The API host answers without `Access-Control-Allow-Origin`. Use the proxy
+   path or add the headers. See :ref:`cors`.
 
-   POST https://example.tld/path-to-form-plugin
-   Content-Type: application/x-www-form-urlencoded
+**Backend preview of a mixed-mode site shows HTML**
+   That is the default. Set `headless.preview.overrideMode: 1` in the site's
+   `settings.yaml` (:ref:`preview`).
 
-   responseElementId=#ELEMENT_ID#&responseElementRecursive=1&tx_form_formframework[email]=email&tx_form_formframework[name]=test...
-
+**Images return 404 with `headless.storageProxy`**
+   The URL is rewritten to `frontendFileApi`, the files stay where they are.
+   The frontend server has to proxy that path to the TYPO3 `fileadmin`
+   directory.

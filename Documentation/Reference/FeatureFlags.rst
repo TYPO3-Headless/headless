@@ -4,25 +4,25 @@
 Reference: Feature Flags
 ========================
 
-Quick lookup. For per-flag descriptions and usage see
+Overview. For per-flag descriptions and usage see
 :ref:`configuration`.
 
 Active in 5.x
 =============
 
-================================  ===================================================
-Flag                              Effect
-================================  ===================================================
-`headless.storageProxy`           Route processed file URLs through `frontendFileApi`.
-`headless.elementBodyResponse`    On POST/PUT/DELETE, return just the element
-                                  matching `responseElementId` from the body.
-`headless.overrideFluidTemplates` Swap `ViewFactoryInterface` for
-                                  `HeadlessViewFactory`. Required to render
-                                  raw-PHP templates per view.
-`headless.cookieDomainPerSite`    Per-site `cookieDomain` injection middleware.
-`headless.assetsCacheBusting`     Append `?<mtime>` to processed-file URLs.
-`headless.prettyPrint`            `JSON_PRETTY_PRINT` on every encoder output.
-================================  ===================================================
+=================================  ====================================================
+Flag                               Effect
+=================================  ====================================================
+`headless.storageProxy`            Route processed file URLs through `frontendFileApi`.
+`headless.elementBodyResponse`     On POST/PUT/DELETE, return just the element
+                                   matching `responseElementId` from the body.
+`headless.overrideFluidTemplates`  Swap `ViewFactoryInterface` for
+                                   `HeadlessViewFactory`. Required to render
+                                   raw-PHP templates per view.
+`headless.cookieDomainPerSite`     Per-site `cookieDomain` injection middleware.
+`headless.assetsCacheBusting`      Append `?<mtime>` to processed-file URLs.
+`headless.prettyPrint`             `JSON_PRETTY_PRINT` on every encoder output.
+=================================  ====================================================
 
 Availability by version
 =======================
@@ -58,7 +58,7 @@ Availability by version
       :Header2:   >= 2.5
       :Header3:   available
       :Header4:   available
-      :Header5:   removed (auto-on when EXT:redirects is installed)
+      :Header5:   removed (middlewares always active)
 
    -  :Header1:   headless.nextMajor
       :Header2:   >= 2.2

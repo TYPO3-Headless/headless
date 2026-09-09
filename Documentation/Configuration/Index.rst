@@ -16,7 +16,7 @@ Headless is enabled per site in `config/sites/<identifier>/config.yaml`:
      - friendsoftypo3/headless
    headless: 1
 
-`dependencies` — pick one site set:
+`dependencies` — one of the three site sets:
 
 * `friendsoftypo3/headless` — trimmed default response (new projects).
 * `friendsoftypo3/headless-legacy` — full 4.x-compatible response (upgrades).
@@ -29,10 +29,13 @@ Headless is enabled per site in `config/sites/<identifier>/config.yaml`:
 pair it with the mixed set). In mixed mode the *first* `Accept` header
 value must match exactly: `Accept: application/json, text/plain, */*`
 (the axios/fetch default) or `application/json; charset=utf-8` renders
-HTML. A site using sets must not carry a root
+HTML. One URL then has two representations; add `Vary: Accept` to the page
+so shared caches keep them apart (:ref:`caching`). A site using sets must not carry a root
 sys_template record: its "Clear" flags wipe all set-provided TypoScript.
 Sites not using sets can select the equivalent sys_template statics instead
 ("Headless", "Headless Legacy (4.x)", "Headless - Mixed mode JSON response").
+The 3.x boolean values `headless: true|false` are still accepted (cast to
+`1`/`0`); use the integers.
 
 Headless 4.x ships sets as well (TYPO3 v13): `friendsoftypo3/headless`
 (there: the full response) and `friendsoftypo3/headless-mixed`. On TYPO3
@@ -47,13 +50,15 @@ Automatic integrations
 
 Headless detects installed core extensions and integrates them without
 further setup: `EXT:form` (JSON form definitions, form editor additions),
-`EXT:felogin` (JSON login plugin), `EXT:redirects` (JSON redirect
-envelopes, frontend-aware backend modules) and `EXT:seo`
-(canonical/meta-tag managers, hreflang rewriting). Workspace preview needs
-no setup either — core rendering plus the backend preview-URL rewrite
-cover it. Whether a request gets the headless behaviour follows the
-site's mode: always with `headless: 1`, only for exact
-`Accept: application/json` requests with `headless: 2`.
+`EXT:felogin` (JSON login plugin), `EXT:redirects` (redirect-manager hits
+as JSON envelopes, frontend-aware backend modules) and `EXT:seo`
+(canonical/meta-tag managers, hreflang rewriting). Shortcut, mount-point and
+site-base redirects are returned as JSON envelopes even without
+`EXT:redirects` — the replaced core middlewares are always active (see
+:ref:`integrations-redirects`). Workspace preview needs no setup either —
+core rendering plus the backend preview-URL rewrite cover it. Whether a
+request gets the headless behaviour follows the site's mode described
+above.
 
 Feature flags
 =============
@@ -125,14 +130,8 @@ to processed-file URLs.
 
 Older versions: the per-release availability matrix lives in
 :ref:`ref-feature-flags`. The only flag dropped between 4.x and 5.x is
-`headless.redirectMiddlewares` — the redirects integration is now
-auto-enabled when EXT:redirects is installed.
-
-EXT:form
-========
-
-Form integration — JSON form definitions, i18n, decorators, validators and
-the `JsonRedirect` finisher — is documented in :ref:`integrations-form`.
+`headless.redirectMiddlewares` — the redirect middlewares are now always
+active and emit JSON whenever headless mode applies to the request.
 
 Content element categories
 ==========================
@@ -270,24 +269,14 @@ the legacy set must be updated accordingly.
 Preview of hidden pages
 =======================
 
-The frontend can preview hidden pages if backend cookies reach it. Since
-there are no cross-domain cookies, backend and frontend must share a root
-domain (e.g. `api.domain.com` / `domain.com`); set it as `cookieDomain`
-(note the leading dot):
-
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieDomain'] = '.domain.com';
-
-.. important::
-
-   If you are logged into the backend when this changes, delete the
-   `be_typo_user` cookie in your browser — the old cookie blocks login.
-
-If the frontend forwards all backend cookies, previewing hidden content
-works. For multi-domain setups (`api.domain1.com`/`domain1.com`,
-`api.domain2.com`/`domain2.com`) use the `headless.cookieDomainPerSite`
-feature flag instead of a static `cookieDomain`.
+The frontend can preview hidden pages when the backend cookie reaches the
+API: backend and frontend must share a root domain, and the cookie must be
+scoped to it via `cookieDomain` — globally, or per site with the
+`headless.cookieDomainPerSite` feature flag. The cookie setup, including
+the stale `be_typo_user` cookie pitfall, is described in :ref:`multisite`.
+The frontend has to forward the backend cookie with its API requests —
+server-side rendering frontends such as nuxt-typo3 must be configured to
+do so, see :ref:`requests`.
 
 Workspace preview
 -----------------
@@ -320,11 +309,13 @@ XML sitemap
 ===========
 
 Since 4.0 the XML sitemap is plain core `EXT:seo` — headless only ships the
-rendering templates. If URLs in the sitemap index (`/sitemap.xml`) point at
-the API host instead of the frontend, set `frontendApiProxy` in the site's
-`config.yaml` (the field shows up in the backend site module only with
-`headless.storageProxy` enabled — editing the YAML directly always works),
-or point the sitemap at `frontendBase` via `settings.yaml`:
+rendering templates. The links in the sitemap *index* (`/sitemap.xml`, the
+`t3://page?uid=current&type=…` sitemap-type links) resolve through
+`frontendApiProxy`; all other page links use `frontendBase`. If the index
+links point at the API host instead of the frontend, set `frontendApiProxy`
+in the site's `config.yaml` (the field shows up in the backend site module
+only with `headless.storageProxy` enabled — editing the YAML directly always
+works), or point the sitemap at `frontendBase` via `settings.yaml`:
 
 .. code-block:: yaml
 
