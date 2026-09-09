@@ -100,7 +100,7 @@ Do not add a root sys_template record to a site using sets — its "Clear" flags
 - **1** = headless mode is fully activated for the site within the TYPO3 instance.
 - **2** = mixed mode headless is activated (both fluid & json API are accessible within a single site in the TYPO3 instance) — pair it with the mixed set.
 
-In mixed mode, TYPO3 responds with JSON only when the first `Accept` header value is exactly `application/json`. A list like `Accept: application/json, text/plain, */*` (the axios/fetch default) or `application/json; charset=utf-8` gets the standard HTML response.
+In mixed mode, TYPO3 responds with JSON only when the `Accept` header is exactly `application/json`. A list like `Accept: application/json, text/plain, */*` (the axios/fetch default) or `application/json; charset=utf-8` gets the standard HTML response.
 
 The legacy boolean values (`true`|`false`) are still recognized (the flag is cast to integer), but the integer notation is recommended. Full details, feature flags and multi-domain URL handling live in the [Configuration chapter](https://docs.typo3.org/p/friendsoftypo3/headless/main/en-us/Configuration/Index.html).
 
