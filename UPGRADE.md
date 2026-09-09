@@ -72,8 +72,9 @@ selector items map to in 5.x:
 
 ## Feature flags
 
-* Removed: `headless.redirectMiddlewares` — the redirects integration is now
-  auto-enabled when EXT:redirects is installed.
+* Removed: `headless.redirectMiddlewares` — the redirect middlewares are now
+  always active and emit JSON whenever headless mode applies to the request;
+  redirect-manager records still need EXT:redirects installed.
 * Reworked: `headless.overrideFluidTemplates` — swaps the core
   `ViewFactoryInterface` for `HeadlessViewFactory`; templates may now also be
   raw-PHP (`HeadlessPhpView`).

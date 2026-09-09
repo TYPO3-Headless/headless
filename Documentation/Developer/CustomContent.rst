@@ -4,8 +4,8 @@
 Custom content & plugin output
 ================================
 
-How to put your own data into the JSON response. Three flavours,
-ordered by what's most common.
+How to put your own data into the JSON response. Three approaches,
+most common first.
 
 .. _developer-custom-contentelements:
 
@@ -45,8 +45,8 @@ the standard header block).
     }
   }
 
-`fields` can be nested to any depth — that's your JSON shape. Use
-`dataProcessing` here just like in any other CE.
+`fields` can be nested to any depth; the nesting is the JSON shape.
+`dataProcessing` works here as in any other content element.
 
 .. _developer-plugin-internal:
 
@@ -70,7 +70,7 @@ the frontend template is headless-specific.
        [\Vendor\MyExt\Controller\DemoController::class => ''],
    );
 
-**2. Make it pickable in the BE** via
+**2. Register it for the backend** via
 `Configuration/TCA/Overrides/tt_content.php`:
 
 .. code-block:: php
@@ -101,8 +101,8 @@ The plugin now shows up as a CType with signature
    }
 
 **4. Wire the headless TypoScript** per CType. TYPO3 ships an
-`EXTBASEPLUGIN` cObject (since v12.3) — the modern, two-line
-replacement for the old `USER + Bootstrap->run` form:
+`EXTBASEPLUGIN` cObject (since v12.3), the replacement for the old
+`USER` + `Bootstrap->run` form:
 
 .. code-block:: typoscript
 
@@ -125,9 +125,9 @@ replacement for the old `USER + Bootstrap->run` form:
      }
    }
 
-The `USER` cObject form still works for back-compat, but the
-`EXTBASEPLUGIN` cObject is the canonical pattern (it's what
-`ExtensionUtility::configurePlugin` auto-generates internally).
+The `USER` cObject form still works, but `EXTBASEPLUGIN` is the
+canonical pattern; it is what `ExtensionUtility::configurePlugin`
+generates internally.
 `vendorName` is obsolete either way — plugin registration works on
 FQCN controllers, `extensionName` + `pluginName` suffice.
 `controller` is only needed if a plugin exposes multiple controllers;
@@ -198,8 +198,8 @@ templates:
      }
    }
 
-The templates produce JSON instead of HTML. There's no enforced
-structure — design it for your frontend. Example `List.html`:
+The templates produce JSON instead of HTML. The structure is not
+enforced; design it for your frontend. Example `List.html`:
 
 .. code-block:: html
 
@@ -212,8 +212,7 @@ structure — design it for your frontend. Example `List.html`:
 
 .. note::
 
-   If you're still maintaining a legacy plugin that registers via
-   `list_type`, switch the TypoScript key from `tt_content.list`
+   For a legacy plugin that still registers via `list_type`, switch the TypoScript key from `tt_content.list`
    (with a `CASE` on `list_type`) to the per-CType pattern above.
    The legacy `list_type` registration was removed in TYPO3 v14
    (deprecated since v13.4), so v14-compatible plugins are always
@@ -229,8 +228,7 @@ Adding fields via raw TypoScript
 
 Sometimes a `CONTENT` (or any other cObject) needs to land inside the
 JSON output without being a CE — e.g. a list of related records on
-every page. The trick is to make TYPO3's text output valid JSON
-through `stdWrap.split`:
+every page. Make TYPO3's text output valid JSON with `stdWrap.split`:
 
 .. code-block:: typoscript
 
@@ -267,8 +265,8 @@ through `stdWrap.split`:
     }
   }
 
-For most cases the much simpler :ref:`DatabaseQueryProcessor
-<dataprocessors-databasequeryprocessor>` is a better fit.
+In most cases the :ref:`DatabaseQueryProcessor
+<dataprocessors-databasequeryprocessor>` is the simpler choice.
 
 .. _developer-meta-override:
 

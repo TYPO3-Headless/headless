@@ -4,7 +4,7 @@
 EXT:felogin
 ============
 
-`EXT:felogin` works out of the box with headless. The headless XClass
+`EXT:felogin` needs no extra setup with headless. The headless XClass
 on `LoginController` swaps the HTML view for a JSON response that
 includes the form definition, the login status and any redirect
 target.
@@ -13,10 +13,10 @@ Setup
 =====
 
 Standard felogin setup — install (`composer require typo3/cms-felogin`),
-drop a login plugin onto a page, configure storage `pages` in plugin
+add a login plugin to a page, configure the storage `pages` in the plugin
 settings.
 
-You can test the flow without a frontend with `curl`. TYPO3 v14 only
+The flow can be tested without a frontend using `curl`. TYPO3 v14 only
 evaluates credentials that are accompanied by a valid, nonce-signed
 `__RequestToken`, so a login is always two requests: fetch the form
 first, then post it back together with its cookies.
@@ -41,17 +41,15 @@ first, then post it back together with its cookies.
      # …plus all remaining hidden fields from form.elements, verbatim
 
 A successful login responds with a `set-cookie` header carrying the
-session cookie (`fe_typo_user`). On failure the JSON `status` flips
-to `failure` and `message` carries the rendered header/text for the
+session cookie (`fe_typo_user`). On failure the JSON `status` is
+`failure` and `message` carries the rendered header/text for the
 failure state.
 
 .. note::
 
    On a MIXED-mode site (`headless: 2`) every request shown here must
    send exactly `Accept: application/json` as the first Accept header
-   value. Lists such as `application/json, text/plain, */*` (the
-   axios/fetch default) or a `;charset=` suffix fall back to HTML
-   rendering.
+   value — see :ref:`configuration`.
 
 JSON response shape
 ===================
@@ -102,7 +100,7 @@ each hidden field back verbatim, under its exact `name`:
   **unprefixed**.
 
 Without a complete, unmodified set of these fields the login is
-rejected before credentials are even checked.
+rejected before the credentials are checked.
 
 When a redirect target applies, the plugin payload is replaced
 entirely by `{ "redirectUrl": "…", "statusCode": 303, "status": "…" }`
@@ -116,6 +114,14 @@ frontend lives on a different host, set a shared
 `$GLOBALS['TYPO3_CONF_VARS']['FE']['cookieDomain']`, or enable the
 `headless.cookieDomainPerSite` feature flag to derive it per site —
 see :ref:`multisite`.
+
+When the frontend renders server-side (nuxt-typo3 and similar), the
+browser's cookies never reach TYPO3 unless the frontend forwards them:
+proxy the incoming `Cookie` header to the API and relay `Set-Cookie`
+back to the browser (nuxt-typo3: `typo3.api.proxyReqHeaders: ['cookie']`
+and `typo3.api.proxyHeaders: ['set-cookie']`). The `typo3nonce_*`
+cookie from the GET must travel with the POST, otherwise the
+`__RequestToken` is rejected. See :ref:`requests`.
 
 Detect login in your own code
 =============================
@@ -140,5 +146,5 @@ Listening for successful login
 Headless ships `LoginConfirmedEventListener` that decorates the JSON
 view with `status = success`. To run your own logic at the same
 point, listen to TYPO3 core's
-`TYPO3\CMS\FrontendLogin\Event\LoginConfirmedEvent` — see
+:php:`TYPO3\CMS\FrontendLogin\Event\LoginConfirmedEvent` — see
 :ref:`developer-events` for listener registration.

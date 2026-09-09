@@ -13,15 +13,18 @@ How to shape and extend the JSON output. Each topic has its own page:
   elements, internal Extbase plugins, integrating external plugins
   (EXT:news et al.), custom TypoScript objects and meta-data overrides.
 * :ref:`Data processors <dataprocessors>` — `DatabaseQueryProcessor`,
-  `FilesProcessor`, `MenuProcessor`, `GalleryProcessor` and friends,
+  `FilesProcessor`, `MenuProcessor`, `GalleryProcessor` and the others,
   with their headless-specific options.
 * :ref:`Events <developer-events>` — PSR-14 extension points and how to
   register listeners; full list in :ref:`ref-events`.
 * :ref:`Images & files <images>` — file/image payloads and processing
   configuration (the storage proxy itself is a feature flag, see
   :ref:`configuration`).
-* :ref:`Snippets <developer-snippets>` — drop-in recipes for common tasks.
+* :ref:`Caching <caching>` — page cache, uncached `USER_INT` fields and
+  the HTTP cache headers of the JSON response.
+* :ref:`Snippets <developer-snippets>` — short recipes for common tasks.
 
 Form output decorators are documented with the rest of the form
 integration in :ref:`integrations-form`; the default response shape and
-every shipped `lib.*` object in :ref:`ref-typoscript`.
+every shipped `lib.*` object in :ref:`ref-typoscript`, the JSON of each
+shipped content element in :ref:`ref-content-elements`.
