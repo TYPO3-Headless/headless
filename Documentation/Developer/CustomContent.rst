@@ -4,8 +4,8 @@
 Custom content & plugin output
 ================================
 
-How to put your own data into the JSON response. Three flavours,
-ordered by what's most common.
+How to put your own data into the JSON response, most common approach
+first.
 
 .. _developer-custom-contentelements:
 
@@ -21,32 +21,32 @@ the standard header block).
 
 .. code-block:: typoscript
 
-  tt_content.demo >
-  tt_content.demo =< lib.contentElementWithHeader
-  tt_content.demo {
-    fields {
-      content {
-        fields {
-          demoField = TEXT
-          demoField.value = This is a demo content-element
-          bodytext = TEXT
-          bodytext {
-            field = bodytext
-            parseFunc =< lib.parseFunc_RTE
-          }
-          demoSubfields {
-            fields {
-              demoSubfield = TEXT
-              demoSubfield.value = Nested field
-            }
-          }
-        }
-      }
-    }
-  }
+   tt_content.demo >
+   tt_content.demo =< lib.contentElementWithHeader
+   tt_content.demo {
+     fields {
+       content {
+         fields {
+           demoField = TEXT
+           demoField.value = This is a demo content-element
+           bodytext = TEXT
+           bodytext {
+             field = bodytext
+             parseFunc =< lib.parseFunc_RTE
+           }
+           demoSubfields {
+             fields {
+               demoSubfield = TEXT
+               demoSubfield.value = Nested field
+             }
+           }
+         }
+       }
+     }
+   }
 
-`fields` can be nested to any depth — that's your JSON shape. Use
-`dataProcessing` here just like in any other CE.
+`fields` can be nested to any depth; the nesting is the JSON shape.
+`dataProcessing` works here as in any other content element.
 
 .. _developer-plugin-internal:
 
@@ -66,11 +66,9 @@ the frontend template is headless-specific.
        'MyExt',
        'DemoPlugin',
        [\Vendor\MyExt\Controller\DemoController::class => 'index'],
-       // non-cacheable actions, if any:
-       [\Vendor\MyExt\Controller\DemoController::class => ''],
    );
 
-**2. Make it pickable in the BE** via
+**2. Register it for the backend** via
 `Configuration/TCA/Overrides/tt_content.php`:
 
 .. code-block:: php
@@ -89,7 +87,12 @@ The plugin now shows up as a CType with signature
 
 .. code-block:: php
 
-   final class DemoController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
+   namespace Vendor\MyExt\Controller;
+
+   use Psr\Http\Message\ResponseInterface;
+   use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
+
+   final class DemoController extends ActionController
    {
        public function indexAction(): ResponseInterface
        {
@@ -101,8 +104,8 @@ The plugin now shows up as a CType with signature
    }
 
 **4. Wire the headless TypoScript** per CType. TYPO3 ships an
-`EXTBASEPLUGIN` cObject (since v12.3) — the modern, two-line
-replacement for the old `USER + Bootstrap->run` form:
+`EXTBASEPLUGIN` cObject (since v12.3), the replacement for the old
+`USER` + `Bootstrap->run` form:
 
 .. code-block:: typoscript
 
@@ -116,8 +119,7 @@ replacement for the old `USER + Bootstrap->run` form:
              extensionName = MyExt
              pluginName = DemoPlugin
              settings {
-               test = TEXT
-               test.value = The demo is working
+               test = The demo is working
              }
            }
          }
@@ -125,9 +127,12 @@ replacement for the old `USER + Bootstrap->run` form:
      }
    }
 
-The `USER` cObject form still works for back-compat, but the
-`EXTBASEPLUGIN` cObject is the canonical pattern (it's what
-`ExtensionUtility::configurePlugin` auto-generates internally).
+`settings` are passed to the controller as plain values — a cObject such
+as `TEXT` is not rendered there.
+
+The `USER` cObject form still works, but `EXTBASEPLUGIN` is the
+canonical pattern; it is what `ExtensionUtility::configurePlugin`
+generates internally.
 `vendorName` is obsolete either way — plugin registration works on
 FQCN controllers, `extensionName` + `pluginName` suffice.
 `controller` is only needed if a plugin exposes multiple controllers;
@@ -144,16 +149,57 @@ element:
          "id": 12,
          "type": "myext_demoplugin",
          "colPos": 0,
-         "appearance": { "...": "..." },
+         "…": "…",
          "content": {
            "data": {
              "foo": "bar",
-             "test": "The demo is working"
+             "settings": { "test": "The demo is working" }
            }
          }
        }]
      }
    }
+
+.. _developer-php-templates:
+
+Raw-PHP templates for Extbase plugins
+=====================================
+
+Requires the `headless.overrideFluidTemplates` feature flag
+(:ref:`feature-flag-overridefluidtemplates`). To render an Extbase plugin
+through a raw-PHP template, set the plugin's request format in TypoScript
+and place the template at
+`<templateRootPaths>/<ControllerName>/<ActionName>.php` (highest-keyed root
+path wins):
+
+.. code-block:: typoscript
+
+   plugin.tx_myext.view.templateRootPaths.100 = EXT:site_package/Resources/Private/Templates/
+   plugin.tx_myext_demoplugin.format = php
+
+An explicit `$view->render('Path/Name')` from your own code resolves
+`Path/Name.php` against the same root paths.
+
+`HeadlessViewFactory` serves the raw-PHP view only for a frontend request
+in headless mode whose dispatched plugin sets `format = php` in
+**TypoScript**. In every other case — feature flag off, backend or CLI
+rendering, a request not in headless mode, or a plugin without that
+TypoScript setting — the `php` format is dropped and Fluid renders the
+regular `.html` template. If the plugin is also rendered outside headless
+mode, ship an `.html` template next to the `.php` one.
+
+Template selection is therefore not user-controllable: `format` is a
+regular Extbase request parameter, but a request-supplied
+`tx_myext_demoplugin[format]=php` on a plugin without the TypoScript
+setting falls back to the `.html` template, so Fluid never parses a `.php`
+file as a template. A visitor forcing `format=html` on a php-configured
+plugin just gets the plugin's regular Fluid resolution — standard Extbase
+format behavior.
+
+Unlike Fluid, raw-PHP templates apply **no output escaping**. Build a PHP
+array and `echo json_encode($data, JSON_THROW_ON_ERROR)` — never
+concatenate JSON strings from record data, that is a JSON injection the
+moment a value contains a quote.
 
 .. _developer-plugin-external:
 
@@ -176,50 +222,63 @@ is whatever the foreign extension registers — for EXT:news it's
            data {
              extensionName = News
              pluginName = Pi1
-             view < plugin.tx_news.view
-             persistence < plugin.tx_news.persistence
-             settings < plugin.tx_news.settings
            }
          }
        }
      }
    }
 
-Then override the plugin's template paths so they point at your JSON
-templates:
+`EXTBASEPLUGIN` reads `plugin.tx_news` (view, persistence, settings) on its
+own, so nothing has to be copied — copying with `<` would also freeze the
+values at parse time and hide later changes. Then add your JSON templates
+to the plugin's template paths:
 
 .. code-block:: typoscript
 
-   plugin.tx_news {
-     view {
-       templateRootPath = EXT:headless_news/Resources/Private/News/Templates/
-       partialRootPath  = EXT:headless_news/Resources/Private/News/Partials/
-       layoutRootPath   = EXT:headless_news/Resources/Private/News/Layouts/
-     }
+   plugin.tx_news.view {
+     templateRootPaths.100 = EXT:site_package/Resources/Private/News/Templates/
+     partialRootPaths.100 = EXT:site_package/Resources/Private/News/Partials/
+     layoutRootPaths.100 = EXT:site_package/Resources/Private/News/Layouts/
    }
 
-The templates produce JSON instead of HTML. There's no enforced
-structure — design it for your frontend. Example `List.html`:
+`headless_news` ships a ready-made set of these templates.
+
+The templates produce JSON instead of HTML. The structure is not
+enforced; design it for your frontend.
+
+Fluid escapes for HTML, not for JSON: `{newsItem.title}` comes out
+entity-encoded (`&quot;`), and the same value behind `f:format.raw` breaks
+the JSON as soon as it contains a quote. Encode values with `f:format.json`
+and wrap only that output in `f:format.raw`, as the templates shipped with
+EXT:headless do. `f:format.json` serialises scalars and arrays; format
+objects such as `DateTime` first. Example `List.html`:
 
 .. code-block:: html
 
    <f:spaceless>
      {"list": [<f:for each="{news}" as="newsItem" iteration="i">
-       <f:render section="NewsListView" arguments="{newsItem: newsItem}"/>
-       {f:if(condition: i.isLast, else: ',')}
+       <f:format.raw><f:format.json value="{
+         uid: newsItem.uid,
+         title: newsItem.title,
+         teaser: newsItem.teaser,
+         datetime: '{newsItem.datetime -> f:format.date(format: \'c\')}'
+       }"/></f:format.raw>{f:if(condition: i.isLast, else: ',')}
      </f:for>]}
    </f:spaceless>
 
+As everywhere in the headless pipeline, JSON encoding is not HTML safety:
+the frontend still escapes the values on render.
+
 .. note::
 
-   If you're still maintaining a legacy plugin that registers via
-   `list_type`, switch the TypoScript key from `tt_content.list`
-   (with a `CASE` on `list_type`) to the per-CType pattern above.
-   The legacy `list_type` registration was removed in TYPO3 v14
-   (deprecated since v13.4), so v14-compatible plugins are always
-   CTypes.
+   Upgrading from headless 4.x: plugins registered via `list_type` were
+   wired under `tt_content.list.20.<list_type>`. Move that TypoScript to
+   `tt_content.<CType>` as shown above. Existing content records still
+   carry `CType = list`; migrate them with an upgrade wizard extending
+   :php:`\TYPO3\CMS\Core\Upgrades\AbstractListTypeToCTypeUpdate` (most
+   third-party extensions ship one with their v14 release).
 
-See `headless_news <https://github.com/TYPO3-Initiatives/headless_news>`__
+See `headless_news <https://github.com/TYPO3-Headless/headless_news>`__
 for a complete worked example.
 
 .. _developer-custom-typoscript:
@@ -229,79 +288,119 @@ Adding fields via raw TypoScript
 
 Sometimes a `CONTENT` (or any other cObject) needs to land inside the
 JSON output without being a CE — e.g. a list of related records on
-every page. The trick is to make TYPO3's text output valid JSON
-through `stdWrap.split`:
+every page. Make TYPO3's text output valid JSON with `stdWrap.split`:
 
 .. code-block:: typoscript
 
-  page.10.fields {
-    related = CONTENT
-    related {
-        table = tx_myextension_domain_model_things
-        select {
-          pidInList = this
-        }
-        renderObj = JSON
-        renderObj {
-          fields {
-            title = TEXT
-            title.field = title
-            link = TEXT
-            link.typolink.parameter.field = uid
-            link.typolink.returnLast = url
-          }
-          stdWrap.wrap = |###BREAK###
-        }
-        stdWrap {
-          innerWrap = [|]
-          split {
-            token = ###BREAK###
-            cObjNum = 1 |*|2|*| 3
-            1 { current = 1
-                stdWrap.wrap = | }
-            2 < .1
-            2.stdWrap.wrap = ,|
-            3 < .1
-          }
-        }
-    }
-  }
+   page.10.fields {
+     related = CONTENT
+     related {
+       table = tx_myextension_domain_model_things
+       select {
+         pidInList = this
+       }
+       renderObj = JSON
+       renderObj {
+         fields {
+           title = TEXT
+           title.field = title
+           link = TEXT
+           link.typolink.parameter.dataWrap = t3://record?identifier=things&uid={field:uid}
+           link.typolink.returnLast = url
+         }
+         stdWrap.wrap = |###BREAK###
+       }
+       stdWrap {
+         innerWrap = [|]
+         split {
+           token = ###BREAK###
+           cObjNum = 1 |*|2|*| 3
+           1.current = 1
+           2 < .1
+           2.stdWrap.wrap = ,|
+           3 < .1
+         }
+       }
+     }
+   }
 
-For most cases the much simpler :ref:`DatabaseQueryProcessor
-<dataprocessors-databasequeryprocessor>` is a better fit.
+`things` is a record link handler configured in `config.recordLinks`.
+In most cases the :ref:`DatabaseQueryProcessor
+<dataprocessors-databasequeryprocessor>` is the simpler choice.
 
 .. _developer-meta-override:
 
-Overriding the meta object (legacy set)
-=======================================
+Overriding SEO data on a route
+==============================
 
-`lib.meta` exists only in the legacy (4.x-compatible) response — on the
-default set the `seo` object is populated by the `MetaHandler` from
-page properties instead. On the legacy set, replace `lib.meta`
-wholesale on a specific route (e.g. news detail):
+On the default set the `seo` object is assembled by the `MetaHandler` after
+the content has been rendered. A plugin that sets the page title through a
+page title provider or registers meta tags with the core
+`MetaTagManagerRegistry` while rendering is therefore picked up without any
+TypoScript.
+
+Where the plugin does not do that, override single tags with `page.meta` in
+a condition. The values are stdWrap-enabled; `replace = 1` makes them win
+over the values `EXT:seo` derived from the page record. Example for a news
+detail page:
 
 .. code-block:: typoscript
 
-  lib.meta.stdWrap.override.cObject = JSON
-  lib.meta.stdWrap.override.cObject {
-    if.isTrue.data = GP:tx_news_pi1|news
-    dataProcessing.10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
-    dataProcessing.10 {
-      table = tx_news_domain_model_news
-      uidInList.data = GP:tx_news_pi1|news
-      uidInList.intval = 1
-      pidInList = 0
-      max = 1
-      as = records
-      fields < lib.meta.fields
-      fields {
-        title = TEXT
-        title.field = title
-        subtitle = TEXT
-        subtitle.field = teaser
-        description = TEXT
-        description.field = bodytext
-      }
-      returnFlattenObject = 1
-    }
-  }
+   [traverse(request.getQueryParams(), 'tx_news_pi1/news') > 0]
+     page.meta {
+       description.cObject = RECORDS
+       description.cObject {
+         tables = tx_news_domain_model_news
+         source.data = GP:tx_news_pi1|news
+         source.intval = 1
+         dontCheckPid = 1
+         conf.tx_news_domain_model_news = TEXT
+         conf.tx_news_domain_model_news.field = teaser
+       }
+       description.replace = 1
+
+       og:title.cObject = RECORDS
+       og:title.cObject {
+         tables = tx_news_domain_model_news
+         source.data = GP:tx_news_pi1|news
+         source.intval = 1
+         dontCheckPid = 1
+         conf.tx_news_domain_model_news = TEXT
+         conf.tx_news_domain_model_news.field = title
+       }
+       og:title.attribute = property
+       og:title.replace = 1
+     }
+   [END]
+
+Legacy set: `lib.meta`
+----------------------
+
+`lib.meta` exists only in the legacy (4.x-compatible) response. There,
+replace it wholesale on a specific route:
+
+.. code-block:: typoscript
+
+   lib.meta.stdWrap.override.cObject = JSON
+   lib.meta.stdWrap.override.cObject {
+     if.isTrue.data = GP:tx_news_pi1|news
+     dataProcessing.10 = headless-database-query
+     dataProcessing.10 {
+       table = tx_news_domain_model_news
+       uidInList.data = GP:tx_news_pi1|news
+       uidInList.intval = 1
+       pidInList = 0
+       max = 1
+       as = records
+       fields < lib.meta.fields
+       fields {
+         title = TEXT
+         title.field = title
+         subtitle = TEXT
+         subtitle.field = teaser
+         description = TEXT
+         description.field = bodytext
+       }
+       returnFlattenObject = 1
+     }
+   }

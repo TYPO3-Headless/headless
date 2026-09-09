@@ -1,9 +1,13 @@
 .. _configuration:
 
-===================
+=============
 Configuration
-===================
+=============
 
+.. toctree::
+   :hidden:
+
+   MultiSite
 
 Site configuration
 ==================
@@ -16,44 +20,42 @@ Headless is enabled per site in `config/sites/<identifier>/config.yaml`:
      - friendsoftypo3/headless
    headless: 1
 
-`dependencies` — pick one site set:
+`dependencies` — one of the three site sets
+(details: :ref:`ref-typoscript-default-set`):
 
 * `friendsoftypo3/headless` — trimmed default response (new projects).
 * `friendsoftypo3/headless-legacy` — full 4.x-compatible response (upgrades).
-* `friendsoftypo3/headless-mixed` — JSON only for requests sent with exactly
-  `Accept: application/json`; everything else renders your own HTML page.
-  The JSON it serves is the full 4.x-shaped (legacy) response, not the
-  trimmed default one.
+* `friendsoftypo3/headless-mixed` — mixed mode, serving the legacy response.
 
 `headless` — run mode: `0` off, `1` always JSON, `2` mixed (Accept-driven —
-pair it with the mixed set). In mixed mode the *first* `Accept` header
-value must match exactly: `Accept: application/json, text/plain, */*`
-(the axios/fetch default) or `application/json; charset=utf-8` renders
-HTML. A site using sets must not carry a root
-sys_template record: its "Clear" flags wipe all set-provided TypoScript.
-Sites not using sets can select the equivalent sys_template statics instead
-("Headless", "Headless Legacy (4.x)", "Headless - Mixed mode JSON response").
+pair it with the mixed set, see :ref:`configuration-mixed-accept`). The 3.x
+boolean values `headless: true|false` are still accepted (cast to `1`/`0`);
+use the integers.
 
-Headless 4.x ships sets as well (TYPO3 v13): `friendsoftypo3/headless`
-(there: the full response) and `friendsoftypo3/headless-mixed`. On TYPO3
-v12 include the `headless` static template in the root TypoScript record
-instead.
+A site using sets must not carry a root sys_template record: its "Clear"
+flags wipe all set-provided TypoScript. Sites not using sets can select the
+equivalent sys_template statics instead ("Headless", "Headless Legacy
+(4.x)", "Headless - Mixed mode JSON response").
 
 URLs pointing at the frontend domain (`frontendBase`, `frontendApiProxy`,
-per-language variants) are covered in :ref:`multisite`.
+per-language variants) are covered in :ref:`multisite`. Installed core
+extensions integrate without further setup — see :ref:`what-it-does` and
+:ref:`integrations`.
 
-Automatic integrations
-======================
+.. _configuration-mixed-accept:
 
-Headless detects installed core extensions and integrates them without
-further setup: `EXT:form` (JSON form definitions, form editor additions),
-`EXT:felogin` (JSON login plugin), `EXT:redirects` (JSON redirect
-envelopes, frontend-aware backend modules) and `EXT:seo`
-(canonical/meta-tag managers, hreflang rewriting). Workspace preview needs
-no setup either — core rendering plus the backend preview-URL rewrite
-cover it. Whether a request gets the headless behaviour follows the
-site's mode: always with `headless: 1`, only for exact
-`Accept: application/json` requests with `headless: 2`.
+Mixed mode and the `Accept` header
+----------------------------------
+
+On a `headless: 2` site a request gets JSON only when its whole `Accept`
+header is exactly `application/json`. A list such as
+`application/json, text/plain, */*` (the axios/fetch default) or a
+parameter such as `application/json; charset=utf-8` renders HTML. The exact
+match is intentional — it is the API contract for headless clients, so set
+the header explicitly in the frontend.
+
+One URL then has two representations; add `Vary: Accept` to the page so
+shared caches keep them apart (:ref:`caching`).
 
 Feature flags
 =============
@@ -64,230 +66,23 @@ Set flags in `settings.php`/`additional.php`:
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['<flag>'] = true;
 
-**headless.storageProxy** — serve processed files through the site's
-`frontendApiProxy`/`frontendFileApi` instead of the TYPO3 host.
-
-**headless.elementBodyResponse** — on POST/PUT/DELETE requests return only
-the element matching `responseElementId` from the request body — clean
-plugin output for SPA form handling:
-
-.. code-block:: none
-
-   POST https://example.tld/path-to-form-plugin
-   Content-Type: application/x-www-form-urlencoded
-
-   responseElementId=#ELEMENT_ID#&tx_form_formframework[email]=email&...
-
-Set `responseElementRecursive=1` to match a nested (child) element.
-On a mixed-mode site (`headless: 2`) the POST itself must carry the exact
-`Accept: application/json` header, or the middleware does not act.
-
-**headless.overrideFluidTemplates** — swap the core `ViewFactoryInterface`
-for `HeadlessViewFactory`: Fluid views render JSON templates, raw-PHP
-templates (`HeadlessPhpView`) are supported too.
-
-To render an Extbase plugin through a raw-PHP template, set the plugin's
-request format and place the template at
-`<templateRootPaths>/<ControllerName>/<ActionName>.php` (highest-keyed
-root path wins):
-
-.. code-block:: typoscript
-
-   plugin.tx_myext.view.templateRootPaths.100 = EXT:site_package/Resources/Private/Templates/
-   plugin.tx_myext_pi1.format = php
-
-An explicit `$view->render('Path/Name')` from your own code resolves
-`Path/Name.php` against the same root paths.
-
-Template selection is not user-controllable: `format` is a regular Extbase
-request parameter, but `HeadlessViewFactory` serves the raw-PHP view only
-when the dispatched plugin's **TypoScript** sets `format = php`. A
-request-supplied `tx_myext_pi1[format]=php` on any other plugin falls back
-to Fluid with the format stripped, so Fluid never parses a `.php` file as
-a template. A visitor forcing `format=html` on a php-configured plugin
-just gets the plugin's regular Fluid resolution — standard Extbase format
-behavior.
-
-Unlike Fluid, raw-PHP templates apply **no output escaping**. Build a PHP
-array and `echo json_encode($data, JSON_THROW_ON_ERROR)` — never
-concatenate JSON strings from record data, that is a JSON injection the
-moment a value contains a quote. As everywhere in the headless pipeline,
-JSON encoding is not HTML safety: the consuming frontend still escapes on
-render.
-
-**headless.cookieDomainPerSite** — derive the auth cookie domain per site
-(FE & BE middleware); see :ref:`multisite`.
-
-**headless.assetsCacheBusting** — append the file mtime as a query string
-to processed-file URLs.
-
-**headless.prettyPrint** — `JSON_PRETTY_PRINT` on every response (debugging).
-
-Older versions: the per-release availability matrix lives in
-:ref:`ref-feature-flags`. The only flag dropped between 4.x and 5.x is
-`headless.redirectMiddlewares` — the redirects integration is now
-auto-enabled when EXT:redirects is installed.
-
-EXT:form
-========
-
-Form integration — JSON form definitions, i18n, decorators, validators and
-the `JsonRedirect` finisher — is documented in :ref:`integrations-form`.
-
-Content element categories
-==========================
-
-The default `TYPO3 Headless` site set (`friendsoftypo3/headless`) does not render
-categories at all: `lib.contentElement` does not define a `categories` field
-(and therefore no content element carries one), and the page response does not contain
-a `categories` field either. This avoids one `sys_category` join per content
-element on every uncached render for projects that do not use categories.
-
-If your project needs them, re-add the field in your site package TypoScript,
-loaded after the set. Point `pidInList` at the place your categories are actually
-stored — either the storage folder uid, or the current root page with `recursive`
-as shown below.
-
-Content element categories:
-
-.. code-block:: typoscript
-
-   lib.contentElement.fields.categories = COA
-   lib.contentElement.fields.categories {
-       10 = CONTENT
-       10 {
-           table = sys_category
-           select {
-               pidInList.data = leveluid : 0
-               recursive = 99
-               selectFields = sys_category.title
-               join = sys_category_record_mm on sys_category_record_mm.uid_local = sys_category.uid
-               where {
-                   field = uid
-                   wrap = AND sys_category_record_mm.tablenames = 'tt_content' AND sys_category_record_mm.uid_foreign=|
-               }
-           }
-           renderObj = TEXT
-           renderObj {
-               field = title
-               wrap = |###BREAK###
-           }
-       }
-       stdWrap.split {
-           token = ###BREAK###
-           cObjNum = 1 |*|2|*| 3
-           1 {
-               current = 1
-               stdWrap.wrap = |
-           }
-           2 {
-               current = 1
-               stdWrap.wrap = ,|
-           }
-           3 {
-               current = 1
-               stdWrap.wrap = |
-           }
-       }
-   }
-
-Page categories — the legacy `lib.categories` definition is still shipped
-(the legacy and mixed sets load it; the default set does not). Import it,
-fix the storage pid the same way, and
-add the field back to the page response:
-
-.. code-block:: typoscript
-
-   @import 'EXT:headless/Configuration/TypoScript/Legacy/Categories.typoscript'
-
-   lib.categories.10.select.pidInList >
-   lib.categories.10.select.pidInList.data = leveluid : 0
-   lib.categories.10.select.recursive = 99
-
-   page.10.fields.categories =< lib.categories
-
-Both snippets render a comma-separated string of category titles, matching the
-output of the legacy set — use them when the consuming frontend should not need
-any changes.
-
-Alternative: categories as a JSON array
----------------------------------------
-
-If your frontend does not depend on the legacy string format, prefer structured
-output. This variant uses the `EXT:headless` DatabaseQueryProcessor and renders
-each category as an object, so the field becomes
-`"categories": [{"id": 2, "title": "News"}, ...]` instead of `"News,Events"`:
-
-.. code-block:: typoscript
-
-   lib.contentElement.fields.categories = JSON
-   lib.contentElement.fields.categories {
-       dataProcessing {
-           10 = FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor
-           10 {
-               table = sys_category
-               pidInList.data = leveluid : 0
-               recursive = 99
-               join = sys_category_record_mm ON sys_category_record_mm.uid_local = sys_category.uid
-               where.data = field:uid
-               where.wrap = sys_category_record_mm.tablenames = 'tt_content' AND sys_category_record_mm.uid_foreign=|
-               orderBy = sys_category.sorting
-               as = categories
-               fields {
-                   id = INT
-                   id {
-                       field = uid
-                   }
-                   title = TEXT
-                   title {
-                       field = title
-                   }
-               }
-           }
-       }
-   }
-
-For page categories use the same definition with
-`where.wrap = sys_category_record_mm.tablenames = 'pages' AND sys_category_record_mm.uid_foreign=|`
-and assign it to the page response instead:
-
-.. code-block:: typoscript
-
-   page.10.fields.categories = JSON
-   page.10.fields.categories {
-       dataProcessing {
-           # same processor configuration as above, with tablenames = 'pages'
-       }
-   }
-
-Note this changes the shape of the `categories` field — frontends migrating from
-the legacy set must be updated accordingly.
-
-
+Flags are read when the DI container and the middleware stack are built,
+so flush the caches after changing one. All flags, their effect and their
+availability per release: :ref:`ref-feature-flags`.
 
 .. _preview:
 
 Preview of hidden pages
 =======================
 
-The frontend can preview hidden pages if backend cookies reach it. Since
-there are no cross-domain cookies, backend and frontend must share a root
-domain (e.g. `api.domain.com` / `domain.com`); set it as `cookieDomain`
-(note the leading dot):
-
-.. code-block:: php
-
-   $GLOBALS['TYPO3_CONF_VARS']['BE']['cookieDomain'] = '.domain.com';
-
-.. important::
-
-   If you are logged into the backend when this changes, delete the
-   `be_typo_user` cookie in your browser — the old cookie blocks login.
-
-If the frontend forwards all backend cookies, previewing hidden content
-works. For multi-domain setups (`api.domain1.com`/`domain1.com`,
-`api.domain2.com`/`domain2.com`) use the `headless.cookieDomainPerSite`
-feature flag instead of a static `cookieDomain`.
+The frontend can preview hidden pages when the backend cookie reaches the
+API: backend and frontend must share a root domain, and the cookie must be
+scoped to it via `cookieDomain` — globally, or per site with the
+`headless.cookieDomainPerSite` feature flag. The cookie setup, including
+the stale `be_typo_user` cookie pitfall, is described in :ref:`multisite`.
+The frontend has to forward the backend cookie with its API requests —
+server-side rendering frontends such as nuxt-typo3 must be configured to
+do so, see :ref:`cookies`.
 
 Workspace preview
 -----------------
@@ -301,8 +96,10 @@ this ran through workspace XClasses, likewise enabled automatically).
 Backend preview of mixed-mode sites
 -----------------------------------
 
-Backend-initiated page previews of a `headless: 2` site render HTML by
-default. To preview JSON instead, set in the site's `settings.yaml`:
+On a `headless: 2` site, page links generated in the backend (such as the
+"View webpage" preview) stay on the TYPO3 host by default. The browser sends no JSON `Accept` header, so the preview renders
+as HTML. To open previews in the frontend application instead, set in the
+site's `settings.yaml`:
 
 .. code-block:: yaml
 
@@ -310,9 +107,12 @@ default. To preview JSON instead, set in the site's `settings.yaml`:
      preview:
        overrideMode: 1
 
-The value replaces the site's mode for backend previews only (`0` HTML —
-the default, `1` JSON). Sites with `headless: 0` or `headless: 1` are not
-affected.
+The setting does not pick a response format; it decides where
+backend-generated page links point. With `1` they are rewritten to
+`frontendBase`, and the frontend application renders the preview from the
+JSON. With `0` (the default) they are left on the TYPO3 host. Sites with
+`headless: 0` or `headless: 1` are not affected, and neither are source URLs
+in the redirects module, which are rewritten for `headless: 1` sites only.
 
 .. _xmlsitemap:
 
@@ -320,24 +120,32 @@ XML sitemap
 ===========
 
 Since 4.0 the XML sitemap is plain core `EXT:seo` — headless only ships the
-rendering templates. If URLs in the sitemap index (`/sitemap.xml`) point at
-the API host instead of the frontend, set `frontendApiProxy` in the site's
-`config.yaml` (the field shows up in the backend site module only with
-`headless.storageProxy` enabled — editing the YAML directly always works),
-or point the sitemap at `frontendBase` via `settings.yaml`:
+rendering templates. The links in the sitemap *index* (`/sitemap.xml`, the
+`t3://page?uid=current&type=…` sitemap-type links) resolve through
+`frontendApiProxy`; all other page links use `frontendBase`. If the index
+links point at the API host instead of the frontend, set `frontendApiProxy`
+in the site's `config.yaml` (the field shows up in the backend site module
+only with `headless.storageProxy` enabled — editing the YAML directly always
+works), or point the sitemap at `frontendBase` via `settings.yaml`:
 
 .. code-block:: yaml
 
-  headless:
-    sitemap:
-      key: frontendBase
+   headless:
+     sitemap:
+       key: frontendBase
+
+On `headless: 2` sites the sitemap links are not rewritten at all: the
+rewrite only runs for JSON requests, and a crawler fetching `/sitemap.xml`
+sends no JSON `Accept` header (the mixed set also loads the sitemap
+templates only for JSON requests).
 
 The sitemap-index links are detected by their page type. If your sitemap
 uses a custom typeNum, also set it (default `1533906435`) — otherwise the
-index links are not rewritten at all:
+index links are treated like any other page link and point at `frontendBase`
+instead of `frontendApiProxy`:
 
 .. code-block:: yaml
 
-  headless:
-    sitemap:
-      type: '2400000000'
+   headless:
+     sitemap:
+       type: '2400000000'
