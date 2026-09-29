@@ -125,6 +125,24 @@ class HeadlessUserIntTest extends HeadlessUnitTestCase
         );
     }
 
+    public function testUnwrapLargePrettyPrintedFormPayloadTogetherWithShortMarker(): void
+    {
+        $elements = [];
+        for ($i = 0; $i < 2000; $i++) {
+            $elements[] = ['identifier' => 'field-' . $i, 'type' => 'Text', 'label' => 'Label ' . $i, 'properties' => ['fluidAdditionalAttributes' => ['placeholder' => 'Value > ' . $i]]];
+        }
+        $form = "\n" . json_encode(['identifier' => 'contact', 'elements' => $elements], JSON_PRETTY_PRINT);
+        $page = '{"content":[{"form":"HEADLESS_INT_START<<' . $form . '>>HEADLESS_INT_END"}],"backendEditor":{"record":"HEADLESS_INT_START<<https://example.test/typo3/record_edit?edit[pages][1]=edit>>HEADLESS_INT_END"}}';
+
+        $unwrapped = $this->headlessUserInt->unwrap($page);
+
+        self::assertStringNotContainsString('HEADLESS_INT', $unwrapped);
+        $decoded = json_decode($unwrapped, true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('contact', $decoded['content'][0]['form']['identifier']);
+        self::assertCount(2000, $decoded['content'][0]['form']['elements']);
+        self::assertSame('https://example.test/typo3/record_edit?edit[pages][1]=edit', $decoded['backendEditor']['record']);
+    }
+
     public function testUnwrapLeavesContentWithoutMarkersUntouched(): void
     {
         self::assertSame('{"foo":"bar"}', $this->headlessUserInt->unwrap('{"foo":"bar"}'));

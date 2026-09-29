@@ -56,6 +56,8 @@ class JsonContentObjectTest extends HeadlessUnitTestCase
 {
     private JsonContentObject $contentObject;
 
+    private CountingDataProcessingExample $countingProcessor;
+
     protected function setUp(): void
     {
         $this->resetSingletonInstances = true;
@@ -81,6 +83,7 @@ class JsonContentObjectTest extends HeadlessUnitTestCase
             'RESTORE_REGISTER' => RestoreRegisterContentObject::class,
             'SVG' => ScalableVectorGraphicsContentObject::class,
             'CONTENT_JSON' => JsonContentContentObject::class,
+            'JSON' => JsonContentObject::class,
             'INT' => IntegerContentObject::class,
             'FLOAT' => FloatContentObject::class,
             'BOOL' => BooleanContentObject::class,
@@ -96,12 +99,13 @@ class JsonContentObjectTest extends HeadlessUnitTestCase
         $container->set(MarkerBasedTemplateService::class, new MarkerBasedTemplateService($this->createMock(FrontendInterface::class), $this->createMock(FrontendInterface::class)));
         $container->set(TimeTracker::class, new TimeTracker(false));
         $container->set(EventDispatcherInterface::class, $eventDispatcher);
-        $container->set(JsonContentObject::class, new JsonContentObject(
+        $createJsonContentObject = static fn(): JsonContentObject => new JsonContentObject(
             $contentDataProcessor,
             new JsonEncoder(new \TYPO3\CMS\Core\Configuration\Features()),
             new JsonDecoder(),
             new HeadlessUserInt()
-        ));
+        );
+        $container->set(JsonContentObject::class, $createJsonContentObject());
         $container->set(JsonContentContentObject::class, new JsonContentContentObject(
             $container->get(TimeTracker::class),
             $container->get(EventDispatcherInterface::class),
@@ -113,14 +117,40 @@ class JsonContentObjectTest extends HeadlessUnitTestCase
         $container->set(ContentContentObject::class, new ContentContentObject($container->get(TimeTracker::class), $container->get(EventDispatcherInterface::class)));
         $container->set(DataProcessingExample::class, new DataProcessingExample());
         $container->set(EmptyDataProcessingExample::class, new EmptyDataProcessingExample());
+        $container->set(MultiVariableDataProcessingExample::class, new MultiVariableDataProcessingExample());
+        $this->countingProcessor = new CountingDataProcessingExample();
+        $container->set(CountingDataProcessingExample::class, $this->countingProcessor);
         GeneralUtility::setContainer($container);
 
         $request = new ServerRequest();
         $contentObjectRenderer = $this->createMock(ContentObjectRenderer::class);
         $contentObjectRenderer->data = [];
         $contentObjectRenderer->method('getRequest')->willReturn($request);
+        $typoScriptSetup = [
+            'lib.' => [
+                'json' => 'JSON',
+                'json.' => ['dataProcessing.' => ['10' => CountingDataProcessingExample::class, '10.' => ['as' => 'counter']]],
+            ],
+        ];
+        $mergeTSRef = static function (array $typoScriptArray, string $propertyName) use ($typoScriptSetup): array {
+            if (!str_starts_with($typoScriptArray[$propertyName], '<')) {
+                return $typoScriptArray;
+            }
+            [$lib, $key] = explode('.', trim(substr($typoScriptArray[$propertyName], 1)), 2);
+            $typoScriptArray[$propertyName] = $typoScriptSetup[$lib . '.'][$key];
+            $typoScriptArray[$propertyName . '.'] = array_replace_recursive($typoScriptSetup[$lib . '.'][$key . '.'] ?? [], $typoScriptArray[$propertyName . '.'] ?? []);
+
+            return $typoScriptArray;
+        };
+        $contentObjectRenderer->method('mergeTSRef')->willReturnCallback($mergeTSRef);
         $contentObjectRenderer->method('cObjGetSingle')->willReturnCallback(
-            static function (string $name, array $conf) {
+            static function (string $name, array $conf) use ($contentObjectRenderer, $request, $mergeTSRef) {
+                $resolved = $mergeTSRef(['tempKey' => $name, 'tempKey.' => $conf], 'tempKey');
+                $name = $resolved['tempKey'];
+                $conf = $resolved['tempKey.'];
+                if ($name === 'JSON') {
+                    return GeneralUtility::getContainer()->get(ContentObjectFactory::class)->getContentObject($name, $request, $contentObjectRenderer)->render($conf);
+                }
                 if ($name === 'USER_INT') {
                     return '<!--INT_SCRIPT.' . md5('123') . '-->';
                 }
@@ -158,8 +188,10 @@ class JsonContentObjectTest extends HeadlessUnitTestCase
 
         $factory = $this->createMock(ContentObjectFactory::class);
         $factory->method('getContentObject')
-            ->willReturnCallback(static function (string $name) use ($contentObjectRenderer, $request) {
-                $obj = GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'][$name]);
+            ->willReturnCallback(static function (string $name) use ($contentObjectRenderer, $request, $createJsonContentObject) {
+                $obj = $name === 'JSON'
+                    ? $createJsonContentObject()
+                    : GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'][$name]);
                 $obj->setRequest($request);
                 $obj->setContentObjectRenderer($contentObjectRenderer);
 
@@ -179,6 +211,94 @@ class JsonContentObjectTest extends HeadlessUnitTestCase
     public function testRender()
     {
         self::assertEquals('[]', $this->contentObject->render());
+    }
+
+    public function testJsonFieldRunsDataProcessingOnce(): void
+    {
+        $conf = ['fields.' => ['test' => 'JSON', 'test.' => ['dataProcessing.' => ['10' => CountingDataProcessingExample::class, '10.' => ['as' => 'counter']]]]];
+
+        self::assertSame(json_encode(['test' => ['Counted']]), $this->contentObject->render($conf));
+        self::assertSame(1, $this->countingProcessor->calls);
+    }
+
+    public function testPlainFieldRunsDataProcessingOnce(): void
+    {
+        $conf = ['fields.' => ['test' => 'TEXT', 'test.' => ['dataProcessing.' => ['10' => CountingDataProcessingExample::class, '10.' => ['as' => 'counter']]]]];
+
+        self::assertSame(json_encode(['test' => ['Counted']]), $this->contentObject->render($conf));
+        self::assertSame(1, $this->countingProcessor->calls);
+    }
+
+    public function testReferencedJsonFieldRunsDataProcessingOnce(): void
+    {
+        $conf = ['fields.' => ['test' => '< lib.json']];
+
+        self::assertSame(json_encode(['test' => ['Counted']]), $this->contentObject->render($conf));
+        self::assertSame(1, $this->countingProcessor->calls);
+    }
+
+    public function testReferencedJsonFieldWithLocalProcessorRunsEachOnce(): void
+    {
+        $conf = ['fields.' => ['test' => '< lib.json', 'test.' => ['dataProcessing.' => ['20' => CountingDataProcessingExample::class, '20.' => ['as' => 'extra']]]]];
+
+        self::assertSame(json_encode(['test' => ['Counted']]), $this->contentObject->render($conf));
+        self::assertSame(2, $this->countingProcessor->calls);
+    }
+
+    public function testDeepNestingWithMultipleProcessorsRunsEachOnce(): void
+    {
+        $counting = CountingDataProcessingExample::class;
+        $conf = [
+            'dataProcessingMerge' => 1,
+            'fields.' => [
+                'level1' => 'JSON',
+                'level1.' => [
+                    'dataProcessingMerge' => 1,
+                    'fields.' => [
+                        'level2' => 'JSON',
+                        'level2.' => [
+                            'dataProcessingMerge' => 1,
+                            'fields.' => [
+                                'level3' => 'JSON',
+                                'level3.' => ['dataProcessing.' => ['10' => $counting, '10.' => ['as' => 'a'], '20' => $counting, '20.' => ['as' => 'b']]],
+                                'plain' => 'TEXT',
+                                'plain.' => ['dataProcessing.' => ['10' => $counting, '10.' => ['as' => 'p']]],
+                                'ref' => '< lib.json',
+                                'ref.' => ['dataProcessing.' => ['20' => $counting, '20.' => ['as' => 'extra']]],
+                            ],
+                            'dataProcessing.' => ['10' => $counting, '10.' => ['as' => 'l2']],
+                        ],
+                    ],
+                    'dataProcessing.' => ['10' => $counting, '10.' => ['as' => 'l1a'], '20' => $counting, '20.' => ['as' => 'l1b']],
+                ],
+            ],
+            'dataProcessing.' => ['10' => $counting, '10.' => ['as' => 'top']],
+        ];
+
+        $expected = json_encode([
+            'level1' => [
+                'level2' => [
+                    'level3' => ['Counted'],
+                    'plain' => ['Counted'],
+                    'ref' => ['Counted'],
+                    'l2' => ['Counted'],
+                ],
+                'l1a' => ['Counted'],
+                'l1b' => ['Counted'],
+            ],
+            'top' => ['Counted'],
+        ]);
+
+        self::assertSame($expected, $this->contentObject->render($conf));
+        self::assertSame(9, $this->countingProcessor->calls);
+    }
+
+    public function testJsonFieldSkipsDataProcessingWhenIfFails(): void
+    {
+        $conf = ['fields.' => ['test' => 'JSON', 'test.' => ['if.' => ['isTrue' => 0], 'dataProcessing.' => ['10' => CountingDataProcessingExample::class, '10.' => ['as' => 'counter']]]]];
+
+        self::assertSame(json_encode(['test' => '']), $this->contentObject->render($conf));
+        self::assertSame(0, $this->countingProcessor->calls);
     }
 
     #[DataProvider('dataProvider')]
@@ -228,6 +348,15 @@ class JsonContentObjectTest extends HeadlessUnitTestCase
             [['dataProcessingMerge' => 1, 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]], json_encode(['SomeCustomProcessing'])],
             [['fields.' => ['nested.' => ['dataProcessingMerge' => 1, 'fields.' => ['nestedTest' => 'INT', 'nestedTest.' => ['value' => 10]], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]]]], json_encode(['nested' => ['nestedTest' => 10, 'sites' => ['SomeCustomProcessing']]])],
             [['fields.' => ['nested.' => ['fields.' => ['nestedTest' => 'INT', 'nestedTest.' => ['value' => 10]], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]]]], json_encode(['nested' => ['SomeCustomProcessing']])],
+            [['fields.' => ['test' => 'JSON', 'test.' => ['dataProcessingMerge' => 1, 'fields.' => ['inner' => 'TEXT', 'inner.' => ['value' => '1']], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]]]], json_encode(['test' => ['inner' => '1', 'sites' => ['SomeCustomProcessing']]])],
+            [['nullableFieldsIfEmpty' => 'outer', 'fields.' => ['inner' => 'JSON', 'inner.' => ['fields.' => ['x' => 'TEXT', 'x.' => ['value' => '']]], 'outer' => 'TEXT', 'outer.' => ['value' => '']]], json_encode(['inner' => ['x' => ''], 'outer' => null])],
+            [['fields.' => ['inner' => 'TEXT', 'inner.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'a']]]], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'b']]], json_encode(['SomeCustomProcessing'])],
+            [['fields.' => ['test' => 'JSON', 'test.' => ['fields.' => ['inner' => 'TEXT', 'inner.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'a']]]], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'b']]]]], json_encode(['test' => ['SomeCustomProcessing']])],
+            [['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'nested']], 'as' => 'sites']]], json_encode(['SomeCustomProcessing'])],
+            [['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample']], json_encode(['SomeCustomProcessing'])],
+            [['fields.' => ['test' => 'TEXT', 'test.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample']]]], json_encode(['test' => ['SomeCustomProcessing']])],
+            [['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\MultiVariableDataProcessingExample']], json_encode(['Second'])],
+            [['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites'], '20' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\MultiVariableDataProcessingExample']], json_encode(['SomeCustomProcessing'])],
         ];
     }
 
