@@ -7,33 +7,33 @@ Data Processors
 Common behaviour
 ================
 
-**`appendData`** — the menu, language-menu, gallery and files
+`appendData` — the menu, language-menu, gallery and files
 processors share a destructive default: with `appendData` absent or
 `0` the processor removes `data` from the processed result *and*
 strips `data` from every item in the target (`as`) array — for menus
 recursively through all `children`. Set `appendData = 1` to keep the
 raw record data.
 
-**`as` defaults** — when `as` is omitted, each processor falls back
+**Default target names** — when `as` is omitted, each processor falls back
 to its default target name:
 
-===========================  ================
-Processor                    Default `as`
-===========================  ================
-MenuProcessor                `menu`
-LanguageMenuProcessor        `languagemenu`
-GalleryProcessor             `gallery`
-FilesProcessor               `media`
-DatabaseQueryProcessor       `records`
-RootSitesProcessor           `sites`
-===========================  ================
+======================  ==============
+Processor               Default `as`
+======================  ==============
+MenuProcessor           `menu`
+LanguageMenuProcessor   `languagemenu`
+GalleryProcessor        `gallery`
+FilesProcessor          `media`
+DatabaseQueryProcessor  `records`
+RootSitesProcessor      `sites`
+======================  ==============
 
-.. __dataprocessors-databasequeryprocessor:
+.. _dataprocessors-databasequeryprocessor:
 
 DatabaseQueryProcessor
 ======================
 
-It's the `EXT:headless` equivalent of TYPO3's own DatabaseQueryProcessor.
+The `EXT:headless` equivalent of the core DatabaseQueryProcessor.
 
 .. code-block:: typoscript
 
@@ -73,14 +73,14 @@ documented there (`intval`, `ifEmptyReturnNull`, nested `fields`,
 ExtractPropertyProcessor
 ========================
 
-Extract a single (maybe nested) property from a given array.
+Extracts a single, possibly nested, property from the processed data.
 
 Both `as` and `key` are **required** — the processor throws an
 exception when either is missing. Its result **replaces** the entire
 processed data: only `[as => value]` survives, everything else the
 previous processors produced is discarded.
 
-Example see below in section on FilesProcessor.
+See the FilesProcessor example below.
 
 .. _dataprocessors-filesprocessor:
 
@@ -121,8 +121,8 @@ in :ref:`images`. Default `as` is `media`.
 FlexFormProcessor
 =================
 
-This DataProcessor allows to process a flexform field such as `tt_content.pi_flexform`
-and optionally override its property values.
+Processes a FlexForm field such as `tt_content.pi_flexform` and optionally
+overrides values in it.
 
 `fieldName` defaults to `pi_flexform`. When `as` is omitted, the
 processed flexform is written back in place — into
@@ -157,9 +157,8 @@ Supports `appendData` (see `Common behaviour`_); default `as` is
 LanguageMenuProcessor
 =====================
 
-It's the `EXT:headless` equivalent of TYPO3's LanguageMenuProcessor —
-same output enriched for JSON consumption, with the raw data stripped
-by default. Allowed options: `if`, `languages`, `as` (default
+The `EXT:headless` equivalent of the core LanguageMenuProcessor: the same
+items, with the raw record data stripped by default. Allowed options: `if`, `languages`, `as` (default
 `languagemenu`), `addQueryString` and `appendData` (see
 `Common behaviour`_). Unknown configuration keys throw an exception.
 
@@ -178,7 +177,7 @@ by default. Allowed options: `if`, `languages`, `as` (default
 MenuProcessor
 =============
 
-It's the `EXT:headless` equivalent of TYPO3's MenuProcessor.
+The `EXT:headless` equivalent of the core MenuProcessor.
 
 On top of the core options it provides (configuration keys are
 whitelisted — unknown keys throw an exception):
@@ -214,11 +213,11 @@ Default `as` is `menu`. Each menu item is rendered as:
 under `data`; fields listed in `additionalFields` appear as extra
 top-level keys on the item.
 
-Have a look at `lib.breadcrumbs` for example (all shipped TypoScript
-uses the registered short identifiers — `headless-menu`,
-`headless-files`, `headless-gallery`, `headless-database-query`,
-`headless-language-menu`, `headless-root-sites`, `headless-flex-form`,
-`headless-extract-property` — the FQCNs work too):
+Example: `lib.breadcrumbs`. The shipped TypoScript uses the registered
+short identifiers (`headless-menu`, `headless-files`, `headless-gallery`,
+`headless-database-query`, `headless-language-menu`, `headless-root-sites`,
+`headless-flex-form`, `headless-extract-property`); the class names work
+as well:
 
 .. code-block:: typoscript
 

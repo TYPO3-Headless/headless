@@ -8,7 +8,7 @@ Events you can listen to
 output is most useful. For the full signature of each event class
 see :ref:`ref-events`.
 
-* `FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent` — fired in
+* :php:`FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent` — fired in
   `FileUtility::process()` after a file's default properties have
   been collected, **before** crop-variants and autogenerate run.
   Use it to add custom fields (focus point, alt text from another
@@ -18,20 +18,20 @@ see :ref:`ref-events`.
   `properties.includeOnly` filter is applied *after* the event —
   list your custom keys there or they are dropped.
 
-* `FriendsOfTYPO3\Headless\Event\FileDataAfterCropVariantProcessingEvent`
+* :php:`FriendsOfTYPO3\Headless\Event\FileDataAfterCropVariantProcessingEvent`
   — fired once per file after all crop variants are processed (also
   when there are none). Annotate or rewrite the complete file payload
   including `cropVariants`.
 
 For customising the JSON redirect envelope, listen to the core
-`TYPO3\CMS\Redirects\Event\RedirectWasHitEvent` — see
+:php:`TYPO3\CMS\Redirects\Event\RedirectWasHitEvent` — see
 :ref:`integrations-redirects`.
 
 Listener registration
 =====================
 
-The `#[AsEventListener]` attribute is the idiomatic TYPO3 v14 form —
-no YAML needed:
+The `#[AsEventListener]` attribute is the TYPO3 v14 way; no YAML is
+needed:
 
 .. code-block:: php
 
@@ -70,5 +70,5 @@ Alternatively, register the listener via a `Services.yaml` tag:
            identifier: 'myext/file/signed-cdn-url'
            event: FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent
 
-After adding or re-registering a listener, run `bin/typo3 cache:flush`
-— the container is compiled.
+The container is compiled: run `bin/typo3 cache:flush` after adding or
+changing a listener.

@@ -11,14 +11,11 @@ EXT:headless
    en
 
 :Description:
-   Headless allows you to render JSON from TYPO3 content. You can customize output
-   by changing types, names and nesting of fields.
-
-   This extension provides the backend part (JSON API) for TYPO3 PWA solution.
-   The frontend part exists as JavaScript application
+   EXT:headless renders TYPO3 pages and content as JSON; field names, types
+   and nesting are configured in TypoScript. It is the backend of the TYPO3
+   PWA stack. The reference frontend is
    `nuxt-typo3 <https://github.com/TYPO3-Headless/nuxt-typo3>`__
-   which consumes the JSON API and renders the content using Nuxt framework of VueJS.
-   You can find the frontend documentation `here <https://t3headless.macopedia.io/nuxt-typo3/>`__.
+   (`frontend documentation <https://t3headless.macopedia.io/nuxt-typo3/>`__).
 
 :Keywords:
    headless, json, api
@@ -44,9 +41,9 @@ EXT:headless
 
 **Feedback & Credits**
 
-If you have any questions just drop a line in our `#initiative-pwa <https://typo3.slack.com/archives/CDJK80WV6>`__ Slack channel.
+Questions go to the `#initiative-pwa <https://typo3.slack.com/archives/CDJK80WV6>`__ Slack channel.
 
-Special thanks goes to `macopedia.com <https://macopedia.com>`__ company, which is sponsoring development of this solution.
+Development is sponsored by `macopedia.com <https://macopedia.com>`__.
 
 **TYPO3**
 
@@ -55,9 +52,8 @@ a GNU/GPL CMS/Framework available from `typo3.org <https://typo3.org/>`_ .
 
 **For Contributors**
 
-You are welcome to help improve this guide if you missing something.
-Just click on "Edit me on GitHub" on the top right to submit your change request
-or `report a problem <https://github.com/TYPO3-Headless/headless/issues/new>`__
+To improve this guide, use "Edit me on GitHub" at the top right or
+`report a problem <https://github.com/TYPO3-Headless/headless/issues/new>`__.
 
 **Table of Contents**
 
@@ -67,6 +63,7 @@ or `report a problem <https://github.com/TYPO3-Headless/headless/issues/new>`__
 
    Introduction/Index
    GettingStarted/Index
+   GettingStarted/Frontend
    Configuration/Index
    Configuration/MultiSite
    Developer/Index
@@ -75,13 +72,16 @@ or `report a problem <https://github.com/TYPO3-Headless/headless/issues/new>`__
    Developer/DataProcessors
    Developer/Events
    Developer/Images
+   Developer/Caching
    Developer/Snippets
    Integrations/Form
    Integrations/FeLogin
    Integrations/Redirects
    Reference/Typoscript
+   Reference/ContentElements
    Reference/Events
    Reference/FeatureFlags
    Reference/Interfaces
+   Reference/ViewHelpers
    FAQ/Index
    Sitemap

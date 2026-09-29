@@ -4,7 +4,7 @@
 TypoScript cObjects
 ===================
 
-EXT:headless registers a handful of new cObjects:
+EXT:headless registers these cObjects:
 
 * `JSON`
 * `CONTENT_JSON`
@@ -64,9 +64,9 @@ Builds a JSON object inline.
 
 The JSON cObject understands these properties:
 
-**`if`** — render the object only when the condition is met.
+`if` — render the object only when the condition is met.
 
-**`fields`** — array of child cObjects. Each field accepts:
+`fields` — array of child cObjects. Each field accepts:
 
 * `intval` / `floatval` / `boolval` — cast the result.
 * `ifEmptyReturnNull` — return `null` when the result is empty.
@@ -77,7 +77,7 @@ The JSON cObject understands these properties:
   stored under the block's own key.
 * `dataProcessing` — run data processors (see `lib.meta.ogImage`).
 
-**`nullableFieldsIfEmpty`** — comma list of field names to null out
+`nullableFieldsIfEmpty` — comma list of field names to null out
 when empty (bulk variant of `ifEmptyReturnNull`).
 
 A field whose cObject is `USER_INT` (or whose output starts with an
@@ -85,12 +85,12 @@ A field whose cObject is `USER_INT` (or whose output starts with an
 so the uncacheable value is substituted into the JSON on output; with
 `ifEmptyReturnNull = 1` the nullable marker variant is used.
 
-**`dataProcessing`** — *replaces* the `fields` output: the processors
+`dataProcessing` — *replaces* the `fields` output: the processors
 run and the value registered under the last `as` key becomes the
 object's content (e.g. :ref:`MenuProcessor <dataprocessors-menuprocessor>`).
 Set `dataProcessingMerge` to keep both.
 
-**`dataProcessingMerge`** — merge instead of replace. With
+`dataProcessingMerge` — merge instead of replace. With
 `dataProcessingMerge = 1` and `fields` present, the `fields` output is
 kept and every processor result is added to it under the processor's
 target (`as`) name; on a key collision the processor result wins.
@@ -116,7 +116,7 @@ The flag also works on a nested field block that defines both `fields`
 and `dataProcessing`. Without the flag — or without `fields` — the
 behaviour is unchanged: the processors replace the whole object.
 
-**`stdWrap`** — `stdWrap` applied to the already-encoded JSON string.
+`stdWrap` — `stdWrap` applied to the already-encoded JSON string.
 
 CONTENT_JSON
 ============
@@ -128,7 +128,7 @@ JSON-specific extras:
 **merge**
 
 Run a second `CONTENT_JSON` query and merge the result into the
-first — handy for the `slide` feature.
+first — used for the `slide` feature.
 
 .. code-block:: typoscript
 
