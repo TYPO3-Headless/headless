@@ -15,6 +15,7 @@ use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 use TYPO3\CMS\Core\LinkHandling\Exception\UnknownLinkHandlerException;
+use TYPO3\CMS\Core\LinkHandling\Exception\UnknownUrnException;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\LinkHandling\TypoLinkCodecService;
 use TYPO3\CMS\Core\Resource\Exception\InvalidPathException;
@@ -25,6 +26,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\Event\AfterLinkIsGeneratedEvent;
 use TYPO3\CMS\Frontend\Typolink\UnableToLinkException;
 
+use function is_array;
 use function is_numeric;
 use function is_string;
 use function str_starts_with;
@@ -44,6 +46,10 @@ final class AfterLinkIsGeneratedListener
         $result = $event->getLinkResult();
 
         if ($result->getType() !== 'page') {
+            return;
+        }
+
+        if ($this->isSecondEventOfRecordLink($event)) {
             return;
         }
 
@@ -87,6 +93,47 @@ final class AfterLinkIsGeneratedListener
             $result = $result->withAttribute('href', $href);
             $event->setLinkResult($result);
         }
+    }
+
+    /**
+     * The core builds a link to a record with a nested link generation on a content object that holds the record,
+     * see DatabaseRecordLinkBuilder. This listener handles the event of that nested page link. The outer link
+     * generation then dispatches a second event for the same link result with the content object of the caller.
+     */
+    private function isSecondEventOfRecordLink(AfterLinkIsGeneratedEvent $event): bool
+    {
+        $linkInstructions = $event->getLinkInstructions();
+        if ($event->getLinkResult()->getLinkConfiguration() === $linkInstructions) {
+            return false;
+        }
+
+        // Resolves the requested link the same way LinkFactory::create() does
+        $url = $this->getUrlFromTypolinkParameter((string)($linkInstructions['parameter'] ?? ''));
+        if (is_array($linkInstructions['parameter.'] ?? null)) {
+            $modifiedUrl = $this->getUrlFromTypolinkParameter(
+                (string)$event->getContentObjectRenderer()->stdWrap($url, $linkInstructions['parameter.'])
+            );
+            $url = $modifiedUrl !== '' ? $modifiedUrl : $url;
+        }
+
+        if (!str_starts_with($url, 't3://record')) {
+            return false;
+        }
+
+        try {
+            return ($this->linkService->resolve($url)['type'] ?? '') === LinkService::TYPE_RECORD;
+        } catch (UnknownLinkHandlerException|UnknownUrnException) {
+            return false;
+        }
+    }
+
+    private function getUrlFromTypolinkParameter(string $parameter): string
+    {
+        if ($parameter === '') {
+            return '';
+        }
+
+        return (string)($this->typoLinkCodecService->decode($parameter)['url'] ?? '');
     }
 
     private function getTargetSite(AfterLinkIsGeneratedEvent $event): Site
