@@ -20,6 +20,7 @@ use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\ExpressionLanguage\Resolver;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\LinkHandling\Exception\UnknownLinkHandlerException;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\LinkHandling\TypoLinkCodecService;
 use TYPO3\CMS\Core\Log\Logger;
@@ -232,5 +233,202 @@ class AfterLinkIsGeneratedListenerTest extends UnitTestCase
             'https://front.typo3.tld/headless/sitemap-type/pages/sitemap.xml',
             $event->getLinkResult()->getUrl()
         );
+    }
+
+    public function test__invokeSkipsSecondEventOfRecordLink()
+    {
+        $logger = $this->prophesize(Logger::class);
+        $logger->error(Argument::any())->shouldNotBeCalled();
+        $urlUtility = $this->prophesize(UrlUtility::class);
+        $urlUtility->withRequest(Argument::any())->shouldNotBeCalled();
+
+        $listener = $this->createListenerForRecordLinks($logger->reveal(), $urlUtility->reveal());
+
+        // The content object of the caller does not hold the record, so "field:pid" is empty there
+        $cObj = $this->prophesize(ContentObjectRenderer::class);
+        $cObj->stdWrap(Argument::cetera())->willReturn('');
+        $cObj->stdWrapValue(Argument::cetera())->willReturn('');
+        $cObj->getRequest()->willReturn(new ServerRequest());
+
+        $linkResult = $this->createPageLinkResultOfRecordLink();
+        $event = new AfterLinkIsGeneratedEvent(
+            $linkResult,
+            $cObj->reveal(),
+            ['parameter' => 't3://record?identifier=tx_news&uid=1']
+        );
+        $listener($event);
+
+        self::assertSame($linkResult, $event->getLinkResult());
+    }
+
+    public function test__invokeSkipsSecondEventOfRecordLinkFromStdWrap()
+    {
+        $logger = $this->prophesize(Logger::class);
+        $logger->error(Argument::any())->shouldNotBeCalled();
+        $urlUtility = $this->prophesize(UrlUtility::class);
+        $urlUtility->withRequest(Argument::any())->shouldNotBeCalled();
+
+        $listener = $this->createListenerForRecordLinks($logger->reveal(), $urlUtility->reveal());
+
+        $cObj = $this->prophesize(ContentObjectRenderer::class);
+        $cObj->stdWrap('', ['data' => 'parameters:href'])->willReturn('t3://record?identifier=tx_news&uid=1');
+        $cObj->stdWrap(Argument::cetera())->willReturn('');
+        $cObj->stdWrapValue(Argument::cetera())->willReturn('');
+        $cObj->getRequest()->willReturn(new ServerRequest());
+
+        $linkResult = $this->createPageLinkResultOfRecordLink();
+        $event = new AfterLinkIsGeneratedEvent(
+            $linkResult,
+            $cObj->reveal(),
+            ['parameter' => '', 'parameter.' => ['data' => 'parameters:href']]
+        );
+        $listener($event);
+
+        self::assertSame($linkResult, $event->getLinkResult());
+    }
+
+    public function test__invokeModifiesFirstEventOfRecordLink()
+    {
+        $site = new Site('test', 1, []);
+        $request = (new ServerRequest())->withAttribute('site', $site);
+
+        $urlUtility = $this->prophesize(UrlUtility::class);
+        $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
+        $urlUtility->getFrontendUrlWithSite(
+            Argument::is('https://typo3.tld/news/record'),
+            Argument::is($site),
+            Argument::is('frontendBase')
+        )->willReturn('https://front.typo3.tld/news/record');
+
+        $siteFinder = $this->createPartialMock(SiteFinder::class, ['getSiteByPageId']);
+        $siteFinder->expects(self::once())->method('getSiteByPageId')->with(5)->willReturn($site);
+
+        $listener = $this->createListenerForRecordLinks(
+            $this->prophesize(Logger::class)->reveal(),
+            $urlUtility->reveal(),
+            $siteFinder
+        );
+
+        // The nested link generation of DatabaseRecordLinkBuilder uses a content object that holds the record
+        $cObj = $this->prophesize(ContentObjectRenderer::class);
+        $cObj->stdWrap('', ['data' => 'field:pid'])->willReturn('5');
+        $cObj->getRequest()->willReturn($request);
+
+        $linkResult = $this->createPageLinkResultOfRecordLink();
+        $event = new AfterLinkIsGeneratedEvent(
+            $linkResult,
+            $cObj->reveal(),
+            $this->getNestedLinkInstructionsOfRecordLink()
+        );
+        $listener($event);
+
+        self::assertSame('https://front.typo3.tld/news/record', $event->getLinkResult()->getUrl());
+    }
+
+    public function test__invokeModifiesLinkWithUnknownLinkHandler()
+    {
+        $site = new Site('test', 1, []);
+        $request = (new ServerRequest())->withAttribute('site', $site);
+
+        $urlUtility = $this->prophesize(UrlUtility::class);
+        $urlUtility->withRequest($request)->willReturn($urlUtility->reveal());
+        $urlUtility->getFrontendUrlForPage(Argument::is('/'), Argument::is(2))
+            ->willReturn('https://frontend-domain.tld/page');
+
+        $listener = $this->createListenerForRecordLinks(
+            $this->prophesize(Logger::class)->reveal(),
+            $urlUtility->reveal()
+        );
+
+        $cObj = $this->prophesize(ContentObjectRenderer::class);
+        $cObj->getRequest()->willReturn($request);
+
+        $linkResult = (new LinkResult('page', '/'))->withLinkConfiguration(['parameter' => 2]);
+        $event = new AfterLinkIsGeneratedEvent(
+            $linkResult,
+            $cObj->reveal(),
+            ['parameter' => 't3://recordx?identifier=tx_news&uid=1']
+        );
+        $listener($event);
+
+        self::assertSame('https://frontend-domain.tld/page', $event->getLinkResult()->getUrl());
+    }
+
+    public function test__invokeModifiesRecordLinkWithoutNestedLinkGeneration()
+    {
+        $site = new Site('test', 1, []);
+        $request = (new ServerRequest())->withAttribute('site', $site);
+
+        $urlUtility = $this->prophesize(UrlUtility::class);
+        $urlUtility->withRequest($request)->willReturn($urlUtility->reveal())->shouldBeCalledOnce();
+        $urlUtility->getFrontendUrlWithSite(Argument::cetera())->willReturn('https://front.typo3.tld/news/record');
+
+        $listener = $this->createListenerForRecordLinks(
+            $this->prophesize(Logger::class)->reveal(),
+            $urlUtility->reveal()
+        );
+
+        $cObj = $this->prophesize(ContentObjectRenderer::class);
+        $cObj->getRequest()->willReturn($request);
+
+        // A custom link builder for records that creates the page link itself and keeps the link instructions
+        $linkInstructions = ['parameter' => 't3://record?identifier=tx_news&uid=1'];
+        $linkResult = (new LinkResult('page', 'https://typo3.tld/news/record'))
+            ->withLinkText('News record')
+            ->withLinkConfiguration($linkInstructions);
+        $event = new AfterLinkIsGeneratedEvent($linkResult, $cObj->reveal(), $linkInstructions);
+        $listener($event);
+
+        self::assertSame('https://front.typo3.tld/news/record', $event->getLinkResult()->getUrl());
+    }
+
+    private function createListenerForRecordLinks(
+        Logger $logger,
+        UrlUtility $urlUtility,
+        ?SiteFinder $siteFinder = null
+    ): AfterLinkIsGeneratedListener {
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $eventDispatcher->dispatch(Argument::any())->willReturnArgument();
+
+        $linkService = $this->prophesize(LinkService::class);
+        $linkService->resolve('t3://record?identifier=tx_news&uid=1')
+            ->willReturn(['type' => LinkService::TYPE_RECORD, 'identifier' => 'tx_news', 'uid' => 1]);
+        $linkService->resolve('t3://recordx?identifier=tx_news&uid=1')
+            ->willThrow(new UnknownLinkHandlerException('LinkHandler for recordx was not registered', 1460581769));
+        $linkService->resolve('5')->willReturn(['type' => LinkService::TYPE_PAGE, 'pageuid' => 5]);
+        $linkService->resolve('')->willReturn([]);
+
+        return new AfterLinkIsGeneratedListener(
+            $logger,
+            $urlUtility,
+            $linkService->reveal(),
+            new TypoLinkCodecService($eventDispatcher->reveal()),
+            $siteFinder ?? $this->createMock(SiteFinder::class)
+        );
+    }
+
+    /**
+     * The link instructions DatabaseRecordLinkBuilder passes to the nested link generation, from "config.recordLinks"
+     */
+    private function getNestedLinkInstructionsOfRecordLink(): array
+    {
+        return [
+            'parameter' => '',
+            'parameter.' => ['data' => 'field:pid'],
+            'additionalParams.' => ['data' => 'field:uid'],
+        ];
+    }
+
+    /**
+     * The page link the nested link generation creates, PageLinkBuilder adds "additionalParams" to the configuration
+     */
+    private function createPageLinkResultOfRecordLink(): LinkResult
+    {
+        return (new LinkResult('page', 'https://typo3.tld/news/record'))
+            ->withLinkText('News record')
+            ->withLinkConfiguration(array_merge(
+                $this->getNestedLinkInstructionsOfRecordLink(),
+                ['additionalParams' => '']
+            ));
     }
 }
