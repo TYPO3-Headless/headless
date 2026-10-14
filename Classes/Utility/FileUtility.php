@@ -118,13 +118,17 @@ class FileUtility
                 $disableProcessingFor,
                 true
             )) {
-                $fileReference = $this->processImageFile($fileReference, $processingConfiguration);
+                $processedFile = $this->processImageFile($fileReference, $processingConfiguration);
+
+                if ($processedFile !== null) {
+                    $fileReference = $processedFile;
+                }
             }
             $publicUrl = $this->imageService->getImageUri($fileReference, true);
         } elseif ($fileRenderer !== null) {
             $publicUrl = $fileRenderer->render($fileReference, '', '', ['returnUrl' => true]);
         } else {
-            $publicUrl = $this->getAbsoluteUrl($fileReference->getPublicUrl());
+            $publicUrl = $this->getAbsoluteUrl((string)$fileReference->getPublicUrl());
         }
 
         $processedProperties = [
@@ -225,11 +229,9 @@ class FileUtility
             $propName = $prop;
 
             if (str_contains($prop, ' as ')) {
-                [$prop, $propName] = GeneralUtility::trimExplode(' as ', $prop, true);
-
-                if ($propName === '') {
-                    $propName = $prop;
-                }
+                $parts = GeneralUtility::trimExplode(' as ', $prop, true);
+                $prop = $parts[0] ?? $prop;
+                $propName = $parts[1] ?? $prop;
             }
 
             if (in_array($prop, ['width', 'height'], true)) {
@@ -296,7 +298,7 @@ class FileUtility
     public function processImageFile(
         FileInterface $fileReference,
         ProcessingConfiguration $processingConfiguration
-    ): ProcessedFile {
+    ): ?ProcessedFile {
         try {
             $cropVariantCollection = $this->createCropVariant((string)$fileReference->getProperty('crop'));
             $cropArea = $cropVariantCollection->getCropArea($processingConfiguration->cropVariant);
@@ -320,6 +322,8 @@ class FileUtility
             $type = lcfirst(get_class($fileReference));
             $status = get_class($e);
             $this->errors['processImageFile'][$type . '-' . $fileReference->getUid()] = $status;
+
+            return null;
         }
     }
 

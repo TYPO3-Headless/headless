@@ -124,7 +124,7 @@ class FlexFormProcessor implements DataProcessorInterface
         if (!empty($targetVariableName)) {
             $processedData[$targetVariableName] = $flexformData;
         } else {
-            if ($processedData['data'][$fieldName]) {
+            if (!empty($processedData['data'][$fieldName])) {
                 $processedData['data'][$fieldName] = $flexformData;
             } else {
                 $processedData[$fieldName] = $flexformData;

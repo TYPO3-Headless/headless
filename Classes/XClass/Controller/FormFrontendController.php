@@ -32,8 +32,11 @@ use function array_pop;
 use function base64_encode;
 use function class_exists;
 use function count;
+use function end;
 use function in_array;
+use function is_a;
 use function is_array;
+use function is_string;
 use function json_decode;
 use function serialize;
 use function str_replace;
@@ -107,7 +110,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
             unset($formDefinition['renderingOptions']['formDecorator']);
         }
 
-        if (empty($decoratorClass)) {
+        if (!is_string($decoratorClass) || !is_a($decoratorClass, DefinitionDecoratorInterface::class, true)) {
             $decoratorClass = FormDefinitionDecorator::class;
         }
 
@@ -130,9 +133,15 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
         $elements = $formRuntime->getFormDefinition()->getElements();
         $honeyPot = null;
 
-        if (isset($formRuntime->getFormDefinition()->getRenderingOptions()['honeypot']['enable']) &&
-            $formRuntime->getFormDefinition()->getRenderingOptions()['honeypot']['enable'] === true) {
-            $honeyPot = array_pop($elements);
+        $honeypotOptions = $formRuntime->getFormDefinition()->getRenderingOptions()['honeypot'] ?? [];
+
+        if (($honeypotOptions['enable'] ?? false) === true) {
+            $lastElement = end($elements);
+            $honeypotType = $honeypotOptions['formElementToUse'] ?? 'Honeypot';
+
+            if ($lastElement !== false && $lastElement->getType() === $honeypotType) {
+                $honeyPot = array_pop($elements);
+            }
         }
 
         $stateHash = $this->getHashService()->appendHmac(
@@ -291,15 +300,16 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
                 );
             } else {
                 if (!empty($field['properties']['customOptions'])) {
-                    $customOptions = GeneralUtility::makeInstance(
-                        $field['properties']['customOptions'],
-                        $field,
-                        $formFields,
-                        $identifier,
-                        $formRuntime
-                    );
+                    $customOptionsClass = $field['properties']['customOptions'];
 
-                    if ($customOptions instanceof CustomOptionsInterface) {
+                    if (is_string($customOptionsClass) && is_a($customOptionsClass, CustomOptionsInterface::class, true)) {
+                        $customOptions = GeneralUtility::makeInstance(
+                            $customOptionsClass,
+                            $field,
+                            $formFields,
+                            $identifier,
+                            $formRuntime
+                        );
                         $field['properties']['options'] = $customOptions->get();
                     }
 

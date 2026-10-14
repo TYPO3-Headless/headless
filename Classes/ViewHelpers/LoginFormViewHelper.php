@@ -235,6 +235,8 @@ class LoginFormViewHelper extends FormViewHelper
         $this->registerFieldNameForFormTokenGeneration($name);
 
         $this->addHiddenField($name, $identifier);
+
+        return '';
     }
 
     /**
