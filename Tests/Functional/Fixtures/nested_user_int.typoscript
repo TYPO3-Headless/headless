@@ -1,0 +1,16 @@
+initialData.10.fields {
+    direct = USER_INT
+    direct {
+        userFunc = FriendsOfTYPO3\Headless\Tests\Functional\Fixtures\UserIntFixture->direct
+    }
+
+    nested = JSON
+    nested {
+        fields {
+            record = USER_INT
+            record {
+                userFunc = FriendsOfTYPO3\Headless\Tests\Functional\Fixtures\UserIntFixture->nested
+            }
+        }
+    }
+}

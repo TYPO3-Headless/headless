@@ -14,11 +14,8 @@ namespace FriendsOfTYPO3\Headless\ContentObject;
 use FriendsOfTYPO3\Headless\Json\JsonDecoderInterface;
 use FriendsOfTYPO3\Headless\Json\JsonEncoderInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessUserInt;
-use Generator;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use RecursiveArrayIterator;
-use RecursiveIteratorIterator;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\AbstractContentObject;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
@@ -127,7 +124,7 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ((int)($conf['ifEmptyUnsetKey'] ?? 0) === 1 && ($content[$theKey] === '' || $content[$theKey] === false)) {
                     unset($content[$theKey]);
                 }
-                if (!empty($conf['dataProcessing.'])) {
+                if (!empty($conf['dataProcessing.']) && !$this->resolvesToJsonContentObject($theValue, $conf)) {
                     $content[$theKey] = $this->processFieldWithDataProcessing(['dataProcessing.' => $conf['dataProcessing.']]);
                 }
             }
@@ -184,19 +181,27 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             ]
         );
 
-        if ($this->shouldMergeWithFields($dataProcessing)) {
-            unset($data['data'], $data['current']);
+        $registered = array_diff_key($data, ['data' => true, 'current' => true]);
 
-            return $data;
+        if ($this->shouldMergeWithFields($dataProcessing)) {
+            return $registered;
         }
 
         $dataProcessingData = null;
 
-        foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
-            if (isset($data[$value])) {
-                $dataProcessingData = $data[$value];
+        foreach ($dataProcessing['dataProcessing.'] as $processorConfiguration) {
+            if (!is_array($processorConfiguration) || !isset($processorConfiguration['as'])) {
+                continue;
+            }
+            if (isset($registered[$processorConfiguration['as']])) {
+                $dataProcessingData = $registered[$processorConfiguration['as']];
             }
         }
+
+        if ($dataProcessingData === null && $registered !== []) {
+            $dataProcessingData = $registered[array_key_last($registered)];
+        }
+
         return $dataProcessingData;
     }
 
@@ -209,26 +214,12 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
     }
 
     /**
-     * @param array<string, mixed> $haystack
+     * @param array<string, mixed> $conf
      */
-    protected function recursiveFind(array $haystack, string $needle): Generator
+    protected function resolvesToJsonContentObject(string $name, array $conf): bool
     {
-        $iterator = new RecursiveArrayIterator($haystack);
-        $recursive = new RecursiveIteratorIterator(
-            $iterator,
-            RecursiveIteratorIterator::SELF_FIRST
-        );
-        $iteration = 0;
-        foreach ($recursive as $key => $value) {
-            if ($key === 'dataProcessing.') {
-                $iteration++;
-                if ($iteration > 1) {
-                    return;
-                }
-            }
-            if ($key === $needle) {
-                yield $value;
-            }
-        }
+        $resolved = $this->cObj->mergeTSRef(['tempKey' => $name, 'tempKey.' => $conf], 'tempKey');
+
+        return $resolved['tempKey'] === 'JSON';
     }
 }
