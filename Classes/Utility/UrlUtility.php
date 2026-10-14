@@ -124,13 +124,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
                 $targetUri = $targetUri->withPath($this->handleFrontendAndBackendPaths($frontExtraPath, $targetUri, $site->getBase()->getPath()));
             }
 
-            if ($site->getBase()->getPort() === $frontPort) {
-                return (string)$targetUri;
-            }
-
-            if ($frontPort) {
-                $targetUri = $targetUri->withPort($frontPort);
-            }
+            $targetUri = $targetUri->withPort($frontPort);
 
             return (string)$targetUri;
         } catch (SiteNotFoundException $e) {

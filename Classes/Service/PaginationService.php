@@ -95,7 +95,7 @@ class PaginationService
             'insertAbove' => $insertAbove,
             'insertBelow' => $insertBelow,
         ];
-        $this->numberOfPages = (int)ceil(count($this->objects) / $itemsPerPage);
+        $this->numberOfPages = (int)ceil(count($this->objects) / max(1, $itemsPerPage));
     }
 
     public function paginate(int $currentPage = 1): array
@@ -146,7 +146,7 @@ class PaginationService
 
     protected function getCurrentPageId(): int
     {
-        if (is_object($GLOBALS['TSFE'])) {
+        if (is_object($GLOBALS['TSFE'] ?? null)) {
             return (int)$GLOBALS['TSFE']->id;
         }
         return 0;

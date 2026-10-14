@@ -98,7 +98,11 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             if ((string)$theKey && !str_contains($theKey, '.')) {
                 $conf = $setup[$theKey . '.'] ?? [];
                 $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
-                $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
+                $renderConf = $conf;
+                if ($theValue === 'JSON' && !empty($contentDataProcessing['dataProcessing.'])) {
+                    unset($renderConf['dataProcessing.']);
+                }
+                $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $renderConf, $addKey . $theKey);
                 if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
                 }
@@ -171,9 +175,12 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
 
         $dataProcessingData = null;
 
-        foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
-            if (isset($data[$value])) {
-                $dataProcessingData = $data[$value];
+        foreach ($dataProcessing['dataProcessing.'] ?? [] as $processorConfiguration) {
+            if (!is_array($processorConfiguration) || !isset($processorConfiguration['as'])) {
+                continue;
+            }
+            if (isset($data[$processorConfiguration['as']])) {
+                $dataProcessingData = $data[$processorConfiguration['as']];
             }
         }
         return $dataProcessingData;
