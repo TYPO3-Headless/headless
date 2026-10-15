@@ -6,14 +6,15 @@ EXT:form
 
 If `EXT:form` is enabled in the TYPO3 instance, `EXT:headless` produces
 JSON form definitions instead of HTML. Forms designed in the form
-editor work out of the box; this page documents the headless-specific
-hooks that help frontend developers.
+editor work without changes; this page documents the headless-specific
+options.
 
 .. note::
 
    On a MIXED-mode site (`headless: 2`) the JSON form definition — and
    every submission — requires exactly `Accept: application/json` as
-   the first Accept header value; anything else renders HTML.
+   the first Accept header value; anything else renders HTML (see
+   :ref:`configuration`).
 
 Configuration (YAML)
 ====================
@@ -114,7 +115,7 @@ response — the `{expression, flags}` pair maps directly to JavaScript's
 Custom options (dynamic select/radio/checkbox)
 ----------------------------------------------
 
-Implement `FriendsOfTYPO3\Headless\Form\CustomOptionsInterface` and
+Implement :php:`FriendsOfTYPO3\Headless\Form\CustomOptionsInterface` and
 point the field at it:
 
 .. code-block:: yaml
@@ -133,8 +134,7 @@ field's definition array, all fields of the current page, the runtime
 form identifier and the `FormRuntime` — so options can depend on the
 surrounding form state.
 
-If your custom form type isn't a standard one (so the frontend
-wouldn't know what to render), override the *type* sent to the
+If the frontend does not know a custom form type, override the *type* sent to the
 frontend with `FEOverrideType`:
 
 .. code-block:: yaml
@@ -147,7 +147,7 @@ JSON redirect finisher
 ----------------------
 
 The standard `RedirectFinisher` issues a real HTTP redirect. In
-headless mode that breaks the SPA flow. Use the `JsonRedirect`
+headless mode that breaks the SPA navigation. Use the `JsonRedirect`
 finisher instead — it puts the redirect target into
 `api.actionAfterSuccess` and lets the frontend decide what to do.
 
@@ -202,8 +202,8 @@ Honeypot
 
 When `renderingOptions.honeypot.enable` is true, an extra field with a
 **session-random identifier** appears in `elements` and its name is
-baked into `__trustedProperties`. Render it hidden from humans and
-submit it **empty** — filling or omitting it fails the submission.
+baked into `__trustedProperties`. Render it invisible and submit it
+**empty** — filling or omitting it fails the submission.
 When using a custom honeypot element, its type must match
 `renderingOptions.honeypot.formElementToUse` (default `Honeypot`) for
 headless to expose it correctly in the JSON definition.
@@ -215,12 +215,12 @@ Customising the JSON output (decorators)
 
 EXT:headless provides three building blocks:
 
-* `FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator` —
+* :php:`FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator` —
   default implementation.
-* `FriendsOfTYPO3\Headless\Form\Decorator\AbstractFormDefinitionDecorator`
+* :php:`FriendsOfTYPO3\Headless\Form\Decorator\AbstractFormDefinitionDecorator`
   — base class with hooks to override per-element or whole-form
   output.
-* `FriendsOfTYPO3\Headless\Form\Decorator\DefinitionDecoratorInterface`
+* :php:`FriendsOfTYPO3\Headless\Form\Decorator\DefinitionDecoratorInterface`
   — the contract a custom decorator implements.
 
 Default output (`FormDefinitionDecorator`) — the decorator returns the

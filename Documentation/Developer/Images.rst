@@ -7,38 +7,42 @@ Image rendering
 FileUtility
 ===========
 
-The file rendering in `EXT:headless` is handled by `FileUtility` which renders the following JSON for each file:
+File rendering in `EXT:headless` is handled by `FileUtility`, which by
+default renders the following JSON for each file:
 
 .. code-block:: json
 
-  "publicUrl": "https://www.example.org/fileadmin/_processed_/6/c/csm_my-image_51125112.jpg"
-  "properties": {
-    "mimeType": "image/jpeg",
-    "type": "image",
-    "filename": "csm_my-image_51125112.jpg",
-    "link": null,
-    "linkData": null,
-    "originalUrl": "https://www.example.org/fileadmin/my-image.jpg",
-    "uidLocal": "123",
-    "fileReferenceUid": "234",
-    "size": "50 KB",
-    "title": null,
-    "alternative": null,
-    "description": null,
-    "dimensions": {
-      "width": "300",
-      "height": "100",
-    },
-    "cropDimensions": {
-      "width": "300",
-      "height": "100",
-    },
-    "crop": { ... },
-    "autoplay": null,
-    "extension": null
+  {
+    "publicUrl": "https://www.example.org/fileadmin/_processed_/6/c/csm_my-image_51125112.jpg",
+    "properties": {
+      "mimeType": "image/jpeg",
+      "type": "image",
+      "filename": "csm_my-image_51125112.jpg",
+      "link": null,
+      "linkData": null,
+      "originalUrl": "https://www.example.org/fileadmin/my-image.jpg",
+      "uidLocal": "123",
+      "fileReferenceUid": "234",
+      "size": "50 KB",
+      "title": null,
+      "alternative": null,
+      "description": null,
+      "dimensions": {
+        "width": "300",
+        "height": "100"
+      },
+      "cropDimensions": {
+        "width": "300",
+        "height": "100"
+      },
+      "crop": {},
+      "autoplay": null,
+      "extension": null
+    }
   }
 
-The file rendering can be simplified via `legacyReturn` = 0 processing configuration flag
+Set `legacyReturn = 0` in the processing configuration for the simplified
+shape:
 
 .. code-block:: typoscript
 
@@ -60,83 +64,56 @@ The file rendering can be simplified via `legacyReturn` = 0 processing configura
     }
   }
 
-Will output:
+The output becomes:
 
 .. code-block:: json
 
-  "url": "https://www.example.org/fileadmin/_processed_/6/c/csm_my-image_51125112.jpg"
-  "mimeType": "image/jpeg",
-  "type": "image",
-  "filename": "csm_my-image_51125112.jpg",
-  "originalUrl": "https://www.example.org/fileadmin/my-image.jpg",
-  "link": null,
-  "uidLocal": "123",
-  "fileReferenceUid": "234",
-  "size": "50 KB",
-  "title": null,
-  "alternative": null,
-  "description": null,
-  "dimensions": {
-    "width": "300",
-    "height": "100",
-  },
-  "cropDimensions": {
-    "width": "300",
-    "height": "100",
-  },
-  "cropVariants": { "default": "..." },
-  "autoplay": null,
-  "extension": null
+  {
+    "url": "https://www.example.org/fileadmin/_processed_/6/c/csm_my-image_51125112.jpg",
+    "mimeType": "image/jpeg",
+    "type": "image",
+    "filename": "csm_my-image_51125112.jpg",
+    "originalUrl": "https://www.example.org/fileadmin/my-image.jpg",
+    "link": null,
+    "uidLocal": "123",
+    "fileReferenceUid": "234",
+    "size": "50 KB",
+    "title": null,
+    "alternative": null,
+    "description": null,
+    "dimensions": {
+      "width": "300",
+      "height": "100"
+    },
+    "cropDimensions": {
+      "width": "300",
+      "height": "100"
+    },
+    "cropVariants": { "default": "..." },
+    "autoplay": null,
+    "extension": null
+  }
 
 `cropVariants` only appears for images whose crop configuration
 defines more than one crop variant.
 
-EnrichFileDataEvent
--------------------
-
-`FileUtility` is emitting the event `EnrichFileDataEvent` for manipulating the `properties` array.
-
-To add a listener add this to your `Configuration/Services.yaml`:
-
-.. code-block:: yaml
-
-  My\Extension\EventListener\TweakFileData:
-    tags:
-      - name: event.listener
-        identifier: 'tweak-file-data'
-        event: FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent
+To add custom keys to this payload (signed URLs, focus point, …), listen to
+:php:`FriendsOfTYPO3\Headless\Event\EnrichFileDataEvent` — see
+:ref:`developer-events`.
 
 FilesProcessor
 ==============
 
-`headless` provides its own `FilesProcessor` to render files.
+`EXT:headless` provides its own `FilesProcessor` to render files; its
+sources (`references`, `files`, `collections`, `folders`) and generic
+options are listed in :ref:`dataprocessors-filesprocessor`. The example
+above shows how the `og_image` of a page is rendered.
 
-Here's an example of how the `og_image` of a page is being rendered via TypoScript:
-
-.. code-block:: typoscript
-
-  lib.meta {
-    fields {
-      ogImage = TEXT
-      ogImage {
-        dataProcessing {
-          10 = FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor
-          10 {
-            as = media
-            references.fieldName = og_image
-            processingConfiguration {
-              returnFlattenObject = 1
-            }
-          }
-        }
-      }
-    }
-  }
 
 Configuration
 -------------
 
-The rendering configuration can be set via the property `processingConfiguration` and provides the following sub-properties:
+The `processingConfiguration` block accepts these options:
 
 * `legacyReturn` (0|1): Allows to control new simplified output or old system (old system by default)
 * `linkResult` (0|1): Allows to define if file object should return only url of defined link or whole LinkResult object
