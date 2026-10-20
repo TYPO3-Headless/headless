@@ -17,7 +17,9 @@ use FriendsOfTYPO3\Headless\Resource\Rendering\VideoTagRenderer;
 use FriendsOfTYPO3\Headless\Resource\Rendering\VimeoRenderer;
 use FriendsOfTYPO3\Headless\Resource\Rendering\YouTubeRenderer;
 use FriendsOfTYPO3\Headless\Seo\CanonicalGenerator;
+use FriendsOfTYPO3\Headless\XClass\ResourceLocalDriver;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
+use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
 use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -32,6 +34,10 @@ call_user_func(
         $GLOBALS['TYPO3_CONF_VARS']['FE']['contentRenderingTemplates'][] = 'headless/Configuration/TypoScript/';
 
         $GLOBALS['TYPO3_CONF_VARS']['FE']['typolinkBuilder']['file'] = FileOrFolderLinkBuilder::class;
+
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][LocalDriver::class] = [
+            'className' => ResourceLocalDriver::class,
+        ];
 
         if (ExtensionManagementUtility::isLoaded('form')) {
             $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][FormFrontendController::class] = [

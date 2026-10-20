@@ -27,7 +27,21 @@ interface HeadlessFrontendUrlInterface
 
     public function getProxyUrl(): string;
 
-    public function getStorageProxyUrl(): string;
+    /**
+     * Returns the configured frontendFileApi base URL. When $storageUid is
+     * provided and frontendFileApi is configured as an array keyed by storage
+     * UID, the URL for that storage is returned. When called with no argument,
+     * the first entry is returned as a best-effort fallback.
+     */
+    public function getStorageProxyUrl(?int $storageUid = null): string;
+
+    /**
+     * Whether frontendFileApi is configured as a per-storage array with a URL
+     * for this specific storage UID. When true, callers should use the URL
+     * returned by getStorageProxyUrl($storageUid) directly as the storage's
+     * base URI, bypassing URL composition from frontendBase + basePath.
+     */
+    public function hasStorageSpecificFrontendFileApi(int $storageUid): bool;
 
     public function resolveKey(string $key): string;
 

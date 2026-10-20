@@ -1197,6 +1197,100 @@ class UrlUtilityTest extends \FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTes
         );
     }
 
+    /**
+     * When frontendFileApi is configured as an array keyed by storage UID,
+     * getStorageProxyUrl($uid) returns the URL for that storage and
+     * hasStorageSpecificFrontendFileApi($uid) returns true. When called
+     * with no argument, the first array entry is returned as a best-effort
+     * fallback.
+     */
+    public function testStorageProxyUrlWithPerStorageArrayConfig(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://test-backend-api.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://www.typo3.org',
+            'languages' => [],
+            'baseVariants' => [
+                [
+                    'base' => 'https://test-backend-api.tld',
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendBase' => 'https://test-frontend.tld',
+                    'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
+                    'frontendFileApi' => [
+                        1 => 'https://test-frontend-api.tld/headless/fileadmin',
+                        3 => 'https://test-frontend-api.tld/headless/fileadmin_static',
+                    ],
+                ],
+            ],
+        ]);
+
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturnCallback(static function ($_arg) {
+            return str_contains((string)$_arg, 'Development');
+        });
+
+        $urlUtility = new UrlUtility($resolver, $this->createMock(SiteFinder::class), $this->createHeadlessMode());
+        $urlUtility = $urlUtility->withSite($site);
+
+        // Per-storage resolution
+        self::assertSame('https://test-frontend-api.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl(1));
+        self::assertSame('https://test-frontend-api.tld/headless/fileadmin_static', $urlUtility->getStorageProxyUrl(3));
+
+        // Best-effort: no argument returns the first entry
+        self::assertSame('https://test-frontend-api.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
+
+        // Unknown storage UID returns empty string (allows caller to fall back)
+        self::assertSame('', $urlUtility->getStorageProxyUrl(99));
+
+        // hasStorageSpecificFrontendFileApi() reflects which storages have a URL
+        self::assertTrue($urlUtility->hasStorageSpecificFrontendFileApi(1));
+        self::assertTrue($urlUtility->hasStorageSpecificFrontendFileApi(3));
+        self::assertFalse($urlUtility->hasStorageSpecificFrontendFileApi(2));
+        self::assertFalse($urlUtility->hasStorageSpecificFrontendFileApi(99));
+    }
+
+    /**
+     * When frontendFileApi is configured as a plain string (legacy form),
+     * hasStorageSpecificFrontendFileApi() returns false and callers fall back
+     * to URL composition or getStorageProxyUrl() as before.
+     */
+    public function testStorageProxyUrlWithStringConfigHasNoStorageSpecificBehaviour(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://test-backend-api.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://www.typo3.org',
+            'languages' => [],
+            'baseVariants' => [
+                [
+                    'base' => 'https://test-backend-api.tld',
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendBase' => 'https://test-frontend.tld',
+                    'frontendApiProxy' => 'https://test-frontend-api.tld/headless',
+                    'frontendFileApi' => 'https://test-frontend-api.tld/headless/fileadmin',
+                ],
+            ],
+        ]);
+
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturnCallback(static function ($_arg) {
+            return str_contains((string)$_arg, 'Development');
+        });
+
+        $urlUtility = new UrlUtility($resolver, $this->createMock(SiteFinder::class), $this->createHeadlessMode());
+        $urlUtility = $urlUtility->withSite($site);
+
+        // String config: same URL for all storages
+        self::assertSame('https://test-frontend-api.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl(1));
+        self::assertSame('https://test-frontend-api.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl(3));
+        self::assertSame('https://test-frontend-api.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
+
+        // No per-storage configuration; hasStorageSpecificFrontendFileApi() is always false
+        self::assertFalse($urlUtility->hasStorageSpecificFrontendFileApi(1));
+        self::assertFalse($urlUtility->hasStorageSpecificFrontendFileApi(3));
+    }
+
     private function createHeadlessMode(int $mode =  HeadlessModeInterface::FULL): HeadlessModeInterface
     {
         $headlessMode = new HeadlessMode();
