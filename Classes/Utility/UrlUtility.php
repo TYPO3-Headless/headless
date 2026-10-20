@@ -167,9 +167,50 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $this->resolveWithVariants($this->conf['frontendApiProxy'] ?? '', $this->variants, 'frontendApiProxy');
     }
 
-    public function getStorageProxyUrl(): string
+    public function getStorageProxyUrl(?int $storageUid = null): string
     {
-        return $this->resolveWithVariants($this->conf['frontendFileApi'] ?? '', $this->variants, 'frontendFileApi');
+        $frontendFileApi = $this->conf['frontendFileApi'] ?? '';
+        $returnField = $storageUid !== null ? 'frontendFileApi.' . $storageUid : 'frontendFileApi';
+
+        if (is_array($frontendFileApi)) {
+            if ($storageUid !== null) {
+                $uid = (string)$storageUid;
+                $frontendFileApi = $frontendFileApi[$uid] ?? $frontendFileApi[$storageUid] ?? '';
+            } else {
+                $frontendFileApi = count($frontendFileApi) ? reset($frontendFileApi) : '';
+            }
+        }
+
+        return $this->resolveWithVariants((string)$frontendFileApi, $this->variants, $returnField);
+    }
+
+    public function hasStorageSpecificFrontendFileApi(int $storageUid): bool
+    {
+        $uid = (string)$storageUid;
+
+        foreach ($this->variants as $baseVariant) {
+            $condition = (string)($baseVariant['condition'] ?? '');
+            if ($condition === '') {
+                continue;
+            }
+            try {
+                if (!array_key_exists($condition, $this->variantConditionCache)) {
+                    $this->variantConditionCache[$condition] = (bool)$this->resolver->evaluate($condition);
+                }
+                if ($this->variantConditionCache[$condition]) {
+                    $variantFileApi = $baseVariant['frontendFileApi'] ?? '';
+                    if (is_array($variantFileApi)) {
+                        return isset($variantFileApi[$uid]) || isset($variantFileApi[$storageUid]);
+                    }
+                    return false;
+                }
+            } catch (SyntaxError $e) {
+                $this->logError($e->getMessage());
+            }
+        }
+
+        $frontendFileApi = $this->conf['frontendFileApi'] ?? '';
+        return is_array($frontendFileApi) && (isset($frontendFileApi[$uid]) || isset($frontendFileApi[$storageUid]));
     }
 
     public function resolveKey(string $key): string
@@ -248,7 +289,21 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
                     $this->variantConditionCache[$condition] = (bool)$this->resolver->evaluate($condition);
                 }
                 if ($this->variantConditionCache[$condition]) {
-                    return rtrim($baseVariant[$returnField] ?? '', '/');
+                    $parts = GeneralUtility::trimExplode('.', $returnField, true, 2);
+                    $baseField = $parts[0] ?? $returnField;
+                    $index = $parts[1] ?? null;
+                    $data = $baseVariant[$baseField] ?? $baseVariant[$returnField] ?? '';
+
+                    if (is_array($data)) {
+                        if ($index !== null) {
+                            // When index is requested but not in array, return empty (caller falls back).
+                            $data = $data[$index] ?? '';
+                        } else {
+                            $data = count($data) ? reset($data) : '';
+                        }
+                    }
+
+                    return rtrim((string)$data, '/');
                 }
             } catch (SyntaxError $e) {
                 $this->logError($e->getMessage());
@@ -286,7 +341,10 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $variants = $langConf['baseVariants'] ?? [];
         $frontendBase = trim($langConf['frontendBase'] ?? '');
         $frontendApiProxy = trim($langConf['frontendApiProxy'] ?? '');
-        $frontendFileApi = trim($langConf['frontendFileApi'] ?? '');
+        $frontendFileApi = $langConf['frontendFileApi'] ?? '';
+        if (!is_array($frontendFileApi)) {
+            $frontendFileApi = trim((string)$frontendFileApi);
+        }
         $overrides = [];
 
         if ($language->getBase()->getHost() !== '') {
