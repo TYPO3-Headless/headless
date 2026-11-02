@@ -1197,6 +1197,55 @@ class UrlUtilityTest extends \FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTes
         );
     }
 
+    public function testGetFrontendUrlWithSiteMatchesHostBasedLanguageForDeepLinks(): void
+    {
+        $de = new SiteLanguage(0, 'de_DE.UTF-8', new Uri('https://backend.de/'), [
+            'frontendBase' => 'https://front.de',
+        ]);
+        $at = new SiteLanguage(1, 'de_AT.UTF-8', new Uri('https://backend.at/'), [
+            'frontendBase' => 'https://front.at',
+        ]);
+
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.de/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.de',
+            'frontendBase' => 'https://front.de',
+        ]);
+        $site->method('getLanguages')->willReturn([$de, $at]);
+
+        $urlUtility = new UrlUtility($this->createMock(Resolver::class), $this->createMock(SiteFinder::class), $this->createHeadlessMode());
+
+        self::assertSame('https://front.de/', $urlUtility->getFrontendUrlWithSite('https://backend.de/', $site));
+        self::assertSame('https://front.de/page', $urlUtility->getFrontendUrlWithSite('https://backend.de/page', $site));
+        self::assertSame('https://front.at/', $urlUtility->getFrontendUrlWithSite('https://backend.at/', $site));
+        self::assertSame('https://front.at/page', $urlUtility->getFrontendUrlWithSite('https://backend.at/page', $site));
+    }
+
+    public function testGetFrontendUrlWithSitePrefersMostSpecificLanguageBase(): void
+    {
+        $en = new SiteLanguage(1, 'en_US.UTF-8', new Uri('https://backend.tld/en/'), [
+            'frontendBase' => 'https://front-en.tld',
+        ]);
+        $default = new SiteLanguage(0, 'de_DE.UTF-8', new Uri('https://backend.tld/'), [
+            'frontendBase' => 'https://front.tld',
+        ]);
+
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendBase' => 'https://front.tld',
+        ]);
+        $site->method('getLanguages')->willReturn([$en, $default]);
+
+        $urlUtility = new UrlUtility($this->createMock(Resolver::class), $this->createMock(SiteFinder::class), $this->createHeadlessMode());
+
+        self::assertSame('https://front-en.tld/en/page', $urlUtility->getFrontendUrlWithSite('https://backend.tld/en/page', $site));
+        self::assertSame('https://front.tld/page', $urlUtility->getFrontendUrlWithSite('https://backend.tld/page', $site));
+        self::assertSame('https://front.tld/english', $urlUtility->getFrontendUrlWithSite('https://backend.tld/english', $site));
+    }
+
     private function createHeadlessMode(int $mode =  HeadlessModeInterface::FULL): HeadlessModeInterface
     {
         $headlessMode = new HeadlessMode();
