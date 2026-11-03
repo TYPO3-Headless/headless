@@ -341,21 +341,37 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     {
         $backendUri = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($backendUrl));
         $matchedLanguage = null;
+        $matchedPathLength = -1;
         foreach ($site->getLanguages() as $language) {
             $base = trim($language->toArray()['frontendBase'] ?? '');
             if ($base === '') {
                 continue;
             }
 
-            if ($language->getBase()->getHost() !== '') {
-                $this->backendDomains[] = $language->getBase()->getHost();
+            $languageBase = $language->getBase();
+            if ($languageBase->getHost() !== '') {
+                $this->backendDomains[] = $languageBase->getHost();
             }
             $this->frontendDomains[] = $this->hostFromBase($base);
 
-            if ($language->getBase()->getHost() === $backendUri->getHost()) {
+            if ($languageBase->getHost() !== '' && $backendUri->getHost() !== '') {
+                // languages with their own host never match urls of another host
+                if ($languageBase->getHost() !== $backendUri->getHost()) {
+                    continue;
+                }
+            } elseif ($backendUri->getPath() === '/') {
+                continue;
+            }
+
+            if (!$this->basePathMatches($languageBase->getPath(), $backendUri->getPath())) {
+                continue;
+            }
+
+            // prefer the most specific language base, e.g. "/en/" over "/"
+            $pathLength = strlen(rtrim($languageBase->getPath(), '/'));
+            if ($pathLength >= $matchedPathLength) {
                 $matchedLanguage = $language;
-            } elseif ($backendUri->getPath() !== '/' && str_starts_with($backendUri->getPath(), $language->getBase()->getPath())) {
-                $matchedLanguage = $language;
+                $matchedPathLength = $pathLength;
             }
         }
 
@@ -363,6 +379,11 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $this->frontendDomains = array_unique($this->frontendDomains);
 
         return $matchedLanguage;
+    }
+
+    protected function basePathMatches(string $basePath, string $path): bool
+    {
+        return str_starts_with(rtrim($path, '/') . '/', rtrim($basePath, '/') . '/');
     }
 
     protected function hostFromBase(string $base): string
