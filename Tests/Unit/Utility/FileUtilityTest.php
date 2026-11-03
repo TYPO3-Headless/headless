@@ -394,6 +394,7 @@ class FileUtilityTest extends UnitTestCase
             'cropVariants' => [
                 'default' => [
                     'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+                    'urlTest' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
                     'width' => 526,
                     'height' => 526,
                 ],
@@ -453,11 +454,13 @@ class FileUtilityTest extends UnitTestCase
             'cropVariants' => [
                 'default' => [
                     'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+                    'urlTest' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
                     'width' => 526,
                     'height' => 526,
                 ],
                 'mobile' => [
                     'url' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
+                    'urlTest' => 'https://test-frontend.tld/fileadmin/test-file.jpg?1639061876',
                     'width' => 526,
                     'height' => 526,
                 ],
@@ -527,21 +530,17 @@ class FileUtilityTest extends UnitTestCase
             ],
         ];
 
-        $fileUtility->process($file, ProcessingConfiguration::fromOptions($options));
-
-        self::assertCount(2, $capturedInstructions, 'Expected outer + autogenerate inner call');
+        $result = $fileUtility->process($file, ProcessingConfiguration::fromOptions($options));
 
         // Outer call: crop only, no explicit dimensions.
         self::assertNull($capturedInstructions[0]['width']);
         self::assertNull($capturedInstructions[0]['height']);
 
-        // Autogenerate "big" with factor=2 on a 75x25 crop of a 100x100 image.
-        // The cap should be the crop's dimensions (75x25), not the uncropped
-        // file's dimensions (100x100). Without this cap, the inner request becomes
-        // 100x50 — an aspect mismatch against the 3:1 crop area that the image
-        // processor resolves by stretching or padding.
-        self::assertSame('75', $capturedInstructions[1]['width']);
-        self::assertSame('25', $capturedInstructions[1]['height']);
+        // Autogenerate "big" with factor=2 on a 75x25 crop of a 100x100 image is
+        // capped at the crop (75x25), not the uncropped file (100x100). That equals
+        // the outer rendition, so no inner call is made and its url is reused.
+        self::assertCount(1, $capturedInstructions, 'Capped autogenerate must reuse the outer rendition');
+        self::assertSame($result['url'], $result['big']);
     }
 
     public function testProcessAutogenerateWithoutCropUsesFileDimensionsAsCap(): void
@@ -553,15 +552,69 @@ class FileUtilityTest extends UnitTestCase
         $captured = [];
         $fileUtility = $this->getFileUtility(null, $this->createCapturingImageService($captured, $processedFile));
 
-        $fileUtility->process($file, ProcessingConfiguration::fromOptions([
+        $result = $fileUtility->process($file, ProcessingConfiguration::fromOptions([
             'legacyReturn' => 0,
             'autogenerate.' => ['big' => ['factor' => 2]],
         ]));
 
+        // factor=2 on a 100x100 (no crop) capped at 100x100 — same as the outer rendition.
+        self::assertCount(1, $captured);
+        self::assertSame($result['url'], $result['big']);
+    }
+
+    public function testProcessAutogenerateWithSameSizeButOtherExtensionIsProcessed(): void
+    {
+        $fileData = $this->getImageFileData();
+        $file = $this->getMockFileForData($fileData);
+        $processedFile = $this->getMockProcessedFileForData($fileData);
+
+        $captured = [];
+        $fileUtility = $this->getFileUtility(null, $this->createCapturingImageService($captured, $processedFile));
+
+        $fileUtility->process($file, ProcessingConfiguration::fromOptions([
+            'legacyReturn' => 0,
+            'autogenerate.' => ['webp' => ['factor' => 2, 'fileExtension' => 'webp']],
+        ]));
+
         self::assertCount(2, $captured);
-        // factor=2 on a 100x100 (no crop) capped at 100x100 — can't enlarge past source pixels.
+        self::assertSame('webp', $captured[1]['fileExtension']);
         self::assertSame('100', $captured[1]['width']);
-        self::assertSame('100', $captured[1]['height']);
+    }
+
+    public function testProcessAutogenerateWithSameSizeIsProcessedWhenMainImageWasConverted(): void
+    {
+        $fileData = $this->getImageFileData();
+        $file = $this->getMockFileForData($fileData);
+        $processedFile = $this->getMockProcessedFileForData(array_merge($fileData, ['extension' => 'webp']));
+
+        $captured = [];
+        $fileUtility = $this->getFileUtility(null, $this->createCapturingImageService($captured, $processedFile));
+
+        $fileUtility->process($file, ProcessingConfiguration::fromOptions([
+            'legacyReturn' => 0,
+            'fileExtension' => 'webp',
+            'autogenerate.' => ['big' => ['factor' => 2]],
+        ]));
+
+        self::assertCount(2, $captured);
+        self::assertArrayNotHasKey('fileExtension', $captured[1]);
+    }
+
+    public function testProcessAutogenerateReusesUrlInLegacyReturn(): void
+    {
+        $fileData = $this->getImageFileData();
+        $file = $this->getMockFileForData($fileData);
+        $processedFile = $this->getMockProcessedFileForData($fileData);
+
+        $captured = [];
+        $fileUtility = $this->getFileUtility(null, $this->createCapturingImageService($captured, $processedFile));
+
+        $result = $fileUtility->process($file, ProcessingConfiguration::fromOptions([
+            'autogenerate.' => ['big' => ['factor' => 2]],
+        ]));
+
+        self::assertCount(1, $captured);
+        self::assertSame($result['publicUrl'], $result['big']);
     }
 
     public function testProcessAutogenerateWithFractionalFactorScalesDown(): void
@@ -627,11 +680,10 @@ class FileUtilityTest extends UnitTestCase
             ],
         ]));
 
-        // 1 outer + 2 inner.
-        self::assertCount(3, $captured);
-        self::assertSame('100', $captured[1]['width']); // big capped at 100
-        self::assertSame('10', $captured[2]['width']);  // thumb 100*0.1=10
-        self::assertArrayHasKey('big', $result);
+        // 1 outer + 1 inner: big is capped at 100 (same as outer) and reuses its url.
+        self::assertCount(2, $captured);
+        self::assertSame('10', $captured[1]['width']); // thumb 100*0.1=10
+        self::assertSame($result['url'], $result['big']);
         self::assertArrayHasKey('thumb', $result);
     }
 
@@ -879,6 +931,84 @@ class FileUtilityTest extends UnitTestCase
             ['cropArea' => $defaultArea, 'selectedRatio' => 'NaN', 'focusArea' => null],
             $processed['cropVariants']['default']['dimensions']['crop']
         );
+    }
+
+    public function testProcessCropVariantsBuildsMapForSingleNamedVariant(): void
+    {
+        $cropJson = '{"desktop":{"cropArea":{"x":0.1,"y":0.1,"width":0.5,"height":0.5},"selectedRatio":"NaN","focusArea":null}}';
+        $processed = $this->processWithCropVariants($cropJson, ['legacyReturn' => 0], $captured);
+
+        self::assertSame(['desktop'], array_keys($processed['cropVariants']));
+        self::assertNull($captured[0]['crop']);
+        self::assertNotNull($captured[1]['crop']);
+    }
+
+    public function testProcessCropVariantsSkipsMapForDefaultOnly(): void
+    {
+        $cropJson = '{"default":{"cropArea":{"x":0.1,"y":0.1,"width":0.5,"height":0.5},"selectedRatio":"NaN","focusArea":null}}';
+        $processed = $this->processWithCropVariants($cropJson, ['legacyReturn' => 0], $captured);
+
+        self::assertArrayNotHasKey('cropVariants', $processed);
+    }
+
+    public function testProcessCropVariantsKeepsAutogenerateUrls(): void
+    {
+        $cropJson = '{"default":{"cropArea":{"x":0.1,"y":0.1,"width":0.5,"height":0.5},"selectedRatio":"NaN","focusArea":null},'
+            . '"mobile":{"cropArea":{"x":0.2,"y":0.2,"width":0.3,"height":0.3},"selectedRatio":"NaN","focusArea":null}}';
+        $options = ['legacyReturn' => 0, 'autogenerate.' => ['urlRetina' => ['factor' => 2]]];
+        $processed = $this->processWithCropVariants($cropJson, $options, $captured);
+
+        self::assertArrayHasKey('urlRetina', $processed['cropVariants']['default']);
+        self::assertArrayHasKey('urlRetina', $processed['cropVariants']['mobile']);
+    }
+
+    public function testProcessCropVariantsIncludesUncroppedOriginal(): void
+    {
+        $cropJson = '{"default":{"cropArea":{"x":0.1,"y":0.1,"width":0.5,"height":0.5},"selectedRatio":"NaN","focusArea":null}}';
+        $options = ['legacyReturn' => 0, 'includeOriginal' => 1, 'outputCropArea' => 1];
+        $processed = $this->processWithCropVariants($cropJson, $options, $captured);
+
+        self::assertNotNull($captured[0]['crop']);
+        self::assertNull($captured[1]['crop']);
+        self::assertSame(
+            ['url', 'dimensions'],
+            array_keys($processed['original'])
+        );
+        self::assertArrayNotHasKey('crop', $processed['original']['dimensions']);
+    }
+
+    public function testProcessCropVariantsOmitsOriginalByDefault(): void
+    {
+        $cropJson = '{"default":{"cropArea":{"x":0.1,"y":0.1,"width":0.5,"height":0.5},"selectedRatio":"NaN","focusArea":null}}';
+        $processed = $this->processWithCropVariants($cropJson, ['legacyReturn' => 0], $captured);
+
+        self::assertArrayNotHasKey('original', $processed);
+        self::assertCount(1, $captured);
+    }
+
+    public function testProcessCropVariantsIgnoresMalformedCrop(): void
+    {
+        $processed = $this->processWithCropVariants('{"desktop":"broken","mobile":42}', ['legacyReturn' => 0], $captured);
+
+        self::assertArrayNotHasKey('cropVariants', $processed);
+        self::assertArrayNotHasKey('crop', $processed);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     * @param list<array<string, mixed>>|null $captured
+     * @return array<string, mixed>
+     */
+    protected function processWithCropVariants(string $cropJson, array $options, ?array &$captured): array
+    {
+        $captured = [];
+        $fileData = $this->getImageFileData(['crop' => $cropJson]);
+        $file = $this->getMockFileForData($fileData, ['crop' => $cropJson]);
+        $processedFile = $this->getMockProcessedFileForData($fileData);
+        $fileUtility = $this->getFileUtility(null, $this->createCapturingImageService($captured, $processedFile));
+        $configuration = ProcessingConfiguration::fromOptions($options);
+
+        return $fileUtility->processCropVariants($file, $configuration, $fileUtility->process($file, $configuration));
     }
 
     public function testProcessOnDemandPropertiesSupportsAsAliasAndPublicUrlSkip(): void
