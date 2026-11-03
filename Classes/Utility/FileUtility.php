@@ -41,6 +41,8 @@ use function in_array;
 
 class FileUtility implements FileUtilityInterface
 {
+    protected const NO_CROP_VARIANT = '';
+
     /**
      * @var array<string, array<string, string>>
      */
@@ -431,19 +433,33 @@ class FileUtility implements FileUtilityInterface
         $targetHeight = (int)($processingConfiguration->height !== '' ? $processingConfiguration->height : $fileReference->getProperty('height'));
 
         if ($targetWidth || $targetHeight) {
+            $urlKey = $processingConfiguration->legacyReturn ? 'publicUrl' : 'url';
+
             foreach ($processingConfiguration->autogenerate as $autogenerateKey => $conf) {
                 $autogenerateKey = rtrim($autogenerateKey, '.');
                 $factor = (float)($conf['factor'] ?? 1.0);
+                $fileExtension = $conf['fileExtension'] ?? null;
+                // multiply width/height by factor,
+                // but don't stretch image beyond its original dimensions!
+                $width = min($targetWidth * $factor, $originalWidth);
+                $height = min($targetHeight * $factor, $originalHeight);
+
+                $isDuplicateOfMainImage = (int)round($width) === (int)$fileReference->getProperty('width')
+                    && (int)round($height) === (int)$fileReference->getProperty('height')
+                    && ($fileExtension ?? $originalReference->getExtension()) === $fileReference->getExtension();
+
+                if ($isDuplicateOfMainImage) {
+                    $processedFile[$autogenerateKey] = $processedFile[$urlKey];
+                    continue;
+                }
 
                 $processedFile[$autogenerateKey] = $this->process(
                     $originalReference,
                     $processingConfiguration->withOptions(
                         [
-                            'fileExtension' => $conf['fileExtension'] ?? null,
-                            // multiply width/height by factor,
-                            // but don't stretch image beyond its original dimensions!
-                            'width' => min($targetWidth * $factor, $originalWidth),
-                            'height' => min($targetHeight * $factor, $originalHeight),
+                            'fileExtension' => $fileExtension,
+                            'width' => $width,
+                            'height' => $height,
                             'autogenerate.' => null,
                             'legacyReturn' => 0,
                         ]
@@ -470,11 +486,11 @@ class FileUtility implements FileUtilityInterface
                 unset($processedFile['crop'], $processedFile['properties']['crop']);
             }
 
-            $cropVariants = json_decode($crop, true);
-
             $collection = $this->createCropVariant($crop);
+            $isValidCrop = (string)$collection !== '[]';
+            $cropVariants = $isValidCrop ? json_decode($crop, true) : [];
 
-            if (is_array($cropVariants) && count($cropVariants) > 1 && str_starts_with(
+            if (is_array($cropVariants) && array_keys($cropVariants) !== ['default'] && str_starts_with(
                 $originalFileReference->getMimeType(),
                 'image/'
             )) {
@@ -492,6 +508,14 @@ class FileUtility implements FileUtilityInterface
                     );
                 }
             }
+        }
+
+        if ($processingConfiguration->includeOriginal && str_starts_with($originalFileReference->getMimeType(), 'image/')) {
+            $originalConfiguration = $processingConfiguration->withOptions(['cropVariant' => self::NO_CROP_VARIANT]);
+            $processedFile['original'] = $this->cropVariant(
+                $originalConfiguration,
+                $this->process($originalFileReference, $originalConfiguration)
+            );
         }
 
         return $this->eventDispatcher->dispatch(
@@ -528,7 +552,7 @@ class FileUtility implements FileUtilityInterface
 
         $additional = [];
 
-        if ($processingConfiguration->outputCropArea) {
+        if ($processingConfiguration->outputCropArea && $cropVariant !== []) {
             $additional = ['crop' => $cropVariant];
         }
 
@@ -546,8 +570,18 @@ class FileUtility implements FileUtilityInterface
             ...$additional,
         ];
 
+        $urls = [$urlKey => $url];
+
+        foreach (array_keys($processingConfiguration->autogenerate) as $autogenerateKey) {
+            $autogenerateKey = rtrim($autogenerateKey, '.');
+
+            if (isset($file[$autogenerateKey])) {
+                $urls[$autogenerateKey] = $file[$autogenerateKey];
+            }
+        }
+
         if (!$processingConfiguration->legacyReturn && $processingConfiguration->flattenProperties) {
-            return array_merge([$urlKey => $url], $dimensions);
+            return array_merge($urls, $dimensions);
         }
 
         $wrappedDimensions = $dimensions;
@@ -560,6 +594,6 @@ class FileUtility implements FileUtilityInterface
             $wrappedDimensions = ['properties' => $wrappedDimensions];
         }
 
-        return [$urlKey => $url, ...$wrappedDimensions];
+        return [...$urls, ...$wrappedDimensions];
     }
 }

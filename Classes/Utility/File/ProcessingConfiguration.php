@@ -13,6 +13,9 @@ namespace FriendsOfTYPO3\Headless\Utility\File;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class ProcessingConfiguration
 {
     protected const RETINA_RATIO = 2;
@@ -44,6 +47,7 @@ class ProcessingConfiguration
             (int)($options['processSvg'] ?? 0) > 0,
             (int)($options['processGif'] ?? 0) > 0,
             (int)($options['outputCropArea'] ?? 0) > 0,
+            (int)($options['includeOriginal'] ?? 0) > 0,
             GeneralUtility::trimExplode(',', $options['properties.']['includeOnly'] ?? '', true),
             GeneralUtility::trimExplode(',', $options['properties.']['defaultFieldsByType'] ?? '', true),
             GeneralUtility::trimExplode(',', $options['properties.']['defaultImageFields'] ?? '', true),
@@ -82,6 +86,7 @@ class ProcessingConfiguration
         public readonly bool $processSvg = false,
         public readonly bool $processGif = false,
         public readonly bool $outputCropArea = false,
+        public readonly bool $includeOriginal = false,
         public readonly array $includeProperties = [],
         public readonly array $defaultFieldsByType = [],
         public readonly array $defaultImageFields = [],
