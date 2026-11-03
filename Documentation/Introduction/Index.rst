@@ -1,8 +1,8 @@
 .. _introduction:
 
-==============
+============
 Introduction
-==============
+============
 
 EXT:headless renders TYPO3 pages and content as JSON. The response shape is
 plain TypoScript — field names, types and nesting are customised with tools
@@ -32,13 +32,13 @@ What you get
 Version support
 ===============
 
-==========  ================  ==========  ==============================
-headless    TYPO3             PHP         Status
-==========  ================  ==========  ==============================
-5.x         14                >= 8.2      Active development
-4.x         12.4 – 13         >= 8.2      Bug & security fixes
-3.x         11.5              —           End of life
-==========  ================  ==========  ==============================
+========  =========  =========  ====================
+headless  TYPO3      PHP        Status
+========  =========  =========  ====================
+5.x       14         >= 8.2     Active development
+4.x       12.4 – 13  >= 8.2     Bug & security fixes
+3.x       11.5       7.4 – 8.2  End of life
+========  =========  =========  ====================
 
-Upgrading? See `UPGRADE.md
-<https://github.com/TYPO3-Headless/headless/blob/main/UPGRADE.md>`__.
+Upgrade notes: `UPGRADE.md
+<https://github.com/TYPO3-Headless/headless/blob/master/UPGRADE.md>`__.

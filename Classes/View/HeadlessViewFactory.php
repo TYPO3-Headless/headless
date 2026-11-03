@@ -35,18 +35,16 @@ class HeadlessViewFactory implements ViewFactoryInterface
 
     public function create(ViewFactoryData $data): ViewInterface
     {
-        if ($data->format !== 'php' || !$this->enabled) {
+        if ($data->format !== 'php') {
             return $this->inner->create($data);
         }
 
         $request = $data->request;
-        if ($request === null
+        if (!$this->enabled
+            || $request === null
             || !ApplicationType::fromRequest($request)->isFrontend()
-            || !$this->headlessMode->isEnabledFor($request)) {
-            return $this->inner->create($data);
-        }
-
-        if ($request instanceof ExtbaseRequestInterface && !$this->isPhpFormatConfigured()) {
+            || !$this->headlessMode->isEnabledFor($request)
+            || ($request instanceof ExtbaseRequestInterface && !$this->isPhpFormatConfigured())) {
             return $this->inner->create($this->withoutFormat($data));
         }
 
