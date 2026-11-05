@@ -14,6 +14,7 @@ use FriendsOfTYPO3\Headless\ContentObject\FloatContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
+use FriendsOfTYPO3\Headless\DataProcessing\CategoriesProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\ExtractPropertyProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor;
@@ -182,6 +183,7 @@ return static function (ContainerConfigurator $configurator): void {
                 'share' => false,
                 'public' => true,
             ],
+            CategoriesProcessor::class => ['identifier' => 'headless-categories', 'share' => false, 'public' => true],
         ] as $class => $processorConfig
     ) {
         $service = $services->set($class)

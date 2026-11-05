@@ -26,7 +26,50 @@ GalleryProcessor             `gallery`
 FilesProcessor               `media`
 DatabaseQueryProcessor       `records`
 RootSitesProcessor           `sites`
+CategoriesProcessor          `categories`
 ===========================  ================
+
+.. _dataprocessors-categoriesprocessor:
+
+CategoriesProcessor
+===================
+
+Returns categories as a list of objects instead of a comma-separated
+string, e.g. to add categories to pages or content elements of the
+trimmed response.
+
+.. code-block:: typoscript
+
+  lib.contentElement.fields.categories = JSON
+  lib.contentElement.fields.categories {
+    dataProcessing {
+      10 = headless-categories
+      10 {
+        relation.fieldName = categories
+        as = categories
+      }
+    }
+  }
+
+.. code-block:: json
+
+  "categories": [
+    {"id": 2, "title": "Category 2"},
+    {"id": 1, "title": "Category 1"}
+  ]
+
+Properties:
+
+* `relation.fieldName` — category field of the current record
+* `relation.table` (Default: current table) — table of the current record
+* `uidInList` — comma-separated list of category uids, used if no
+  relation is configured; the categories are returned in the given order
+* `pidInList` (Default: `root`, which means pid 0) and `recursive`
+  (Default: 0) — storage of the categories
+* `fields` (Default: `uid,title`) — `sys_category` fields to return,
+  `uid` is returned as `id`
+* `orderBy` (Default: sorting of the relation or order of `uidInList`)
+* `as` (Default: `categories`)
 
 .. __dataprocessors-databasequeryprocessor:
 
