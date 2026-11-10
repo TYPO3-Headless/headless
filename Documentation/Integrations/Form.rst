@@ -6,14 +6,13 @@ EXT:form
 
 If `EXT:form` is enabled in the TYPO3 instance, `EXT:headless` produces
 JSON form definitions instead of HTML. Forms designed in the form
-editor work out of the box; this page documents the headless-specific
-hooks that help frontend developers.
+editor work without changes; this page documents the headless-specific
+options.
 
 .. note::
 
-   On a MIXED-mode site (`headless: 2`) the JSON form definition — and
-   every submission — requires exactly `Accept: application/json` as
-   the first Accept header value; anything else renders HTML.
+   On a mixed-mode site the form definition and every submission need the
+   Accept header from :ref:`configuration-mixed-accept`.
 
 Configuration (YAML)
 ====================
@@ -39,9 +38,7 @@ Strings are translated through the standard TYPO3 XLF pipeline.
 Translation keys resolve against the form's *original* identifier
 (kept in `renderingOptions._originalIdentifier`), not the runtime
 identifier that headless suffixes with the content element uid — key
-your XLF entries on the identifier from the form YAML. A forced
-locale can be passed to `FormTranslationService::translateElementValue()`
-as its optional fourth parameter.
+your XLF entries on the identifier from the form YAML.
 
 On key collision, `i18n.properties` entries win over the
 `renderingOptions.submitButtonLabel` shortcut — both end up in the
@@ -58,7 +55,7 @@ form via `renderingOptions.formDecorator`:
    renderingOptions:
      formDecorator: Your\Vendor\Form\CustomDefinitionDecorator
 
-See :ref:`developer-ext-form` below for writing your own decorator.
+See :ref:`integrations-form-decorators` below for writing your own decorator.
 
 Rich-text fields (TYPO3 v14.2+)
 -------------------------------
@@ -111,10 +108,20 @@ When the headless decorator sees `FERegularExpression`, it replaces
 response — the `{expression, flags}` pair maps directly to JavaScript's
 `new RegExp(expression, flags)`.
 
+Validators flagged `backendOnly: 1` are removed from the JSON definition
+(the server still runs them on submit) — use it for checks the frontend
+cannot replicate:
+
+.. code-block:: yaml
+
+   validators:
+     - identifier: 'MyServerSideCheck'
+       backendOnly: 1
+
 Custom options (dynamic select/radio/checkbox)
 ----------------------------------------------
 
-Implement `FriendsOfTYPO3\Headless\Form\CustomOptionsInterface` and
+Implement :php:`\FriendsOfTYPO3\Headless\Form\CustomOptionsInterface` and
 point the field at it:
 
 .. code-block:: yaml
@@ -129,12 +136,12 @@ point the field at it:
 replaces the field's `options`. Although the interface only declares
 `get(): array`, implementations are instantiated with four constructor
 arguments — `($field, $formFields, $identifier, $formRuntime)`: the
-field's definition array, all fields of the current page, the runtime
-form identifier and the `FormRuntime` — so options can depend on the
-surrounding form state.
+field's definition array, the fields on the same nesting level (its
+siblings in the page, `Fieldset` or `GridRow`), the runtime form identifier
+and the `FormRuntime` — so options can depend on the surrounding form
+state.
 
-If your custom form type isn't a standard one (so the frontend
-wouldn't know what to render), override the *type* sent to the
+If the frontend does not know a custom form type, override the *type* sent to the
 frontend with `FEOverrideType`:
 
 .. code-block:: yaml
@@ -147,7 +154,7 @@ JSON redirect finisher
 ----------------------
 
 The standard `RedirectFinisher` issues a real HTTP redirect. In
-headless mode that breaks the SPA flow. Use the `JsonRedirect`
+headless mode that breaks the SPA navigation. Use the `JsonRedirect`
 finisher instead — it puts the redirect target into
 `api.actionAfterSuccess` and lets the frontend decide what to do.
 
@@ -167,10 +174,11 @@ directly in your form definition:
 
 On success it emits `{ redirectUrl, statusCode, message }`
 (`message` defaults to `null`, `statusCode` to `303` and is also an
-option). The `redirectUrl` is made relative only when its host already
-equals the site's `frontendBase` host; otherwise the absolute
-TYPO3-host URL is returned unchanged — it is *not* rewritten to
-`frontendBase`. It does not redirect by itself. Further
+option). It does not redirect by itself. The target is built with
+`typoLink_URL()`, so headless's `AfterLinkIsGeneratedListener` rewrites it
+to the target page's site `frontendBase`; `prepareRelativeUrlIfPossible()`
+then makes it relative when it is on the current site's frontend host,
+leaving an absolute `frontendBase` URL for a page on another site. Further
 options: `additionalParameters` (appended to the target URL) and
 `sameSiteOnly` — with it, a `pageUid` outside the current site (or an
 unresolvable one) falls back to the finisher's default target
@@ -190,10 +198,11 @@ fields, the JSON `elements` contain Hidden elements that **must** be
 posted back verbatim:
 
 * `__state` — the HMAC-protected form state; round-trip it unchanged.
-* `__currentPage` — the page index being submitted.
+* `__currentPage` — the page being submitted, 1-based (unlike the
+  0-based `api.page.current`); echo it back verbatim.
 * `__trustedProperties` — the extbase property-mapping token,
-  generated for the exact set of listed field names: omitting any
-  field (the honeypot included) fails property mapping.
+  generated for the listed field names: posting a field that is not
+  listed fails property mapping; send only the listed names.
 * `__session` — present only once the form is performing (after the
   first POST); echo it back on subsequent steps.
 
@@ -202,25 +211,26 @@ Honeypot
 
 When `renderingOptions.honeypot.enable` is true, an extra field with a
 **session-random identifier** appears in `elements` and its name is
-baked into `__trustedProperties`. Render it hidden from humans and
-submit it **empty** — filling or omitting it fails the submission.
+baked into `__trustedProperties`. Render it invisible and leave it
+**empty**: the core attaches an `EmptyValidator` to it, so an empty or
+missing value passes and a filled one fails the submission.
 When using a custom honeypot element, its type must match
 `renderingOptions.honeypot.formElementToUse` (default `Honeypot`) for
 headless to expose it correctly in the JSON definition.
 
-.. _developer-ext-form:
+.. _integrations-form-decorators:
 
 Customising the JSON output (decorators)
 ========================================
 
 EXT:headless provides three building blocks:
 
-* `FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator` —
+* :php:`\FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator` —
   default implementation.
-* `FriendsOfTYPO3\Headless\Form\Decorator\AbstractFormDefinitionDecorator`
+* :php:`\FriendsOfTYPO3\Headless\Form\Decorator\AbstractFormDefinitionDecorator`
   — base class with hooks to override per-element or whole-form
   output.
-* `FriendsOfTYPO3\Headless\Form\Decorator\DefinitionDecoratorInterface`
+* :php:`\FriendsOfTYPO3\Headless\Form\Decorator\DefinitionDecoratorInterface`
   — the contract a custom decorator implements.
 
 Default output (`FormDefinitionDecorator`) — the decorator returns the
@@ -246,7 +256,12 @@ current page's fields plus the hidden round-trip fields described in
 `Submitting the form`_ above.
 
 Subclass `AbstractFormDefinitionDecorator` if you only need to tweak
-one element type or one form root field; implement
-`DefinitionDecoratorInterface` directly if you want full control.
+one element type or one form root field (`overrideElement()`,
+`overrideDefinition()`); implement `DefinitionDecoratorInterface`
+directly if you want full control. Decorators are instantiated with
+`GeneralUtility::makeInstance($class, $formStatus)`, so a custom
+implementation receives the `api` status array as its first constructor
+argument. A class not implementing the interface falls back to
+`FormDefinitionDecorator`.
 
 Attach via `renderingOptions.formDecorator` as shown above.

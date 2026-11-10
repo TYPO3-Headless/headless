@@ -49,7 +49,9 @@ class HeadlessViewFactoryTest extends TestCase
     {
         $inner = $this->createMock(ViewFactoryInterface::class);
         $expected = $this->createMock(ViewInterface::class);
-        $inner->expects(self::once())->method('create')->willReturn($expected);
+        $inner->expects(self::once())->method('create')
+            ->with(self::callback(static fn(ViewFactoryData $data): bool => $data->format === null))
+            ->willReturn($expected);
 
         $factory = new HeadlessViewFactory(
             $inner,
@@ -66,7 +68,9 @@ class HeadlessViewFactoryTest extends TestCase
     {
         $inner = $this->createMock(ViewFactoryInterface::class);
         $expected = $this->createMock(ViewInterface::class);
-        $inner->expects(self::once())->method('create')->willReturn($expected);
+        $inner->expects(self::once())->method('create')
+            ->with(self::callback(static fn(ViewFactoryData $data): bool => $data->format === null))
+            ->willReturn($expected);
 
         $factory = new HeadlessViewFactory(
             $inner,
@@ -83,7 +87,9 @@ class HeadlessViewFactoryTest extends TestCase
     {
         $inner = $this->createMock(ViewFactoryInterface::class);
         $expected = $this->createMock(ViewInterface::class);
-        $inner->expects(self::once())->method('create')->willReturn($expected);
+        $inner->expects(self::once())->method('create')
+            ->with(self::callback(static fn(ViewFactoryData $data): bool => $data->format === null))
+            ->willReturn($expected);
 
         $factory = new HeadlessViewFactory(
             $inner,
@@ -100,7 +106,9 @@ class HeadlessViewFactoryTest extends TestCase
     {
         $inner = $this->createMock(ViewFactoryInterface::class);
         $expected = $this->createMock(ViewInterface::class);
-        $inner->expects(self::once())->method('create')->willReturn($expected);
+        $inner->expects(self::once())->method('create')
+            ->with(self::callback(static fn(ViewFactoryData $data): bool => $data->format === null))
+            ->willReturn($expected);
 
         $factory = new HeadlessViewFactory(
             $inner,

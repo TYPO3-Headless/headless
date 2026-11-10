@@ -10,12 +10,12 @@
                edit-on-github-branch="master"
                edit-on-github="TYPO3-Headless/headless"
                edit-on-github-directory="Documentation/"
-               typo3-core-preferred="12.4"
+               typo3-core-preferred="14.3"
                interlink-shortcode="friendsoftypo3/headless"
     />
     <project title="Headless"
-             release="4.3"
-             version="4.3"
+             release="5.0"
+             version="5.0"
              copyright="TYPO3 Headless"
     />
 </guides>

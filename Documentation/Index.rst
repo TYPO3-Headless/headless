@@ -1,8 +1,8 @@
 .. _start:
 
-=============================================================
+============
 EXT:headless
-=============================================================
+============
 
 :Version:
    |release|
@@ -11,20 +11,13 @@ EXT:headless
    en
 
 :Description:
-   Headless allows you to render JSON from TYPO3 content. You can customize output
-   by changing types, names and nesting of fields.
-
-   This extension provides the backend part (JSON API) for TYPO3 PWA solution.
-   The frontend part exists as JavaScript application
-   `nuxt-typo3 <https://github.com/TYPO3-Headless/nuxt-typo3>`__
-   which consumes the JSON API and renders the content using Nuxt framework of VueJS.
-   You can find the frontend documentation `here <https://t3headless.macopedia.io/nuxt-typo3/>`__.
+   Renders TYPO3 pages and content as JSON for decoupled frontends.
 
 :Keywords:
    headless, json, api
 
 :Copyright:
-   2026 by TYPO3 Association
+   2026 TYPO3 Headless
 
 :Authors:
    * Tymoteusz Motylewski (Macopedia)
@@ -36,11 +29,10 @@ EXT:headless
    extensions@macopedia.pl
 
 :License:
-   This extension is published under the
-   `GNU General Public License v2.0 <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>`__
+   `GPL-2.0-or-later <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html>`__
 
 :Rendered:
-	|today|
+   |today|
 
 **Feedback & Credits**
 
@@ -51,13 +43,12 @@ Special thanks goes to `macopedia.com <https://macopedia.com>`__ company, which 
 **TYPO3**
 
 The content of this document is related to TYPO3 CMS,
-a GNU/GPL CMS/Framework available from `typo3.org <https://typo3.org/>`_ .
+a GNU/GPL CMS/Framework available from `typo3.org <https://typo3.org/>`__.
 
 **For Contributors**
 
-You are welcome to help improve this guide if you missing something.
-Just click on "Edit me on GitHub" on the top right to submit your change request
-or `report a problem <https://github.com/TYPO3-Headless/headless/issues/new>`__
+To improve this guide, use "Edit me on GitHub" at the top right or
+`report a problem <https://github.com/TYPO3-Headless/headless/issues/new>`__.
 
 **Table of Contents**
 
@@ -68,20 +59,12 @@ or `report a problem <https://github.com/TYPO3-Headless/headless/issues/new>`__
    Introduction/Index
    GettingStarted/Index
    Configuration/Index
-   Configuration/MultiSite
    Developer/Index
-   Developer/CObjects
-   Developer/CustomContent
-   Developer/DataProcessors
-   Developer/Events
-   Developer/Images
-   Developer/Snippets
-   Integrations/Form
-   Integrations/FeLogin
-   Integrations/Redirects
-   Reference/Typoscript
-   Reference/Events
-   Reference/FeatureFlags
-   Reference/Interfaces
+   Integrations/Index
+   Reference/Index
    FAQ/Index
+
+.. toctree::
+   :hidden:
+
    Sitemap
