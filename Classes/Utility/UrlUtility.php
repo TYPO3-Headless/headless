@@ -334,12 +334,17 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         if ($targetPath === '') {
             return $frontendPath;
         }
-        return $frontendPath . '/' . ltrim(substr($targetPath, strlen($baseBackendPath)), '/');
+        if ($this->basePathMatches($baseBackendPath, $targetPath)) {
+            $targetPath = substr($targetPath, strlen($baseBackendPath));
+        }
+        return $frontendPath . '/' . ltrim($targetPath, '/');
     }
 
     protected function collectLanguageDomainsAndMatch(SiteInterface $site, string $backendUrl): ?SiteLanguage
     {
         $backendUri = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($backendUrl));
+        $backendHost = $backendUri->getHost();
+        $backendPath = $backendUri->getPath();
         $matchedLanguage = null;
         $matchedPathLength = -1;
         foreach ($site->getLanguages() as $language) {
@@ -349,26 +354,24 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
             }
 
             $languageBase = $language->getBase();
-            if ($languageBase->getHost() !== '') {
-                $this->backendDomains[] = $languageBase->getHost();
+            $languageHost = $languageBase->getHost();
+            if ($languageHost !== '') {
+                $this->backendDomains[] = $languageHost;
             }
             $this->frontendDomains[] = $this->hostFromBase($base);
 
-            if ($languageBase->getHost() !== '' && $backendUri->getHost() !== '') {
-                // languages with their own host never match urls of another host
-                if ($languageBase->getHost() !== $backendUri->getHost()) {
-                    continue;
-                }
-            } elseif ($backendUri->getPath() === '/') {
+            // languages with their own host never match urls of another host
+            if ($languageHost !== '' && $backendHost !== '' && $languageHost !== $backendHost) {
                 continue;
             }
 
-            if (!$this->basePathMatches($languageBase->getPath(), $backendUri->getPath())) {
+            $languageBasePath = $languageBase->getPath();
+            if (!$this->basePathMatches($languageBasePath, $backendPath)) {
                 continue;
             }
 
             // prefer the most specific language base, e.g. "/en/" over "/"
-            $pathLength = strlen(rtrim($languageBase->getPath(), '/'));
+            $pathLength = strlen(rtrim($languageBasePath, '/'));
             if ($pathLength >= $matchedPathLength) {
                 $matchedLanguage = $language;
                 $matchedPathLength = $pathLength;

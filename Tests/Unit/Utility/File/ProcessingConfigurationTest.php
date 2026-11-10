@@ -30,6 +30,7 @@ class ProcessingConfigurationTest extends HeadlessUnitTestCase
         self::assertTrue($configuration->legacyReturn);
         self::assertFalse($configuration->flattenObject);
         self::assertFalse($configuration->cacheBusting);
+        self::assertFalse($configuration->includeOriginal);
         self::assertSame([], $configuration->includeProperties);
         self::assertSame([], $configuration->autogenerate);
         self::assertSame([], $configuration->rawOptions);
@@ -49,6 +50,7 @@ class ProcessingConfigurationTest extends HeadlessUnitTestCase
             'cacheBusting' => 1,
             'processSvg' => '1',
             'outputCropArea' => 1,
+            'includeOriginal' => '1',
             'properties.' => [
                 'flatten' => '1',
                 'byType' => 1,
@@ -69,6 +71,7 @@ class ProcessingConfigurationTest extends HeadlessUnitTestCase
         self::assertTrue($configuration->cacheBusting);
         self::assertTrue($configuration->processSvg);
         self::assertTrue($configuration->outputCropArea);
+        self::assertTrue($configuration->includeOriginal);
         self::assertTrue($configuration->flattenProperties);
         self::assertTrue($configuration->propertiesByType);
         self::assertSame(['title', 'alt'], $configuration->includeProperties);

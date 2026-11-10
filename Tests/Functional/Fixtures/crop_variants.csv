@@ -1,0 +1,6 @@
+tt_content,,,,,,,
+,uid,pid,sorting,colPos,CType,image
+,40,1,100,3,image,1
+sys_file_reference,,,,,,,
+,uid,pid,uid_local,uid_foreign,tablenames,fieldname,crop
+,5,1,1,40,tt_content,image,"{""desktop"":{""cropArea"":{""x"":0,""y"":0.25,""width"":1,""height"":0.5},""selectedRatio"":""16:9"",""focusArea"":null}}"
