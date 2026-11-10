@@ -30,7 +30,8 @@ Key                 Meaning
 `frontendFileApi`   Fallback base URL for files of storages
                     without a base URI or relative base path,
                     with `headless.storageProxy` enabled
-                    (:ref:`storage-proxy`).
+                    (:ref:`storage-proxy`). Per-storage URLs go
+                    in `frontendFileApiByStorage`.
 `cookieDomain`      Domain to scope session cookies to. Read only
                     with the `headless.cookieDomainPerSite`
                     feature flag enabled (see below).
@@ -217,15 +218,134 @@ same origin as the SPA.
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.storageProxy'] = true;
 
-The rewrite applies only to frontend requests in headless mode. The new
-base URL is built per storage:
+The rewrite applies only to frontend requests in headless mode. The base
+URL of each storage is the first match of:
 
-* Storage with a base URI or a relative base path (e.g. `fileadmin/`):
-  host of `frontendBase` + path of `frontendApiProxy` + storage path —
-  `https://example.com/headless/fileadmin/…` for the two-domain example
-  above.
-* Any other storage: `frontendFileApi`, if set; otherwise the URL is left
-  unchanged.
+#. `frontendFileApiByStorage` entry for the storage (:ref:`storage-proxy-per-storage`).
+#. Base URI with its own host (e.g. `https://cdn.example.com/assets/`):
+   the URL is left unchanged.
+#. Base URI without a host (e.g. `/assets/`) or relative base path
+   (e.g. `fileadmin/`): `frontendApiProxy` + storage path, e.g.
+   `https://example.com/headless/fileadmin/…`.
+#. Otherwise: `frontendFileApi`; if empty, the URL is left unchanged.
 
 The files stay where they are: the frontend server has to proxy these paths
 to the TYPO3 host.
+
+`frontendApiProxy`, `frontendFileApi` and the map entries can be a full URL
+or only a path:
+
+* A path uses the host of `frontendBase` and starts at the host root:
+  `/headless` becomes `https://example.com/headless`, even when
+  `frontendBase` has a path such as `/shop`.
+* Without a host in `frontendBase`, a path is ignored.
+* Always write another host with its scheme: `cdn.example.com/x` is read
+  as a path.
+
+`f:image` and `ImageService` map a URL back to the file only when it starts
+with `frontendApiProxy`. For URLs from `frontendFileApi` or the map, pass
+the file or file reference instead.
+
+.. _storage-proxy-per-storage:
+
+Per-storage URLs
+----------------
+
+To give a storage its own base URL, set `frontendFileApiByStorage` in the
+site config, keyed by storage uid.
+
+The URL replaces the whole base, and only the file's path inside the storage
+is appended. If the CDN serves the files under `/fileadmin2/`, include that
+segment in the URL.
+
+Example: three storages, each holding `user_upload/photo.jpg` — uid 1
+(`fileadmin/`, relative), uid 2 (`fileadmin2/`, relative) and uid 3
+(`/mnt/shared/`, absolute, no base URI):
+
+.. code-block:: yaml
+
+   base: https://api.example.com
+   frontendBase: https://example.com
+   frontendApiProxy: https://example.com/headless
+   frontendFileApi: https://files.example.com/shared
+   frontendFileApiByStorage:
+     2: https://cdn2.example.com/fileadmin2
+
+=======  ================================================================  ==========================
+Storage  File URL                                                          Source
+=======  ================================================================  ==========================
+1        `https://example.com/headless/fileadmin/user_upload/photo.jpg`    storage path
+2        `https://cdn2.example.com/fileadmin2/user_upload/photo.jpg`       `frontendFileApiByStorage`
+3        `https://files.example.com/shared/user_upload/photo.jpg`          `frontendFileApi`
+=======  ================================================================  ==========================
+
+Without `frontendFileApiByStorage`, storage 2 would get
+`https://example.com/headless/fileadmin2/user_upload/photo.jpg`.
+
+The map resolves like `frontendFileApi`: a matching base variant replaces
+the site-level map, and a site language can set its own map:
+
+.. code-block:: yaml
+
+   baseVariants:
+     - base: https://api.dev.example.com
+       condition: 'applicationContext == "Development"'
+       frontendBase: https://dev.example.com
+       frontendApiProxy: https://dev.example.com/headless
+       frontendFileApi: https://files.dev.example.com/shared
+       frontendFileApiByStorage:
+         2: https://cdn2-dev.example.com/fileadmin2
+
+=======  ====================================================================
+Storage  File URL in the `Development` context
+=======  ====================================================================
+1        `https://dev.example.com/headless/fileadmin/user_upload/photo.jpg`
+2        `https://cdn2-dev.example.com/fileadmin2/user_upload/photo.jpg`
+3        `https://files.dev.example.com/shared/user_upload/photo.jpg`
+=======  ====================================================================
+
+A matching base variant without `frontendFileApiByStorage` disables the
+per-storage URLs, just as a variant without `frontendFileApi` empties that
+value: storage 2 would then get
+`https://dev.example.com/headless/fileadmin2/user_upload/photo.jpg`, not
+the production CDN. Repeat the entries you need in each variant, or use
+`%env(...)%` placeholders.
+
+Edit this in the YAML files only: the site module does not show the key and
+drops it from base variants and languages when the site is saved there.
+
+Storage uids are database ids. If they differ between environments, give
+each environment its own map in its base variant: the variant replaces the
+whole map, keys included. `%env(...)%` placeholders work in the URLs only,
+not in the uid keys.
+
+Example: `fileadmin2/` has uid 2 in production and uid 5 on the development
+system:
+
+.. code-block:: yaml
+
+   frontendFileApiByStorage:
+     2: https://cdn2.example.com/fileadmin2
+   baseVariants:
+     - base: https://api.dev.example.com
+       condition: 'applicationContext == "Development"'
+       frontendBase: https://dev.example.com
+       frontendApiProxy: https://dev.example.com/headless
+       frontendFileApiByStorage:
+         5: https://cdn2-dev.example.com/fileadmin2
+
+In the `Development` context only uid 5 is mapped; uid 2 (a different
+storage there, if any) follows the default rules and never gets the
+production CDN.
+
+Same uids everywhere, only the URL differs per environment: keep one map
+and read the URL from an environment variable instead of adding variants:
+
+.. code-block:: yaml
+
+   frontendFileApiByStorage:
+     2: '%env(CDN2_URL)%'
+
+This only helps where no base variant matches: a matching variant still
+needs its own `frontendFileApiByStorage`, which can use the same
+placeholder.

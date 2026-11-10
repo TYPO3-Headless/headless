@@ -15,6 +15,7 @@ use FriendsOfTYPO3\Headless\Utility\Headless;
 use FriendsOfTYPO3\Headless\Utility\HeadlessMode;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\Utility\UrlUtility;
+use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
@@ -1113,6 +1114,162 @@ class UrlUtilityTest extends \FriendsOfTYPO3\Headless\Tests\Unit\HeadlessUnitTes
         $urlUtility = (new UrlUtility($resolver, $this->createMock(SiteFinder::class), $this->createHeadlessMode()))->withSite($site);
 
         self::assertSame('https://front.tld', $urlUtility->getFrontendUrl());
+    }
+
+    public function testStorageProxyUrlForStorageFromSiteConfig(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendFileApi' => 'https://front.tld/headless/fileadmin',
+            'frontendFileApiByStorage' => [
+                1 => 'https://cdn.tld/fileadmin/',
+                '2' => 'https://static.tld/fileadmin2',
+            ],
+        ]);
+
+        $urlUtility = (new UrlUtility($this->createMock(Resolver::class), $this->createMock(SiteFinder::class), $this->createHeadlessMode()))
+            ->withSite($site);
+
+        self::assertSame('https://cdn.tld/fileadmin', $urlUtility->getStorageProxyUrlForStorage(1));
+        self::assertSame('https://static.tld/fileadmin2', $urlUtility->getStorageProxyUrlForStorage(2));
+        self::assertSame('', $urlUtility->getStorageProxyUrlForStorage(3));
+        self::assertSame('https://front.tld/headless/fileadmin', $urlUtility->getStorageProxyUrl());
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: string}>
+     */
+    public static function storageProxyUrlVariantProvider(): iterable
+    {
+        yield 'matching variant with map' => ['Development', 'https://static.dev/fileadmin2'];
+        yield 'matching variant without map' => ['Testing', ''];
+        yield 'no matching variant' => ['Production', 'https://static.tld/fileadmin2'];
+    }
+
+    #[DataProvider('storageProxyUrlVariantProvider')]
+    public function testStorageProxyUrlForStorageFromVariants(string $context, string $expected): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendFileApiByStorage' => [2 => 'https://static.tld/fileadmin2'],
+            'baseVariants' => [
+                [
+                    'base' => 'https://backend.dev',
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendFileApiByStorage' => [2 => 'https://static.dev/fileadmin2'],
+                ],
+                [
+                    'base' => 'https://backend.test',
+                    'condition' => 'applicationContext == "Testing"',
+                ],
+            ],
+        ]);
+
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturnCallback(
+            static fn(string $condition): bool => str_contains($condition, $context)
+        );
+
+        $urlUtility = (new UrlUtility($resolver, $this->createMock(SiteFinder::class), $this->createHeadlessMode()))
+            ->withSite($site);
+
+        self::assertSame($expected, $urlUtility->getStorageProxyUrlForStorage(2));
+    }
+
+    public function testStorageProxyUrlForStorageFromLanguage(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendFileApiByStorage' => [2 => 'https://static.tld/fileadmin2'],
+        ]);
+
+        $urlUtility = (new UrlUtility($this->createMock(Resolver::class), $this->createMock(SiteFinder::class), $this->createHeadlessMode()))
+            ->withSite($site);
+
+        $german = $urlUtility->withLanguage(new SiteLanguage(1, 'de', new Uri('/de/'), [
+            'frontendFileApiByStorage' => [2 => 'https://static.de/fileadmin2'],
+        ]));
+        $english = $urlUtility->withLanguage(new SiteLanguage(0, 'en', new Uri('/'), []));
+
+        self::assertSame('https://static.de/fileadmin2', $german->getStorageProxyUrlForStorage(2));
+        self::assertSame('https://static.tld/fileadmin2', $english->getStorageProxyUrlForStorage(2));
+    }
+
+    public function testStorageProxyUrlForStorageMatchingSiteVariantWinsOverLanguage(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendFileApiByStorage' => [2 => 'https://static.tld/fileadmin2'],
+            'baseVariants' => [
+                [
+                    'base' => 'https://backend.dev',
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendFileApiByStorage' => [2 => 'https://static.dev/fileadmin2'],
+                ],
+            ],
+        ]);
+
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturn(true);
+
+        $urlUtility = (new UrlUtility($resolver, $this->createMock(SiteFinder::class), $this->createHeadlessMode()))
+            ->withSite($site)
+            ->withLanguage(new SiteLanguage(1, 'de', new Uri('/de/'), [
+                'frontendFileApiByStorage' => [2 => 'https://static.de/fileadmin2'],
+            ]));
+
+        self::assertSame('https://static.dev/fileadmin2', $urlUtility->getStorageProxyUrlForStorage(2));
+    }
+
+    public function testStorageProxyUrlForStorageFromLanguageVariants(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendFileApiByStorage' => [2 => 'https://static.tld/fileadmin2'],
+        ]);
+
+        $resolver = $this->createMock(Resolver::class);
+        $resolver->method('evaluate')->willReturn(true);
+
+        $urlUtility = (new UrlUtility($resolver, $this->createMock(SiteFinder::class), $this->createHeadlessMode()))
+            ->withSite($site)
+            ->withLanguage(new SiteLanguage(1, 'de', new Uri('/de/'), [
+                'baseVariants' => [
+                    [
+                        'base' => 'https://backend.dev/de/',
+                        'condition' => 'applicationContext == "Development"',
+                        'frontendFileApiByStorage' => [5 => 'https://static.dev.de/fileadmin2'],
+                    ],
+                ],
+            ]));
+
+        self::assertSame('https://static.dev.de/fileadmin2', $urlUtility->getStorageProxyUrlForStorage(5));
+        self::assertSame('', $urlUtility->getStorageProxyUrlForStorage(2));
+    }
+
+    public function testStorageProxyUrlForStorageIgnoresNonArrayConfig(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://backend.tld/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://backend.tld',
+            'frontendFileApiByStorage' => 'https://static.tld/fileadmin2',
+        ]);
+
+        $urlUtility = (new UrlUtility($this->createMock(Resolver::class), $this->createMock(SiteFinder::class), $this->createHeadlessMode()))
+            ->withSite($site);
+
+        self::assertSame('', $urlUtility->getStorageProxyUrlForStorage(2));
     }
 
     public function testGetFrontendUrlWithSiteKeepsUrlForNonHttpFrontendBase(): void

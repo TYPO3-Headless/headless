@@ -19,6 +19,8 @@ use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
 use TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent;
+use TYPO3\CMS\Core\Resource\ResourceStorage;
+use WeakMap;
 
 use function array_map;
 use function explode;
@@ -30,13 +32,15 @@ use function trim;
 
 class ProxyResourcePublicUrlListener
 {
-    /** @var array<string, string> */
-    protected array $baseUriCache = [];
+    /** @var WeakMap<ServerRequestInterface, array<int, string>> */
+    protected WeakMap $baseUriCache;
 
     public function __construct(
         protected readonly HeadlessModeInterface $headlessMode,
         protected readonly HeadlessFrontendUrlInterface $urlUtility,
-    ) {}
+    ) {
+        $this->baseUriCache = new WeakMap();
+    }
 
     public function __invoke(GeneratePublicUrlForResourceEvent $event): void
     {
@@ -61,7 +65,7 @@ class ProxyResourcePublicUrlListener
             return;
         }
 
-        $baseUri = $this->buildBaseUri($event->getStorage()->getConfiguration(), $request);
+        $baseUri = $this->buildBaseUri($event->getStorage(), $request);
         if ($baseUri === '') {
             return;
         }
@@ -71,35 +75,70 @@ class ProxyResourcePublicUrlListener
         );
     }
 
-    /**
-     * @param array<string, mixed> $config
-     */
-    protected function buildBaseUri(array $config, ServerRequestInterface $request): string
+    protected function buildBaseUri(ResourceStorage $storage, ServerRequestInterface $request): string
     {
+        $cache = $this->baseUriCache[$request] ?? [];
+        $uid = $storage->getUid();
+        if (!isset($cache[$uid])) {
+            $cache[$uid] = $this->resolveBaseUri($storage, $request);
+            $this->baseUriCache[$request] = $cache;
+        }
+
+        return $cache[$uid];
+    }
+
+    protected function resolveBaseUri(ResourceStorage $storage, ServerRequestInterface $request): string
+    {
+        $urlUtility = $this->urlUtility->withRequest($request);
+
+        $storageUrl = $urlUtility->getStorageProxyUrlForStorage($storage->getUid());
+        if ($storageUrl !== '') {
+            return $this->onFrontendHost($storageUrl, $urlUtility);
+        }
+
+        $config = $storage->getConfiguration();
         $storagePath = match (true) {
             ($config['baseUri'] ?? '') !== '' => (string)$config['baseUri'],
             ($config['basePath'] ?? '') !== '' && ($config['pathType'] ?? '') === 'relative' => (string)$config['basePath'],
             default => '',
         };
 
-        $cacheKey = spl_object_hash($request) . '|' . $storagePath;
-        if (isset($this->baseUriCache[$cacheKey])) {
-            return $this->baseUriCache[$cacheKey];
+        if ($storagePath === '') {
+            return $this->onFrontendHost($urlUtility->getStorageProxyUrl(), $urlUtility);
         }
 
-        $urlUtility = $this->urlUtility->withRequest($request);
+        $storageUri = new Uri($storagePath);
+        if ($storageUri->getHost() !== '') {
+            return '';
+        }
 
-        if ($storagePath === '') {
-            return $this->baseUriCache[$cacheKey] = $urlUtility->getStorageProxyUrl();
+        $proxy = new Uri($urlUtility->getProxyUrl());
+        $path = '/' . trim(trim($proxy->getPath(), '/') . '/' . trim($storageUri->getPath(), '/'), '/');
+
+        if ($proxy->getHost() !== '') {
+            return (string)$proxy->withPath($path);
+        }
+
+        return $this->onFrontendHost($path, $urlUtility);
+    }
+
+    protected function onFrontendHost(string $url, HeadlessFrontendUrlInterface $urlUtility): string
+    {
+        if ($url === '') {
+            return '';
+        }
+
+        $uri = new Uri($url);
+        if ($uri->getHost() !== '') {
+            return $url;
         }
 
         $frontend = new Uri($urlUtility->getFrontendUrl());
-        $proxy = new Uri($urlUtility->getProxyUrl());
-        $storage = new Uri($storagePath);
+        if ($frontend->getHost() === '') {
+            return '';
+        }
 
-        $path = trim($proxy->getPath(), '/') . '/' . trim($storage->getPath(), '/');
-
-        return $this->baseUriCache[$cacheKey] = (string)$frontend->withPath('/' . trim($path, '/'));
+        return (string)$frontend->withPath('/' . trim($uri->getPath(), '/'));
     }
 
     protected function encodeIdentifier(string $identifier): string
