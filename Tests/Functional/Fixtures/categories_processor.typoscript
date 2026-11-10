@@ -1,0 +1,46 @@
+initialData.10.fields {
+    byRelation = JSON
+    byRelation.dataProcessing.10 = headless-categories
+    byRelation.dataProcessing.10 {
+        relation.fieldName = categories
+        as = categories
+    }
+
+    byOtherRelationField = JSON
+    byOtherRelationField.dataProcessing.10 = headless-categories
+    byOtherRelationField.dataProcessing.10 {
+        relation.fieldName = other_categories
+        as = categories
+    }
+
+    byUidList = JSON
+    byUidList.dataProcessing.10 = headless-categories
+    byUidList.dataProcessing.10 {
+        uidInList = 3,1,2
+        as = categories
+    }
+
+    byUidListWithPid = JSON
+    byUidListWithPid.dataProcessing.10 = headless-categories
+    byUidListWithPid.dataProcessing.10 {
+        uidInList = 1,5
+        pidInList = 9
+        as = categories
+    }
+
+    withFields = JSON
+    withFields.dataProcessing.10 = headless-categories
+    withFields.dataProcessing.10 {
+        uidInList = 1
+        fields = uid,title,description
+        as = categories
+    }
+
+    withOrderBy = JSON
+    withOrderBy.dataProcessing.10 = headless-categories
+    withOrderBy.dataProcessing.10 {
+        relation.fieldName = categories
+        orderBy = title DESC
+        as = categories
+    }
+}
