@@ -18,7 +18,7 @@ tt_content.menu_sitemap_pages {
                                 10 = headless-files
                                 10 {
                                     references.fieldName = media
-                                    as = images
+                                    as = media
                                 }
                             }
                         }

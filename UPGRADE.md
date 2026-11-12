@@ -59,6 +59,9 @@ selector items map to in 5.x:
 
 * The trimmed response ships no `meta` (use `seo`) and no `categories` page
   fields; `lib.contentElement` defines no `categories` field.
+* The trimmed response returns the page files of `menu_sitemap` and
+  `menu_sitemap_pages` items under `media` (was `images`), like all other menu
+  content elements. The legacy response keeps `images`.
 * Files moved — adjust direct `@import`s: `Page/Meta.typoscript`,
   `Page/Categories.typoscript` and `Configuration/PageConfiguration.typoscript`
   now live under `TypoScript/Legacy/`.

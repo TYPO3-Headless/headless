@@ -1,0 +1,4 @@
+tt_content {
+    menu_sitemap.fields.content.fields.menu.dataProcessing.10.dataProcessing.10.as = images
+    menu_sitemap_pages.fields.content.fields.menu.dataProcessing.10.dataProcessing.10.as = images
+}

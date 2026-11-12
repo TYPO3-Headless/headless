@@ -102,10 +102,10 @@ record under `data`, and file fields (`media`, `images`) hold
 `menu_related_pages`        header block, `menu`: pages sharing keywords with
                             `media`, `appendData = 1`.
 `menu_sitemap`              header block, `menu`: page tree of the current
-                            site, seven levels, `images` per item,
+                            site, seven levels, `media` per item,
                             `appendData = 1`.
 `menu_sitemap_pages`        header block, `menu`: page tree below the selected
-                            pages, seven levels, `images` per item,
+                            pages, seven levels, `media` per item,
                             `appendData = 1`.
 `felogin_login`             header block, `data`: the login JSON, see
                             :ref:`integrations-felogin`.
@@ -123,4 +123,5 @@ Define `tt_content.<ctype>` as shown in :ref:`developer-custom-content`.
 
 The legacy set adds a `categories` string to every element after
 `appearance`; see :ref:`configuration-categories` for re-adding it on the
-default set.
+default set. It also keeps the 4.x key `images` instead of `media` on the
+items of `menu_sitemap` and `menu_sitemap_pages`.
