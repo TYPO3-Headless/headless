@@ -26,7 +26,6 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-use function array_key_exists;
 use function array_merge;
 use function array_unique;
 use function ltrim;
@@ -320,35 +319,52 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
     private function handleFrontendAndBackendPaths(string $frontendPath, UriInterface $targetUri, string $baseBackendPath = ''): string
     {
-        return rtrim($frontendPath, '/') . ($targetUri->getPath() !== '' ? '/' . ltrim(substr($targetUri->getPath(), strlen($baseBackendPath)), '/') : '');
+        $frontendPath = rtrim($frontendPath, '/');
+        $targetPath = $targetUri->getPath();
+        if ($targetPath === '') {
+            return $frontendPath;
+        }
+        if ($this->basePathMatches($baseBackendPath, $targetPath)) {
+            $targetPath = substr($targetPath, strlen($baseBackendPath));
+        }
+        return $frontendPath . '/' . ltrim($targetPath, '/');
     }
 
     private function overrideByLanguageIfNecessary(SiteInterface $site, string $backendUrl): ?SiteLanguage
     {
         $backendUri = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($backendUrl));
+        $backendHost = $backendUri->getHost();
+        $backendPath = $backendUri->getPath();
         $matchedLanguage = null;
+        $matchedPathLength = -1;
         foreach ($site->getLanguages() as $language) {
-            $conf = $language->toArray();
-
-            if (!array_key_exists('frontendBase', $conf)) {
-                continue;
-            }
-
-            $base = trim($conf['frontendBase'] ?? '');
-
+            $base = trim($language->toArray()['frontendBase'] ?? '');
             if ($base === '') {
                 continue;
             }
 
-            if ($language->getBase()->getHost() !== '') {
-                $this->backendDomains[] = $language->getBase()->getHost();
+            $languageBase = $language->getBase();
+            $languageHost = $languageBase->getHost();
+            if ($languageHost !== '') {
+                $this->backendDomains[] = $languageHost;
             }
             $this->frontendDomains[] = (new Uri($this->sanitizeBaseUrl($base)))->getHost();
 
-            if ($language->getBase()->getHost() === $backendUri->getHost()) {
+            // languages with their own host never match urls of another host
+            if ($languageHost !== '' && $backendHost !== '' && $languageHost !== $backendHost) {
+                continue;
+            }
+
+            $languageBasePath = $languageBase->getPath();
+            if (!$this->basePathMatches($languageBasePath, $backendPath)) {
+                continue;
+            }
+
+            // prefer the most specific language base, e.g. "/en/" over "/"
+            $pathLength = strlen(rtrim($languageBasePath, '/'));
+            if ($pathLength >= $matchedPathLength) {
                 $matchedLanguage = $language;
-            } elseif ($backendUri->getPath() !== '/' && str_starts_with($backendUri->getPath(), $language->getBase()->getPath())) {
-                $matchedLanguage = $language;
+                $matchedPathLength = $pathLength;
             }
         }
 
@@ -356,6 +372,11 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $this->frontendDomains = array_unique($this->frontendDomains);
 
         return $matchedLanguage;
+    }
+
+    protected function basePathMatches(string $basePath, string $path): bool
+    {
+        return str_starts_with(rtrim($path, '/') . '/', rtrim($basePath, '/') . '/');
     }
 
     protected function alreadyFrontendLink(string $url): bool
