@@ -28,6 +28,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 use function array_merge;
 use function array_unique;
+use function is_array;
+use function is_string;
 use function ltrim;
 use function rtrim;
 use function str_contains;
@@ -35,7 +37,7 @@ use function str_starts_with;
 use function strlen;
 use function substr;
 
-class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
+class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface, HeadlessStorageProxyUrlInterface
 {
     use LoggerAwareTrait;
 
@@ -163,6 +165,22 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         return $this->resolveWithVariants($this->conf['frontendFileApi'] ?? '', $this->variants, 'frontendFileApi');
     }
 
+    public function getStorageProxyUrlForStorage(int $storageUid): string
+    {
+        $variant = $this->matchingVariant($this->variants);
+        $storages = ($variant ?? $this->conf)['frontendFileApiByStorage'] ?? [];
+        if (!is_array($storages)) {
+            return '';
+        }
+
+        $url = $storages[$storageUid] ?? '';
+        if (!is_string($url)) {
+            return '';
+        }
+
+        return rtrim($url, '/');
+    }
+
     public function resolveKey(string $key): string
     {
         return $this->resolveWithVariants($this->conf[$key] ?? '', $this->variants, $key);
@@ -221,15 +239,20 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         array $variants = [],
         string $returnField = 'frontendBase'
     ): string {
-        $frontendUrl = rtrim($frontendUrl, '/');
-        if ($variants === []) {
-            return $frontendUrl;
+        $variant = $this->matchingVariant($variants);
+        if ($variant === null) {
+            return rtrim($frontendUrl, '/');
         }
 
+        return rtrim($variant[$returnField] ?? '', '/');
+    }
+
+    private function matchingVariant(array $variants): ?array
+    {
         foreach ($variants as $baseVariant) {
             try {
                 if ($this->resolver->evaluate($baseVariant['condition'])) {
-                    return rtrim($baseVariant[$returnField] ?? '', '/');
+                    return $baseVariant;
                 }
             } catch (SyntaxError $e) {
                 $this->logError($e->getMessage());
@@ -237,7 +260,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
                 // no logger here, as Site is currently cached and serialized
             }
         }
-        return $frontendUrl;
+        return null;
     }
 
     private function handleLanguageConfiguration(SiteLanguage $language, HeadlessFrontendUrlInterface $object): HeadlessFrontendUrlInterface
@@ -247,6 +270,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $frontendBase = trim($langConf['frontendBase'] ?? '');
         $frontendApiProxy = trim($langConf['frontendApiProxy'] ?? '');
         $frontendFileApi = trim($langConf['frontendFileApi'] ?? '');
+        $frontendFileApiByStorage = $langConf['frontendFileApiByStorage'] ?? [];
         $overrides = [];
 
         if ($language->getBase()->getHost() !== '') {
@@ -264,6 +288,10 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
         if ($frontendFileApi !== '') {
             $overrides['frontendFileApi'] =  $frontendFileApi;
+        }
+
+        if (is_array($frontendFileApiByStorage) && $frontendFileApiByStorage !== []) {
+            $overrides['frontendFileApiByStorage'] = $frontendFileApiByStorage;
         }
 
         $object->conf = array_merge($object->conf, $overrides);

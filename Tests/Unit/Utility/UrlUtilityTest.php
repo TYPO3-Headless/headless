@@ -995,6 +995,86 @@ class UrlUtilityTest extends UnitTestCase
         self::assertSame('https://front.at/shop/page', $urlUtility->getFrontendUrlWithSite('https://backend.at/page', $site));
     }
 
+    public function testStorageProxyUrlForStorageResolvesFromSiteAndVariants(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://api.example.com/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://api.example.com',
+            'frontendBase' => 'https://example.com',
+            'frontendFileApiByStorage' => [
+                2 => 'https://cdn2.example.com/fileadmin2/',
+                3 => ['invalid'],
+            ],
+            'baseVariants' => [
+                [
+                    'base' => 'https://api.dev.example.com',
+                    'condition' => 'applicationContext == "Development"',
+                    'frontendBase' => 'https://dev.example.com',
+                    'frontendFileApiByStorage' => [
+                        5 => 'https://cdn2-dev.example.com/fileadmin2',
+                    ],
+                ],
+                [
+                    'base' => 'https://api.testing.example.com',
+                    'condition' => 'applicationContext == "Testing"',
+                    'frontendBase' => 'https://testing.example.com',
+                ],
+            ],
+        ]);
+
+        $production = $this->prophesize(Resolver::class);
+        $production->evaluate(Argument::any())->willReturn(false);
+        $urlUtility = (new UrlUtility(null, $production->reveal(), $this->createMock(SiteFinder::class), null, $this->createHeadlessMode()))
+            ->withSite($site);
+
+        self::assertSame('https://cdn2.example.com/fileadmin2', $urlUtility->getStorageProxyUrlForStorage(2));
+        self::assertSame('', $urlUtility->getStorageProxyUrlForStorage(1));
+        self::assertSame('', $urlUtility->getStorageProxyUrlForStorage(3));
+
+        $development = $this->prophesize(Resolver::class);
+        $development->evaluate(Argument::containingString('Development'))->willReturn(true);
+        $urlUtility = (new UrlUtility(null, $development->reveal(), $this->createMock(SiteFinder::class), null, $this->createHeadlessMode()))
+            ->withSite($site);
+
+        self::assertSame('https://cdn2-dev.example.com/fileadmin2', $urlUtility->getStorageProxyUrlForStorage(5));
+        self::assertSame('', $urlUtility->getStorageProxyUrlForStorage(2));
+
+        $testing = $this->prophesize(Resolver::class);
+        $testing->evaluate(Argument::containingString('Development'))->willReturn(false);
+        $testing->evaluate(Argument::containingString('Testing'))->willReturn(true);
+        $urlUtility = (new UrlUtility(null, $testing->reveal(), $this->createMock(SiteFinder::class), null, $this->createHeadlessMode()))
+            ->withSite($site);
+
+        self::assertSame('', $urlUtility->getStorageProxyUrlForStorage(2));
+    }
+
+    public function testStorageProxyUrlForStorageIsOverriddenByLanguage(): void
+    {
+        $site = $this->createMock(Site::class);
+        $site->method('getBase')->willReturn(new Uri('https://api.example.com/'));
+        $site->method('getConfiguration')->willReturn([
+            'base' => 'https://api.example.com',
+            'frontendBase' => 'https://example.com',
+            'frontendFileApiByStorage' => [
+                2 => 'https://cdn2.example.com/fileadmin2',
+            ],
+        ]);
+        $site->method('getLanguages')->willReturn([]);
+
+        $request = $this->prophesize(ServerRequest::class);
+        $request->getAttribute(Argument::is('site'))->willReturn($site);
+        $request->getAttribute(Argument::is('language'))->willReturn(new SiteLanguage(1, 'de_DE.UTF-8', new Uri('/de/'), [
+            'frontendFileApiByStorage' => [
+                2 => 'https://cdn2-de.example.com/fileadmin2',
+            ],
+        ]));
+
+        $urlUtility = new UrlUtility(null, $this->createMock(Resolver::class), $this->createMock(SiteFinder::class), $request->reveal(), $this->createHeadlessMode());
+
+        self::assertSame('https://cdn2-de.example.com/fileadmin2', $urlUtility->getStorageProxyUrlForStorage(2));
+    }
+
     private function createHeadlessMode(int $mode =  HeadlessModeInterface::FULL): HeadlessModeInterface
     {
         $headlessMode = new HeadlessMode();
