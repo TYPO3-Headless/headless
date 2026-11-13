@@ -58,6 +58,13 @@ class JsonDecoder implements JsonDecoderInterface
             return false;
         }
 
+        $first = $possibleJson[0];
+        $last = $possibleJson[-1];
+
+        if (!(($first === '{' && $last === '}') || ($first === '[' && $last === ']'))) {
+            return false;
+        }
+
         $data = json_decode($possibleJson);
 
         if (!is_object($data) && !is_array($data)) {

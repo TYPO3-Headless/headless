@@ -133,8 +133,8 @@ class SiteProvider implements SiteProviderInterface
         $sites = [];
 
         foreach ($allSites as $site) {
-            if (in_array($site->getRootPageId(), $allowedSites, true) &&
-            $site->getConfiguration()['headless'] ?? false) {
+            if (in_array($site->getRootPageId(), $allowedSites, true)
+                && ($site->getConfiguration()['headless'] ?? false)) {
                 $sites[] = $site;
             }
         }

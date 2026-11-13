@@ -93,6 +93,10 @@ class LoginController extends \TYPO3\CMS\FrontendLogin\Controller\LoginControlle
             $this->request
         ));
 
+        if ($event->getRedirectUrl() === '') {
+            return null;
+        }
+
         $data = [
             'redirectUrl' => $event->getRedirectUrl(),
             'statusCode' => 303,

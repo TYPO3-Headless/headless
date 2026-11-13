@@ -40,9 +40,13 @@ class CookieDomainPerSite implements MiddlewareInterface
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface {
-        /** @var NormalizedParams $normalizedParams */
         $normalizedParams = $request->getAttribute('normalizedParams');
-        $requestHost = $normalizedParams->getHttpHost();
+
+        if (!$normalizedParams instanceof NormalizedParams) {
+            return $handler->handle($request);
+        }
+
+        $requestHost = strtolower($normalizedParams->getHttpHost());
         $allSites = $this->siteFinder->getAllSites();
 
         foreach ($allSites as $site) {
@@ -50,16 +54,38 @@ class CookieDomainPerSite implements MiddlewareInterface
             $base = $urlUtility->resolveKey('base');
             $cookieDomain = $urlUtility->resolveKey('cookieDomain');
 
-            if (str_contains($base, $requestHost) && $cookieDomain) {
+            if ($cookieDomain && $this->baseMatchesHost($base, $requestHost)) {
                 $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] = $cookieDomain;
                 break;
             }
         }
 
-        if (!$GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain']) {
+        if (!($GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] ?? '')) {
             $this->logger->warning('missing cookieDomain configuration');
         }
 
         return $handler->handle($request);
+    }
+
+    private function baseMatchesHost(string $base, string $requestHost): bool
+    {
+        if ($requestHost === '' || $base === '') {
+            return false;
+        }
+
+        if (!str_contains($base, '//')) {
+            $base = '//' . $base;
+        }
+
+        $parts = parse_url($base);
+        $host = is_array($parts) ? ($parts['host'] ?? '') : '';
+
+        if ($host === '') {
+            return false;
+        }
+
+        $authority = $host . (isset($parts['port']) ? ':' . $parts['port'] : '');
+
+        return strtolower($authority) === $requestHost;
     }
 }

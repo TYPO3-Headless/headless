@@ -97,7 +97,6 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             $theValue = $setup[$theKey];
             if ((string)$theKey && !str_contains($theKey, '.')) {
                 $conf = $setup[$theKey . '.'] ?? [];
-                $contentDataProcessing['dataProcessing.'] = $conf['dataProcessing.'] ?? [];
                 $content[$theKey] = $this->cObj->cObjGetSingle($theValue, $conf, $addKey . $theKey);
                 if ((isset($conf['intval']) && $conf['intval']) || $theValue === 'INT') {
                     $content[$theKey] = (int)$content[$theKey];
@@ -117,8 +116,8 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
                 if ((int)($conf['ifEmptyUnsetKey'] ?? 0) === 1 && ($content[$theKey] === '' || $content[$theKey] === false)) {
                     unset($content[$theKey]);
                 }
-                if (!empty($contentDataProcessing['dataProcessing.'])) {
-                    $content[rtrim($theKey, '.')] = $this->processFieldWithDataProcessing($contentDataProcessing);
+                if (!empty($conf['dataProcessing.']) && !$this->resolvesToJsonContentObject($theValue, $conf)) {
+                    $content[$theKey] = $this->processFieldWithDataProcessing(['dataProcessing.' => $conf['dataProcessing.']]);
                 }
             }
             if ((string)$theKey && strpos($theKey, '.') > 0 && !isset($setup[rtrim($theKey, '.')])) {
@@ -169,14 +168,34 @@ class JsonContentObject extends AbstractContentObject implements LoggerAwareInte
             ]
         );
 
+        $registered = array_diff_key($data, ['data' => true, 'current' => true]);
+
         $dataProcessingData = null;
 
-        foreach ($this->recursiveFind($dataProcessing, 'as') as $value) {
-            if (isset($data[$value])) {
-                $dataProcessingData = $data[$value];
+        foreach ($dataProcessing['dataProcessing.'] ?? [] as $processorConfiguration) {
+            if (!is_array($processorConfiguration) || !isset($processorConfiguration['as'])) {
+                continue;
+            }
+            if (isset($registered[$processorConfiguration['as']])) {
+                $dataProcessingData = $registered[$processorConfiguration['as']];
             }
         }
+
+        if ($dataProcessingData === null && $registered !== []) {
+            $dataProcessingData = $registered[array_key_last($registered)];
+        }
+
         return $dataProcessingData;
+    }
+
+    /**
+     * @param array<string, mixed> $conf
+     */
+    protected function resolvesToJsonContentObject(string $name, array $conf): bool
+    {
+        $resolved = $this->cObj->mergeTSRef(['tempKey' => $name, 'tempKey.' => $conf], 'tempKey');
+
+        return $resolved['tempKey'] === 'JSON';
     }
 
     /**

@@ -44,26 +44,62 @@ class ResourceLocalDriver extends LocalDriver
         }
 
         if ($this->hasCapability(((new Typo3Version())->getMajorVersion() < 13) ? ResourceStorage::CAPABILITY_PUBLIC : \TYPO3\CMS\Core\Resource\Capabilities::CAPABILITY_PUBLIC)) {
-            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request);
-
-            $basePath = match (true) {
-                (($this->configuration['baseUri'] ?? '') !== '') => $this->configuration['baseUri'],
-                (($this->configuration['basePath'] ?? '') !== '' && $this->configuration['pathType'] === 'relative') => $this->configuration['basePath'],
-                default => '',
-            };
-
-            if ($basePath !== '') {
-                $frontendUri = new Uri($urlUtility->getFrontendUrl());
-                $proxyUri = new Uri($urlUtility->getProxyUrl());
-                $baseUri = new Uri($basePath);
-
-                $path = trim($proxyUri->getPath(), '/') . '/' . trim($baseUri->getPath(), '/');
-                $this->configuration['baseUri'] = (string)$frontendUri->withPath('/' . trim($path, '/'));
-            } else {
-                $this->configuration['baseUri'] = $urlUtility->getStorageProxyUrl();
+            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class, null, null, null, $request);
+            $baseUri = $this->resolveProxyBaseUri($urlUtility);
+            if ($baseUri !== null) {
+                $this->configuration['baseUri'] = $baseUri;
             }
         }
 
         parent::determineBaseUrl();
+    }
+
+    protected function resolveProxyBaseUri(UrlUtility $urlUtility): ?string
+    {
+        $storageUrl = $urlUtility->getStorageProxyUrlForStorage((int)$this->storageUid);
+        if ($storageUrl !== '') {
+            return $this->onFrontendHost($storageUrl, $urlUtility);
+        }
+
+        $basePath = match (true) {
+            (($this->configuration['baseUri'] ?? '') !== '') => (string)$this->configuration['baseUri'],
+            (($this->configuration['basePath'] ?? '') !== '' && ($this->configuration['pathType'] ?? '') === 'relative') => (string)$this->configuration['basePath'],
+            default => '',
+        };
+
+        if ($basePath === '') {
+            $fileApi = $urlUtility->getStorageProxyUrl();
+            return $this->onFrontendHost($fileApi, $urlUtility) ?? $fileApi;
+        }
+
+        $baseUri = new Uri($basePath);
+        if ($baseUri->getHost() !== '') {
+            return null;
+        }
+
+        $frontendUri = new Uri($urlUtility->getFrontendUrl());
+        $proxyUri = new Uri($urlUtility->getProxyUrl());
+        $path = trim($proxyUri->getPath(), '/') . '/' . trim($baseUri->getPath(), '/');
+
+        return (string)$frontendUri->withPath('/' . trim($path, '/'));
+    }
+
+    protected function onFrontendHost(string $url, UrlUtility $urlUtility): ?string
+    {
+        if ($url === '') {
+            return '';
+        }
+
+        $uri = new Uri($url);
+        if ($uri->getHost() !== '') {
+            return $url;
+        }
+
+        $frontendUri = new Uri($urlUtility->getFrontendUrl());
+        if ($frontendUri->getHost() === '') {
+            return null;
+        }
+
+        return (string)$frontendUri->withPath('/' . trim($uri->getPath(), '/'));
     }
 }

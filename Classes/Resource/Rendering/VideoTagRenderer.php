@@ -43,7 +43,7 @@ class VideoTagRenderer extends \TYPO3\CMS\Core\Resource\Rendering\VideoTagRender
     {
         if (($options['returnUrl'] ?? false) === true) {
             $fileUtility = $this->fileUtility ??= GeneralUtility::makeInstance(FileUtility::class);
-            return htmlspecialchars($fileUtility->getAbsoluteUrl($file->getPublicUrl()), ENT_QUOTES | ENT_HTML5);
+            return htmlspecialchars($fileUtility->getAbsoluteUrl((string)$file->getPublicUrl()), ENT_QUOTES | ENT_HTML5);
         }
         return parent::render(...func_get_args());
     }

@@ -64,6 +64,8 @@ class JsonContentObjectTest extends UnitTestCase
 
     private JsonContentObject $contentObject;
 
+    private CountingDataProcessingExample $countingProcessor;
+
     protected function setUp(): void
     {
         $this->resetSingletonInstances = true;
@@ -89,6 +91,7 @@ class JsonContentObjectTest extends UnitTestCase
             'RESTORE_REGISTER' => RestoreRegisterContentObject::class,
             'SVG' => ScalableVectorGraphicsContentObject::class,
             'CONTENT_JSON' => JsonContentContentObject::class,
+            'JSON' => JsonContentObject::class,
             'INT' => IntegerContentObject::class,
             'FLOAT' => FloatContentObject::class,
             'BOOL' => BooleanContentObject::class,
@@ -104,12 +107,13 @@ class JsonContentObjectTest extends UnitTestCase
         $container->set(MarkerBasedTemplateService::class, new MarkerBasedTemplateService($this->prophesize(FrontendInterface::class)->reveal(), $this->prophesize(FrontendInterface::class)->reveal()));
         $container->set(TimeTracker::class, new TimeTracker(false));
         $container->set(EventDispatcherInterface::class, $eventDispatcher->reveal());
-        $container->set(JsonContentObject::class, new JsonContentObject(
+        $createJsonContentObject = static fn(): JsonContentObject => new JsonContentObject(
             $contentDataProcessor,
             new JsonEncoder(),
             new JsonDecoder(),
             new HeadlessUserInt()
-        ));
+        );
+        $container->set(JsonContentObject::class, $createJsonContentObject());
         $container->set(JsonContentContentObject::class, new JsonContentContentObject(
             $container->get(TimeTracker::class),
             $container->get(EventDispatcherInterface::class),
@@ -118,6 +122,8 @@ class JsonContentObjectTest extends UnitTestCase
         ));
         $container->set(RecordsContentObject::class, new RecordsContentObject($container->get(TimeTracker::class)));
         $container->set(ContentContentObject::class, new ContentContentObject($container->get(TimeTracker::class), $container->get(EventDispatcherInterface::class)));
+        $this->countingProcessor = new CountingDataProcessingExample();
+        $container->set(CountingDataProcessingExample::class, $this->countingProcessor);
         GeneralUtility::setContainer($container);
 
         $request = new ServerRequest();
@@ -127,8 +133,10 @@ class JsonContentObjectTest extends UnitTestCase
 
         $factory = $this->prophesize(ContentObjectFactory::class);
         $factory->getContentObject(Argument::type('string'), Argument::type('object'), Argument::type('object'))
-            ->will(static function ($args) use ($contentObjectRenderer, $request) {
-                $obj = GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'][$args[0]]);
+            ->will(static function ($args) use ($contentObjectRenderer, $request, $createJsonContentObject) {
+                $obj = $args[0] === 'JSON'
+                    ? $createJsonContentObject()
+                    : GeneralUtility::makeInstance($GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'][$args[0]]);
                 $obj->setRequest($request);
                 $obj->setContentObjectRenderer($contentObjectRenderer);
 
@@ -157,6 +165,30 @@ class JsonContentObjectTest extends UnitTestCase
     public function testRender()
     {
         self::assertEquals('[]', $this->contentObject->render());
+    }
+
+    public function testJsonFieldRunsDataProcessingOnce(): void
+    {
+        $conf = ['fields.' => ['test' => 'JSON', 'test.' => ['dataProcessing.' => ['10' => CountingDataProcessingExample::class, '10.' => ['as' => 'counter']]]]];
+
+        self::assertSame(json_encode(['test' => ['Counted']]), $this->contentObject->render($conf));
+        self::assertSame(1, $this->countingProcessor->calls);
+    }
+
+    public function testPlainFieldRunsDataProcessingOnce(): void
+    {
+        $conf = ['fields.' => ['test' => 'TEXT', 'test.' => ['dataProcessing.' => ['10' => CountingDataProcessingExample::class, '10.' => ['as' => 'counter']]]]];
+
+        self::assertSame(json_encode(['test' => ['Counted']]), $this->contentObject->render($conf));
+        self::assertSame(1, $this->countingProcessor->calls);
+    }
+
+    public function testJsonFieldSkipsDataProcessingWhenIfFails(): void
+    {
+        $conf = ['fields.' => ['test' => 'JSON', 'test.' => ['if.' => ['isTrue' => 0], 'dataProcessing.' => ['10' => CountingDataProcessingExample::class, '10.' => ['as' => 'counter']]]]];
+
+        self::assertSame(json_encode(['test' => '']), $this->contentObject->render($conf));
+        self::assertSame(0, $this->countingProcessor->calls);
     }
 
     #[DataProvider('dataProvider')]
@@ -197,6 +229,14 @@ class JsonContentObjectTest extends UnitTestCase
             [['fields.' => ['test' => 'BOOL', 'test.' => ['value' => 1], 'nested.' => ['fields.' => ['nestedTest' => 'INT', 'nestedTest.' => ['value' => 10]]] ]], json_encode(['test' => true, 'nested' => ['nestedTest' => 10]])],
             [['fields.' => ['test' => 'BOOL', 'test.' => ['value' => 1], 'nested.' => ['fields.' => ['nestedTest' => 'INT', 'nestedTest.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites']]]]]]], json_encode(['test' => true, 'nested' => ['nestedTest' => ['SomeCustomProcessing']]])],
             [['fields.' => ['test' => 'FLOAT', 'test.' => ['value' => 12.34]]], json_encode(['test' => 12.34])],
+            [['nullableFieldsIfEmpty' => 'outer', 'fields.' => ['inner' => 'JSON', 'inner.' => ['fields.' => ['x' => 'TEXT', 'x.' => ['value' => '']]], 'outer' => 'TEXT', 'outer.' => ['value' => '']]], json_encode(['inner' => ['x' => ''], 'outer' => null])],
+            [['fields.' => ['inner' => 'TEXT', 'inner.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'a']]]], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'b']]], json_encode(['SomeCustomProcessing'])],
+            [['fields.' => ['test' => 'JSON', 'test.' => ['fields.' => ['inner' => 'TEXT', 'inner.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'a']]]], 'dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'b']]]]], json_encode(['test' => ['SomeCustomProcessing']])],
+            [['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'nested']], 'as' => 'sites']]], json_encode(['SomeCustomProcessing'])],
+            [['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample']], json_encode(['SomeCustomProcessing'])],
+            [['fields.' => ['test' => 'TEXT', 'test.' => ['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample']]]], json_encode(['test' => ['SomeCustomProcessing']])],
+            [['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\MultiVariableDataProcessingExample']], json_encode(['Second'])],
+            [['dataProcessing.' => ['10' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\DataProcessingExample', '10.' => ['as' => 'sites'], '20' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\MultiVariableDataProcessingExample']], json_encode(['SomeCustomProcessing'])],
             [['fields.' => ['test' => 'USER_INT', 'test.' => ['userFunc' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\ExampleUserFunc->someUserFunc']]], json_encode(['test' => 'HEADLESS_INT_START<<<!--INT_SCRIPT.202cb962ac59075b964b07152d234b70-->>>HEADLESS_INT_END'])],
             [['fields.' => ['test' => 'USER', 'test.' => ['userFunc' => 'FriendsOfTYPO3\Headless\Tests\Unit\ContentObject\ExampleUserFunc->someUserFunc']]], json_encode(['test' => ['test2' => 'someExtraCustomData']])],
         ];

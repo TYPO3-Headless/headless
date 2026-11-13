@@ -201,7 +201,7 @@ class FormTranslationService extends TranslationService
                 $translationKeyChain[] = sprintf(
                     '%s:%s.element.%s.%s.%s',
                     $translationFile,
-                    'identifier',
+                    $formRuntime['identifier'],
                     $element['identifier'],
                     $propertyType,
                     $property
