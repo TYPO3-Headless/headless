@@ -19,7 +19,8 @@ Services
    URL rewriting from backend to frontend. Methods: `withSite()`,
    `withRequest()`, `getFrontendUrl()`, `getFrontendUrlWithSite()`,
    `getFrontendUrlForPage()`, `getProxyUrl()`, `getStorageProxyUrl()`,
-   `resolveKey()`, `prepareRelativeUrlIfPossible()`. (`withLanguage()`
+   `getStorageProxyUrlForStorage()`, `resolveKey()`,
+   `prepareRelativeUrlIfPossible()`. (`withLanguage()`
    exists only on the concrete `UrlUtility`.)
 
 :php:`\FriendsOfTYPO3\Headless\Utility\FileUtilityInterface`

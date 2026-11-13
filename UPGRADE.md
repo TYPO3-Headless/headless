@@ -99,6 +99,9 @@ Other changes:
 
 * Type against `Utility\FileUtilityInterface` instead of the concrete
   `FileUtility`.
+* `Utility\HeadlessFrontendUrlInterface` has a new method,
+  `getStorageProxyUrlForStorage(int $storageUid): string`. Custom
+  implementations must add it; return `''` to keep the previous behaviour.
 
 ## New in 5.x
 
@@ -115,6 +118,9 @@ Other changes:
   preview-URL rewrite (`AfterPageUriGeneratedListener`) — the 4.x workspace
   XClasses are gone, no flag involved.
 * `headless-language-menu` data processor (headless `LanguageMenuProcessor`).
+* Per-storage file URLs for the storage proxy: `frontendFileApiByStorage`
+  (storage uid => URL) in the site config, overridable per base variant and
+  language; `frontendFileApi` stays the default for the other storages.
 
 Upgrade from 3.x to 4.x (BC release)
 =======================

@@ -53,6 +53,58 @@ class HeadlessImageServiceTest extends HeadlessUnitTestCase
         );
     }
 
+    public function testStripsPathOnlyProxyPrefixOnFrontendHost(): void
+    {
+        $resourceFactory = $this->createMock(ResourceFactory::class);
+        $resourceFactory->expects(self::once())
+            ->method('retrieveFileOrFolderObject')
+            ->with('fileadmin/test.jpg')
+            ->willReturn($this->createMock(File::class));
+
+        $service = $this->service($resourceFactory, proxyUrl: '/headless');
+
+        $service->getImage('https://example.com/headless/fileadmin/test.jpg', null, false);
+    }
+
+    public function testStripsFrontendHostWhenProxyIsRootPath(): void
+    {
+        $resourceFactory = $this->createMock(ResourceFactory::class);
+        $resourceFactory->expects(self::once())
+            ->method('retrieveFileOrFolderObject')
+            ->with('fileadmin/test.jpg')
+            ->willReturn($this->createMock(File::class));
+
+        $service = $this->service($resourceFactory, proxyUrl: '/');
+
+        $service->getImage('https://example.com/fileadmin/test.jpg', null, false);
+    }
+
+    public function testDoesNotStripPathOnlyProxyWithoutFrontendHost(): void
+    {
+        $resourceFactory = $this->createMock(ResourceFactory::class);
+        $resourceFactory->expects(self::once())
+            ->method('retrieveFileOrFolderObject')
+            ->with('https://example.com/headless/fileadmin/test.jpg')
+            ->willReturn($this->createMock(File::class));
+
+        $service = $this->service($resourceFactory, proxyUrl: '/headless', frontendUrl: '');
+
+        $service->getImage('https://example.com/headless/fileadmin/test.jpg', null, false);
+    }
+
+    public function testDoesNotStripProxyPathInsideOtherUrl(): void
+    {
+        $resourceFactory = $this->createMock(ResourceFactory::class);
+        $resourceFactory->expects(self::once())
+            ->method('retrieveFileOrFolderObject')
+            ->with('https://cdn.example.com/proxy/fileadmin/test.jpg')
+            ->willReturn($this->createMock(File::class));
+
+        $service = $this->service($resourceFactory);
+
+        $service->getImage('https://cdn.example.com/proxy/fileadmin/test.jpg', null, false);
+    }
+
     public function testDoesNotStripWhenHeadlessModeDisabled(): void
     {
         $resourceFactory = $this->createMock(ResourceFactory::class);
@@ -115,6 +167,7 @@ class HeadlessImageServiceTest extends HeadlessUnitTestCase
         ResourceFactory $resourceFactory,
         bool $headlessEnabled = true,
         string $proxyUrl = self::PROXY_URL,
+        string $frontendUrl = 'https://example.com',
     ): HeadlessImageService {
         $headlessMode = $this->createMock(HeadlessModeInterface::class);
         $headlessMode->method('isEnabledFor')->willReturn($headlessEnabled);
@@ -122,6 +175,7 @@ class HeadlessImageServiceTest extends HeadlessUnitTestCase
         $urlUtility = $this->createMock(HeadlessFrontendUrlInterface::class);
         $urlUtility->method('withRequest')->willReturnSelf();
         $urlUtility->method('getProxyUrl')->willReturn($proxyUrl);
+        $urlUtility->method('getFrontendUrl')->willReturn($frontendUrl);
 
         return new HeadlessImageService($resourceFactory, $headlessMode, $urlUtility);
     }

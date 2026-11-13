@@ -15,11 +15,16 @@ use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\ApplicationType;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Extbase\Service\ImageService;
 
-use function str_replace;
+use function rtrim;
+use function str_starts_with;
+use function strlen;
+use function substr;
+use function trim;
 
 readonly class HeadlessImageService extends ImageService
 {
@@ -49,11 +54,31 @@ readonly class HeadlessImageService extends ImageService
             return $src;
         }
 
-        $proxyUrl = $this->urlUtility->withRequest($request)->getProxyUrl();
-        if ($proxyUrl === '') {
+        $proxyUrl = $this->resolveProxyUrl($this->urlUtility->withRequest($request));
+        if ($proxyUrl === '' || !str_starts_with($src, $proxyUrl . '/')) {
             return $src;
         }
 
-        return str_replace($proxyUrl . '/', '', $src);
+        return substr($src, strlen($proxyUrl) + 1);
+    }
+
+    protected function resolveProxyUrl(HeadlessFrontendUrlInterface $urlUtility): string
+    {
+        $proxyUrl = $urlUtility->getProxyUrl();
+        if ($proxyUrl === '') {
+            return '';
+        }
+
+        $proxy = new Uri($proxyUrl);
+        if ($proxy->getHost() !== '') {
+            return $proxyUrl;
+        }
+
+        $frontend = new Uri($urlUtility->getFrontendUrl());
+        if ($frontend->getHost() === '') {
+            return '';
+        }
+
+        return rtrim((string)$frontend->withPath('/' . trim($proxy->getPath(), '/')), '/');
     }
 }

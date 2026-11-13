@@ -29,6 +29,8 @@ interface HeadlessFrontendUrlInterface
 
     public function getStorageProxyUrl(): string;
 
+    public function getStorageProxyUrlForStorage(int $storageUid): string;
+
     public function resolveKey(string $key): string;
 
     public function prepareRelativeUrlIfPossible(string $targetUrl): string;
