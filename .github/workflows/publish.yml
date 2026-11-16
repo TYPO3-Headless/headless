@@ -13,6 +13,6 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v7
       - name: "Publish new version to TER"
-        uses: tomasnorre/typo3-upload-ter@v2
+        uses: tomasnorre/typo3-upload-ter@v3
         with:
           api-token: ${{ secrets.TYPO3_API_TOKEN }}
