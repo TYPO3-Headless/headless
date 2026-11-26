@@ -13,6 +13,7 @@ namespace FriendsOfTYPO3\Headless\DataProcessing;
 
 use InvalidArgumentException;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryHelper;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
@@ -20,8 +21,10 @@ use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 use function array_filter;
 use function array_key_exists;
 use function implode;
+use function in_array;
 use function preg_match;
 use function sprintf;
+use function strtoupper;
 
 /**
  * Fetch categories as a list of objects, e.g. [{"id": 1, "title": "Category"}]
@@ -108,7 +111,7 @@ class CategoriesProcessor implements DataProcessorInterface
             return $processedData;
         }
 
-        $orderBy = (string)$cObj->stdWrapValue('orderBy', $processorConfiguration);
+        $orderBy = $this->getOrderBy((string)$cObj->stdWrapValue('orderBy', $processorConfiguration));
         if ($orderBy !== '') {
             $queryConfiguration['orderBy'] = $orderBy;
         }
@@ -147,5 +150,19 @@ class CategoriesProcessor implements DataProcessorInterface
         }
 
         return $fields;
+    }
+
+    protected function getOrderBy(string $orderBy): string
+    {
+        foreach (QueryHelper::parseOrderBy($orderBy) as [$fieldName, $direction]) {
+            if (!preg_match('/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)?$/', (string)$fieldName)) {
+                throw new InvalidArgumentException(sprintf('Invalid field name "%s" in headless-categories orderBy', $fieldName), 1795692233);
+            }
+            if ($direction !== null && !in_array(strtoupper($direction), ['ASC', 'DESC'], true)) {
+                throw new InvalidArgumentException(sprintf('Invalid sort direction "%s" in headless-categories orderBy', $direction), 1795687578);
+            }
+        }
+
+        return $orderBy;
     }
 }

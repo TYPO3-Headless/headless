@@ -89,7 +89,8 @@ Properties:
   (Default: 0) — storage of the categories
 * `fields` (Default: `uid,title`) — `sys_category` fields to return,
   `uid` is returned as `id`
-* `orderBy` (Default: sorting of the relation or order of `uidInList`)
+* `orderBy` (Default: sorting of the relation or order of `uidInList`) —
+  only field names with an optional `ASC` or `DESC` are allowed
 * `as` (Default: `categories`)
 
 .. _dataprocessors-databasequeryprocessor:
