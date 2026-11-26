@@ -38,6 +38,9 @@ use UnexpectedValueException;
 use function array_key_exists;
 use function array_merge;
 use function in_array;
+use function min;
+use function preg_match;
+use function str_contains;
 
 class FileUtility implements FileUtilityInterface
 {
@@ -344,6 +347,10 @@ class FileUtility implements FileUtilityInterface
 
     public function getAbsoluteUrl(string $fileUrl): string
     {
+        if (trim($fileUrl) === '') {
+            return '';
+        }
+
         $siteUrl = $this->getNormalizedParams()->getSiteUrl();
         $sitePath = str_replace($this->getNormalizedParams()->getRequestHost(), '', $siteUrl);
         $absoluteUrl = trim($fileUrl);
@@ -409,6 +416,29 @@ class FileUtility implements FileUtilityInterface
         return $this->cropVariantCache[$cropString] ??= CropVariantCollection::create($cropString);
     }
 
+    protected function getAutogenerateScale(
+        float $factor,
+        int $targetWidth,
+        int $targetHeight,
+        int $originalWidth,
+        int $originalHeight
+    ): float {
+        $scale = $factor;
+        if ($targetWidth > 0) {
+            $scale = min($scale, $originalWidth / $targetWidth);
+        }
+        if ($targetHeight > 0) {
+            $scale = min($scale, $originalHeight / $targetHeight);
+        }
+
+        return $scale;
+    }
+
+    protected function getCropSuffix(string $dimension): string
+    {
+        return preg_match('/^\s*\d+(c.*)$/', $dimension, $matches) === 1 ? trim($matches[1]) : '';
+    }
+
     /**
      * @codeCoverageIgnore
      */
@@ -432,17 +462,35 @@ class FileUtility implements FileUtilityInterface
         $targetWidth = (int)($processingConfiguration->width !== '' ? $processingConfiguration->width : $fileReference->getProperty('width'));
         $targetHeight = (int)($processingConfiguration->height !== '' ? $processingConfiguration->height : $fileReference->getProperty('height'));
 
+        $widthSuffix = '';
+        $heightSuffix = '';
+        if (str_contains($processingConfiguration->width . $processingConfiguration->height, 'm')) {
+            $processedWidth = (int)$fileReference->getProperty('width');
+            $processedHeight = (int)$fileReference->getProperty('height');
+            if ($processedWidth > 0 && $processedHeight > 0) {
+                $targetWidth = $processedWidth;
+                $targetHeight = $processedHeight;
+            }
+        } elseif ($processingConfiguration->width !== '' && $processingConfiguration->height !== '') {
+            $widthSuffix = $this->getCropSuffix($processingConfiguration->width);
+            $heightSuffix = $this->getCropSuffix($processingConfiguration->height);
+        }
+
         if ($targetWidth || $targetHeight) {
             $urlKey = $processingConfiguration->legacyReturn ? 'publicUrl' : 'url';
 
             foreach ($processingConfiguration->autogenerate as $autogenerateKey => $conf) {
                 $autogenerateKey = rtrim($autogenerateKey, '.');
-                $factor = (float)($conf['factor'] ?? 1.0);
                 $fileExtension = $conf['fileExtension'] ?? null;
-                // multiply width/height by factor,
-                // but don't stretch image beyond its original dimensions!
-                $width = min($targetWidth * $factor, $originalWidth);
-                $height = min($targetHeight * $factor, $originalHeight);
+                $factor = (float)($conf['factor'] ?? 1.0);
+                if ($originalWidth > 0 && $originalHeight > 0) {
+                    $scale = $this->getAutogenerateScale($factor, $targetWidth, $targetHeight, $originalWidth, $originalHeight);
+                    $width = $targetWidth * $scale;
+                    $height = $targetHeight * $scale;
+                } else {
+                    $width = min($targetWidth * $factor, $originalWidth);
+                    $height = min($targetHeight * $factor, $originalHeight);
+                }
 
                 $isDuplicateOfMainImage = (int)round($width) === (int)$fileReference->getProperty('width')
                     && (int)round($height) === (int)$fileReference->getProperty('height')
@@ -458,8 +506,8 @@ class FileUtility implements FileUtilityInterface
                     $processingConfiguration->withOptions(
                         [
                             'fileExtension' => $fileExtension,
-                            'width' => $width,
-                            'height' => $height,
+                            'width' => $widthSuffix !== '' ? (int)round($width) . $widthSuffix : $width,
+                            'height' => $heightSuffix !== '' ? (int)round($height) . $heightSuffix : $height,
                             'autogenerate.' => null,
                             'legacyReturn' => 0,
                         ]

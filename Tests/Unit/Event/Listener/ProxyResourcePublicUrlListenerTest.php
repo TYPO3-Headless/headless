@@ -27,6 +27,7 @@ use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Driver\DriverInterface;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
 use TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent;
+use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperRegistry;
 use TYPO3\CMS\Core\Resource\ResourceInterface;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Site\Entity\Site;
@@ -110,7 +111,7 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
         $config = $storageProxyUrl !== '' ? [] : ['basePath' => 'fileadmin/', 'pathType' => 'relative'];
         $event = $this->event($this->localDriver(public: true), $this->storage($config), '/foo/bar.jpg');
 
-        (new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility))($event);
+        (new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility, new OnlineMediaHelperRegistry()))($event);
 
         self::assertNull($event->getPublicUrl());
     }
@@ -209,7 +210,7 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
             identifier: '/foo/bar.jpg',
         );
 
-        (new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility))($event);
+        (new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility, new OnlineMediaHelperRegistry()))($event);
 
         self::assertSame('https://example.com/files/shared/foo/bar.jpg', $event->getPublicUrl());
     }
@@ -228,7 +229,7 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
             identifier: '/foo/bar.jpg',
         );
 
-        (new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility))($event);
+        (new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility, new OnlineMediaHelperRegistry()))($event);
 
         self::assertSame('https://example.com/fileadmin/foo/bar.jpg', $event->getPublicUrl());
     }
@@ -244,7 +245,7 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
             [2, '/headless/fileadmin2'],
         ]);
 
-        $listener = new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility);
+        $listener = new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility, new OnlineMediaHelperRegistry());
         $proxied = $this->event(
             $this->localDriver(public: true),
             $this->storage(['basePath' => 'fileadmin/', 'pathType' => 'relative']),
@@ -276,7 +277,7 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
             identifier: '/foo/bar.jpg',
         );
 
-        (new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility))($event);
+        (new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility, new OnlineMediaHelperRegistry()))($event);
 
         self::assertSame('https://proxy.example.com:8443/headless/fileadmin/foo/bar.jpg', $event->getPublicUrl());
     }
@@ -295,7 +296,7 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
             identifier: '/foo/bar.jpg',
         );
 
-        (new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility))($event);
+        (new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility, new OnlineMediaHelperRegistry()))($event);
 
         self::assertSame('https://example.com/headless/fileadmin/foo/bar.jpg', $event->getPublicUrl());
     }
@@ -310,7 +311,7 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
                 [3, 'https://cdn3.example.com/assets'],
             ]);
 
-        $listener = new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility);
+        $listener = new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility, new OnlineMediaHelperRegistry());
         $storage2 = $this->storage([], uid: 2);
         $storage3 = $this->storage([], uid: 3);
 
@@ -334,7 +335,7 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
             ->with(2)
             ->willReturnOnConsecutiveCalls('https://cdn-a.example.com', 'https://cdn-b.example.com');
 
-        $listener = new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility);
+        $listener = new ProxyResourcePublicUrlListener($this->headlessMode(), $urlUtility, new OnlineMediaHelperRegistry());
         $storage = $this->storage([], uid: 2);
 
         $first = $this->event($this->localDriver(public: true), $storage, '/a.jpg');
@@ -417,6 +418,7 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
         $listener = new ProxyResourcePublicUrlListener(
             $headlessMode,
             new UrlUtility($resolver, $this->createMock(SiteFinder::class), $headlessMode),
+            new OnlineMediaHelperRegistry(),
         );
 
         $storages = [
@@ -544,7 +546,7 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
         $urlUtility->method('withRequest')->willReturnSelf();
         $urlUtility->expects(self::once())->method('getStorageProxyUrl')->willReturn('');
 
-        $listener = new ProxyResourcePublicUrlListener($headlessMode, $urlUtility);
+        $listener = new ProxyResourcePublicUrlListener($headlessMode, $urlUtility, new OnlineMediaHelperRegistry());
 
         $event = $this->event(
             driver: $this->localDriver(public: true),
@@ -581,7 +583,7 @@ class ProxyResourcePublicUrlListenerTest extends HeadlessUnitTestCase
             [4, '/proxy/fileadmin2'],
         ]);
 
-        return new ProxyResourcePublicUrlListener($headlessMode, $urlUtility);
+        return new ProxyResourcePublicUrlListener($headlessMode, $urlUtility, new OnlineMediaHelperRegistry());
     }
 
     /**

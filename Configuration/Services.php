@@ -24,6 +24,7 @@ use FriendsOfTYPO3\Headless\DataProcessing\LanguageMenuProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider;
+use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Event\Listener\HeadlessHreflangGeneratorListener;
 use FriendsOfTYPO3\Headless\Event\Listener\HeadlessRedirectResponseListener;
@@ -104,6 +105,7 @@ return static function (ContainerConfigurator $configurator): void {
 
     $services->set(SiteProvider::class)->public();
     $services->set(DomainSchema::class)->public();
+    $services->set(SiteSchema::class)->public();
     $services->set(BackendEditorUrl::class)->public();
     $services->set(FileUtility::class)->public();
     $services->alias(FileUtilityInterface::class, FileUtility::class)->public();

@@ -46,10 +46,16 @@ class DomainSchema implements SiteSchemaInterface
                 $cObj->setRequest($request);
             }
         }
+        $requestUrlUtility = $this->urlUtility;
+        $request = $options['request'] ?? null;
+        if ($request instanceof ServerRequestInterface) {
+            $requestUrlUtility = $requestUrlUtility->withRequest($request);
+        }
+
         $result = [];
 
         foreach ($provider->getSites() as $site) {
-            $urlUtility = $this->urlUtility->withSite($site);
+            $urlUtility = $requestUrlUtility->withSite($site);
             $protocol = $site->getBase()->getScheme() . '://';
             $baseUrl = $protocol . $site->getBase()->getHost();
             $url = $urlUtility->getFrontendUrlForPage($baseUrl, $site->getRootPageId());

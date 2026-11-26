@@ -89,7 +89,7 @@ class TargetUrlResolver
                 $params['_language'] = $site->getLanguageById($languageId);
             }
 
-            return $site->getRouter()->generateUri($linkDetails['pageuid'], $params);
+            return $site->getRouter()->generateUri($linkDetails['pageuid'], $params, (string)($linkDetails['fragment'] ?? ''));
         } catch (Exception) {
             $this->logger->error(
                 'Error during action redirect',

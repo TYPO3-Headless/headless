@@ -17,6 +17,7 @@ use FriendsOfTYPO3\Headless\Form\Decorator\FormDefinitionDecorator;
 use FriendsOfTYPO3\Headless\Form\Translator;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
 use FriendsOfTYPO3\Headless\XClass\FormRuntime;
+use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Crypto\HashAlgo;
 use TYPO3\CMS\Core\Crypto\HashService;
@@ -29,6 +30,7 @@ use TYPO3\CMS\Form\Domain\Factory\ArrayFormFactory;
 use TYPO3\CMS\Form\Domain\Model\FormDefinition;
 
 use TYPO3\CMS\Form\Security\HashScope;
+use TYPO3\CMS\Form\Service\TranslationService;
 
 use function array_merge;
 use function array_pop;
@@ -219,7 +221,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
 
         $formStatus['status'] = null;
         $formStatus['errors'] = null;
-        $formStatus['actionAfterSuccess'] = $finisherResponse ? json_decode((string)$finisherResponse, false, 512, JSON_THROW_ON_ERROR) : null;
+        $formStatus['actionAfterSuccess'] = $finisherResponse ? $this->decodeFinisherResponse((string)$finisherResponse) : null;
         $formStatus['page'] = [
             'current' => $currentPageIndex,
             'nextPage' => $this->getNextPage($formRuntime),
@@ -237,7 +239,7 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
              */
             $errors = $result->getFlattenedErrors();
             $formStatus['status'] = $result->hasErrors() ? 'failure' : 'success';
-            $formStatus['errors'] = $this->prepareErrors($errors, $formDefinition['identifier']);
+            $formStatus['errors'] = $this->prepareErrors($errors, $formDefinition['identifier'], $formRuntime);
         }
 
         if (!is_string($decoratorClass) || !is_a($decoratorClass, DefinitionDecoratorInterface::class, true)) {
@@ -255,15 +257,48 @@ class FormFrontendController extends \TYPO3\CMS\Form\Controller\FormFrontendCont
      * @param string $formIdentifier
      * @return array<string, string>|null
      */
-    protected function prepareErrors(array $errors, string $formIdentifier): ?array
-    {
+    protected function prepareErrors(
+        array $errors,
+        string $formIdentifier,
+        ?\TYPO3\CMS\Form\Domain\Runtime\FormRuntime $formRuntime = null
+    ): ?array {
         $parsedErrors = [];
 
         foreach ($errors as $key => $errorObj) {
-            $parsedErrors[str_replace($formIdentifier . '.', '', $key)] = $errorObj[0]->render();
+            $elementIdentifier = str_replace($formIdentifier . '.', '', $key);
+            $parsedErrors[$elementIdentifier] = $this->translateError($errorObj[0], $elementIdentifier, $formRuntime);
         }
 
         return count($parsedErrors) ? $parsedErrors : null;
+    }
+
+    protected function translateError(
+        Error $error,
+        string $elementIdentifier,
+        ?\TYPO3\CMS\Form\Domain\Runtime\FormRuntime $formRuntime
+    ): string {
+        $message = $error->render();
+        $element = $formRuntime?->getFormDefinition()->getElementByIdentifier($elementIdentifier);
+        if ($element === null || $error->getCode() === 0) {
+            return $message;
+        }
+
+        return GeneralUtility::makeInstance(TranslationService::class)->translateFormElementError(
+            $element,
+            $error->getCode(),
+            $error->getArguments(),
+            $message,
+            $formRuntime
+        );
+    }
+
+    protected function decodeFinisherResponse(string $finisherResponse): mixed
+    {
+        try {
+            return json_decode($finisherResponse, false, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return (object)['message' => $finisherResponse];
+        }
     }
 
     protected function getNextPage(\TYPO3\CMS\Form\Domain\Runtime\FormRuntime $formRuntime): ?int
