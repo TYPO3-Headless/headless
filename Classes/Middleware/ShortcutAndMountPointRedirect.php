@@ -18,6 +18,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
+use TYPO3\CMS\Core\Routing\PageArguments;
+use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -29,8 +31,8 @@ class ShortcutAndMountPointRedirect extends \TYPO3\CMS\Frontend\Middleware\Short
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $queryParams = $request->getQueryParams();
-        $pageType = (int)($queryParams['type'] ?? 0);
+        $routing = $request->getAttribute('routing');
+        $pageType = (int)($routing instanceof PageArguments ? $routing->getPageType() : ($request->getQueryParams()['type'] ?? 0));
 
         if ($pageType === 834) {
             return $handler->handle($request);
@@ -39,10 +41,16 @@ class ShortcutAndMountPointRedirect extends \TYPO3\CMS\Frontend\Middleware\Short
         $coreResponse = parent::process($request, $handler);
 
         if ($coreResponse instanceof RedirectResponse && $this->isHeadlessEnabled($request)) {
+            $urlUtility = GeneralUtility::makeInstance(UrlUtility::class)->withRequest($request);
+            $location = $coreResponse->getHeader('location')[0] ?? '';
+            $site = $request->getAttribute('site');
+
+            if ($site instanceof Site) {
+                $location = $urlUtility->getFrontendUrlWithSite($location, $site);
+            }
+
             return new JsonResponse([
-                'redirectUrl' => GeneralUtility::makeInstance(UrlUtility::class)
-                    ->withRequest($request)
-                    ->prepareRelativeUrlIfPossible($coreResponse->getHeader('location')[0] ?? ''),
+                'redirectUrl' => $urlUtility->prepareRelativeUrlIfPossible($location),
                 'statusCode' => $coreResponse->getStatusCode(),
             ]);
         }

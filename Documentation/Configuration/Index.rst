@@ -21,6 +21,31 @@ Feature flag requires TYPO3 >= 10.4.10.
 
    $GLOBALS['TYPO3_CONF_VARS']['SYS']['features']['headless.storageProxy'] = true;
 
+The base URL of each storage is the first match of:
+
+#. `frontendFileApiByStorage` entry for the storage uid.
+#. Base URI with its own host (e.g. `https://cdn.example.com/assets/`): the URL is left unchanged.
+#. Base URI without a host or relative base path (e.g. `fileadmin/`): host of `frontendBase` + path of
+   `frontendApiProxy` + storage path.
+#. Otherwise: `frontendFileApi`; if empty, the URL is left unchanged.
+
+A `frontendFileApiByStorage` entry or `frontendFileApi` given as a path only (e.g. `/headless/files`) uses the host
+of `frontendBase`.
+
+To serve a storage from its own base URL, set `frontendFileApiByStorage` in the site config, keyed by storage uid.
+The URL replaces the whole base, only the file's path inside the storage is appended:
+
+.. code-block:: yaml
+
+   frontendBase: https://example.com
+   frontendApiProxy: https://example.com/headless
+   frontendFileApiByStorage:
+     2: https://cdn2.example.com/fileadmin2
+
+The map resolves like `frontendFileApi`: a matching base variant replaces the site-level map (a variant without
+`frontendFileApiByStorage` disables it), and a site language can set its own map. Edit it in the YAML files only,
+the site module does not show the key.
+
 **headless.redirectMiddlewares**
 
 Enables new and replaces core middlewares for handling redirects. Headless mode requires redirects to be handled by the frontend app.

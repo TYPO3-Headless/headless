@@ -14,6 +14,7 @@ use FriendsOfTYPO3\Headless\ContentObject\FloatContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\IntegerContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentContentObject;
 use FriendsOfTYPO3\Headless\ContentObject\JsonContentObject;
+use FriendsOfTYPO3\Headless\DataProcessing\CategoriesProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\DatabaseQueryProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FilesProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\FlexFormProcessor;
@@ -21,6 +22,7 @@ use FriendsOfTYPO3\Headless\DataProcessing\GalleryProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\MenuProcessor;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\DomainSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteProvider;
+use FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing\SiteSchema;
 use FriendsOfTYPO3\Headless\DataProcessing\RootSitesProcessor;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterCacheableContentIsGeneratedListener;
 use FriendsOfTYPO3\Headless\Event\Listener\AfterLinkIsGeneratedListener;
@@ -80,6 +82,7 @@ return static function (ContainerConfigurator $configurator): void {
 
     $services->set(SiteProvider::class)->public();
     $services->set(DomainSchema::class)->public();
+    $services->set(SiteSchema::class)->public();
     $services->set(BackendEditorUrl::class)->public();
     $services->set(FileUtility::class)->public();
     $services->set(HeadlessFrontendUrlInterface::class, UrlUtility::class)->autowire(false);
@@ -141,6 +144,7 @@ return static function (ContainerConfigurator $configurator): void {
                 'public' => true,
             ],
             FlexFormProcessor::class => ['identifier' => 'headless-flex-form', 'share' => false, 'public' => true],
+            CategoriesProcessor::class => ['identifier' => 'headless-categories', 'share' => false, 'public' => true],
         ] as $class => $processorConfig
     ) {
         $service = $services->set($class)

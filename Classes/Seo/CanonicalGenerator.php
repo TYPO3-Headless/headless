@@ -48,6 +48,6 @@ class CanonicalGenerator
 
     protected function processCanonical(string $canonical): string
     {
-        return htmlspecialchars(GeneralUtility::get_tag_attributes($canonical)['href'] ?? '');
+        return htmlspecialchars(GeneralUtility::get_tag_attributes($canonical, true)['href'] ?? '');
     }
 }

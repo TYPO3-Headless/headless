@@ -22,6 +22,7 @@ use TYPO3\CMS\Core\Site\Entity\Site;
 
 use function in_array;
 use function is_array;
+use function is_scalar;
 use function json_decode;
 
 class ElementBodyResponseMiddleware implements MiddlewareInterface
@@ -45,22 +46,32 @@ class ElementBodyResponseMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        $elementId = (int)($request->getParsedBody()['responseElementId'] ?? 0);
+        $parsedBody = $request->getParsedBody();
+
+        if (!is_array($parsedBody)) {
+            return $response;
+        }
+
+        $rawElementId = $parsedBody['responseElementId'] ?? 0;
+        $elementId = is_scalar($rawElementId) ? (int)$rawElementId : 0;
 
         if (!$elementId || !in_array($request->getMethod(), ['POST', 'PUT', 'DELETE'], true)) {
             return $response;
         }
 
-        $recursiveElement = (bool)(int)($request->getParsedBody()['responseElementRecursive'] ?? 0);
+        $rawRecursive = $parsedBody['responseElementRecursive'] ?? 0;
+        $recursiveElement = is_scalar($rawRecursive) && (bool)(int)$rawRecursive;
         $responseJson = json_decode($response->getBody()->__toString(), true);
 
         if ($responseJson === null) {
             return $response;
         }
 
+        $content = $responseJson['content'] ?? [];
+
         $stream = new Stream('php://temp', 'r+');
         $stream->write($this->jsonEncoder->encode($this->extractElement(
-            $responseJson['content'] ?? [],
+            is_array($content) ? $content : [],
             $elementId,
             $recursiveElement
         )));

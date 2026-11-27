@@ -36,9 +36,14 @@ use UnexpectedValueException;
 use function array_key_exists;
 use function array_merge;
 use function in_array;
+use function min;
+use function preg_match;
+use function str_contains;
 
 class FileUtility
 {
+    protected const NO_CROP_VARIANT = '';
+
     /**
      * @var array<string, array<string, string>>
      */
@@ -118,13 +123,17 @@ class FileUtility
                 $disableProcessingFor,
                 true
             )) {
-                $fileReference = $this->processImageFile($fileReference, $processingConfiguration);
+                $processedFile = $this->processImageFile($fileReference, $processingConfiguration);
+
+                if ($processedFile !== null) {
+                    $fileReference = $processedFile;
+                }
             }
             $publicUrl = $this->imageService->getImageUri($fileReference, true);
         } elseif ($fileRenderer !== null) {
             $publicUrl = $fileRenderer->render($fileReference, '', '', ['returnUrl' => true]);
         } else {
-            $publicUrl = $this->getAbsoluteUrl($fileReference->getPublicUrl());
+            $publicUrl = $this->getAbsoluteUrl((string)$fileReference->getPublicUrl());
         }
 
         $processedProperties = [
@@ -225,11 +234,9 @@ class FileUtility
             $propName = $prop;
 
             if (str_contains($prop, ' as ')) {
-                [$prop, $propName] = GeneralUtility::trimExplode(' as ', $prop, true);
-
-                if ($propName === '') {
-                    $propName = $prop;
-                }
+                $parts = GeneralUtility::trimExplode(' as ', $prop, true);
+                $prop = $parts[0] ?? $prop;
+                $propName = $parts[1] ?? $prop;
             }
 
             if (in_array($prop, ['width', 'height'], true)) {
@@ -296,7 +303,7 @@ class FileUtility
     public function processImageFile(
         FileInterface $fileReference,
         ProcessingConfiguration $processingConfiguration
-    ): ProcessedFile {
+    ): ?ProcessedFile {
         try {
             $cropVariantCollection = $this->createCropVariant((string)$fileReference->getProperty('crop'));
             $cropArea = $cropVariantCollection->getCropArea($processingConfiguration->cropVariant);
@@ -320,11 +327,17 @@ class FileUtility
             $type = lcfirst(get_class($fileReference));
             $status = get_class($e);
             $this->errors['processImageFile'][$type . '-' . $fileReference->getUid()] = $status;
+
+            return null;
         }
     }
 
     public function getAbsoluteUrl(string $fileUrl): string
     {
+        if (trim($fileUrl) === '') {
+            return '';
+        }
+
         $siteUrl = $this->getNormalizedParams()->getSiteUrl();
         $sitePath = str_replace($this->getNormalizedParams()->getRequestHost(), '', $siteUrl);
         $absoluteUrl = trim($fileUrl);
@@ -392,6 +405,29 @@ class FileUtility
         return LocalizationUtility::translate($key, $extensionName);
     }
 
+    protected function getAutogenerateScale(
+        float $factor,
+        int $targetWidth,
+        int $targetHeight,
+        int $originalWidth,
+        int $originalHeight
+    ): float {
+        $scale = $factor;
+        if ($targetWidth > 0) {
+            $scale = min($scale, $originalWidth / $targetWidth);
+        }
+        if ($targetHeight > 0) {
+            $scale = min($scale, $originalHeight / $targetHeight);
+        }
+
+        return $scale;
+    }
+
+    protected function getCropSuffix(string $dimension): string
+    {
+        return preg_match('/^\s*\d+(c.*)$/', $dimension, $matches) === 1 ? trim($matches[1]) : '';
+    }
+
     private function processAutogenerate(
         FileInterface $originalReference,
         FileInterface $fileReference,
@@ -403,20 +439,52 @@ class FileUtility
         $targetWidth = (int)($processingConfiguration->width !== '' ? $processingConfiguration->width : $fileReference->getProperty('width'));
         $targetHeight = (int)($processingConfiguration->height !== '' ? $processingConfiguration->height : $fileReference->getProperty('height'));
 
+        $widthSuffix = '';
+        $heightSuffix = '';
+        if (str_contains($processingConfiguration->width . $processingConfiguration->height, 'm')) {
+            $processedWidth = (int)$fileReference->getProperty('width');
+            $processedHeight = (int)$fileReference->getProperty('height');
+            if ($processedWidth > 0 && $processedHeight > 0) {
+                $targetWidth = $processedWidth;
+                $targetHeight = $processedHeight;
+            }
+        } elseif ($processingConfiguration->width !== '' && $processingConfiguration->height !== '') {
+            $widthSuffix = $this->getCropSuffix($processingConfiguration->width);
+            $heightSuffix = $this->getCropSuffix($processingConfiguration->height);
+        }
+
         if ($targetWidth || $targetHeight) {
+            $urlKey = $processingConfiguration->legacyReturn ? 'publicUrl' : 'url';
+
             foreach ($processingConfiguration->autogenerate as $autogenerateKey => $conf) {
                 $autogenerateKey = rtrim($autogenerateKey, '.');
+                $fileExtension = $conf['fileExtension'] ?? null;
                 $factor = (float)($conf['factor'] ?? 1.0);
+                if ($originalWidth > 0 && $originalHeight > 0) {
+                    $scale = $this->getAutogenerateScale($factor, $targetWidth, $targetHeight, $originalWidth, $originalHeight);
+                    $width = $targetWidth * $scale;
+                    $height = $targetHeight * $scale;
+                } else {
+                    $width = min($targetWidth * $factor, $originalWidth);
+                    $height = min($targetHeight * $factor, $originalHeight);
+                }
+
+                $isDuplicateOfMainImage = (int)round($width) === (int)$fileReference->getProperty('width')
+                    && (int)round($height) === (int)$fileReference->getProperty('height')
+                    && ($fileExtension ?? $originalReference->getExtension()) === $fileReference->getExtension();
+
+                if ($isDuplicateOfMainImage) {
+                    $processedFile[$autogenerateKey] = $processedFile[$urlKey];
+                    continue;
+                }
 
                 $processedFile[$autogenerateKey] = $this->process(
                     $originalReference,
                     $processingConfiguration->withOptions(
                         [
-                            'fileExtension' => $conf['fileExtension'] ?? null,
-                            // multiply width/height by factor,
-                            // but don't stretch image beyond its original dimensions!
-                            'width' => min($targetWidth * $factor, $originalWidth),
-                            'height' => min($targetHeight * $factor, $originalHeight),
+                            'fileExtension' => $fileExtension,
+                            'width' => $widthSuffix !== '' ? (int)round($width) . $widthSuffix : $width,
+                            'height' => $heightSuffix !== '' ? (int)round($height) . $heightSuffix : $height,
                             'autogenerate.' => null,
                             'legacyReturn' => 0,
                         ]
@@ -443,11 +511,11 @@ class FileUtility
                 unset($processedFile['crop'], $processedFile['properties']['crop']);
             }
 
-            $cropVariants = json_decode($crop, true);
-
             $collection = $this->createCropVariant($crop);
+            $isValidCrop = (string)$collection !== '[]';
+            $cropVariants = $isValidCrop ? json_decode($crop, true) : [];
 
-            if (is_array($cropVariants) && count($cropVariants) > 1 && str_starts_with(
+            if (is_array($cropVariants) && array_keys($cropVariants) !== ['default'] && str_starts_with(
                 $originalFileReference->getMimeType(),
                 'image/'
             )) {
@@ -465,6 +533,14 @@ class FileUtility
                     );
                 }
             }
+        }
+
+        if ($processingConfiguration->includeOriginal && str_starts_with($originalFileReference->getMimeType(), 'image/')) {
+            $originalConfiguration = $processingConfiguration->withOptions(['cropVariant' => self::NO_CROP_VARIANT]);
+            $processedFile['original'] = $this->cropVariant(
+                $originalConfiguration,
+                $this->process($originalFileReference, $originalConfiguration)
+            );
         }
 
         return $this->eventDispatcher->dispatch(
@@ -496,7 +572,7 @@ class FileUtility
 
         $additional = [];
 
-        if ($processingConfiguration->outputCropArea) {
+        if ($processingConfiguration->outputCropArea && $cropVariant !== []) {
             $additional = ['crop' => $cropVariant];
         }
 
@@ -514,8 +590,18 @@ class FileUtility
             ...$additional,
         ];
 
+        $urls = [$urlKey => $url];
+
+        foreach (array_keys($processingConfiguration->autogenerate) as $autogenerateKey) {
+            $autogenerateKey = rtrim($autogenerateKey, '.');
+
+            if (isset($file[$autogenerateKey])) {
+                $urls[$autogenerateKey] = $file[$autogenerateKey];
+            }
+        }
+
         if (!$processingConfiguration->legacyReturn && $processingConfiguration->flattenProperties) {
-            return array_merge([$urlKey => $url], $dimensions);
+            return array_merge($urls, $dimensions);
         }
 
         $wrappedDimensions = $dimensions;
@@ -528,6 +614,6 @@ class FileUtility
             $wrappedDimensions = ['properties' => $wrappedDimensions];
         }
 
-        return [$urlKey => $url, ...$wrappedDimensions];
+        return [...$urls, ...$wrappedDimensions];
     }
 }

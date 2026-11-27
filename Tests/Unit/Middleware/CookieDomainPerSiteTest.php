@@ -113,6 +113,19 @@ class CookieDomainPerSiteTest extends UnitTestCase
     #[Test]
     public function cookieDomainIsSet()
     {
+        self::assertEquals('.test-backend-api.tld', $this->resolveCookieDomainForHost('test-backend-api.tld'));
+    }
+
+    #[Test]
+    public function cookieDomainIsNotSetForPartialHostMatch()
+    {
+        self::assertEquals('', $this->resolveCookieDomainForHost('backend-api.tld'));
+    }
+
+    private function resolveCookieDomainForHost(string $host): string
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'] = '';
+
         $site = $this->prophesize(Site::class);
         $site->getConfiguration()->shouldBeCalled(3)->willReturn([
             'base' => 'https://www.typo3.org',
@@ -154,7 +167,7 @@ class CookieDomainPerSiteTest extends UnitTestCase
 
         $middleware = new CookieDomainPerSite($urlUtility, $siteFinder, $this->prophesize(LoggerInterface::class)->reveal());
 
-        $request = new ServerRequest('https://test-backend-api.tld');
+        $request = new ServerRequest('https://' . $host, 'GET', 'php://input', [], ['HTTP_HOST' => $host]);
         $request = $request->withAttribute('normalizedParams', NormalizedParams::createFromRequest($request));
 
         $response = new JsonResponse([]);
@@ -164,10 +177,7 @@ class CookieDomainPerSiteTest extends UnitTestCase
             $this->getMockHandlerWithResponse($response)
         );
 
-        self::assertEquals(
-            '.test-backend-api.tld',
-            $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'],
-        );
+        return $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'];
     }
 
     protected function getMockHandlerWithResponse($response)

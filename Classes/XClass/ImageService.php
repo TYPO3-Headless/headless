@@ -30,11 +30,11 @@ class ImageService extends \TYPO3\CMS\Extbase\Service\ImageService
      */
     protected function getImageFromSourceString(string $src, bool $treatIdAsReference): ?FileInterface
     {
-        $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($GLOBALS['TYPO3_REQUEST']);
+        $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
 
-        if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
-            && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend()
-            && $headlessMode->isEnabled()
+        if ($request instanceof ServerRequestInterface
+            && ApplicationType::fromRequest($request)->isFrontend()
+            && GeneralUtility::makeInstance(HeadlessModeInterface::class)->withRequest($request)->isEnabled()
         ) {
             $urlUtility = GeneralUtility::makeInstance(UrlUtility::class);
             $baseUriForProxy = $urlUtility->getProxyUrl();

@@ -53,7 +53,11 @@ class UserIntMiddleware implements MiddlewareInterface
                 $request->getAttribute('frontend.controller'),
                 $responseBody
             );
-            $jsonContent = json_encode($responseBody);
+            $encodedContent = json_encode($responseBody);
+
+            if ($encodedContent !== false) {
+                $jsonContent = $encodedContent;
+            }
         }
 
         $stream = new Stream('php://temp', 'r+');

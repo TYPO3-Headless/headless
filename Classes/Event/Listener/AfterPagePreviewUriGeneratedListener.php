@@ -13,6 +13,8 @@ namespace FriendsOfTYPO3\Headless\Event\Listener;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
 use FriendsOfTYPO3\Headless\Utility\HeadlessModeInterface;
+use InvalidArgumentException;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Routing\Event\AfterPagePreviewUriGeneratedEvent;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Http\Uri;
@@ -29,18 +31,24 @@ final class AfterPagePreviewUriGeneratedListener
             return;
         }
 
+        $backendRequest = $GLOBALS['TYPO3_REQUEST'] ?? null;
+
+        if (!$backendRequest instanceof ServerRequestInterface) {
+            return;
+        }
+
         try {
             $site = $this->siteFinder->getSiteByPageId($event->getPageId());
             $languageUid = $event->getLanguageId();
             $language = $languageUid === -1 ? null : $site->getLanguageById($languageUid);
 
             $headlessMode = GeneralUtility::makeInstance(HeadlessModeInterface::class);
-            $headlessMode = $headlessMode->withRequest($GLOBALS['TYPO3_REQUEST']);
+            $headlessMode = $headlessMode->withRequest($backendRequest);
             $request = $headlessMode->overrideBackendRequestBySite($site, $language);
 
             $urlUtility = $this->urlUtility->withRequest($request);
             $event->setPreviewUri(new Uri($urlUtility->getFrontendUrlWithSite($event->getPreviewUri()->__toString(), $site)));
-        } catch (SiteNotFoundException) {
+        } catch (SiteNotFoundException|InvalidArgumentException) {
         }
     }
 }

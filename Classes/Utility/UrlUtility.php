@@ -26,9 +26,10 @@ use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-use function array_key_exists;
 use function array_merge;
 use function array_unique;
+use function is_array;
+use function is_string;
 use function ltrim;
 use function rtrim;
 use function str_contains;
@@ -36,7 +37,7 @@ use function str_starts_with;
 use function strlen;
 use function substr;
 
-class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
+class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface, HeadlessStorageProxyUrlInterface
 {
     use LoggerAwareTrait;
 
@@ -124,13 +125,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
                 $targetUri = $targetUri->withPath($this->handleFrontendAndBackendPaths($frontExtraPath, $targetUri, $site->getBase()->getPath()));
             }
 
-            if ($site->getBase()->getPort() === $frontPort) {
-                return (string)$targetUri;
-            }
-
-            if ($frontPort) {
-                $targetUri = $targetUri->withPort($frontPort);
-            }
+            $targetUri = $targetUri->withPort($frontPort);
 
             return (string)$targetUri;
         } catch (SiteNotFoundException $e) {
@@ -168,6 +163,22 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
     public function getStorageProxyUrl(): string
     {
         return $this->resolveWithVariants($this->conf['frontendFileApi'] ?? '', $this->variants, 'frontendFileApi');
+    }
+
+    public function getStorageProxyUrlForStorage(int $storageUid): string
+    {
+        $variant = $this->matchingVariant($this->variants);
+        $storages = ($variant ?? $this->conf)['frontendFileApiByStorage'] ?? [];
+        if (!is_array($storages)) {
+            return '';
+        }
+
+        $url = $storages[$storageUid] ?? '';
+        if (!is_string($url)) {
+            return '';
+        }
+
+        return rtrim($url, '/');
     }
 
     public function resolveKey(string $key): string
@@ -228,15 +239,20 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         array $variants = [],
         string $returnField = 'frontendBase'
     ): string {
-        $frontendUrl = rtrim($frontendUrl, '/');
-        if ($variants === []) {
-            return $frontendUrl;
+        $variant = $this->matchingVariant($variants);
+        if ($variant === null) {
+            return rtrim($frontendUrl, '/');
         }
 
+        return rtrim($variant[$returnField] ?? '', '/');
+    }
+
+    private function matchingVariant(array $variants): ?array
+    {
         foreach ($variants as $baseVariant) {
             try {
                 if ($this->resolver->evaluate($baseVariant['condition'])) {
-                    return rtrim($baseVariant[$returnField] ?? '', '/');
+                    return $baseVariant;
                 }
             } catch (SyntaxError $e) {
                 $this->logError($e->getMessage());
@@ -244,7 +260,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
                 // no logger here, as Site is currently cached and serialized
             }
         }
-        return $frontendUrl;
+        return null;
     }
 
     private function handleLanguageConfiguration(SiteLanguage $language, HeadlessFrontendUrlInterface $object): HeadlessFrontendUrlInterface
@@ -254,6 +270,7 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $frontendBase = trim($langConf['frontendBase'] ?? '');
         $frontendApiProxy = trim($langConf['frontendApiProxy'] ?? '');
         $frontendFileApi = trim($langConf['frontendFileApi'] ?? '');
+        $frontendFileApiByStorage = $langConf['frontendFileApiByStorage'] ?? [];
         $overrides = [];
 
         if ($language->getBase()->getHost() !== '') {
@@ -271,6 +288,10 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
         if ($frontendFileApi !== '') {
             $overrides['frontendFileApi'] =  $frontendFileApi;
+        }
+
+        if (is_array($frontendFileApiByStorage) && $frontendFileApiByStorage !== []) {
+            $overrides['frontendFileApiByStorage'] = $frontendFileApiByStorage;
         }
 
         $object->conf = array_merge($object->conf, $overrides);
@@ -326,35 +347,52 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
 
     private function handleFrontendAndBackendPaths(string $frontendPath, UriInterface $targetUri, string $baseBackendPath = ''): string
     {
-        return rtrim($frontendPath, '/') . ($targetUri->getPath() !== '' ? '/' . ltrim(substr($targetUri->getPath(), strlen($baseBackendPath)), '/') : '');
+        $frontendPath = rtrim($frontendPath, '/');
+        $targetPath = $targetUri->getPath();
+        if ($targetPath === '') {
+            return $frontendPath;
+        }
+        if ($this->basePathMatches($baseBackendPath, $targetPath)) {
+            $targetPath = substr($targetPath, strlen($baseBackendPath));
+        }
+        return $frontendPath . '/' . ltrim($targetPath, '/');
     }
 
     private function overrideByLanguageIfNecessary(SiteInterface $site, string $backendUrl): ?SiteLanguage
     {
         $backendUri = GeneralUtility::makeInstance(Uri::class, $this->sanitizeBaseUrl($backendUrl));
+        $backendHost = $backendUri->getHost();
+        $backendPath = $backendUri->getPath();
         $matchedLanguage = null;
+        $matchedPathLength = -1;
         foreach ($site->getLanguages() as $language) {
-            $conf = $language->toArray();
-
-            if (!array_key_exists('frontendBase', $conf)) {
-                continue;
-            }
-
-            $base = trim($conf['frontendBase'] ?? '');
-
+            $base = trim($language->toArray()['frontendBase'] ?? '');
             if ($base === '') {
                 continue;
             }
 
-            if ($language->getBase()->getHost() !== '') {
-                $this->backendDomains[] = $language->getBase()->getHost();
+            $languageBase = $language->getBase();
+            $languageHost = $languageBase->getHost();
+            if ($languageHost !== '') {
+                $this->backendDomains[] = $languageHost;
             }
             $this->frontendDomains[] = (new Uri($this->sanitizeBaseUrl($base)))->getHost();
 
-            if ($language->getBase()->getHost() === $backendUri->getHost()) {
+            // languages with their own host never match urls of another host
+            if ($languageHost !== '' && $backendHost !== '' && $languageHost !== $backendHost) {
+                continue;
+            }
+
+            $languageBasePath = $languageBase->getPath();
+            if (!$this->basePathMatches($languageBasePath, $backendPath)) {
+                continue;
+            }
+
+            // prefer the most specific language base, e.g. "/en/" over "/"
+            $pathLength = strlen(rtrim($languageBasePath, '/'));
+            if ($pathLength >= $matchedPathLength) {
                 $matchedLanguage = $language;
-            } elseif ($backendUri->getPath() !== '/' && str_starts_with($backendUri->getPath(), $language->getBase()->getPath())) {
-                $matchedLanguage = $language;
+                $matchedPathLength = $pathLength;
             }
         }
 
@@ -362,6 +400,11 @@ class UrlUtility implements LoggerAwareInterface, HeadlessFrontendUrlInterface
         $this->frontendDomains = array_unique($this->frontendDomains);
 
         return $matchedLanguage;
+    }
+
+    protected function basePathMatches(string $basePath, string $path): bool
+    {
+        return str_starts_with(rtrim($path, '/') . '/', rtrim($basePath, '/') . '/');
     }
 
     protected function alreadyFrontendLink(string $url): bool
