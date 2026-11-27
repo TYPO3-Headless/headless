@@ -17,6 +17,7 @@ use function array_keys;
 use function array_merge;
 use function array_replace_recursive;
 use function is_array;
+use function is_numeric;
 
 class Translator
 {
@@ -81,14 +82,14 @@ class Translator
             if (isset($element['validators']) &&
                 is_array($element['validators'])) {
                 foreach ($element['validators'] as $validator) {
-                    if (!isset($validator['errorMessage'])) {
+                    if (!isset($validator['errorMessage']) || !is_numeric($validator['errorMessage'])) {
                         $validators[] = $validator;
                         continue;
                     }
 
                     $validator['errorMessage'] = $this->translator->translateElementError(
                         $element,
-                        $validator['errorMessage'],
+                        (int)$validator['errorMessage'],
                         $formRuntime,
                         is_array($validator['options'] ?? null) ? $validator['options'] : []
                     );
@@ -118,7 +119,7 @@ class Translator
                         'code' => $error['code'],
                         'message' => $this->translator->translateElementError(
                             $element,
-                            $error['code'],
+                            (int)$error['code'],
                             $formRuntime
                         ),
                         'customMessage' => $error['message'],

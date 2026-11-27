@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -40,10 +41,16 @@ class DomainSchema implements SiteSchemaInterface
     {
         $processorConfiguration = $options['processorConfiguration'] ?? [];
         $cObj = $options['cObj'] ?? GeneralUtility::makeInstance(ContentObjectRenderer::class);
+        $requestUrlUtility = $this->urlUtility;
+        $request = $options['request'] ?? null;
+        if ($request instanceof ServerRequestInterface) {
+            $requestUrlUtility = $requestUrlUtility->withRequest($request);
+        }
+
         $result = [];
 
         foreach ($provider->getSites() as $site) {
-            $urlUtility = $this->urlUtility->withSite($site);
+            $urlUtility = $requestUrlUtility->withSite($site);
             $protocol = $site->getBase()->getScheme() . '://';
             $baseUrl = $protocol . $site->getBase()->getHost();
             $url = $urlUtility->getFrontendUrlForPage($baseUrl, $site->getRootPageId());

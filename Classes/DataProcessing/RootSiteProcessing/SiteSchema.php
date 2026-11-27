@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FriendsOfTYPO3\Headless\DataProcessing\RootSiteProcessing;
 
 use FriendsOfTYPO3\Headless\Utility\HeadlessFrontendUrlInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentDataProcessor;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
@@ -41,6 +42,12 @@ class SiteSchema implements SiteSchemaInterface
         }
 
         $cObj = $options['cObj'] ?? GeneralUtility::makeInstance(ContentObjectRenderer::class);
+        $requestUrlUtility = $this->urlUtitlity;
+        $request = $options['request'] ?? null;
+        if ($request instanceof ServerRequestInterface) {
+            $requestUrlUtility = $requestUrlUtility->withRequest($request);
+        }
+
         $result = [];
         $pages = $provider->getPages();
 
@@ -49,7 +56,7 @@ class SiteSchema implements SiteSchemaInterface
             $active = 0;
             $spacer = 0;
             $baseUrl = $site->getBase()->getScheme() . '://' . $site->getBase()->getHost();
-            $url = $this->urlUtitlity->getFrontendUrlForPage($baseUrl, $site->getRootPageId());
+            $url = $requestUrlUtility->getFrontendUrlForPage($baseUrl, $site->getRootPageId());
 
             if ($provider->getCurrentRootPage() === $site) {
                 $active = 1;
@@ -58,10 +65,10 @@ class SiteSchema implements SiteSchemaInterface
                 }
             }
 
-            $pageInfo = $pages[$site->getRootPageId()];
+            $pageInfo = $pages[$site->getRootPageId()] ?? [];
 
             $page = [
-                'title' => $pageInfo[$titleField],
+                'title' => $pageInfo[$titleField] ?? null,
                 'link' => $url,
                 'active' => $active,
                 'current' => $current,

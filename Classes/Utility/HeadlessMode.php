@@ -52,7 +52,7 @@ final class HeadlessMode implements HeadlessModeInterface
 
         if ($mode === self::MIXED) {
             // in BE context we override
-            $mode = $site->getSettings()->get('headless.preview.overrideMode', self::NONE);
+            $mode = (int)$site->getSettings()->get('headless.preview.overrideMode', self::NONE);
         }
 
         $request = clone $this->request;

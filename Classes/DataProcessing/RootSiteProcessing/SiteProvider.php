@@ -82,7 +82,7 @@ class SiteProvider implements SiteProviderInterface
             $sites = $sorting->sort();
         } else {
             usort($sites, static fn(Site $siteA, Site $siteB): int =>
-                (int)$pages[$siteA->getRootPageId()][$sortingField] <=> (int)$pages[$siteB->getRootPageId()][$sortingField]);
+                (int)($pages[$siteA->getRootPageId()][$sortingField] ?? 0) <=> (int)($pages[$siteB->getRootPageId()][$sortingField] ?? 0));
         }
 
         $this->sites = $sites;
