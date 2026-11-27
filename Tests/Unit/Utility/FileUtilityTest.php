@@ -528,7 +528,7 @@ class FileUtilityTest extends UnitTestCase
         $fileData = $this->getImageFileData(['width' => 1000, 'height' => 2000]);
         $processedData = array_merge($fileData, ['width' => 800, 'height' => 600]);
 
-        $file = $this->getMockFileForData($fileData);
+        $file = $this->getMockFileForData($fileData, ['crop' => null]);
         $processedFile = $this->getMockProcessedFileForData($processedData);
 
         $captured = [];
@@ -550,7 +550,7 @@ class FileUtilityTest extends UnitTestCase
         $fileData = $this->getImageFileData(['width' => 4000, 'height' => 4000]);
         $processedData = array_merge($fileData, ['width' => 800, 'height' => 600]);
 
-        $file = $this->getMockFileForData($fileData);
+        $file = $this->getMockFileForData($fileData, ['crop' => null]);
         $processedFile = $this->getMockProcessedFileForData($processedData);
 
         $captured = [];
@@ -572,7 +572,7 @@ class FileUtilityTest extends UnitTestCase
         $fileData = $this->getImageFileData(['width' => 4000, 'height' => 2000]);
         $processedData = array_merge($fileData, ['width' => 800, 'height' => 400]);
 
-        $file = $this->getMockFileForData($fileData);
+        $file = $this->getMockFileForData($fileData, ['crop' => null]);
         $processedFile = $this->getMockProcessedFileForData($processedData);
 
         $captured = [];
@@ -593,7 +593,7 @@ class FileUtilityTest extends UnitTestCase
     {
         $fileData = $this->getImageFileData(['width' => 500, 'height' => 300]);
 
-        $file = $this->getMockFileForData($fileData);
+        $file = $this->getMockFileForData($fileData, ['crop' => null]);
         $processedFile = $this->getMockProcessedFileForData($fileData);
 
         $captured = [];
