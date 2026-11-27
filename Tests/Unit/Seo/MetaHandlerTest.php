@@ -18,6 +18,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use TYPO3\CMS\Core\Localization\Locale;
+use TYPO3\CMS\Core\MetaTag\GenericMetaTagManager;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerInterface;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
 use TYPO3\CMS\Core\PageTitle\PageTitleProviderManager;
@@ -71,6 +72,36 @@ class MetaHandlerTest extends HeadlessUnitTestCase
         self::assertSame(['lang' => 'en', 'dir' => null], $result['seo']['htmlAttrs']);
         self::assertSame(['class' => 'pid-42 layout-default'], $result['seo']['bodyAttrs']);
         self::assertArrayNotHasKey('link', $result['seo']);
+    }
+
+    public function testProcessRendersGenericMetaTagsAsArray(): void
+    {
+        $generic = new GenericMetaTagManager();
+        $generic->addProperty('theme-color', '#fff');
+        $generic->addProperty('og:custom', 'A & B', ['width' => '100'], false, 'property');
+
+        $registry = $this->createMock(MetaTagManagerRegistry::class);
+        $registry->method('getAllManagers')->willReturn(['generic' => $generic]);
+
+        $titleProvider = $this->createMock(PageTitleProviderManager::class);
+        $titleProvider->method('getTitle')->willReturn('Title');
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->method('dispatch')->willReturnArgument(0);
+
+        $handler = $this->getMockBuilder(MetaHandler::class)
+            ->setConstructorArgs([$registry, $eventDispatcher, $titleProvider, new \TYPO3\CMS\Core\TypoScript\TypoScriptService()])
+            ->onlyMethods(['createContentObjectRenderer'])
+            ->getMock();
+        $handler->method('createContentObjectRenderer')->willReturn($this->createMock(ContentObjectRenderer::class));
+
+        $result = $handler->process($this->buildRequest(), []);
+
+        self::assertSame([
+            ['name' => 'theme-color', 'content' => '#fff'],
+            ['property' => 'og:custom', 'content' => 'A &amp; B'],
+            ['property' => 'og:custom:width', 'content' => '100'],
+        ], $result['seo']['meta']);
     }
 
     public function testProcessAddsHreflangLinksWhenEventReturnsMultiple(): void

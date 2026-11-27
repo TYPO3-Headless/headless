@@ -663,6 +663,93 @@ class FileUtilityTest extends UnitTestCase
         self::assertSame('100', $captured[1]['height']);
     }
 
+    public function testProcessAutogenerateKeepsAspectRatioWhenCappedBySource(): void
+    {
+        $fileData = $this->getImageFileData(['width' => 1000, 'height' => 2000]);
+        $processedData = array_merge($fileData, ['width' => 800, 'height' => 600]);
+
+        $file = $this->getMockFileForData($fileData);
+        $processedFile = $this->getMockProcessedFileForData($processedData);
+
+        $captured = [];
+        $fileUtility = $this->getFileUtility(null, $this->createCapturingImageService($captured, $processedFile));
+
+        $fileUtility->process($file, ProcessingConfiguration::fromOptions([
+            'legacyReturn' => 0,
+            'width' => 800,
+            'height' => 600,
+            'autogenerate.' => ['retina2x' => ['factor' => 2]],
+        ]));
+
+        self::assertSame('1000', $captured[1]['width']);
+        self::assertSame('750', $captured[1]['height']);
+    }
+
+    public function testProcessAutogenerateCarriesCropSuffix(): void
+    {
+        $fileData = $this->getImageFileData(['width' => 4000, 'height' => 4000]);
+        $processedData = array_merge($fileData, ['width' => 800, 'height' => 600]);
+
+        $file = $this->getMockFileForData($fileData);
+        $processedFile = $this->getMockProcessedFileForData($processedData);
+
+        $captured = [];
+        $fileUtility = $this->getFileUtility(null, $this->createCapturingImageService($captured, $processedFile));
+
+        $fileUtility->process($file, ProcessingConfiguration::fromOptions([
+            'legacyReturn' => 0,
+            'width' => '800c',
+            'height' => '600c',
+            'autogenerate.' => ['retina2x' => ['factor' => 2]],
+        ]));
+
+        self::assertSame('1600c', $captured[1]['width']);
+        self::assertSame('1200c', $captured[1]['height']);
+    }
+
+    public function testProcessAutogenerateWithMaxDimensionsScalesFromProcessedSize(): void
+    {
+        $fileData = $this->getImageFileData(['width' => 4000, 'height' => 2000]);
+        $processedData = array_merge($fileData, ['width' => 800, 'height' => 400]);
+
+        $file = $this->getMockFileForData($fileData);
+        $processedFile = $this->getMockProcessedFileForData($processedData);
+
+        $captured = [];
+        $fileUtility = $this->getFileUtility(null, $this->createCapturingImageService($captured, $processedFile));
+
+        $fileUtility->process($file, ProcessingConfiguration::fromOptions([
+            'legacyReturn' => 0,
+            'width' => '800m',
+            'height' => '600m',
+            'autogenerate.' => ['retina2x' => ['factor' => 2]],
+        ]));
+
+        self::assertSame('1600', $captured[1]['width']);
+        self::assertSame('800', $captured[1]['height']);
+    }
+
+    public function testProcessAutogenerateWithMaxDimensionsReusesMainImageWhenSourceIsTooSmall(): void
+    {
+        $fileData = $this->getImageFileData(['width' => 500, 'height' => 300]);
+
+        $file = $this->getMockFileForData($fileData);
+        $processedFile = $this->getMockProcessedFileForData($fileData);
+
+        $captured = [];
+        $fileUtility = $this->getFileUtility(null, $this->createCapturingImageService($captured, $processedFile));
+
+        $result = $fileUtility->process($file, ProcessingConfiguration::fromOptions([
+            'legacyReturn' => 0,
+            'width' => '800m',
+            'height' => '600m',
+            'autogenerate.' => ['big' => ['factor' => 2]],
+        ]));
+
+        self::assertCount(1, $captured);
+        self::assertSame($result['url'], $result['big']);
+    }
+
     public function testProcessAutogenerateGeneratesMultipleVariantsInOrder(): void
     {
         $fileData = $this->getImageFileData();

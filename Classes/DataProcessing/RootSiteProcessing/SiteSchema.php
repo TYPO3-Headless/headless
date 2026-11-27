@@ -49,6 +49,12 @@ class SiteSchema implements SiteSchemaInterface
                 $cObj->setRequest($request);
             }
         }
+        $requestUrlUtility = $this->urlUtility;
+        $request = $options['request'] ?? null;
+        if ($request instanceof ServerRequestInterface) {
+            $requestUrlUtility = $requestUrlUtility->withRequest($request);
+        }
+
         $result = [];
         $pages = $provider->getPages();
 
@@ -57,7 +63,7 @@ class SiteSchema implements SiteSchemaInterface
             $active = 0;
             $spacer = 0;
             $baseUrl = $site->getBase()->getScheme() . '://' . $site->getBase()->getHost();
-            $url = $this->urlUtility->getFrontendUrlForPage($baseUrl, $site->getRootPageId());
+            $url = $requestUrlUtility->getFrontendUrlForPage($baseUrl, $site->getRootPageId());
 
             if ($provider->getCurrentRootPage() === $site) {
                 $active = 1;
@@ -66,10 +72,10 @@ class SiteSchema implements SiteSchemaInterface
                 }
             }
 
-            $pageInfo = $pages[$site->getRootPageId()];
+            $pageInfo = $pages[$site->getRootPageId()] ?? [];
 
             $page = [
-                'title' => $pageInfo[$titleField],
+                'title' => $pageInfo[$titleField] ?? null,
                 'link' => $url,
                 'active' => $active,
                 'current' => $current,

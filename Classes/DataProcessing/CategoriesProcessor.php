@@ -19,12 +19,14 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 
 use function array_filter;
+use function array_flip;
 use function array_key_exists;
 use function implode;
 use function in_array;
 use function preg_match;
 use function sprintf;
 use function strtoupper;
+use function usort;
 
 /**
  * Fetch categories as a list of objects, e.g. [{"id": 1, "title": "Category"}]
@@ -116,10 +118,15 @@ class CategoriesProcessor implements DataProcessorInterface
             $queryConfiguration['orderBy'] = $orderBy;
         }
 
+        $records = $cObj->getRecords('sys_category', $queryConfiguration);
+        if ($relationField === '' && $orderBy === '') {
+            $records = $this->sortByUidList($records, $uidInList);
+        }
+
         $fields = $this->getFields((string)$cObj->stdWrapValue('fields', $processorConfiguration, 'uid,title'));
 
         $categories = [];
-        foreach ($cObj->getRecords('sys_category', $queryConfiguration) as $record) {
+        foreach ($records as $record) {
             $category = [];
             foreach ($fields as $field) {
                 if ($field === 'uid') {
@@ -150,6 +157,21 @@ class CategoriesProcessor implements DataProcessorInterface
         }
 
         return $fields;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $records
+     * @return array<int, array<string, mixed>>
+     */
+    protected function sortByUidList(array $records, string $uidInList): array
+    {
+        $positions = array_flip(GeneralUtility::intExplode(',', $uidInList, true));
+        usort(
+            $records,
+            static fn(array $a, array $b): int => ($positions[(int)$a['uid']] ?? PHP_INT_MAX) <=> ($positions[(int)$b['uid']] ?? PHP_INT_MAX)
+        );
+
+        return $records;
     }
 
     protected function getOrderBy(string $orderBy): string

@@ -19,6 +19,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\LinkHandling\PageTypeLinkResolver;
+use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Site\Entity\Site;
 
 /**
@@ -36,8 +37,8 @@ class ShortcutAndMountPointRedirect extends \TYPO3\CMS\Frontend\Middleware\Short
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $queryParams = $request->getQueryParams();
-        $pageType = (int)($queryParams['type'] ?? 0);
+        $routing = $request->getAttribute('routing');
+        $pageType = (int)($routing instanceof PageArguments ? $routing->getPageType() : ($request->getQueryParams()['type'] ?? 0));
 
         if ($pageType === 834) {
             return $handler->handle($request);

@@ -47,7 +47,7 @@ class QrCodeElement extends CoreQrCodeElement
         }
 
         $resultArray['html'] = str_replace(
-            'content="https://' . $sourceHost . $sourcePath . '"',
+            'content="' . htmlspecialchars('https://' . $sourceHost . $sourcePath) . '"',
             'content="' . htmlspecialchars($frontendUrl) . '"',
             $html
         );

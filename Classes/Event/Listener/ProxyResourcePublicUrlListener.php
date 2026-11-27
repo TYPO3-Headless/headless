@@ -19,6 +19,8 @@ use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Driver\LocalDriver;
 use TYPO3\CMS\Core\Resource\Event\GeneratePublicUrlForResourceEvent;
+use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperRegistry;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use WeakMap;
 
@@ -38,6 +40,7 @@ class ProxyResourcePublicUrlListener
     public function __construct(
         protected readonly HeadlessModeInterface $headlessMode,
         protected readonly HeadlessFrontendUrlInterface $urlUtility,
+        protected readonly OnlineMediaHelperRegistry $onlineMediaHelperRegistry,
     ) {
         $this->baseUriCache = new WeakMap();
     }
@@ -57,6 +60,11 @@ class ProxyResourcePublicUrlListener
             return;
         }
 
+        $resource = $event->getResource();
+        if ($resource instanceof File && $this->onlineMediaHelperRegistry->getOnlineMediaHelper($resource) !== false) {
+            return;
+        }
+
         $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
         if (!$request instanceof ServerRequestInterface
             || !$this->headlessMode->isEnabledFor($request)
@@ -71,7 +79,7 @@ class ProxyResourcePublicUrlListener
         }
 
         $event->setPublicUrl(
-            rtrim($baseUri, '/') . '/' . $this->encodeIdentifier($event->getResource()->getIdentifier())
+            rtrim($baseUri, '/') . '/' . $this->encodeIdentifier($resource->getIdentifier())
         );
     }
 

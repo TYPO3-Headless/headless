@@ -39,7 +39,7 @@ class CookieDomainPerSite implements MiddlewareInterface
         if (!$normalizedParams instanceof NormalizedParams) {
             return $handler->handle($request);
         }
-        $requestHost = strtolower($normalizedParams->getHttpHost());
+        $requestHost = strtolower($normalizedParams->getRequestHostOnly());
 
         $cookieDomain = null;
         foreach ($this->siteFinder->getAllSites() as $site) {

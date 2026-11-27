@@ -15,6 +15,7 @@ use FriendsOfTYPO3\Headless\Seo\MetaTag\AbstractMetaTagManager;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\MetaTag\GenericMetaTagManager;
 use TYPO3\CMS\Core\MetaTag\MetaTagManagerRegistry;
 use TYPO3\CMS\Core\PageTitle\PageTitleProviderManager;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
@@ -77,6 +78,8 @@ class MetaHandler implements MetaHandlerInterface
         foreach ($metaTagManagers as $managerObject) {
             if ($managerObject instanceof AbstractMetaTagManager) {
                 $properties = $managerObject->renderAllHeadlessPropertiesAsArray();
+            } elseif ($managerObject instanceof GenericMetaTagManager) {
+                $properties = $this->renderGenericProperties($managerObject);
             } else {
                 $rendered = $managerObject->renderAllProperties();
                 $properties = $rendered === '' ? [] : (json_decode($rendered, true, 512, JSON_THROW_ON_ERROR) ?: []);
@@ -141,6 +144,32 @@ class MetaHandler implements MetaHandlerInterface
         $content['seo']['bodyAttrs'] = $this->normalizeAttr($bodyTagAttrs);
 
         return $content;
+    }
+
+    /**
+     * @return array<int, array<string, string>>
+     */
+    protected function renderGenericProperties(GenericMetaTagManager $manager): array
+    {
+        $metaTags = [];
+        foreach ($manager->getState()['properties'] ?? [] as $property => $propertiesByType) {
+            foreach ($propertiesByType as $type => $items) {
+                foreach ($items as $item) {
+                    $metaTags[] = [
+                        htmlspecialchars((string)$type) => htmlspecialchars((string)$property),
+                        'content' => htmlspecialchars((string)$item['content']),
+                    ];
+                    foreach ($item['subProperties'] ?? [] as $subProperty => $value) {
+                        $metaTags[] = [
+                            htmlspecialchars((string)$type) => htmlspecialchars($property . ':' . $subProperty),
+                            'content' => htmlspecialchars((string)$value),
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $metaTags;
     }
 
     /**

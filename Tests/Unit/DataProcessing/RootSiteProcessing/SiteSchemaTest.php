@@ -61,6 +61,50 @@ class SiteSchemaTest extends UnitTestCase
         ], $result[1]);
     }
 
+    public function testProcessResolvesLinksWithRequestBoundUrlUtility(): void
+    {
+        $site = new Site('site-a', 1, ['base' => 'https://a.tld']);
+
+        $provider = $this->createMock(SiteProviderInterface::class);
+        $provider->method('getSites')->willReturn([$site]);
+        $provider->method('getPages')->willReturn([1 => ['uid' => 1, 'title' => 'Site A']]);
+        $provider->method('getCurrentRootPage')->willReturn($site);
+
+        $request = new \TYPO3\CMS\Core\Http\ServerRequest();
+
+        $requestBoundUrlUtility = $this->createMock(HeadlessFrontendUrlInterface::class);
+        $requestBoundUrlUtility->method('getFrontendUrlForPage')->willReturn('https://frontend.tld/');
+
+        $urlUtility = $this->createMock(HeadlessFrontendUrlInterface::class);
+        $urlUtility->expects(self::once())->method('withRequest')->with($request)->willReturn($requestBoundUrlUtility);
+        $urlUtility->expects(self::never())->method('getFrontendUrlForPage');
+
+        $result = (new SiteSchema($urlUtility, $this->createMock(ContentDataProcessor::class)))->process(
+            $provider,
+            ['siteUid' => 1, 'cObj' => $this->createMock(ContentObjectRenderer::class), 'request' => $request]
+        );
+
+        self::assertSame('https://frontend.tld/', $result[0]['link']);
+    }
+
+    public function testProcessReturnsNullTitleWhenRootPageIsMissing(): void
+    {
+        $site = new Site('site-a', 1, ['base' => 'https://a.tld']);
+
+        $provider = $this->createMock(SiteProviderInterface::class);
+        $provider->method('getSites')->willReturn([$site]);
+        $provider->method('getPages')->willReturn([]);
+        $provider->method('getCurrentRootPage')->willReturn($site);
+
+        $urlUtility = $this->createMock(HeadlessFrontendUrlInterface::class);
+        $urlUtility->method('getFrontendUrlForPage')->willReturn('https://a.tld/');
+
+        $result = (new SiteSchema($urlUtility, $this->createMock(ContentDataProcessor::class)))
+            ->process($provider, ['siteUid' => 1, 'cObj' => $this->createMock(ContentObjectRenderer::class)]);
+
+        self::assertNull($result[0]['title']);
+    }
+
     public function testProcessUsesCustomTitleField(): void
     {
         $site = new Site('site-a', 1, ['base' => 'https://a.tld']);
